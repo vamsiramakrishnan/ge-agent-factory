@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Order Fallout Resolution Agent
-description: "The agent classifies each fallout by error signature and auto-remediates known patterns like address normalization and port conflicts. It replays corrected orders through the orchestration flow and verifies downstream activation completes. so the Order Management Specialist can move the Order fallout rate KPI."
+description: "Cut the Order fallout rate from 14% to 4% and the mean time to resolve fallout from 2.3 days to 3 hours by classifying service_orders and provisioning_tasks fallout_status/error_code signatures, auto-remediating known patterns like address normalization and port conflicts, replaying corrected orders through Netcracker Service Orchestration, and escalating unrecognized patterns to the fallout team with a runbook-cited diagnostic trail."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/order-fallout-resol
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:32.979Z"
+provenance_created_at: "2026-07-04T06:18:41.712Z"
 ---
 
 # Order Fallout Resolution Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:32.979Z"
 
 - **Persona:** Order Management Specialist
 - **Department:** telco
-- **Objective:** The agent classifies each fallout by error signature and auto-remediates known patterns like address normalization and port conflicts. It replays corrected orders through the orchestration flow and verifies downstream activation completes. so the Order Management Specialist can move the Order fallout rate KPI.
+- **Objective:** Cut the Order fallout rate from 14% to 4% and the mean time to resolve fallout from 2.3 days to 3 hours by classifying service_orders and provisioning_tasks fallout_status/error_code signatures, auto-remediating known patterns like address normalization and port conflicts, replaying corrected orders through Netcracker Service Orchestration, and escalating unrecognized patterns to the fallout team with a runbook-cited diagnostic trail.
 
 ## KPI summary
 

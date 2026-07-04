@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Roaming Settlement Reconciliation Engine
-description: "The engine reconciles every inbound and outbound roaming record against partner agreements and IOT rate tables each settlement cycle. It flags rate misapplications, duplicate records, and missing files per partner with quantified financial exposure. so the Wholesale Settlements Analyst can move the Roaming records reconciled per cycle KPI."
+description: "Reconcile every inbound and outbound roaming usage_records and rated_events entry against partner agreements and the current IOT rate table each settlement cycle in Amdocs CES Billing, lifting roaming records reconciled per cycle from a 10% sample to full 100% coverage and growing settlement discrepancy recovery from $1.2M to $4.6M per year."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/roaming-settlement-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:38.124Z"
+provenance_created_at: "2026-07-04T06:18:46.759Z"
 ---
 
 # Roaming Settlement Reconciliation Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:38.124Z"
 
 - **Persona:** Wholesale Settlements Analyst
 - **Department:** telco
-- **Objective:** The engine reconciles every inbound and outbound roaming record against partner agreements and IOT rate tables each settlement cycle. It flags rate misapplications, duplicate records, and missing files per partner with quantified financial exposure. so the Wholesale Settlements Analyst can move the Roaming records reconciled per cycle KPI.
+- **Objective:** Reconcile every inbound and outbound roaming usage_records and rated_events entry against partner agreements and the current IOT rate table each settlement cycle in Amdocs CES Billing, lifting roaming records reconciled per cycle from a 10% sample to full 100% coverage and growing settlement discrepancy recovery from $1.2M to $4.6M per year.
 
 ## KPI summary
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Trade Confirmation Break Resolution Agent
-description: "Compares each unmatched confirmation against the Murex MX.3 booking and pinpoints the exact mismatched economic fields. Drafts counterparty chaser messages and routes internal booking-error corrections to the desk via ServiceNow. so the Treasury Operations Analyst can move the Confirmations matched without touch KPI."
+description: "Resolve unmatched Murex MX.3 trade confirmations by pinpointing the exact mismatched economic field against each booking and routing the correct fix to counterparty or desk, moving confirmations matched without touch from 55% to 88% and average break resolution time from 2.3 days to under 4 hours while holding unconfirmed trades aged past 30 days at or below 12."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/trade-confirmation-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:52.271Z"
+provenance_created_at: "2026-07-04T06:18:00.556Z"
 ---
 
 # Trade Confirmation Break Resolution Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:52.271Z"
 
 - **Persona:** Treasury Operations Analyst
 - **Department:** banking
-- **Objective:** Compares each unmatched confirmation against the Murex MX.3 booking and pinpoints the exact mismatched economic fields. Drafts counterparty chaser messages and routes internal booking-error corrections to the desk via ServiceNow. so the Treasury Operations Analyst can move the Confirmations matched without touch KPI.
+- **Objective:** Resolve unmatched Murex MX.3 trade confirmations by pinpointing the exact mismatched economic field against each booking and routing the correct fix to counterparty or desk, moving confirmations matched without touch from 55% to 88% and average break resolution time from 2.3 days to under 4 hours while holding unconfirmed trades aged past 30 days at or below 12.
 
 ## KPI summary
 

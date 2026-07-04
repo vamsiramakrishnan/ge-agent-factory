@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [vendor_item_reconciliation](/workflow/vendor-item-reconciliation.md)
+- [compliance_chargeback_evidence_assembly](/workflow/compliance-chargeback-evidence-assembly.md)
+- [manager_routing_audit](/workflow/manager-routing-audit.md)
 
 ## Evals
 

@@ -37,3 +37,4 @@ Must cite: salesforce_communications_cloud.subscriber_accounts, bigquery.analyti
 # Citations
 
 - [B2B Quote Configuration Agent Service Assurance Runbook](/documents/b2b-quote-configuration-agent-assurance-runbook.md)
+- [B2B Rate Card & Discount Authority Matrix](/documents/b2b-quote-configuration-agent-rate-discount-manual.md)

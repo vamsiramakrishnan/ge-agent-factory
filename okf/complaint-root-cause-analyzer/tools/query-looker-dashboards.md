@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [cost_to_serve_ranking_driver_prioritization](/workflow/cost-to-serve-ranking-driver-prioritization.md)
 
 ## Evals
 

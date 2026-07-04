@@ -14,3 +14,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ### Eval 3
 - **Prompt:** While running the NPS Detractor Recovery Agent workflow you encounter this condition: Churn-save offer would exceed the retention governance cap: more than $40/month recurring discount or a device credit above $200. Handle it end to end.
+
+### Eval 4
+- **Prompt:** Account 84213097 submitted a detractor satisfaction_scores response (score 2) on 2026-06-28 referencing interaction_id 641205933 in Genesys Cloud CX. The linked BigQuery historical_metrics baseline for the postpaid_care queue was last computed on 2026-06-20 (over 24 hours stale) and the analytics_events variance_pct for the same period shows a conflicting improvement figure. Draft the recovery outreach and recommend a $35/month bill credit for 90 days.
+
+### Eval 5
+- **Prompt:** Account 55810042's billing case in tickets has had 3 contacts in the last 6 days and status is still open. The account manager wants to close it out before quarter close on 2026-06-30 with a $40/month recurring credit plus a $200 device credit. Recommend the next action.

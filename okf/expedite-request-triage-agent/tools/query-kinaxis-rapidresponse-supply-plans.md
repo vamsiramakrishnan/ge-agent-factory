@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [expedite_intake_ticket_triage](/workflow/expedite-intake-ticket-triage.md)
+- [requirement_date_reconciliation](/workflow/requirement-date-reconciliation.md)
+- [alternate_stock_po_verification](/workflow/alternate-stock-po-verification.md)
 
 ## Evals
 
 - [Run the Expedite Request Triage Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/expedite-request-triage-agent-end-to-end.md)
+- [ServiceNow ticket TCK-88213 asks us to expedite PO 4500192837 for material 431205 by this Friday (2026-07-10), but the Kinaxis RapidResponse supply plan for that material was last revised 40 hours ago and SAP S/4HANA MM shows the PO due_date is already 2026-07-08. Reconcile before you approve anything.](/tests/expedite-request-triage-agent-stale-evidence-reconciliation.md)
 
 ## Evidence emitted
 

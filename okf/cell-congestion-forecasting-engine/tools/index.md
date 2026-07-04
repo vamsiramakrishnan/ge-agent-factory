@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_cell_congestion_forecasting_engine_assurance_runbook](/tools/lookup-cell-congestion-forecasting-engine-assurance-runbook.md)
 - [action_ericsson_network_manager_publish](/tools/action-ericsson-network-manager-publish.md)
+- [query_ericsson_network_manager_cell_sites](/tools/query-ericsson-network-manager-cell-sites.md)
+- [query_ericsson_network_manager_performance_counters](/tools/query-ericsson-network-manager-performance-counters.md)
+- [lookup_cell_congestion_augment_prioritization_playbook](/tools/lookup-cell-congestion-augment-prioritization-playbook.md)

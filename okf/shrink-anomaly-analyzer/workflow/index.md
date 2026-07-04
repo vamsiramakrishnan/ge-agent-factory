@@ -9,7 +9,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Nightly Register Exception Scoring](/workflow/nightly-register-exception-scoring.md)
+2. [Shift & Cashier Attribution](/workflow/shift-cashier-attribution.md)
+3. [Baseline Variance Comparison](/workflow/baseline-variance-comparison.md)
+4. [Case File Assembly & Risk Ranking](/workflow/case-file-assembly-risk-ranking.md)
+5. [Playbook & Cash-Accountability Evidence Gate](/workflow/playbook-cash-accountability-evidence-gate.md)
+6. [Case Filing & District AP Handoff](/workflow/case-filing-district-ap-handoff.md)

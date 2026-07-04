@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Nightly Multi-Site Signal Pull](/workflow/nightly-multi-site-signal-pull.md)
+2. [Surplus-Deficit Matching](/workflow/surplus-deficit-matching.md)
+3. [Transfer Economics Scoring](/workflow/transfer-economics-scoring.md)
+4. [SOP & Authorization Gate](/workflow/sop-authorization-gate.md)
+5. [Stock Transport Order Execution & Receipt Tracking](/workflow/stock-transport-order-execution-receipt-tracking.md)

@@ -53,14 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [alert_intake_queue_prioritization](/workflow/alert-intake-queue-prioritization.md)
+- [policy_evidence_gating](/workflow/policy-evidence-gating.md)
+- [disposition_filing_case_handoff](/workflow/disposition-filing-case-handoff.md)
 
 ## Evals
 
 - [Run the Fraud Alert Triage Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/fraud-alert-triage-agent-end-to-end.md)
+- [Alert 73482910 on account 48213077 was auto-dispositioned false_positive during initial triage, but the linked transaction_risk_scores record for this account shows score_band critical with mule_account_indicator true and velocity_rule_triggered true. Reconcile the two records, cite the amount_at_risk against the compliance policy thresholds, and recommend a disposition.](/tests/fraud-alert-triage-agent-conflicting-risk-signal.md)
+- [Investigation case 2043981 has a filing_deadline_date of 2026-07-06 and sar_decision is still pending_review. The most recent NICE Actimize evidence pull for the linked fraud_alerts records is dated 2026-06-28. Today is 2026-07-04 -- can we file the SAR recommendation now, or does something need to happen first?](/tests/fraud-alert-triage-agent-stale-sar-deadline.md)
 
 ## Evidence emitted
 

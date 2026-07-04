@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [permit_clock_emissions_deviation_correlation](/workflow/permit-clock-emissions-deviation-correlation.md)
+- [evidence_pack_generation_audit_trail](/workflow/evidence-pack-generation-audit-trail.md)
 
 ## Evals
 

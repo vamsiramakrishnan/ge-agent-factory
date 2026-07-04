@@ -52,8 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
+- [alert_intake_case_binding](/workflow/alert-intake-case-binding.md)
+- [typology_threshold_screening](/workflow/typology-threshold-screening.md)
 
 ## Evals
 

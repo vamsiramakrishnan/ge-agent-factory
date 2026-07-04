@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Item & Cost Intake](/workflow/item-cost-intake.md)
+2. [Productivity & Transferable-Demand Scoring](/workflow/productivity-transferable-demand-scoring.md)
+3. [Playbook & Trade-Terms Evidence Gating](/workflow/playbook-trade-terms-evidence-gating.md)
+4. [Space Reallocation Deck Drafting](/workflow/space-reallocation-deck-drafting.md)
+5. [Route & Audit](/workflow/route-audit.md)

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Nightly Claim & Exposure Intake](/workflow/nightly-claim-exposure-intake.md)
+2. [Coverage & Reserve-Line Cross-Check](/workflow/coverage-reserve-line-cross-check.md)
+3. [Recovery Likelihood & Expected-Value Scoring](/workflow/recovery-likelihood-expected-value-scoring.md)
+4. [Authority & Referral-Guide Validation](/workflow/authority-referral-guide-validation.md)
+5. [Referral Packaging & Audit Close-Out](/workflow/referral-packaging-audit-close-out.md)

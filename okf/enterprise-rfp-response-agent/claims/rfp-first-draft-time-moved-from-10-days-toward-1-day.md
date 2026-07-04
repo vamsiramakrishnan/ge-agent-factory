@@ -37,3 +37,4 @@ Must cite: salesforce_communications_cloud.subscriber_accounts, bigquery.analyti
 # Citations
 
 - [Enterprise RFP Response Agent Service Assurance Runbook](/documents/enterprise-rfp-response-agent-assurance-runbook.md)
+- [Enterprise RFP Response Agent Bid Pricing & Delegation-of-Authority Manual](/documents/enterprise-rfp-response-agent-bid-pricing-manual.md)

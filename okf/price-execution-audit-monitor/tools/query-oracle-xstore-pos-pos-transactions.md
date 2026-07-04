@@ -53,11 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [pos_scan_reconciliation](/workflow/pos-scan-reconciliation.md)
+- [fix_it_dispatch_escalation](/workflow/fix-it-dispatch-escalation.md)
 
 ## Evals
 
 - [Run the Price Execution Audit Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/price-execution-audit-monitor-end-to-end.md)
+- [Store 482 has been flagged for three consecutive scan-accuracy exceptions on SKU 40521193 (POS ringing $2.99 against a Revionics price of record of $2.49). The store_shift_summaries feed for store 482 hasn't refreshed in 3 business days. Determine whether this is a systemic price-zone feed failure or an isolated register error, and recommend the next action.](/tests/price-execution-audit-monitor-stale-feed-reconciliation.md)
 
 ## Evidence emitted
 

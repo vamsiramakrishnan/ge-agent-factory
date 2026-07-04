@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Lead Qualification Scoring Engine
-description: "The engine scores each inbound lead on firmographics, serviceability, and usage-intent signals the moment it lands. It enriches the lead record with building lit status, competitor presence, and existing group-account relationships. so the Inside Sales Representative can move the Lead response time KPI."
+description: "Score every inbound lead captured in subscriber_accounts, service_quotes, and order_captures the moment it lands in Salesforce Communications Cloud, and route qualified leads to the right territory rep so Lead response time falls from 26 hours to 15 minutes while MQL-to-SQL conversion rises from 18% to 34%."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/lead-qualification-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:31.218Z"
+provenance_created_at: "2026-07-04T06:18:40.005Z"
 ---
 
 # Lead Qualification Scoring Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:31.218Z"
 
 - **Persona:** Inside Sales Representative
 - **Department:** telco
-- **Objective:** The engine scores each inbound lead on firmographics, serviceability, and usage-intent signals the moment it lands. It enriches the lead record with building lit status, competitor presence, and existing group-account relationships. so the Inside Sales Representative can move the Lead response time KPI.
+- **Objective:** Score every inbound lead captured in subscriber_accounts, service_quotes, and order_captures the moment it lands in Salesforce Communications Cloud, and route qualified leads to the right territory rep so Lead response time falls from 26 hours to 15 minutes while MQL-to-SQL conversion rises from 18% to 34%.
 
 ## KPI summary
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Fee Schedule & Householding Recompute](/workflow/fee-schedule-householding-recompute.md)
+2. [Actual Fee Run Reconciliation](/workflow/actual-fee-run-reconciliation.md)
+3. [Root-Cause Exception Classification](/workflow/root-cause-exception-classification.md)
+4. [Compliance & Rate Manual Citation Gate](/workflow/compliance-rate-manual-citation-gate.md)
+5. [Attestation Publish & Looker Reporting](/workflow/attestation-publish-looker-reporting.md)

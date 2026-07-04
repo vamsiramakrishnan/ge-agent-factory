@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Changeover Log Correlation](/workflow/changeover-log-correlation.md)
+2. [Crew & Family Benchmarking](/workflow/crew-family-benchmarking.md)
+3. [Standard-Time Deviation Scoring](/workflow/standard-time-deviation-scoring.md)
+4. [Family-Aware Resequencing Recommendation](/workflow/family-aware-resequencing-recommendation.md)
+5. [Route & Audit](/workflow/route-audit.md)

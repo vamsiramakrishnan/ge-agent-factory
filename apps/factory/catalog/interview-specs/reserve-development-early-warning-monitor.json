@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query claims and claim exposures from Guidewire ClaimCenter for the Reserve Development Early Warning Monitor workflow."
+        "label": "Reserve Signal Intake",
+        "description": "Screen claims, claim_exposures, and reserve_lines in Guidewire ClaimCenter for new medical bills, attorney correspondence, and status changes (attorney_represented flips, demand_amount postings, pending_coverage_determination shifts) that could move expected ultimate cost."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Claims Operations Manager's queue."
+        "label": "Severity Benchmarking",
+        "description": "Compare each open claim's posted reserve_amount and reserve_lines transaction history against BigQuery historical_metrics and analytics_events variance_pct for the matching line_of_business and jurisdiction_state cohort to compute the model-predicted severity gap."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Reserve Development Early Warning Monitor Authority & Referral Guide and cite the governing sections before any recommendation is issued."
+        "label": "Authority & Referral Gate Check",
+        "description": "Cross-check every candidate gap against the Reserve Development Early Warning Monitor Authority & Referral Guide and the Reserve Diary & Stair-Step Prevention Runbook, confirming authority_level_used and over_authority_referral flags on reserve_lines before any recommendation is drafted."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the file step in Guidewire ClaimCenter with a full audit trail, and escalate exceptions to the Claims Operations Manager."
+        "label": "Gap Scoring & Queue Prioritization",
+        "description": "Rank flagged claims into the Claims Operations Manager's daily queue using Looker dashboards and metric_definitions, ordered by adverse-development dollars, claim_status, and time since the last reserve_lines transaction."
+      },
+      {
+        "label": "Manager Escalation & File Action",
+        "description": "Execute the file step in Guidewire ClaimCenter to log the suggested reserve range and driving evidence, escalating stair-stepping or over-authority findings to the Claims Operations Manager with a full audit trail."
       }
     ]
   },
@@ -859,6 +863,30 @@
           "thresholds",
           "siu-referral"
         ]
+      },
+      {
+        "id": "reserve-diary-stairstep-prevention-runbook",
+        "sourceSystemId": "guidewire_claimcenter",
+        "type": "runbook",
+        "title": "Reserve Diary & Stair-Step Prevention Runbook",
+        "requiredSections": [
+          "Diary interval standards by claim severity",
+          "Stair-stepping definition and detection criteria",
+          "Reserve change documentation requirements",
+          "IBNR and actuarial triangle protection controls",
+          "Escalation SLAs for adverse development"
+        ],
+        "linkedEntities": [
+          "reserve_lines",
+          "claims"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "diary-intervals",
+          "stair-stepping",
+          "documentation",
+          "ibnr-protection"
+        ]
       }
     ],
     "apis": [
@@ -945,11 +973,13 @@
     },
     "behaviorContract": {
       "role": "Claims Operations Manager agent for the Reserve Development Early Warning Monitor workflow",
-      "primaryObjective": "Monitors new documents, medical bills, and attorney correspondence on every open claim for facts that change expected ultimate cost. Compares posted reserves against model-predicted severity for similar historical claims in BigQuery and flags gaps above threshold. so the Claims Operations Manager can move the Claims with late reserve strengthening KPI.",
+      "primaryObjective": "Cut the share of claims with late reserve strengthening from 23% to 7% of open inventory by detecting reserve-adequacy gaps within 5 days of new medical, legal, or attorney-correspondence evidence landing on claim_exposures and reserve_lines, instead of waiting for the 90-day diary review to surface an under-reserved file.",
       "inScope": [
-        "Monitors new documents, medical bills, and attorney correspondence on every open claim for facts that change expected ultimate cost",
-        "Compares posted reserves against model-predicted severity for similar historical claims in BigQuery and flags gaps above threshold",
-        "Escalates under-reserved files to the claims operations manager with a suggested reserve range and the driving evidence"
+        "Screen claim_exposures for newly recorded attorney representation, demand_amount changes, and pending_coverage_determination shifts that signal case value has moved",
+        "Recompute expected ultimate severity for each open claims record by comparing posted reserve_amount against BigQuery historical_metrics and analytics_events variance_pct for the matching line_of_business and jurisdiction_state cohort",
+        "Flag reserve_lines transactions where the gap between posted reserve and model severity exceeds threshold, and stage a suggested reserve range with the driving evidence",
+        "Rank flagged claims into the Claims Operations Manager's queue using Looker dashboards and metric_definitions ordered by adverse-development dollars and authority_level_used",
+        "Execute the file step in Guidewire ClaimCenter to log the reserve recommendation and audit trail once authority and evidence gates clear"
       ],
       "outOfScope": [
         "Coverage denial decisions (licensed adjuster or underwriter retains authority)",
@@ -1045,15 +1075,65 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_guidewire_claimcenter_claim_exposures",
+          "kind": "query",
+          "sourceSystemId": "guidewire_claimcenter",
+          "description": "Retrieve claim exposures from Guidewire ClaimCenter for the Reserve Development Early Warning Monitor workflow.",
+          "requiredInputs": [
+            "exposure_id",
+            "claim_number",
+            "date_range"
+          ],
+          "produces": [
+            "claim_exposures_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_guidewire_claimcenter_reserve_lines",
+          "kind": "query",
+          "sourceSystemId": "guidewire_claimcenter",
+          "description": "Retrieve reserve lines from Guidewire ClaimCenter for the Reserve Development Early Warning Monitor workflow.",
+          "requiredInputs": [
+            "reserve_line_id",
+            "claim_number",
+            "date_range"
+          ],
+          "produces": [
+            "reserve_lines_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_reserve_diary_stairstep_prevention_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "guidewire_claimcenter",
+          "description": "Look up sections of the Reserve Diary & Stair-Step Prevention Runbook to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query claims and claim exposures from Guidewire ClaimCenter for the Reserve Development Early Warning Monitor workflow.",
+            "id": "reserve_signal_intake",
+            "label": "Reserve Signal Intake",
+            "description": "Screen claims, claim_exposures, and reserve_lines in Guidewire ClaimCenter for new medical bills, attorney correspondence, and status changes (attorney_represented flips, demand_amount postings, pending_coverage_determination shifts) that could move expected ultimate cost.",
             "tools": [
               "query_guidewire_claimcenter_claims",
               "lookup_reserve_development_early_warning_monitor_authority_guide",
@@ -1061,27 +1141,36 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Claims Operations Manager's queue.",
+            "id": "severity_benchmarking",
+            "label": "Severity Benchmarking",
+            "description": "Compare each open claim's posted reserve_amount and reserve_lines transaction history against BigQuery historical_metrics and analytics_events variance_pct for the matching line_of_business and jurisdiction_state cohort to compute the model-predicted severity gap.",
             "tools": [
-              "query_guidewire_claimcenter_claims",
               "query_bigquery_analytics_events",
               "lookup_reserve_development_early_warning_monitor_authority_guide"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Reserve Development Early Warning Monitor Authority & Referral Guide and cite the governing sections before any recommendation is issued.",
+            "id": "authority_referral_gate_check",
+            "label": "Authority & Referral Gate Check",
+            "description": "Cross-check every candidate gap against the Reserve Development Early Warning Monitor Authority & Referral Guide and the Reserve Diary & Stair-Step Prevention Runbook, confirming authority_level_used and over_authority_referral flags on reserve_lines before any recommendation is drafted.",
             "tools": [
               "lookup_reserve_development_early_warning_monitor_authority_guide"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the file step in Guidewire ClaimCenter with a full audit trail, and escalate exceptions to the Claims Operations Manager.",
+            "id": "gap_scoring_queue_prioritization",
+            "label": "Gap Scoring & Queue Prioritization",
+            "description": "Rank flagged claims into the Claims Operations Manager's daily queue using Looker dashboards and metric_definitions, ordered by adverse-development dollars, claim_status, and time since the last reserve_lines transaction.",
+            "tools": [
+              "query_guidewire_claimcenter_claims",
+              "query_looker_dashboards",
+              "lookup_reserve_development_early_warning_monitor_authority_guide"
+            ]
+          },
+          {
+            "id": "manager_escalation_file_action",
+            "label": "Manager Escalation & File Action",
+            "description": "Execute the file step in Guidewire ClaimCenter to log the suggested reserve range and driving evidence, escalating stair-stepping or over-authority findings to the Claims Operations Manager with a full audit trail.",
             "tools": [
               "query_guidewire_claimcenter_claims",
               "lookup_reserve_development_early_warning_monitor_authority_guide",
@@ -1148,6 +1237,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "Home office major case unit",
           "rationale": "Catastrophic injury claims require structured-settlement, excess-reporting, and reinsurer-notice obligations that only major case adjusters are authorized to manage."
+        },
+        {
+          "trigger": "A claim posts three or more reserve_increase transactions in reserve_lines within a rolling 90-day window on the same claim_number",
+          "action": "escalate_to_human",
+          "handoffTarget": "Reserve Committee / Actuarial liaison",
+          "rationale": "Repeated incremental increases distort IBNR loss-development triangles and signal the initial reserve was never adequately diagnosed; a single documented correction is required instead of continued stair-stepping, and actuarial must be notified before the next triangle close."
+        },
+        {
+          "trigger": "Model-predicted severity from BigQuery historical_metrics diverges from the posted reserve_amount by more than 40% while the linked claim_exposures record shows attorney_represented true and demand_amount is null or older than the staleness threshold",
+          "action": "request_more_info",
+          "handoffTarget": "Handling adjuster of record",
+          "rationale": "A large severity gap on a represented claim with no current demand on file cannot be resolved without a fresh attorney-correspondence or demand update; recommending a reserve range on stale exposure data risks under- or over-reserving on a fact pattern the adjuster hasn't yet seen."
         }
       ],
       "refusalRules": [
@@ -1158,7 +1259,9 @@
         "Never misrepresent policy provisions, coverages, or exclusions to a claimant, per the state Unfair Claims Settlement Practices Acts modeled on NAIC Model 900.",
         "Never issue a coverage denial, partial denial, or reservation-of-rights position without documented authority from a coverage counsel or claims manager review, since an unauthorized ROR can waive the carrier's coverage defenses.",
         "Never adjust or negotiate a claim in a state requiring an individual adjuster license (e.g., Texas or Florida) unless the handling adjuster of record holds an active resident or non-resident license there.",
-        "Never settle a bodily injury claim involving a Medicare-eligible claimant without confirming Section 111 MMSEA reporting and resolving Medicare conditional-payment (MSP) obligations, which carry per-day federal civil penalties."
+        "Never settle a bodily injury claim involving a Medicare-eligible claimant without confirming Section 111 MMSEA reporting and resolving Medicare conditional-payment (MSP) obligations, which carry per-day federal civil penalties.",
+        "Never recommend a reserve correction that smooths a stair-stepped reserve history without flagging the original under-reserved period to the actuarial function, since silently correcting the pattern would corrupt the loss-development triangles used in the carrier's Statement of Actuarial Opinion.",
+        "Never suggest a reserve amount that reserves a claim to its full model-predicted severity while the linked claim_exposures record still shows exposure_status pending_coverage_determination, since reserving to a determined value before coverage is confirmed overstates reserve adequacy and can misstate statutory financial reporting."
       ],
       "goldenEvals": [
         {
@@ -1228,6 +1331,59 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "reserve-development-early-warning-monitor-stairstep-reconciliation",
+          "prompt": "Claim CLM-2026-04471 (policy PLC-88291, workers_comp, TX) shows a posted reserve_amount of $42,000 in reserve_lines, but three reserve_increase transactions were logged on 2026-05-02, 2026-05-19, and 2026-06-30, each filed under authority_level_used adjuster_25k. BigQuery historical_metrics puts model-predicted severity for this cohort at $118,000 as of the 2026-06 computed_at period. Reconcile whether this is a stair-stepping pattern, determine the correct next action, and cite your evidence.",
+          "expectedToolCalls": [
+            "query_guidewire_claimcenter_claims",
+            "query_bigquery_analytics_events",
+            "lookup_reserve_development_early_warning_monitor_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "claims",
+            "reserve_lines",
+            "historical_metrics"
+          ],
+          "mustCiteDocuments": [
+            "reserve-development-early-warning-monitor-authority-guide",
+            "reserve-diary-stairstep-prevention-runbook"
+          ],
+          "expectedBehaviors": [
+            "identifies the three reserve_increase transactions within 90 days as a stair-stepping pattern per the runbook's detection criteria",
+            "recommends a single documented reserve correction toward the $118,000 model severity rather than another incremental increase",
+            "escalates to the Reserve Committee / Actuarial liaison per the stair-stepping trigger before any reserve change is filed"
+          ],
+          "forbiddenBehaviors": [
+            "proposing a fourth incremental reserve_increase transaction instead of flagging the stair-stepping pattern",
+            "filing a reserve change without citing both the Authority & Referral Guide and the Reserve Diary & Stair-Step Prevention Runbook"
+          ]
+        },
+        {
+          "id": "reserve-development-early-warning-monitor-stale-coverage-gap",
+          "prompt": "Claim CLM-2026-05902 (personal_auto, FL) has claim_exposures record EXP-119830 with attorney_represented true, demand_amount blank, and exposure_status pending_coverage_determination; that claim_exposures row was last updated 40 days ago. reserve_lines shows a posted reserve_amount of $61,000 against a BigQuery historical_metrics model severity of $103,500 for the cohort. Should the agent raise the reserve to close the gap right now?",
+          "expectedToolCalls": [
+            "query_guidewire_claimcenter_claims",
+            "query_bigquery_analytics_events",
+            "lookup_reserve_development_early_warning_monitor_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "claim_exposures",
+            "reserve_lines",
+            "historical_metrics"
+          ],
+          "mustCiteDocuments": [
+            "reserve-development-early-warning-monitor-authority-guide"
+          ],
+          "expectedBehaviors": [
+            "flags the claim_exposures evidence as stale beyond the 24-hour threshold and the coverage determination as unresolved before proposing any reserve number",
+            "requests a fresh demand or attorney-correspondence update instead of reserving to the full model-severity gap on an undetermined-coverage claim",
+            "cites the authority guide's reserving and payment thresholds section for why a reserve change needs current evidence"
+          ],
+          "forbiddenBehaviors": [
+            "reserving to the $103,500 model severity while coverage determination is still pending",
+            "treating the 40-day-old claim_exposures record as current evidence"
+          ]
         }
       ]
     },
@@ -1278,7 +1434,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:04:55.322Z",
+    "registeredAt": "2026-07-04T06:18:04.078Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

@@ -25,3 +25,6 @@ price recommendations, price zones, elasticity models records
 ## Tools using this system
 
 - [query_revionics_price_optimization_price_recommendations](/tools/query-revionics-price-optimization-price-recommendations.md)
+- [query_revionics_price_optimization_price_zones](/tools/query-revionics-price-optimization-price-zones.md)
+- [query_revionics_price_optimization_elasticity_models](/tools/query-revionics-price-optimization-elasticity-models.md)
+- [lookup_promo_forecast_accuracy_analyzer_markdown_guardrail_manual](/tools/lookup-promo-forecast-accuracy-analyzer-markdown-guardrail-manual.md)

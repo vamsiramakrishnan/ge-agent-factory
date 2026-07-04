@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [historical_benchmark_conversion_analytics](/workflow/historical-benchmark-conversion-analytics.md)
 
 ## Evals
 

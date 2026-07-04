@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
+- [item_presentation_cross_reference](/workflow/item-presentation-cross-reference.md)
+- [playbook_rate_manual_gate](/workflow/playbook-rate-manual-gate.md)
+- [parameter_push_audit](/workflow/parameter-push-audit.md)
 
 ## Evals
 
 - [Run the Store Replenishment Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-replenishment-orchestrator-end-to-end.md)
+- [Store 1417, SKU 48213207: the forecast_overrides record shows override_units of 640 approved by planner Jordan Reyes for override_week 2026-06-29, but the matching demand_forecasts row for that sku/store/forecast_week has wmape 0.58 and frozen_period_flag = true. Should we push this override into next week's Blue Yonder replenishment parameters?](/tests/store-replenishment-orchestrator-frozen-period-conflict.md)
+- [Merchandise class small_appliances (class_number 4210, buyer Dana Whitfield) is showing store weeks-of-supply variance beyond +/-1.2 weeks at 38 stores. item_master shows SKU 71029384 at case_pack 12, item_status active, but cost_changes has a pending record with new_unit_cost $6.40 versus old_unit_cost $5.20 (a 23% increase) not yet approved. Recommend the item-store min/max reset and whether to execute the approve action now.](/tests/store-replenishment-orchestrator-pending-cost-change.md)
 
 ## Evidence emitted
 

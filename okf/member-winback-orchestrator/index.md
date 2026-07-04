@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Lapsed Member Win-Back Orchestrator"
-description: "Segments lapsed members by inferred lapse reason using last-purchase context, store proximity, and browse signals. Generates tailored win-back journeys per segment and tests offer depth against predicted reactivation value. so the Retention Marketing Manager can move the Lapsed-member reactivation rate KPI."
+description: "Detect every loyalty_id in pos_transactions that has lapsed past the 90-day recency threshold, segment it by inferred lapse reason using Segment segment_records/segment_events and BigQuery historical_metrics, and dispatch the minimal viable win-back journey through Salesforce Marketing Cloud so the Lapsed-member reactivation rate climbs from 2.8% to 9.6% while cost per reactivation falls from $31 to $9."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/member-winback-orch
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:27.957Z"
+provenance_created_at: "2026-07-04T06:18:37.027Z"
 ---
 
 # Lapsed Member Win-Back Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:27.957Z"
 
 - **Persona:** Retention Marketing Manager
 - **Department:** retail
-- **Objective:** Segments lapsed members by inferred lapse reason using last-purchase context, store proximity, and browse signals. Generates tailored win-back journeys per segment and tests offer depth against predicted reactivation value. so the Retention Marketing Manager can move the Lapsed-member reactivation rate KPI.
+- **Objective:** Detect every loyalty_id in pos_transactions that has lapsed past the 90-day recency threshold, segment it by inferred lapse reason using Segment segment_records/segment_events and BigQuery historical_metrics, and dispatch the minimal viable win-back journey through Salesforce Marketing Cloud so the Lapsed-member reactivation rate climbs from 2.8% to 9.6% while cost per reactivation falls from $31 to $9.
 
 ## KPI summary
 

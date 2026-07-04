@@ -7,7 +7,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query service orders and provisioning tasks from Netcracker Service Orchestration for the Order Jeopardy Prediction Engine workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Delivery Program Manager's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Order Jeopardy Prediction Engine Service Assurance Runbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the draft step in Netcracker Service Orchestration with a full audit trail, and escalate exceptions to the Delivery Program Manager.](/queries/act-audit.md)
+- [Pull open service_orders and provisioning_tasks from Netcracker Service Orchestration via query_netcracker_service_orchestration_service_orders, scoped to in_flight and entered orders approaching due_date.](/queries/order-task-intake.md)
+- [Compare milestone velocity against BigQuery analytics_events and historical_metrics via query_bigquery_analytics_events to score each in-flight order's slip risk and match it to the historically fastest recovery path.](/queries/baseline-comparison-slip-scoring.md)
+- [Cite the governing sections of the Order Jeopardy Prediction Engine Service Assurance Runbook and the Enterprise Circuit Delivery SLA & Credit Schedule via lookup_order_jeopardy_prediction_engine_assurance_runbook before any recommendation or draft is issued.](/queries/runbook-sla-evidence-validation.md)
+- [Execute action_netcracker_service_orchestration_draft to create expedite tasks and proactive customer delay notifications in Netcracker Service Orchestration for high-value circuits, escalating enterprise fallout to order_fallout_swat or lnp_operations_desk with a full audit trail.](/queries/recovery-drafting-notification-audit.md)

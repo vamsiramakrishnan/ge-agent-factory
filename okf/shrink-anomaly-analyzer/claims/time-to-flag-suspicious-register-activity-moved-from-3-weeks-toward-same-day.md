@@ -37,3 +37,4 @@ Must cite: oracle_xstore_pos.pos_transactions, bigquery.analytics_events
 # Citations
 
 - [Shrink Anomaly Analyzer Retail Execution Playbook](/documents/shrink-anomaly-analyzer-execution-playbook.md)
+- [Register Cash Accountability & Drawer Audit Standard](/documents/shrink-anomaly-analyzer-cash-drawer-accountability-standard.md)

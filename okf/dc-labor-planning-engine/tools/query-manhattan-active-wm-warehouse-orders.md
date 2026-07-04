@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [wave_volume_forecasting](/workflow/wave-volume-forecasting.md)
+- [labor_standard_timecard_reconciliation](/workflow/labor-standard-timecard-reconciliation.md)
+- [publish_audit_notify](/workflow/publish-audit-notify.md)
 
 ## Evals
 

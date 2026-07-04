@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, zendesk.tickets
 # Citations
 
 - [Returns Abuse Analyzer Retail Execution Playbook](/documents/returns-abuse-analyzer-execution-playbook.md)
+- [Return Policy Disclosure & Chargeback Rights Compliance Bulletin](/documents/returns-abuse-analyzer-restocking-chargeback-bulletin.md)

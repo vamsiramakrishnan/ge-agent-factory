@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [risk_delta_scoring_baseline_comparison](/workflow/risk-delta-scoring-baseline-comparison.md)
 
 ## Evals
 
 - [Run the Renewal Risk Requalification Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/renewal-risk-requalification-agent-end-to-end.md)
+- [Policy POL-204471 (commercial_auto, named insured Redline Logistics) is up for its 90-day requalification. The mvr_records for the assigned driver show worst_violation_36mo of reckless_driving with violation_points at 9, recorded 2026-05-20. BigQuery analytics_events show variance_pct of only 3.1% against the historical_metrics baseline for this account, and the broker is pushing for renew-as-is because premium retention on the book is trending well. Can we clear this for renew-as-is treatment?](/tests/renewal-risk-requalification-agent-mvr-retention-conflict.md)
 
 ## Evidence emitted
 

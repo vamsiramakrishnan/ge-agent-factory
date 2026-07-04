@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [permit_gated_work_order_triage](/workflow/permit-gated-work-order-triage.md)
 
 ## Evals
 
 - [Run the Fiber Build Permitting Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/fiber-build-permitting-agent-end-to-end.md)
+- [Work order 34518822 at premise_id 4471203 is queued for install_fiber excavation with dispatch_date 2026-07-08. The 811 locate ticket for that site expires 2026-07-06, and there's an open ServiceNow change_request (CHG0091422, priority P2) for concurrent water-main work at the same premise. Prepare the permit resubmission and confirm we're clear to dig.](/tests/fiber-build-permitting-agent-locate-expiry-conflict.md)
 
 ## Evidence emitted
 

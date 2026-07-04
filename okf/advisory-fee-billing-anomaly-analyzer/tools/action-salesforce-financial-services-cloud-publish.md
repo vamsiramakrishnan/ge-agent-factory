@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [fee_schedule_householding_recompute](/workflow/fee-schedule-householding-recompute.md)
+- [root_cause_exception_classification](/workflow/root-cause-exception-classification.md)
+- [attestation_publish_looker_reporting](/workflow/attestation-publish-looker-reporting.md)
 
 ## Evals
 

@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [cart_session_signal_capture](/workflow/cart-session-signal-capture.md)
+- [marketing_cloud_journey_orchestration_suppression](/workflow/marketing-cloud-journey-orchestration-suppression.md)
+- [evidence_gated_send_audit](/workflow/evidence-gated-send-audit.md)
 
 ## Evals
 

@@ -37,3 +37,4 @@ Must cite: guidewire_claimcenter.claims, bigquery.analytics_events
 # Citations
 
 - [Reserve Adequacy Analyzer Authority & Referral Guide](/documents/reserve-adequacy-analyzer-authority-guide.md)
+- [Reserve Data Staleness & Evidence Refresh Runbook](/documents/reserve-data-staleness-evidence-refresh-runbook.md)

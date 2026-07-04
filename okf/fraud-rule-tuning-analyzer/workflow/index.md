@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Alert-to-Outcome Reconciliation](/workflow/alert-to-outcome-reconciliation.md)
+2. [Rule Precision, Recall & Dollar Coverage Scoring](/workflow/rule-precision-recall-dollar-coverage-scoring.md)
+3. [Threshold Simulation & Retirement Screening](/workflow/threshold-simulation-retirement-screening.md)
+4. [Governance Evidence Packaging](/workflow/governance-evidence-packaging.md)
+5. [Rule-Change Proposal & Actimize Deployment](/workflow/rule-change-proposal-actimize-deployment.md)

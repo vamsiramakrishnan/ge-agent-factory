@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Order Jeopardy Prediction Engine
-description: "The engine scores every in-flight order daily for slip risk using milestone velocity, supplier history, and task aging. It flags at-risk orders with the specific stalled milestone and the historically fastest recovery path. so the Delivery Program Manager can move the On-time delivery rate for enterprise circuits KPI."
+description: "Score every in-flight service_orders record in Netcracker Service Orchestration daily against milestone velocity, provisioning_tasks aging, and historical recovery paths so the Delivery Program Manager can lift on-time delivery for enterprise circuits from 68% to 88% while surfacing jeopardy at least 18 days ahead of due_date instead of 2."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/order-jeopardy-pred
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:34.246Z"
+provenance_created_at: "2026-07-04T06:18:42.979Z"
 ---
 
 # Order Jeopardy Prediction Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:34.246Z"
 
 - **Persona:** Delivery Program Manager
 - **Department:** telco
-- **Objective:** The engine scores every in-flight order daily for slip risk using milestone velocity, supplier history, and task aging. It flags at-risk orders with the specific stalled milestone and the historically fastest recovery path. so the Delivery Program Manager can move the On-time delivery rate for enterprise circuits KPI.
+- **Objective:** Score every in-flight service_orders record in Netcracker Service Orchestration daily against milestone velocity, provisioning_tasks aging, and historical recovery paths so the Delivery Program Manager can lift on-time delivery for enterprise circuits from 68% to 88% while surfacing jeopardy at least 18 days ahead of due_date instead of 2.
 
 ## KPI summary
 

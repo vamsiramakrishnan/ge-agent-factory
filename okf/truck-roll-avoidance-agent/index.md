@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Truck Roll Avoidance Agent
-description: "The agent runs a full remote diagnostic battery on the line, CPE, and provisioning state before any dispatch is booked. It executes safe remote remediations like ONT resets, profile re-pushes, and firmware updates, and verifies service restoration with the customer. so the Field Operations Supervisor can move the Truck rolls avoided KPI."
+description: "Before any field_work_orders dispatch is booked, the agent runs remote diagnostics on the line, CPE, and provisioning state, correlates Zendesk tickets and service_appointments history, and either resolves the fault remotely or files a fully-evidenced work order in Oracle Field Service — cutting the no-fault-found dispatch rate from 27% to 9% and avoiding 5,800 truck rolls per month."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/truck-roll-avoidanc
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:41.864Z"
+provenance_created_at: "2026-07-04T06:18:50.492Z"
 ---
 
 # Truck Roll Avoidance Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:41.864Z"
 
 - **Persona:** Field Operations Supervisor
 - **Department:** telco
-- **Objective:** The agent runs a full remote diagnostic battery on the line, CPE, and provisioning state before any dispatch is booked. It executes safe remote remediations like ONT resets, profile re-pushes, and firmware updates, and verifies service restoration with the customer. so the Field Operations Supervisor can move the Truck rolls avoided KPI.
+- **Objective:** Before any field_work_orders dispatch is booked, the agent runs remote diagnostics on the line, CPE, and provisioning state, correlates Zendesk tickets and service_appointments history, and either resolves the fault remotely or files a fully-evidenced work order in Oracle Field Service — cutting the no-fault-found dispatch rate from 27% to 9% and avoiding 5,800 truck rolls per month.
 
 ## KPI summary
 

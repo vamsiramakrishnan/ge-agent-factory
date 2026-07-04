@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Counterparty Credit Exposure Monitor
-description: "Aggregates potential future exposure, collateral balances, and netting-set details from Murex MX.3 into an intraday counterparty view. Monitors market signals such as ratings actions and CDS moves, escalating counterparties whose risk profile deteriorates. so the Counterparty Risk Manager can move the Time to full counterparty exposure view KPI."
+description: "Aggregate potential future exposure, collateral balances, and netting-set positions from Murex MX.3 trades, positions, and risk_measures into a single intraday counterparty view, cutting time to full counterparty exposure view from T+1 to intraday and shrinking collateral disputes open more than 5 days from 40 to 6."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/counterparty-credit
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:51.858Z"
+provenance_created_at: "2026-07-04T06:18:00.130Z"
 ---
 
 # Counterparty Credit Exposure Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:51.858Z"
 
 - **Persona:** Counterparty Risk Manager
 - **Department:** banking
-- **Objective:** Aggregates potential future exposure, collateral balances, and netting-set details from Murex MX.3 into an intraday counterparty view. Monitors market signals such as ratings actions and CDS moves, escalating counterparties whose risk profile deteriorates. so the Counterparty Risk Manager can move the Time to full counterparty exposure view KPI.
+- **Objective:** Aggregate potential future exposure, collateral balances, and netting-set positions from Murex MX.3 trades, positions, and risk_measures into a single intraday counterparty view, cutting time to full counterparty exposure view from T+1 to intraday and shrinking collateral disputes open more than 5 days from 40 to 6.
 
 ## KPI summary
 

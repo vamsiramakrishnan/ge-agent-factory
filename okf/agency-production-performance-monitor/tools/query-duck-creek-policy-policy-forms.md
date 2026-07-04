@@ -53,12 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [agency_book_scan_baseline_pull](/workflow/agency-book-scan-baseline-pull.md)
+- [recommend_re_engagement_execution](/workflow/recommend-re-engagement-execution.md)
 
 ## Evals
 
 - [Run the Agency Production Performance Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/agency-production-performance-monitor-end-to-end.md)
+- [Agency 'Meridian Coastal Insurance Group' (Salesforce account id ACC-40217) shows 3 opportunities marked closed_won in the last 30 days in Salesforce Marketing Cloud, but Duck Creek Policy rating_worksheets for the same agency's book show final_developed_premium down 18% quarter-over-quarter and quote_number volume down 22%. Reconcile the conflict and tell me whether to trigger a re-engagement campaign for this agency.](/tests/agency-production-performance-monitor-conflicting-signals.md)
 
 ## Evidence emitted
 

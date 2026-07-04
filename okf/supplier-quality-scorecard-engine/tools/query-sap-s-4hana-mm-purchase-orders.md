@@ -52,8 +52,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [vendor_lot_reconciliation](/workflow/vendor-lot-reconciliation.md)
+- [scorecard_evidence_gate](/workflow/scorecard-evidence-gate.md)
+- [qbr_publish_sourcing_handoff](/workflow/qbr-publish-sourcing-handoff.md)
 
 ## Evals
 

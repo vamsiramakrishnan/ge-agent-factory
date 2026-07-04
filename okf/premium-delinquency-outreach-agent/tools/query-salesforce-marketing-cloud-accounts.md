@@ -52,7 +52,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [nightly_past_due_extraction_plan_reconciliation](/workflow/nightly-past-due-extraction-plan-reconciliation.md)
+- [cure_probability_scoring](/workflow/cure-probability-scoring.md)
+- [channel_eligibility_campaign_suppression](/workflow/channel-eligibility-campaign-suppression.md)
+- [authority_notice_period_gate](/workflow/authority-notice-period-gate.md)
+- [reminder_dispatch_escalation_audit](/workflow/reminder-dispatch-escalation-audit.md)
 
 ## Evals
 

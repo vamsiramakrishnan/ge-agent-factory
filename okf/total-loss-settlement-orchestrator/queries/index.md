@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query claims and claim exposures from Guidewire ClaimCenter and correlate with DocuSign for the Total Loss Settlement Orchestrator workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Auto Claims Specialist's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Total Loss Settlement Orchestrator Authority & Referral Guide and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the file step in Guidewire ClaimCenter with a full audit trail, and escalate exceptions to the Auto Claims Specialist.](/queries/act-audit.md)
+- [Query claims and claim_exposures in Guidewire ClaimCenter to detect a claim_status transition indicating a vehicle has been declared a total loss, and confirm the coverage_code (COLL/COMP) driving the exposure.](/queries/fnol-total-loss-trigger-intake.md)
+- [Cross-check claim_exposures coverage and reserve_lines authority_level_used against the settlement amount, then query DocuSign envelopes and recipients for outstanding lienholder payoff confirmations before any offer is drafted.](/queries/coverage-lienholder-verification.md)
+- [Pull historical_metrics and cached_aggregates from BigQuery to benchmark the actual cash value against comparable settlements, and cite the Total Loss Settlement Orchestrator Authority & Referral Guide and the Total Loss Valuation & Salvage Disposition Work Instruction before finalizing the offer.](/queries/valuation-settlement-package-assembly.md)
+- [Generate DocuSign envelopes and recipients for the settlement release, lien payoff letter, and owner-retention election, and monitor audit_trails against the 48-hour stall threshold.](/queries/e-signature-dispatch-milestone-tracking.md)
+- [Execute action_guidewire_claimcenter_file to post title release, salvage assignment, and payment milestones back into Guidewire ClaimCenter with a full audit record once evidence gates clear.](/queries/title-salvage-payment-reconciliation.md)

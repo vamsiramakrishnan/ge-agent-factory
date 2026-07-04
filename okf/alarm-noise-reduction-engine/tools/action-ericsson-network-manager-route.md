@@ -53,8 +53,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [alarm_storm_intake_deduplication](/workflow/alarm-storm-intake-deduplication.md)
+- [incident_creation_routing_audit](/workflow/incident-creation-routing-audit.md)
 
 ## Evals
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Nightly Past-Due Extraction & Plan Reconciliation](/workflow/nightly-past-due-extraction-plan-reconciliation.md)
+2. [Cure-Probability Scoring](/workflow/cure-probability-scoring.md)
+3. [Channel Eligibility & Campaign Suppression](/workflow/channel-eligibility-campaign-suppression.md)
+4. [Authority & Notice-Period Gate](/workflow/authority-notice-period-gate.md)
+5. [Reminder Dispatch, Escalation & Audit](/workflow/reminder-dispatch-escalation-audit.md)

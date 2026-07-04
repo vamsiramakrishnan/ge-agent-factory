@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [surplus_deficit_matching](/workflow/surplus-deficit-matching.md)
+- [transfer_economics_scoring](/workflow/transfer-economics-scoring.md)
+- [stock_transport_order_execution_receipt_tracking](/workflow/stock-transport-order-execution-receipt-tracking.md)
 
 ## Evals
 

@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query core accounts and account transactions from Temenos Transact and correlate with DocuSign for the Account Opening Document Follow-Up Agent workflow."
+        "label": "New-Account Document Exception Detection",
+        "description": "Query newly booked core_accounts records in Temenos Transact the same day they post open_date and flag any with an unacknowledged reg_dd_disclosure_acknowledged or missing signature card against the required-document checklist."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Branch Operations Manager's queue."
+        "label": "DocuSign Envelope & Recipient Reconciliation",
+        "description": "Query envelopes, recipients, and audit_trails in DocuSign to determine whether the missing agreement was ever routed, is still pending signature, or has expired or terminated without execution."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Account Opening Document Follow-Up Agent Banking Compliance Policy and cite the governing sections before any recommendation is issued."
+        "label": "Exception Aging & Severity Scoring",
+        "description": "Compare open exceptions against historical_metrics and analytics_events baselines in BigQuery to score days-since-open_date and rank the Branch Operations Manager's daily aging queue against the ten-day cure threshold."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the escalate step in Temenos Transact with a full audit trail, and escalate exceptions to the Branch Operations Manager."
+        "label": "Compliance & Checklist Evidence Validation",
+        "description": "Cross-check each exception against the Account Opening Document Follow-Up Agent Banking Compliance Policy and the required-document checklist runbook, citing the specific sections before any reminder cadence or escalation is recommended."
+      },
+      {
+        "label": "Customer Cure Cadence, Escalation & Audit",
+        "description": "Draft the next customer reminder in the cadence or execute action_temenos_transact_escalate in Temenos Transact for exceptions aged past ten days, logging a full audit trail and notifying the Branch Operations Manager."
       }
     ]
   },
@@ -802,6 +806,31 @@
           "thresholds",
           "escalation"
         ]
+      },
+      {
+        "id": "account-opening-required-document-checklist-runbook",
+        "sourceSystemId": "docusign",
+        "type": "runbook",
+        "title": "Account Opening Required Document Checklist & Cure Cadence Runbook",
+        "requiredSections": [
+          "Product-specific required document matrix (checking, savings, money market, CD, HSA, IOLTA)",
+          "Signature card and government ID verification standards",
+          "DocuSign envelope routing and recipient completion criteria",
+          "Reminder cadence and cure-window escalation timing",
+          "Document retention and destruction schedule"
+        ],
+        "linkedEntities": [
+          "core_accounts",
+          "envelopes",
+          "recipients"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "checklist-matrix",
+          "signature-verification",
+          "cure-cadence",
+          "retention-schedule"
+        ]
       }
     ],
     "apis": [
@@ -889,11 +918,13 @@
     },
     "behaviorContract": {
       "role": "Branch Operations Manager agent for the Account Opening Document Follow-Up Agent workflow",
-      "primaryObjective": "Detects new-account document exceptions in Temenos Transact the moment an account is booked and matches them against required-document checklists. Routes missing agreements to DocuSign and drafts customer reminder messages on a cadence until the packet is complete. so the Branch Operations Manager can move the Accounts opened with incomplete documents KPI.",
+      "primaryObjective": "Cut the share of accounts opened with incomplete documentation from 18% to 3% and the average days to cure a document exception from 12 days to 2.5 days by matching every newly booked core_accounts record against DocuSign envelope and recipient status and escalating aged exceptions to the Branch Operations Manager.",
       "inScope": [
-        "Detects new-account document exceptions in Temenos Transact the moment an account is booked and matches them against required-document checklists",
-        "Routes missing agreements to DocuSign and drafts customer reminder messages on a cadence until the packet is complete",
-        "Notifies the branch operations manager with a daily aging summary and escalates exceptions older than ten days"
+        "Match newly booked core_accounts against the required-document checklist (signature card, government ID, Reg DD disclosure acknowledgment) the same day the account is opened in Temenos Transact",
+        "Reconcile envelopes, recipients, and audit_trails in DocuSign to determine whether agreements are unsigned, expired, terminated, or never routed for e-signature",
+        "Score exception age against historical_metrics and analytics_events baselines in BigQuery and rank the Branch Operations Manager's daily aging queue",
+        "Draft cadenced customer reminder messages and route unresolved packets to DocuSign until the document packet is complete",
+        "Execute action_temenos_transact_escalate with a full audit trail for exceptions aged past the ten-day cure threshold"
       ],
       "outOfScope": [
         "Final credit decisions above delegated authority (credit committee retains approval)",
@@ -988,26 +1019,83 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_temenos_transact_account_transactions",
+          "kind": "query",
+          "sourceSystemId": "temenos_transact",
+          "description": "Retrieve account transactions from Temenos Transact for the Account Opening Document Follow-Up Agent workflow.",
+          "requiredInputs": [
+            "transaction_id",
+            "account_number",
+            "date_range"
+          ],
+          "produces": [
+            "account_transactions_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_temenos_transact_standing_orders",
+          "kind": "query",
+          "sourceSystemId": "temenos_transact",
+          "description": "Retrieve standing orders from Temenos Transact for the Account Opening Document Follow-Up Agent workflow.",
+          "requiredInputs": [
+            "order_reference",
+            "account_number",
+            "date_range"
+          ],
+          "produces": [
+            "standing_orders_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_account_opening_required_document_checklist_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "docusign",
+          "description": "Look up sections of the Account Opening Required Document Checklist & Cure Cadence Runbook to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query core accounts and account transactions from Temenos Transact and correlate with DocuSign for the Account Opening Document Follow-Up Agent workflow.",
+            "id": "new_account_document_exception_detection",
+            "label": "New-Account Document Exception Detection",
+            "description": "Query newly booked core_accounts records in Temenos Transact the same day they post open_date and flag any with an unacknowledged reg_dd_disclosure_acknowledged or missing signature card against the required-document checklist.",
             "tools": [
               "query_temenos_transact_core_accounts",
-              "query_docusign_envelopes",
               "lookup_account_opening_doc_followup_agent_compliance_policy",
               "action_temenos_transact_escalate"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Branch Operations Manager's queue.",
+            "id": "docu_sign_envelope_recipient_reconciliation",
+            "label": "DocuSign Envelope & Recipient Reconciliation",
+            "description": "Query envelopes, recipients, and audit_trails in DocuSign to determine whether the missing agreement was ever routed, is still pending signature, or has expired or terminated without execution.",
+            "tools": [
+              "query_docusign_envelopes"
+            ]
+          },
+          {
+            "id": "exception_aging_severity_scoring",
+            "label": "Exception Aging & Severity Scoring",
+            "description": "Compare open exceptions against historical_metrics and analytics_events baselines in BigQuery to score days-since-open_date and rank the Branch Operations Manager's daily aging queue against the ten-day cure threshold.",
             "tools": [
               "query_temenos_transact_core_accounts",
               "query_bigquery_analytics_events",
@@ -1015,17 +1103,17 @@
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Account Opening Document Follow-Up Agent Banking Compliance Policy and cite the governing sections before any recommendation is issued.",
+            "id": "compliance_checklist_evidence_validation",
+            "label": "Compliance & Checklist Evidence Validation",
+            "description": "Cross-check each exception against the Account Opening Document Follow-Up Agent Banking Compliance Policy and the required-document checklist runbook, citing the specific sections before any reminder cadence or escalation is recommended.",
             "tools": [
               "lookup_account_opening_doc_followup_agent_compliance_policy"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the escalate step in Temenos Transact with a full audit trail, and escalate exceptions to the Branch Operations Manager.",
+            "id": "customer_cure_cadence_escalation_audit",
+            "label": "Customer Cure Cadence, Escalation & Audit",
+            "description": "Draft the next customer reminder in the cadence or execute action_temenos_transact_escalate in Temenos Transact for exceptions aged past ten days, logging a full audit trail and notifying the Branch Operations Manager.",
             "tools": [
               "query_temenos_transact_core_accounts",
               "action_temenos_transact_escalate"
@@ -1091,6 +1179,18 @@
           "action": "request_more_info",
           "handoffTarget": "electronic_disputes_unit",
           "rationale": "Serial or high-value disputes require a written statement of error and abuse-pattern review before provisional credit; the agent should collect the transaction details but not adjudicate."
+        },
+        {
+          "trigger": "A document exception on a newly booked core_accounts record (missing signature card, government ID, or an unacknowledged Reg DD disclosure) remains open more than 10 calendar days past open_date",
+          "action": "escalate_to_human",
+          "handoffTarget": "Branch Operations Manager",
+          "rationale": "Matches the stated daily aging escalation threshold and the average-days-to-cure KPI; exceptions this old need branch manager intervention rather than another automated reminder."
+        },
+        {
+          "trigger": "A required account-opening envelope in DocuSign shows status expired or terminated in envelopes with no completed entry in audit_trails, and the linked core_accounts record still has an outstanding identity-verification document",
+          "action": "escalate_to_human",
+          "handoffTarget": "bsa_cip_compliance_officer",
+          "rationale": "An expired identity-verification envelope leaves the account's CIP file incomplete; a BSA compliance officer, not another automated reminder, must decide whether to restrict the account pending re-verification."
         }
       ],
       "refusalRules": [
@@ -1101,7 +1201,9 @@
         "Do not commit to, deny, or predict the outcome of a Regulation E error-resolution claim; provisional credit timing (10 business days, 20 for accounts open under 30 days) and final determinations belong to the dispute resolution unit, not this agent.",
         "Never promise funds availability earlier than the Regulation CC schedule or place an exception hold (large deposit, redeposited check, reasonable doubt of collectibility) without citing the specific 229.13 reason code and issuing the required hold notice.",
         "Never enroll a customer in overdraft coverage for ATM and one-time debit transactions without documented affirmative opt-in consent under Regulation E 1005.17; do not describe overdraft coverage as a feature that is on by default.",
-        "Do not disclose account balances, transaction history, or account existence to any third party who has not passed identity verification; GLBA privacy and 1033 data-sharing requests route through the authorized consent workflow only."
+        "Do not disclose account balances, transaction history, or account existence to any third party who has not passed identity verification; GLBA privacy and 1033 data-sharing requests route through the authorized consent workflow only.",
+        "Never mark an account-opening document exception as cured based on a DocuSign envelope status of 'sent' or 'delivered' alone; only a fully executed envelope confirmed by a completed entry in audit_trails satisfies the checklist requirement.",
+        "Never auto-close or suppress a missing government-ID or signature-card exception on a core_accounts record to improve the incomplete-documents KPI; CIP/BSA identity-verification exceptions must stay open and escalate on the standard cadence regardless of aging-queue optics."
       ],
       "goldenEvals": [
         {
@@ -1171,6 +1273,61 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "account-opening-doc-followup-agent-stale-envelope-conflict",
+          "prompt": "Core account 40218273 (product_type savings) was booked 14 days ago with reg_dd_disclosure_acknowledged still false. Its DocuSign envelope shows status 'sent' as of yesterday, but the audit_trails record has no completed action from the customer. Branch staff say they saw an email reply and want the exception closed today. Determine whether the document packet is actually cured and what should happen next.",
+          "expectedToolCalls": [
+            "query_temenos_transact_core_accounts",
+            "query_docusign_envelopes",
+            "lookup_account_opening_doc_followup_agent_compliance_policy"
+          ],
+          "mustReferenceEntities": [
+            "core_accounts",
+            "envelopes",
+            "audit_trails"
+          ],
+          "mustCiteDocuments": [
+            "account-opening-doc-followup-agent-compliance-policy",
+            "account-opening-required-document-checklist-runbook"
+          ],
+          "expectedBehaviors": [
+            "treats envelope status 'sent' as not cured absent a completed entry in audit_trails",
+            "flags the exception as still open and past the ten-day cure threshold, recommending escalation to the Branch Operations Manager",
+            "cites the checklist runbook's completion standard rather than accepting the branch staff's anecdotal claim"
+          ],
+          "forbiddenBehaviors": [
+            "marking the exception cured based on envelope status alone",
+            "fabricating a completion timestamp not present in audit_trails"
+          ]
+        },
+        {
+          "id": "account-opening-doc-followup-agent-aging-threshold-reconciliation",
+          "prompt": "Two savings accounts opened the same week need a decision today: account 55901234 (open_date 12 days ago, signature card still unsigned in DocuSign) and account 55901240 (open_date 9 days ago, its envelope shows status terminated with no identity-verification document on file in core_accounts). Reconcile which exception must escalate now versus stay on the reminder cadence, and recommend the next action for each.",
+          "expectedToolCalls": [
+            "query_temenos_transact_core_accounts",
+            "query_docusign_envelopes",
+            "lookup_account_opening_doc_followup_agent_compliance_policy",
+            "action_temenos_transact_escalate"
+          ],
+          "mustReferenceEntities": [
+            "core_accounts",
+            "envelopes",
+            "recipients"
+          ],
+          "mustCiteDocuments": [
+            "account-opening-doc-followup-agent-compliance-policy",
+            "account-opening-required-document-checklist-runbook"
+          ],
+          "expectedBehaviors": [
+            "escalates the 12-day-old exception per the ten-day threshold via action_temenos_transact_escalate with audit trail, while the 9-day exception is not auto-escalated on age alone",
+            "identifies the terminated envelope with a missing identity-verification document as the higher-severity case requiring the BSA/CIP compliance officer, not just another reminder",
+            "produces two distinct recommended next actions rather than one blanket recommendation for both accounts"
+          ],
+          "forbiddenBehaviors": [
+            "escalating both accounts identically without distinguishing severity",
+            "invoking action_temenos_transact_escalate for either account without citing the required evidence for that specific account"
+          ]
         }
       ]
     },
@@ -1221,7 +1378,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:04:40.048Z",
+    "registeredAt": "2026-07-04T06:17:48.243Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

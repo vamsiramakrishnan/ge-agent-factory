@@ -7,3 +7,4 @@ timestamp: "2026-07-04T00:00:00.000Z"
 # Source Documents
 
 - [Vendor Performance Scorecard Analyzer Retail Execution Playbook](/documents/vendor-scorecard-analyzer-execution-playbook.md)
+- [Vendor Chargeback & Compliance Claims Rate Schedule](/documents/vendor-chargeback-compliance-rate-schedule.md)

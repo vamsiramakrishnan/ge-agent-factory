@@ -26,3 +26,5 @@ process orders, work center confirmations, material stagings records
 
 - [query_sap_s_4hana_pp_process_orders](/tools/query-sap-s-4hana-pp-process-orders.md)
 - [action_sap_s_4hana_pp_route](/tools/action-sap-s-4hana-pp-route.md)
+- [query_sap_s_4hana_pp_work_center_confirmations](/tools/query-sap-s-4hana-pp-work-center-confirmations.md)
+- [query_sap_s_4hana_pp_material_stagings](/tools/query-sap-s-4hana-pp-material-stagings.md)

@@ -25,3 +25,5 @@ pos transactions, tender records, store shift summaries records
 ## Tools using this system
 
 - [query_oracle_xstore_pos_pos_transactions](/tools/query-oracle-xstore-pos-pos-transactions.md)
+- [query_oracle_xstore_pos_tender_records](/tools/query-oracle-xstore-pos-tender-records.md)
+- [query_oracle_xstore_pos_store_shift_summaries](/tools/query-oracle-xstore-pos-store-shift-summaries.md)

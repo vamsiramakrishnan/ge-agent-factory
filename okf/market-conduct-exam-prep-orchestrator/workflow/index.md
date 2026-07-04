@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Data Call Scoping & Record Pull](/workflow/data-call-scoping-record-pull.md)
+2. [NAIC Baseline Self-Audit](/workflow/naic-baseline-self-audit.md)
+3. [Exception Scoring & Queue Prioritization](/workflow/exception-scoring-queue-prioritization.md)
+4. [Authority & Evidence Citation Gate](/workflow/authority-evidence-citation-gate.md)
+5. [Examiner Package Assembly & Escalation](/workflow/examiner-package-assembly-escalation.md)

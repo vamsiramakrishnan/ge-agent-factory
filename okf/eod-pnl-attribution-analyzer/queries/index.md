@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query trades and positions from Murex MX.3 for the End-of-Day P&L Attribution Analyzer workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Product Control Analyst's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the End-of-Day P&L Attribution Analyzer Banking Compliance Policy and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the publish step in Murex MX.3 with a full audit trail, and escalate exceptions to the Product Control Analyst.](/queries/act-audit.md)
+- [Pull trades, positions, and risk_measures from Murex MX.3 (query_murex_mx_3_trades) for each desk and reconcile the overnight flash P&L run against the final Murex MX.3 end-of-day close before any attribution begins.](/queries/flash-to-final-p-l-capture.md)
+- [Decompose each desk's P&L move into market-factor, new-trade, and amendment buckets by pairing positions.unrealized_gain_loss against risk_measures (desk, measure_type, measure_value) from Murex MX.3.](/queries/risk-based-attribution-decomposition.md)
+- [Query analytics_events and historical_metrics in BigQuery (query_bigquery_analytics_events) to match residual, unexplained breaks against the learned break-pattern library and draft a likely-cause narrative.](/queries/break-pattern-matching-against-historical-library.md)
+- [Cross-check every proposed explanation against the End-of-Day P&L Attribution Analyzer Banking Compliance Policy and the Daily P&L Substantiation and Break Escalation Runbook (lookup_eod_pnl_attribution_analyzer_compliance_policy) before any recommendation leaves draft.](/queries/evidence-compliance-policy-gating.md)
+- [Publish the attribution pack to Looker dashboards, execute action_murex_mx_3_publish with a full audit trail, and escalate any desk whose unexplained P&L remains above threshold to the Product Control Analyst.](/queries/sign-off-publish-desk-escalation.md)

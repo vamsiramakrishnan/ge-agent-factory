@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Payment Plan Recommendation Agent
-description: "Presents the rep a ranked set of viable payment plans in real time, priced from BillingCenter and fitted to the customer's payment history in BigQuery. Recommends hardship options, due-date alignment, and fee waivers within pre-approved authority limits. so the Customer Service Representative can move the Billing call handle time KPI."
+description: "Rank viable installment payment plans for policyholders in real time by re-pricing billing_accounts, premium_invoices, and payment_plans records in Guidewire BillingCenter against BigQuery payment-history baselines, cutting Billing call handle time from 11 minutes toward the 4-minute target while holding installment plan default rate at or below 6%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/payment-plan-recomm
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:58.181Z"
+provenance_created_at: "2026-07-04T06:18:07.027Z"
 ---
 
 # Payment Plan Recommendation Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:58.181Z"
 
 - **Persona:** Customer Service Representative
 - **Department:** insurance
-- **Objective:** Presents the rep a ranked set of viable payment plans in real time, priced from BillingCenter and fitted to the customer's payment history in BigQuery. Recommends hardship options, due-date alignment, and fee waivers within pre-approved authority limits. so the Customer Service Representative can move the Billing call handle time KPI.
+- **Objective:** Rank viable installment payment plans for policyholders in real time by re-pricing billing_accounts, premium_invoices, and payment_plans records in Guidewire BillingCenter against BigQuery payment-history baselines, cutting Billing call handle time from 11 minutes toward the 4-minute target while holding installment plan default rate at or below 6%.
 
 ## KPI summary
 

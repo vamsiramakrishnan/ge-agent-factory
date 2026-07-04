@@ -53,13 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [pm_failure_history_pull](/workflow/pm-failure-history-pull.md)
+- [route_package_draft_planner_approval](/workflow/route-package-draft-planner-approval.md)
 
 ## Evals
 
 - [Run the PM Schedule Optimization Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/pm-schedule-optimization-engine-end-to-end.md)
+- [Work order WO-4512873 against asset 118204 (a_constraint, cnc_machine) is logged in Maximo as complete with no findings for the last 6 PM cycles. Recommend extending its preventive maintenance interval from quarterly to semi-annual.](/tests/pm-schedule-optimization-engine-vibration-conflict.md)
+- [The planner wants to extend the PM interval on boiler asset 103344 (criticality b_essential) based on this quarter's zero-finding maintenance_work_orders history. The most recent OSIsoft PI System sensor_readings timestamp on file is 30 hours old. Approve the extension and draft the updated route package.](/tests/pm-schedule-optimization-engine-stale-boiler-evidence.md)
 
 ## Evidence emitted
 

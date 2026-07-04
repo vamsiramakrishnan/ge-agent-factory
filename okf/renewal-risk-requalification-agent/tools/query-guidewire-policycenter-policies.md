@@ -53,12 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [renewal_book_selection_90_day_trigger](/workflow/renewal-book-selection-90-day-trigger.md)
+- [treatment_recommendation_authority_validation](/workflow/treatment-recommendation-authority-validation.md)
+- [route_audit_to_underwriter_queue](/workflow/route-audit-to-underwriter-queue.md)
 
 ## Evals
 
 - [Run the Renewal Risk Requalification Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/renewal-risk-requalification-agent-end-to-end.md)
+- [Policy POL-118820 (named insured Cascade Millwork LLC, jurisdiction_state TX) has an expiration_date 45 days out. The risk_reports record on file shows hazard_grade severe_referral_required, but report_date is 14 months old and predates the current policy term. TX carries a 60-day statutory non-renewal notice requirement. Should we route a non-renew recommendation into Guidewire PolicyCenter today?](/tests/renewal-risk-requalification-agent-stale-evidence-notice-timing.md)
 
 ## Evidence emitted
 

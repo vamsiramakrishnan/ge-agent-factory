@@ -37,3 +37,4 @@ Must cite: duck_creek_policy.policy_forms, salesforce_marketing_cloud.accounts
 # Citations
 
 - [Agency Production Performance Monitor Authority & Referral Guide](/documents/agency-production-performance-monitor-authority-guide.md)
+- [Agency Segmentation & Re-Engagement Playbook](/documents/agency-segmentation-reengagement-playbook.md)

@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_component_obsolescence_risk_monitor_sop](/tools/lookup-component-obsolescence-risk-monitor-sop.md)
 - [action_ptc_windchill_plm_recommend](/tools/action-ptc-windchill-plm-recommend.md)
+- [query_ptc_windchill_plm_bom_revisions](/tools/query-ptc-windchill-plm-bom-revisions.md)
+- [query_ptc_windchill_plm_cad_document_records](/tools/query-ptc-windchill-plm-cad-document-records.md)
+- [lookup_export_control_technical_data_handling_policy](/tools/lookup-export-control-technical-data-handling-policy.md)

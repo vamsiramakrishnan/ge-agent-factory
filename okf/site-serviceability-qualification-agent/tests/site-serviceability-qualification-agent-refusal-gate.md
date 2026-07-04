@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [multi-site-address-intake-crm-reconciliation](/queries/multi-site-address-intake-crm-reconciliation.md)
 
 ## Mechanisms to call
 

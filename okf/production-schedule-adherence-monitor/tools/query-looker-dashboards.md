@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [publish_and_shift_handover](/workflow/publish-and-shift-handover.md)
 
 ## Evals
 

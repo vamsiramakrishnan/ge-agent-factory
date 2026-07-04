@@ -26,3 +26,4 @@ tickets, change requests, incidents records
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
 - [action_servicenow_escalate](/tools/action-servicenow-escalate.md)
+- [lookup_network_slice_sla_monitor_credit_schedule](/tools/lookup-network-slice-sla-monitor-credit-schedule.md)

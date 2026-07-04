@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Demand-Supply Gap Scenario Engine"
-description: "Runs demand-shift, capacity-loss, and supplier-disruption scenarios through Kinaxis RapidResponse on request and lands results in BigQuery for comparison. Translates each gap into affected customers, SKUs, revenue, and margin rather than aggregate units. so the S&OP Manager can move the S&OP scenario turnaround KPI."
+description: "Collapse S&OP what-if scenario turnaround from 4 days to 20 minutes by running demand-shift, capacity-loss, and supplier-disruption scenarios in Kinaxis RapidResponse and translating every demand_signals-to-supply_plans gap into the specific customers, SKUs, revenue, and margin at risk, so at least $7M of the $8M in pre-quarter revenue at risk is surfaced before the executive meeting."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/demand-supply-gap-s
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:13.282Z"
+provenance_created_at: "2026-07-04T06:18:22.309Z"
 ---
 
 # Demand-Supply Gap Scenario Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:13.282Z"
 
 - **Persona:** S&OP Manager
 - **Department:** manufacturing
-- **Objective:** Runs demand-shift, capacity-loss, and supplier-disruption scenarios through Kinaxis RapidResponse on request and lands results in BigQuery for comparison. Translates each gap into affected customers, SKUs, revenue, and margin rather than aggregate units. so the S&OP Manager can move the S&OP scenario turnaround KPI.
+- **Objective:** Collapse S&OP what-if scenario turnaround from 4 days to 20 minutes by running demand-shift, capacity-loss, and supplier-disruption scenarios in Kinaxis RapidResponse and translating every demand_signals-to-supply_plans gap into the specific customers, SKUs, revenue, and margin at risk, so at least $7M of the $8M in pre-quarter revenue at risk is surfaced before the executive meeting.
 
 ## KPI summary
 

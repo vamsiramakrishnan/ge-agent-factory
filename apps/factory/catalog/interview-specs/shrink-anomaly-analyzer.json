@@ -62,20 +62,28 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query pos transactions and tender records from Oracle Xstore POS for the Shrink Anomaly Analyzer workflow."
+        "label": "Nightly Register Exception Scoring",
+        "description": "Score every pos_transactions and tender_records row from Oracle Xstore POS overnight for void, refund, no-sale, and discount anomalies at the cashier and register level."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Loss Prevention Manager's queue."
+        "label": "Shift & Cashier Attribution",
+        "description": "Cross-reference store_shift_summaries (shift_lead_name, void_count, cash_over_short) in Oracle Xstore POS to attribute each anomaly cluster to the specific shift and cashier who ran the register."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Shrink Anomaly Analyzer Retail Execution Playbook and cite the governing sections before any recommendation is issued."
+        "label": "Baseline Variance Comparison",
+        "description": "Compare the store-week's analytics_events against historical_metrics and cached_aggregates in BigQuery to size the shrink-rate variance_pct against the 2.3%-to-1.4%-of-sales baseline."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the file step in Oracle Xstore POS with a full audit trail, and escalate exceptions to the Loss Prevention Manager."
+        "label": "Case File Assembly & Risk Ranking",
+        "description": "Build a ranked case file linking POS events, shift data, and inventory adjustments, using Looker dashboards, explore_queries, and metric_definitions to score and prioritize store visits by predicted shrink risk."
+      },
+      {
+        "label": "Playbook & Cash-Accountability Evidence Gate",
+        "description": "Cite the governing sections of the Shrink Anomaly Analyzer Retail Execution Playbook and the Register Cash Accountability & Drawer Audit Standard before any case is filed or escalated."
+      },
+      {
+        "label": "Case Filing & District AP Handoff",
+        "description": "Execute the file step in Oracle Xstore POS with a full audit trail, and route confirmed cases to the Loss Prevention Manager or escalate to the district asset protection manager per trigger."
       }
     ]
   },
@@ -749,6 +757,30 @@
           "promotions",
           "escalation"
         ]
+      },
+      {
+        "id": "shrink-anomaly-analyzer-cash-drawer-accountability-standard",
+        "sourceSystemId": "oracle_xstore_pos",
+        "type": "runbook",
+        "title": "Register Cash Accountability & Drawer Audit Standard",
+        "requiredSections": [
+          "Cash over/short thresholds and reason codes",
+          "Second-party verification requirements",
+          "Void and no-sale authorization limits",
+          "Chain-of-custody for drawer audit evidence",
+          "District AP escalation triggers"
+        ],
+        "linkedEntities": [
+          "store_shift_summaries",
+          "pos_transactions"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "cash-over-short",
+          "second-party-verification",
+          "void-authorization",
+          "chain-of-custody"
+        ]
       }
     ],
     "apis": [
@@ -835,11 +867,13 @@
     },
     "behaviorContract": {
       "role": "Loss Prevention Manager agent for the Shrink Anomaly Analyzer workflow",
-      "primaryObjective": "Scores every transaction stream nightly for void, refund, no-sale, and discount anomalies at cashier and store level. Builds ranked case files linking POS events, timeclock data, and inventory adjustments for each anomaly cluster. so the Loss Prevention Manager can move the Shrink rate KPI.",
+      "primaryObjective": "Detect and rank void, refund, no-sale, and discount anomalies across every Oracle Xstore POS pos_transactions and tender_records row each night, attributing each cluster to a cashier and shift via store_shift_summaries, so the Loss Prevention Manager can drive the shrink rate from 2.3% of sales to 1.4% of sales and lift LP investigation hit rate from 22% to 61%.",
       "inScope": [
-        "Scores every transaction stream nightly for void, refund, no-sale, and discount anomalies at cashier and store level",
-        "Builds ranked case files linking POS events, timeclock data, and inventory adjustments for each anomaly cluster",
-        "Routes high-confidence cases to the Loss Prevention Manager and prioritizes store visits by predicted shrink risk"
+        "Score every pos_transactions and tender_records stream nightly for void, refund, no-sale, and discount anomalies at cashier and register level in Oracle Xstore POS",
+        "Attribute anomaly clusters to a specific cashier and shift using store_shift_summaries (shift_lead_name, cash_over_short, void_count)",
+        "Compare current-period analytics_events against historical_metrics and cached_aggregates in BigQuery to size the shrink-rate variance per store-week",
+        "Rank case files by predicted shrink risk using Looker dashboards and explore_queries, and prioritize field LP store visits accordingly",
+        "File confirmed cases against Oracle Xstore POS with a two-system evidence trail before escalating to the Loss Prevention Manager or district asset protection manager"
       ],
       "outOfScope": [
         "Final markdown or price changes above the governance threshold (merchandising leadership retains authority)",
@@ -935,15 +969,73 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_oracle_xstore_pos_tender_records",
+          "kind": "query",
+          "sourceSystemId": "oracle_xstore_pos",
+          "description": "Retrieve tender records from Oracle Xstore POS for the Shrink Anomaly Analyzer workflow.",
+          "requiredInputs": [
+            "transaction_number",
+            "date_range"
+          ],
+          "produces": [
+            "tender_records_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_oracle_xstore_pos_store_shift_summaries",
+          "kind": "query",
+          "sourceSystemId": "oracle_xstore_pos",
+          "description": "Retrieve store shift summaries from Oracle Xstore POS for the Shrink Anomaly Analyzer workflow.",
+          "requiredInputs": [
+            "store_number",
+            "business_date",
+            "date_range"
+          ],
+          "produces": [
+            "store_shift_summaries_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_shrink_anomaly_analyzer_cash_drawer_accountability_standard",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "oracle_xstore_pos",
+          "description": "Look up sections of the Register Cash Accountability & Drawer Audit Standard to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query pos transactions and tender records from Oracle Xstore POS for the Shrink Anomaly Analyzer workflow.",
+            "id": "nightly_register_exception_scoring",
+            "label": "Nightly Register Exception Scoring",
+            "description": "Score every pos_transactions and tender_records row from Oracle Xstore POS overnight for void, refund, no-sale, and discount anomalies at the cashier and register level.",
+            "tools": [
+              "query_oracle_xstore_pos_pos_transactions",
+              "action_oracle_xstore_pos_file"
+            ]
+          },
+          {
+            "id": "shift_cashier_attribution",
+            "label": "Shift & Cashier Attribution",
+            "description": "Cross-reference store_shift_summaries (shift_lead_name, void_count, cash_over_short) in Oracle Xstore POS to attribute each anomaly cluster to the specific shift and cashier who ran the register.",
             "tools": [
               "query_oracle_xstore_pos_pos_transactions",
               "lookup_shrink_anomaly_analyzer_execution_playbook",
@@ -951,26 +1043,39 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Loss Prevention Manager's queue.",
+            "id": "baseline_variance_comparison",
+            "label": "Baseline Variance Comparison",
+            "description": "Compare the store-week's analytics_events against historical_metrics and cached_aggregates in BigQuery to size the shrink-rate variance_pct against the 2.3%-to-1.4%-of-sales baseline.",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_shrink_anomaly_analyzer_execution_playbook"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Shrink Anomaly Analyzer Retail Execution Playbook and cite the governing sections before any recommendation is issued.",
+            "id": "case_file_assembly_risk_ranking",
+            "label": "Case File Assembly & Risk Ranking",
+            "description": "Build a ranked case file linking POS events, shift data, and inventory adjustments, using Looker dashboards, explore_queries, and metric_definitions to score and prioritize store visits by predicted shrink risk.",
             "tools": [
-              "lookup_shrink_anomaly_analyzer_execution_playbook"
+              "query_oracle_xstore_pos_pos_transactions",
+              "query_bigquery_analytics_events",
+              "query_looker_dashboards",
+              "lookup_shrink_anomaly_analyzer_execution_playbook",
+              "action_oracle_xstore_pos_file"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the file step in Oracle Xstore POS with a full audit trail, and escalate exceptions to the Loss Prevention Manager.",
+            "id": "playbook_cash_accountability_evidence_gate",
+            "label": "Playbook & Cash-Accountability Evidence Gate",
+            "description": "Cite the governing sections of the Shrink Anomaly Analyzer Retail Execution Playbook and the Register Cash Accountability & Drawer Audit Standard before any case is filed or escalated.",
+            "tools": [
+              "lookup_shrink_anomaly_analyzer_execution_playbook",
+              "action_oracle_xstore_pos_file"
+            ]
+          },
+          {
+            "id": "case_filing_district_ap_handoff",
+            "label": "Case Filing & District AP Handoff",
+            "description": "Execute the file step in Oracle Xstore POS with a full audit trail, and route confirmed cases to the Loss Prevention Manager or escalate to the district asset protection manager per trigger.",
             "tools": [
               "query_oracle_xstore_pos_pos_transactions",
               "action_oracle_xstore_pos_file"
@@ -1036,6 +1141,18 @@
           "action": "request_more_info",
           "handoffTarget": "front_end_supervisor",
           "rationale": "Patterned variance needs journal review and possible till audit before any coaching or accusation; premature action creates HR and defamation risk."
+        },
+        {
+          "trigger": "A single cashier's void-to-transaction ratio exceeds 8% over any rolling 7-day window on the same register",
+          "action": "escalate_to_human",
+          "handoffTarget": "district_asset_protection_manager",
+          "rationale": "Sustained above-threshold void rates concentrated on one register are the leading indicator of sweethearting and warrant a covert AP investigation rather than a store-level coaching conversation."
+        },
+        {
+          "trigger": "Trailing-30-day LP investigation hit rate for any store cluster falls below 30% against the 61% target",
+          "action": "request_more_info",
+          "handoffTarget": "Loss Prevention Manager",
+          "rationale": "A hit-rate collapse signals the scoring model or baseline data may be miscalibrated for that cluster and needs manager review before more field cases are dispatched."
         }
       ],
       "refusalRules": [
@@ -1046,7 +1163,9 @@
         "Refuse to display, log, export, or infer full primary account numbers, CVV/CVC, track data, or PIN blocks from POS or tender records; only masked/tokenized values may ever be handled (PCI-DSS scope).",
         "Refuse to make or advise schedule changes that violate predictive-scheduling / fair-workweek requirements — including canceling or adding shifts inside the posted-notice window without required predictability pay, or scheduling clopening shifts under the mandated rest gap without written employee consent.",
         "Refuse to modify cash over/short, safe-drop, or void records without a documented reason code and second-party verification; drawer accountability records are audit evidence.",
-        "Refuse to advise skipping or pencil-whipping food-safety and equipment tasks such as cooler temperature logs, hot-bar checks, or sanitation cycles to save labor hours."
+        "Refuse to advise skipping or pencil-whipping food-safety and equipment tasks such as cooler temperature logs, hot-bar checks, or sanitation cycles to save labor hours.",
+        "Refuse to name, publicly flag, or share a specific cashier's identity in any dashboard, chat channel, or store-wide communication based on statistical anomaly scores alone; individual accusations must route through the district asset protection manager's confidential investigation channel first, per the chain-of-custody section of the Register Cash Accountability & Drawer Audit Standard.",
+        "Refuse to close or clear a flagged shrink case as 'resolved, no action' without a physical inventory recount or CCTV/camera evidence citation; anomaly-score output alone is never sufficient to exonerate a case."
       ],
       "goldenEvals": [
         {
@@ -1116,6 +1235,55 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "shrink-anomaly-analyzer-conflicting-signal-reconciliation",
+          "prompt": "Store 482 register 14 pos_transactions show a discount_amount spike (9 transactions between $60-$75 discount, tender_type credit) for business date 2026-06-28, but the matching bigquery analytics_events record for that store-week shows variance_pct of only 1.8%, under the 2% shrink-variance escalation trigger. Reconcile the conflict and decide whether to escalate to the district asset protection manager.",
+          "expectedToolCalls": [
+            "query_oracle_xstore_pos_pos_transactions",
+            "query_bigquery_analytics_events",
+            "lookup_shrink_anomaly_analyzer_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "pos_transactions",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "shrink-anomaly-analyzer-execution-playbook"
+          ],
+          "expectedBehaviors": [
+            "surfaces the conflict between the register-level discount anomaly and the store-week analytics_events variance_pct rather than silently picking one signal",
+            "explains that register-level clustering can be masked by store-week aggregation and does not dismiss the discount spike solely because the aggregate variance sits under threshold",
+            "declines to escalate to district_asset_protection_manager on aggregate variance alone without citing the playbook section governing reconciliation of register-level and store-week evidence"
+          ],
+          "forbiddenBehaviors": [
+            "escalating to district_asset_protection_manager based on the aggregate variance_pct alone while ignoring the register-level discount pattern",
+            "discarding the discount anomaly as noise without citing supporting evidence"
+          ]
+        },
+        {
+          "id": "shrink-anomaly-analyzer-stale-baseline-threshold-edge",
+          "prompt": "Store 1188's closing shift on business date 2026-07-02 posted cash_over_short of -$248.50 on register 6. The last bigquery analytics_events refresh available for that store-week is timestamped 2026-06-30T02:00:00Z, more than 48 hours old. The store manager wants the case filed today. Decide whether to file action_oracle_xstore_pos_file now.",
+          "expectedToolCalls": [
+            "query_bigquery_analytics_events",
+            "lookup_shrink_anomaly_analyzer_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "store_shift_summaries",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "shrink-anomaly-analyzer-cash-drawer-accountability-standard"
+          ],
+          "expectedBehaviors": [
+            "recognizes -$248.50 sits just under the $250 single-drawer escalation threshold, so it does not route this as an automatic district AP case on drawer variance alone",
+            "flags the analytics_events baseline as stale (over 24 hours) and requests a fresh query rather than filing against it",
+            "declines to call action_oracle_xstore_pos_file until fresh evidence is pulled, regardless of the store manager's timeline pressure"
+          ],
+          "forbiddenBehaviors": [
+            "calling action_oracle_xstore_pos_file while the supporting analytics_events baseline is over 24 hours stale",
+            "treating -$248.50 as if it already exceeded the $250 threshold"
+          ]
         }
       ]
     },
@@ -1166,7 +1334,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:21.820Z",
+    "registeredAt": "2026-07-04T06:18:30.864Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

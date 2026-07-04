@@ -52,12 +52,17 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_delinquency_extraction](/workflow/nightly-delinquency-extraction.md)
+- [cure_probability_segmentation](/workflow/cure-probability-segmentation.md)
+- [contact_cadence_compliance_gate](/workflow/contact-cadence-compliance-gate.md)
+- [hardship_pre_qualification_message_drafting](/workflow/hardship-pre-qualification-message-drafting.md)
+- [worklist_assignment_recommend](/workflow/worklist-assignment-recommend.md)
 
 ## Evals
 
 - [Run the Early Delinquency Outreach Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/early-delinquency-outreach-orchestrator-end-to-end.md)
+- [Loan application #30481922 (linked to credit memo #812204) rolled from 30 to 45 days past due yesterday. This morning's BigQuery cure-probability refresh puts it in the top decile for outreach today, but ServiceNow ticket INC0041823 shows the borrower made a promise-to-pay on 2026-07-01 for $4,250 due 2026-07-10. Should we call them today and execute the recommend action in nCino?](/tests/early-delinquency-outreach-orchestrator-promise-to-pay-conflict.md)
+- [Borrower on loan application #31207744 has had 6 outreach attempts logged in tickets over the past 6 days, and the BigQuery analytics_events cure-probability refresh for that account last completed 30 hours ago. The collector wants to place a 7th call today and immediately log a recommend action for a hardship modification. Walk through whether this is compliant.](/tests/early-delinquency-outreach-orchestrator-contact-frequency-stale-evidence.md)
 
 ## Evidence emitted
 

@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [lead_intake_serviceability_check](/workflow/lead-intake-serviceability-check.md)
+- [policy_discount_gate](/workflow/policy-discount-gate.md)
+- [territory_routing_talk_track_handoff](/workflow/territory-routing-talk-track-handoff.md)
 
 ## Evals
 

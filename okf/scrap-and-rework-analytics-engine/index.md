@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Scrap and Rework Analytics Engine
-description: "Joins MES defect confirmations with SAP S/4HANA PP order costs in BigQuery nightly to attribute scrap dollars to machine, shift, material lot, and operator. Detects scrap spikes against a rolling baseline and drafts a variance explanation with the top contributing factors. so the Plant Controller can move the Scrap rate KPI."
+description: "Joins Siemens Opcenter MES production_orders, machine_events, and quality_checks with SAP S/4HANA PP process_orders and work_center_confirmations in BigQuery nightly to attribute scrap dollars to machine, shift, material lot, and operator, cutting the Scrap rate from 3.8% toward 2.1% and collapsing the Scrap variance investigation cycle from 10 days to under 1 day."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/scrap-and-rework-an
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:06.968Z"
+provenance_created_at: "2026-07-04T06:18:15.955Z"
 ---
 
 # Scrap and Rework Analytics Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:06.968Z"
 
 - **Persona:** Plant Controller
 - **Department:** manufacturing
-- **Objective:** Joins MES defect confirmations with SAP S/4HANA PP order costs in BigQuery nightly to attribute scrap dollars to machine, shift, material lot, and operator. Detects scrap spikes against a rolling baseline and drafts a variance explanation with the top contributing factors. so the Plant Controller can move the Scrap rate KPI.
+- **Objective:** Joins Siemens Opcenter MES production_orders, machine_events, and quality_checks with SAP S/4HANA PP process_orders and work_center_confirmations in BigQuery nightly to attribute scrap dollars to machine, shift, material lot, and operator, cutting the Scrap rate from 3.8% toward 2.1% and collapsing the Scrap variance investigation cycle from 10 days to under 1 day.
 
 ## KPI summary
 

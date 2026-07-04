@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Total Loss Settlement Orchestrator
-description: "Assembles the complete total loss package — valuation, lien payoff, salvage assignment, and owner-retained options — as soon as a vehicle is declared a total. Generates settlement documents and sends them for e-signature through DocuSign with automated reminders. so the Auto Claims Specialist can move the Total loss claim cycle time KPI."
+description: "Cut total loss claim cycle time from 19 days to 6 days by auto-assembling the valuation, lien payoff, salvage assignment, and title package the moment claims.claim_status flags a vehicle as a total loss, then driving DocuSign envelopes to signature and Guidewire ClaimCenter title/payment milestones to closure without rental spend creeping past the $280 target."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/total-loss-settleme
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:56.425Z"
+provenance_created_at: "2026-07-04T06:18:05.189Z"
 ---
 
 # Total Loss Settlement Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:56.425Z"
 
 - **Persona:** Auto Claims Specialist
 - **Department:** insurance
-- **Objective:** Assembles the complete total loss package — valuation, lien payoff, salvage assignment, and owner-retained options — as soon as a vehicle is declared a total. Generates settlement documents and sends them for e-signature through DocuSign with automated reminders. so the Auto Claims Specialist can move the Total loss claim cycle time KPI.
+- **Objective:** Cut total loss claim cycle time from 19 days to 6 days by auto-assembling the valuation, lien payoff, salvage assignment, and title package the moment claims.claim_status flags a vehicle as a total loss, then driving DocuSign envelopes to signature and Guidewire ClaimCenter title/payment milestones to closure without rental spend creeping past the $280 target.
 
 ## KPI summary
 

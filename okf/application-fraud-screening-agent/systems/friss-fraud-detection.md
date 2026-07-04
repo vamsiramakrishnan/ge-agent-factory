@@ -26,3 +26,6 @@ fraud screening scores, network link indicators, siu referrals records
 
 - [query_friss_fraud_detection_fraud_screening_scores](/tools/query-friss-fraud-detection-fraud-screening-scores.md)
 - [action_friss_fraud_detection_escalate](/tools/action-friss-fraud-detection-escalate.md)
+- [query_friss_fraud_detection_network_link_indicators](/tools/query-friss-fraud-detection-network-link-indicators.md)
+- [query_friss_fraud_detection_siu_referrals](/tools/query-friss-fraud-detection-siu-referrals.md)
+- [lookup_application_fraud_screening_agent_rate_evasion_playbook](/tools/lookup-application-fraud-screening-agent-rate-evasion-playbook.md)

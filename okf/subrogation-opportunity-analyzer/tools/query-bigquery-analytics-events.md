@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [recovery_likelihood_expected_value_scoring](/workflow/recovery-likelihood-expected-value-scoring.md)
 
 ## Evals
 

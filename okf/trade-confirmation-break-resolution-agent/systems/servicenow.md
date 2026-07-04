@@ -25,3 +25,4 @@ tickets, change requests, incidents records
 ## Tools using this system
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
+- [lookup_trade_confirmation_matching_sla_schedule](/tools/lookup-trade-confirmation-matching-sla-schedule.md)

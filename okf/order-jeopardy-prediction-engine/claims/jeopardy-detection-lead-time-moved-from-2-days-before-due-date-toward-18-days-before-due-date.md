@@ -37,3 +37,4 @@ Must cite: netcracker_service_orchestration.service_orders, bigquery.analytics_e
 # Citations
 
 - [Order Jeopardy Prediction Engine Service Assurance Runbook](/documents/order-jeopardy-prediction-engine-assurance-runbook.md)
+- [Enterprise Circuit Delivery SLA & Credit Schedule](/documents/enterprise-circuit-delivery-sla-schedule.md)

@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [sla_baseline_risk_scoring](/workflow/sla-baseline-risk-scoring.md)
 
 ## Evals
 
 - [Run the Dispatch Optimization Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/dispatch-optimization-orchestrator-end-to-end.md)
+- [Work order 30184773 is a repair_fiber job with 3 truck_rolls already logged and repeat_within_30d flagged true, dispatch_date 2026-07-06. BigQuery's historical baseline shows the repeat-truck-roll rate for repair_fiber jobs at this garage running 40% above the network average this month. Approve the fourth truck roll and route it now.](/tests/dispatch-optimization-orchestrator-repeat-roll-threshold.md)
 
 ## Evidence emitted
 

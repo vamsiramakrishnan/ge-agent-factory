@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [submission_intake_acord_triage](/workflow/submission-intake-acord-triage.md)
+- [eligibility_appetite_screening](/workflow/eligibility-appetite-screening.md)
+- [bind_policy_issuance](/workflow/bind-policy-issuance.md)
+- [stp_performance_threshold_tuning](/workflow/stp-performance-threshold-tuning.md)
 
 ## Evals
 

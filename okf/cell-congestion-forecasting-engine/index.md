@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Cell Congestion Forecasting Engine
-description: "The engine forecasts per-sector PRB and throughput demand weekly, blending trend, seasonality, and local event calendars. It ranks the augment backlog by predicted subscriber-experience impact and revenue at risk. so the Capacity Planner can move the Congested-cell detection lead time KPI."
+description: "Forecast per-sector PRB utilization and throughput demand from Ericsson Network Manager performance_counters trended against BigQuery historical_metrics and analytics_events, rank the augment backlog by subscriber-experience impact and revenue at risk, and drive cells above the 85% PRB utilization threshold from 11% down to 3% while pulling congested-cell detection lead time to 8 weeks ahead of customer complaints."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/cell-congestion-for
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:35.584Z"
+provenance_created_at: "2026-07-04T06:18:44.221Z"
 ---
 
 # Cell Congestion Forecasting Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:35.584Z"
 
 - **Persona:** Capacity Planner
 - **Department:** telco
-- **Objective:** The engine forecasts per-sector PRB and throughput demand weekly, blending trend, seasonality, and local event calendars. It ranks the augment backlog by predicted subscriber-experience impact and revenue at risk. so the Capacity Planner can move the Congested-cell detection lead time KPI.
+- **Objective:** Forecast per-sector PRB utilization and throughput demand from Ericsson Network Manager performance_counters trended against BigQuery historical_metrics and analytics_events, rank the augment backlog by subscriber-experience impact and revenue at risk, and drive cells above the 85% PRB utilization threshold from 11% down to 3% while pulling congested-cell detection lead time to 8 weeks ahead of customer complaints.
 
 ## KPI summary
 

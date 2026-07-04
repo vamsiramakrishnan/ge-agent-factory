@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Nonconformance Triage Agent
-description: "Classifies each new SAP QM nonconformance by defect type, severity, and affected order using the notification text and linked MES genealogy. Routes the notification to the correct disposition owner and suggests a disposition based on how materially identical cases were resolved. so the Shift Quality Lead can move the NC disposition cycle time KPI."
+description: "Triage every new SAP S/4HANA QM nonconformance_records entry within the shift it's detected by correlating inspection_lots and Opcenter MES production_orders genealogy, scoring severity and MRB exposure, and routing a cited disposition recommendation so NC disposition cycle time falls from 26 hours to 4 hours and material held in the MRB area drops from $1.2M to $380K."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/nonconformance-tria
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:08.632Z"
+provenance_created_at: "2026-07-04T06:18:17.655Z"
 ---
 
 # Nonconformance Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:08.632Z"
 
 - **Persona:** Shift Quality Lead
 - **Department:** manufacturing
-- **Objective:** Classifies each new SAP QM nonconformance by defect type, severity, and affected order using the notification text and linked MES genealogy. Routes the notification to the correct disposition owner and suggests a disposition based on how materially identical cases were resolved. so the Shift Quality Lead can move the NC disposition cycle time KPI.
+- **Objective:** Triage every new SAP S/4HANA QM nonconformance_records entry within the shift it's detected by correlating inspection_lots and Opcenter MES production_orders genealogy, scoring severity and MRB exposure, and routing a cited disposition recommendation so NC disposition cycle time falls from 26 hours to 4 hours and material held in the MRB area drops from $1.2M to $380K.
 
 ## KPI summary
 

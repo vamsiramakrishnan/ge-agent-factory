@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Production Schedule Adherence Monitor
-description: "Runs every shift to compare SAP S/4HANA PP planned orders against actual MES confirmations landed in BigQuery. Flags orders trending late, quantifies the downstream capacity and customer impact, and recommends a re-sequencing option. so the Production Scheduler can move the Schedule adherence KPI."
+description: "Detect SAP S/4HANA PP process_orders and Siemens Opcenter MES production_orders trending behind the confirmed schedule at least 3 days before their due date, quantify the downstream capacity and customer impact, and drive Schedule adherence from 78% to 93% while cutting expedite freight spend from $410K to $180K per quarter."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/production-schedule
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:05.686Z"
+provenance_created_at: "2026-07-04T06:18:14.697Z"
 ---
 
 # Production Schedule Adherence Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:05.686Z"
 
 - **Persona:** Production Scheduler
 - **Department:** manufacturing
-- **Objective:** Runs every shift to compare SAP S/4HANA PP planned orders against actual MES confirmations landed in BigQuery. Flags orders trending late, quantifies the downstream capacity and customer impact, and recommends a re-sequencing option. so the Production Scheduler can move the Schedule adherence KPI.
+- **Objective:** Detect SAP S/4HANA PP process_orders and Siemens Opcenter MES production_orders trending behind the confirmed schedule at least 3 days before their due date, quantify the downstream capacity and customer impact, and drive Schedule adherence from 78% to 93% while cutting expedite freight spend from $410K to $180K per quarter.
 
 ## KPI summary
 

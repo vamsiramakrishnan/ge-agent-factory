@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Confirmation & Booking Intake](/workflow/confirmation-booking-intake.md)
+2. [Field-Level Break Diagnosis](/workflow/field-level-break-diagnosis.md)
+3. [Aging & Severity Scoring](/workflow/aging-severity-scoring.md)
+4. [Remediation Routing](/workflow/remediation-routing.md)
+5. [Evidence-Gated Escalation & Audit](/workflow/evidence-gated-escalation-audit.md)

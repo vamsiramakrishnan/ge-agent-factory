@@ -52,11 +52,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [dispute_intake_charge_identification](/workflow/dispute-intake-charge-identification.md)
+- [contract_rate_plan_verification](/workflow/contract-rate-plan-verification.md)
+- [usage_mediation_reconciliation](/workflow/usage-mediation-reconciliation.md)
+- [root_cause_baseline_comparison](/workflow/root-cause-baseline-comparison.md)
 
 ## Evals
 
 - [Run the Bill Dispute Resolution Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/bill-dispute-resolution-agent-end-to-end.md)
+- [This is the third dispute ticket in 90 days for account_number 71048823 (Zendesk tickets 88210, 89504, 90601), all citing the same LEGACY_SHARE_10GB rate_plan_code proration line. The requested credit for the current rated_events line (event_id 604778215, $612.90) exceeds the enterprise delegation-of-authority threshold. Reconcile the pattern and resolve the current dispute.](/tests/bill-dispute-resolution-agent-repeat-dispute-doa-breach.md)
 
 ## Evidence emitted
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Market Conduct Exam Prep Orchestrator
-description: "Maintains exam-ready data marts in BigQuery mapped to NAIC market conduct standards, refreshed from PolicyCenter continuously. Runs ongoing self-audits against timeliness, disclosure, and handling standards and escalates emerging violations before regulators find them. so the Regulatory Affairs Manager can move the Exam data call fulfillment time KPI."
+description: "Compile NAIC-mapped exam-ready data marts from Guidewire PolicyCenter policies, policy_quotes, and underwriting_submissions, cross-audit them continuously against BigQuery historical_metrics and analytics_events, and assemble examiner data-call packages that cut Exam data call fulfillment time from 6 weeks to 1 week while holding unpreparedness-driven findings at or below 8% of total findings."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/market-conduct-exam
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:04.854Z"
+provenance_created_at: "2026-07-04T06:18:13.819Z"
 ---
 
 # Market Conduct Exam Prep Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:04.854Z"
 
 - **Persona:** Regulatory Affairs Manager
 - **Department:** insurance
-- **Objective:** Maintains exam-ready data marts in BigQuery mapped to NAIC market conduct standards, refreshed from PolicyCenter continuously. Runs ongoing self-audits against timeliness, disclosure, and handling standards and escalates emerging violations before regulators find them. so the Regulatory Affairs Manager can move the Exam data call fulfillment time KPI.
+- **Objective:** Compile NAIC-mapped exam-ready data marts from Guidewire PolicyCenter policies, policy_quotes, and underwriting_submissions, cross-audit them continuously against BigQuery historical_metrics and analytics_events, and assemble examiner data-call packages that cut Exam data call fulfillment time from 6 weeks to 1 week while holding unpreparedness-driven findings at or below 8% of total findings.
 
 ## KPI summary
 

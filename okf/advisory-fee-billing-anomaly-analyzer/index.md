@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Advisory Fee Billing Anomaly Analyzer
-description: "Recomputes every account's expected fee from the contracted schedule, householding rules, and billable-asset data in BigQuery. Flags discrepancies against the actual fee run with a root-cause classification before invoices are released. so the Advisory Operations Manager can move the Fee errors caught before client billing KPI."
+description: "Recompute every financial_accounts record's expected advisory fee from its client_households' contracted breakpoint schedule and householding rules before quarterly invoices release, raising fee errors caught before client billing from 35% to 96% while cutting client fee reimbursements per year from $380K toward $45K."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/advisory-fee-billin
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:50.141Z"
+provenance_created_at: "2026-07-04T06:17:58.416Z"
 ---
 
 # Advisory Fee Billing Anomaly Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:50.141Z"
 
 - **Persona:** Advisory Operations Manager
 - **Department:** banking
-- **Objective:** Recomputes every account's expected fee from the contracted schedule, householding rules, and billable-asset data in BigQuery. Flags discrepancies against the actual fee run with a root-cause classification before invoices are released. so the Advisory Operations Manager can move the Fee errors caught before client billing KPI.
+- **Objective:** Recompute every financial_accounts record's expected advisory fee from its client_households' contracted breakpoint schedule and householding rules before quarterly invoices release, raising fee errors caught before client billing from 35% to 96% while cutting client fee reimbursements per year from $380K toward $45K.
 
 ## KPI summary
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Backlog pull & duplicate merge](/workflow/backlog-pull-duplicate-merge.md)
+2. [Criticality & failure-history scoring](/workflow/criticality-failure-history-scoring.md)
+3. [Parts & crew feasibility check](/workflow/parts-crew-feasibility-check.md)
+4. [SOP-gated escalation](/workflow/sop-gated-escalation.md)
+5. [Weekly schedule proposal & audit publish](/workflow/weekly-schedule-proposal-audit-publish.md)

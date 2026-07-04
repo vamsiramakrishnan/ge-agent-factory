@@ -37,3 +37,4 @@ Must cite: ericsson_network_manager.network_alarms, bigquery.analytics_events
 # Citations
 
 - [5G Network Slice SLA Monitor Service Assurance Runbook](/documents/network-slice-sla-monitor-assurance-runbook.md)
+- [Private 5G Slice SLA Exhibit — Latency, Throughput & Availability Credit Schedule](/documents/network-slice-sla-monitor-credit-schedule.md)

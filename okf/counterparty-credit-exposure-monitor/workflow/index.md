@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Exposure & Collateral Aggregation](/workflow/exposure-collateral-aggregation.md)
+2. [Market Signal & Wrong-Way Risk Screening](/workflow/market-signal-wrong-way-risk-screening.md)
+3. [Margin Call Dispute Reconciliation](/workflow/margin-call-dispute-reconciliation.md)
+4. [Limit & Threshold Validation](/workflow/limit-threshold-validation.md)
+5. [File & Escalate](/workflow/file-escalate.md)

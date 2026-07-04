@@ -37,3 +37,4 @@ Must cite: fis_payments_hub.payment_instructions, bigquery.analytics_events
 # Citations
 
 - [Wire Exception Repair Agent Banking Compliance Policy](/documents/wire-exception-repair-agent-compliance-policy.md)
+- [Wire Cutoff & Recall Operating Playbook](/documents/wire-exception-repair-agent-cutoff-recall-playbook.md)

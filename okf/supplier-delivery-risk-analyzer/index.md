@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Supplier Delivery Risk Analyzer
-description: "Scores every open purchase order's late-delivery probability from the supplier's rolling performance, order size, and lead-time trend in BigQuery. Simulates the production impact of predicted slips through Kinaxis RapidResponse and highlights the POs worth chasing this week. so the Materials Manager can move the Supplier on-time delivery KPI."
+description: "Score every open SAP S/4HANA MM purchase_orders record against supplier rolling on-time performance and Kinaxis RapidResponse scenario_runs so the Materials Manager can lift supplier on-time delivery from 84% to 95%, take POs flagged at risk before due date from 10% to 72%, and cut safety stock held against unreliable suppliers from $3.1M to $1.9M."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/supplier-delivery-r
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:11.997Z"
+provenance_created_at: "2026-07-04T06:18:21.062Z"
 ---
 
 # Supplier Delivery Risk Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:11.997Z"
 
 - **Persona:** Materials Manager
 - **Department:** manufacturing
-- **Objective:** Scores every open purchase order's late-delivery probability from the supplier's rolling performance, order size, and lead-time trend in BigQuery. Simulates the production impact of predicted slips through Kinaxis RapidResponse and highlights the POs worth chasing this week. so the Materials Manager can move the Supplier on-time delivery KPI.
+- **Objective:** Score every open SAP S/4HANA MM purchase_orders record against supplier rolling on-time performance and Kinaxis RapidResponse scenario_runs so the Materials Manager can lift supplier on-time delivery from 84% to 95%, take POs flagged at risk before due date from 10% to 72%, and cut safety stock held against unreliable suppliers from $3.1M to $1.9M.
 
 ## KPI summary
 

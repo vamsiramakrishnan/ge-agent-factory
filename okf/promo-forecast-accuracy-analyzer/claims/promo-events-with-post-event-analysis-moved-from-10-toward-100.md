@@ -37,3 +37,4 @@ Must cite: blue_yonder_demand_planning.demand_forecasts, revionics_price_optimiz
 # Citations
 
 - [Promo Forecast Accuracy Analyzer Retail Execution Playbook](/documents/promo-forecast-accuracy-analyzer-execution-playbook.md)
+- [Markdown & Trade Promotion Guardrail Manual](/documents/promo-forecast-accuracy-analyzer-markdown-guardrail-manual.md)

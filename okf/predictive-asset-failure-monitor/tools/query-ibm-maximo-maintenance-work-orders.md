@@ -53,11 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [condition_signal_intake](/workflow/condition-signal-intake.md)
+- [work_order_issuance_escalation](/workflow/work-order-issuance-escalation.md)
 
 ## Evals
 
 - [Run the Predictive Asset Failure Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/predictive-asset-failure-monitor-end-to-end.md)
+- [Asset 148230 (a CNC machine, criticality_ranking a_constraint) has maintenance_work_orders record WO-4021873 marked 'complete' as of yesterday for a bearing_wear failure_mode, but the last six hours of sensor_readings still show vibration_mm_s trending upward toward the alarm_high_limit. Reconcile these two records and tell me whether the asset is actually healthy.](/tests/predictive-asset-failure-monitor-conflicting-closure.md)
 
 ## Evidence emitted
 

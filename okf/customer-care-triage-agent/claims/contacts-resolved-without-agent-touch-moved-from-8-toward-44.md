@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, zendesk.tickets
 # Citations
 
 - [Customer Care Triage Agent Retail Execution Playbook](/documents/customer-care-triage-agent-execution-playbook.md)
+- [Customer Care Appeasement & Return Authority Matrix](/documents/customer-care-appeasement-authority-matrix.md)

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Alarm Storm Intake & Deduplication](/workflow/alarm-storm-intake-deduplication.md)
+2. [Topology & Timing Correlation](/workflow/topology-timing-correlation.md)
+3. [Baseline Deviation & Severity Scoring](/workflow/baseline-deviation-severity-scoring.md)
+4. [Runbook-Gated Evidence Validation](/workflow/runbook-gated-evidence-validation.md)
+5. [Incident Creation, Routing & Audit](/workflow/incident-creation-routing-audit.md)

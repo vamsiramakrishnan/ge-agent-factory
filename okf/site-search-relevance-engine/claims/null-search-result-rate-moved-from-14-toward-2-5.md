@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, ga4.session_events
 # Citations
 
 - [Site Search Relevance Engine Retail Execution Playbook](/documents/site-search-relevance-engine-execution-playbook.md)
+- [Site Search Rule Governance & Synonym Standard](/documents/site-search-relevance-engine-rule-governance-standard.md)

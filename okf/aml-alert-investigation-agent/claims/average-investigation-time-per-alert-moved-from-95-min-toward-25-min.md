@@ -37,3 +37,4 @@ Must cite: nice_actimize.fraud_alerts, bigquery.analytics_events
 # Citations
 
 - [AML Alert Investigation Agent Banking Compliance Policy](/documents/aml-alert-investigation-agent-compliance-policy.md)
+- [SAR/CTR Filing & Structuring Aggregation Runbook](/documents/aml-alert-investigation-agent-sar-ctr-filing-runbook.md)

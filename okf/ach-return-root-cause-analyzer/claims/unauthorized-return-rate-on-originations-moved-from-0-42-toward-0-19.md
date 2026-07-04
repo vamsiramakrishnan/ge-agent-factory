@@ -37,3 +37,4 @@ Must cite: fis_payments_hub.payment_instructions, bigquery.analytics_events
 # Citations
 
 - [ACH Return Root Cause Analyzer Banking Compliance Policy](/documents/ach-return-root-cause-analyzer-compliance-policy.md)
+- [ACH Return Rate Risk Mitigation & Nacha Threshold Playbook](/documents/ach-return-rate-risk-mitigation-playbook.md)

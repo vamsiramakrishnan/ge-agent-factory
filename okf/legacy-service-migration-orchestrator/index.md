@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Legacy Service Migration Orchestrator
-description: "The orchestrator batches migration candidates by serving terminal, validates inventory against live network state, and sequences cutovers to minimize risk. It generates per-customer migration orders with verified service mappings and schedules them around registered change freezes. so the Provisioning Engineer can move the Migrations completed per week KPI."
+description: "Batch copper-to-fiber and TDM-to-IP migration candidates from service_orders and network_inventory_items, validate live network state, and sequence cutovers around registered change_requests freeze windows so weekly migrations completed rises from 350 to 2,100 while migration-caused outage minutes per customer falls from 38 to 4."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/legacy-service-migr
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:34.709Z"
+provenance_created_at: "2026-07-04T06:18:43.390Z"
 ---
 
 # Legacy Service Migration Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:34.709Z"
 
 - **Persona:** Provisioning Engineer
 - **Department:** telco
-- **Objective:** The orchestrator batches migration candidates by serving terminal, validates inventory against live network state, and sequences cutovers to minimize risk. It generates per-customer migration orders with verified service mappings and schedules them around registered change freezes. so the Provisioning Engineer can move the Migrations completed per week KPI.
+- **Objective:** Batch copper-to-fiber and TDM-to-IP migration candidates from service_orders and network_inventory_items, validate live network state, and sequence cutovers around registered change_requests freeze windows so weekly migrations completed rises from 350 to 2,100 while migration-caused outage minutes per customer falls from 38 to 4.
 
 ## KPI summary
 

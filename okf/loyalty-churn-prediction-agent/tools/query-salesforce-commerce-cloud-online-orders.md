@@ -52,12 +52,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [member_signal_ingestion](/workflow/member-signal-ingestion.md)
+- [treatment_incrementality_selection](/workflow/treatment-incrementality-selection.md)
+- [save_journey_activation](/workflow/save-journey-activation.md)
+- [saved_revenue_attribution_audit](/workflow/saved-revenue-attribution-audit.md)
 
 ## Evals
 
 - [Run the Loyalty Churn Prediction Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/loyalty-churn-prediction-agent-end-to-end.md)
+- [Member jane.holloway@example.com (segment_records id SR-4821) shows a 'closed' status as of 2026-06-28 in Segment, but Salesforce Commerce Cloud cart_events logs show 3 abandon_cart events between 2026-06-29 and 2026-07-02 totaling $612.40 in cart_value, and online_orders shows her last completed order (order_number 504218890) on 2026-05-14 for $184.20. Score her lapse risk for this week's run and recommend the save treatment.](/tests/loyalty-churn-prediction-agent-conflicting-engagement-signal.md)
 
 ## Evidence emitted
 

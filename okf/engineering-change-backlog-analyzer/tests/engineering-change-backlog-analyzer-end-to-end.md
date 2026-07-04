@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [backlog-ingestion-duplicate-clustering](/queries/backlog-ingestion-duplicate-clustering.md)
 
 ## Mechanisms to call
 

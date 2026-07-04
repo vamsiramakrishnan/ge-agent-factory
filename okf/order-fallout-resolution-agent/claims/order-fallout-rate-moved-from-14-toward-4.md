@@ -37,3 +37,4 @@ Must cite: netcracker_service_orchestration.service_orders, bigquery.analytics_e
 # Citations
 
 - [Order Fallout Resolution Agent Service Assurance Runbook](/documents/order-fallout-resolution-agent-assurance-runbook.md)
+- [LNP Port Timeliness & E911 Dispatchable Location Compliance Bulletin](/documents/order-fallout-resolution-agent-lnp-e911-compliance-bulletin.md)

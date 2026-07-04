@@ -37,3 +37,4 @@ Must cite: verisk_iso_erc.loss_cost_benchmarks, bigquery.analytics_events
 # Citations
 
 - [Catastrophe Exposure Rollup Engine Authority & Referral Guide](/documents/cat-exposure-rollup-engine-authority-guide.md)
+- [Zone Appetite & Cat Accumulation Control Manual](/documents/cat-exposure-rollup-engine-zone-appetite-manual.md)

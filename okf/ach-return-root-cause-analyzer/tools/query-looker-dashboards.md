@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [relationship_owner_notification_scorecard_publication](/workflow/relationship-owner-notification-scorecard-publication.md)
 
 ## Evals
 
 - [Run the ACH Return Root Cause Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/ach-return-root-cause-analyzer-end-to-end.md)
+- [Originator 'Meridian Payroll Services' (instruction_id 742118803) shows an unauthorized return rate of 0.61% in this morning's BigQuery analytics_events rollup for the week of 2026-06-29, but the Looker dashboards scorecard published yesterday still shows 0.38% for the same originator and period. Reconcile the discrepancy against FIS Payments Hub clearing_batches before notifying the relationship owner, and tell me whether we're past the Nacha 0.5% unauthorized threshold.](/tests/ach-return-root-cause-analyzer-conflicting-return-rate.md)
 
 ## Evidence emitted
 

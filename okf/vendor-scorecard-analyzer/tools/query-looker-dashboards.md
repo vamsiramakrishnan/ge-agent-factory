@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [compliance_chargeback_evidence_assembly](/workflow/compliance-chargeback-evidence-assembly.md)
+- [qbr_narrative_drafting](/workflow/qbr-narrative-drafting.md)
 
 ## Evals
 

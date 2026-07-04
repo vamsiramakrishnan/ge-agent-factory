@@ -37,3 +37,4 @@ Must cite: ptc_windchill_plm.engineering_change_orders, sap_s_4hana_pp.process_o
 # Citations
 
 - [ECO Impact Analysis Agent Standard Operating Procedure](/documents/eco-impact-analysis-agent-sop.md)
+- [Export-Controlled Technical Data Handling Policy for Engineering Changes](/documents/eco-impact-analysis-agent-export-control-policy.md)

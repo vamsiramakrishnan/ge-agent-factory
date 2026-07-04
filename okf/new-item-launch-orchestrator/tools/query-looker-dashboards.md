@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [launch_readiness_scorecard_escalation](/workflow/launch-readiness-scorecard-escalation.md)
 
 ## Evals
 
 - [Run the New Item Launch Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/new-item-launch-orchestrator-end-to-end.md)
+- [Item SKU 51204488 launched in class 'small_appliances' three days ago in Oracle Retail MFCS with item_status 'new'. The confirmed ad-break date was 2026-07-01. Merchandising ops wants to know whether shelves will be stocked for the circular — check whether the first allocation has posted and confirm the item is GMROI-compliant against its class target before we let the ad run another week.](/tests/new-item-launch-orchestrator-allocation-gmroi-check.md)
 
 ## Evidence emitted
 

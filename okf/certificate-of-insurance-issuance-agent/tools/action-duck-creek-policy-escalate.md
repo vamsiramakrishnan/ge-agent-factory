@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [holder_request_intake_policy_match](/workflow/holder-request-intake-policy-match.md)
+- [coverage_limits_verification](/workflow/coverage-limits-verification.md)
+- [acord_generation_docu_sign_delivery](/workflow/acord-generation-docu-sign-delivery.md)
+- [escalation_kpi_reconciliation](/workflow/escalation-kpi-reconciliation.md)
 
 ## Evals
 

@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [permit_gated_work_order_triage](/workflow/permit-gated-work-order-triage.md)
+- [crew_locate_readiness_check](/workflow/crew-locate-readiness-check.md)
+- [escalate_stalled_permits_audit](/workflow/escalate-stalled-permits-audit.md)
 
 ## Evals
 

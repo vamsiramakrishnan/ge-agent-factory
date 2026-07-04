@@ -26,3 +26,4 @@ purchase orders, material movements, vendors records
 
 - [query_sap_s_4hana_mm_purchase_orders](/tools/query-sap-s-4hana-mm-purchase-orders.md)
 - [action_sap_s_4hana_mm_publish](/tools/action-sap-s-4hana-mm-publish.md)
+- [lookup_supplier_delivery_risk_analyzer_vendor_screening_policy](/tools/lookup-supplier-delivery-risk-analyzer-vendor-screening-policy.md)

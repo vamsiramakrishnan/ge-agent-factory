@@ -26,3 +26,6 @@ policies, policy quotes, underwriting submissions records
 
 - [query_guidewire_policycenter_policies](/tools/query-guidewire-policycenter-policies.md)
 - [action_guidewire_policycenter_generate](/tools/action-guidewire-policycenter-generate.md)
+- [query_guidewire_policycenter_policy_quotes](/tools/query-guidewire-policycenter-policy-quotes.md)
+- [query_guidewire_policycenter_underwriting_submissions](/tools/query-guidewire-policycenter-underwriting-submissions.md)
+- [lookup_midterm_cancellation_retention_agent_save_offer_rate_manual](/tools/lookup-midterm-cancellation-retention-agent-save-offer-rate-manual.md)

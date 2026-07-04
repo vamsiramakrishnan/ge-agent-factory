@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Card Dispute Chargeback Orchestrator
-description: "Classifies incoming disputes to the correct network reason code and computes Reg E/Reg Z provisional-credit deadlines automatically. Generates the representment evidence packet from FIS Payments Hub transaction data, merchant records, and customer history. so the Dispute Resolution Specialist can move the Chargeback win rate KPI."
+description: "Move the Chargeback win rate from 48% to 71% and hold network deadline misses at or below 0.5% by classifying disputes to the correct reason code, assembling representment evidence packets from FIS Payments Hub and BigQuery records, and filing before Visa/Mastercard deadlines expire."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/card-dispute-charge
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:44.929Z"
+provenance_created_at: "2026-07-04T06:17:53.292Z"
 ---
 
 # Card Dispute Chargeback Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:44.929Z"
 
 - **Persona:** Dispute Resolution Specialist
 - **Department:** banking
-- **Objective:** Classifies incoming disputes to the correct network reason code and computes Reg E/Reg Z provisional-credit deadlines automatically. Generates the representment evidence packet from FIS Payments Hub transaction data, merchant records, and customer history. so the Dispute Resolution Specialist can move the Chargeback win rate KPI.
+- **Objective:** Move the Chargeback win rate from 48% to 71% and hold network deadline misses at or below 0.5% by classifying disputes to the correct reason code, assembling representment evidence packets from FIS Payments Hub and BigQuery records, and filing before Visa/Mastercard deadlines expire.
 
 ## KPI summary
 

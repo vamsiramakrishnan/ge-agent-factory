@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Dormant Account Remediation Agent
-description: "Scans Temenos Transact and BigQuery nightly to classify accounts by dormancy stage and applicable state escheatment rules. Generates personalized re-contact letters and creates ServiceNow tasks for accounts requiring branch follow-up. so the Deposit Operations Analyst can move the Dormant accounts remediated per month KPI."
+description: "Classify every core_accounts record crossing its state-specific dormancy trigger, reconcile account_transactions and standing_orders activity against BigQuery historical_metrics before filing, and lift Dormant accounts remediated per month from 1,200 to 4,800 while cutting escheatment filing errors from 35 to 3 per quarter."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/dormant-account-rem
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:39.910Z"
+provenance_created_at: "2026-07-04T06:17:48.099Z"
 ---
 
 # Dormant Account Remediation Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:39.910Z"
 
 - **Persona:** Deposit Operations Analyst
 - **Department:** banking
-- **Objective:** Scans Temenos Transact and BigQuery nightly to classify accounts by dormancy stage and applicable state escheatment rules. Generates personalized re-contact letters and creates ServiceNow tasks for accounts requiring branch follow-up. so the Deposit Operations Analyst can move the Dormant accounts remediated per month KPI.
+- **Objective:** Classify every core_accounts record crossing its state-specific dormancy trigger, reconcile account_transactions and standing_orders activity against BigQuery historical_metrics before filing, and lift Dormant accounts remediated per month from 1,200 to 4,800 while cutting escheatment filing errors from 35 to 3 per quarter.
 
 ## KPI summary
 

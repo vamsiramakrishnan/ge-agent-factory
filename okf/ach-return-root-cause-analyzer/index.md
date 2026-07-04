@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: ACH Return Root Cause Analyzer
-description: "Analyzes daily ACH return files from the FIS Payments Hub, clustering returns by originator, SEC code, and root cause. Notifies relationship owners when an originator trends toward the 0.5% unauthorized threshold with a projected breach date. so the ACH Operations Analyst can move the Unauthorized return rate on originations KPI."
+description: "Cluster daily ACH return codes by originator and SEC code across FIS Payments Hub payment_instructions and clearing_batches, project Nacha threshold breach dates so relationship owners intervene before the network does, and drive the unauthorized return rate on originations from 0.42% to 0.19% while cutting time-to-identify a problem originator from 3 weeks to 1 day."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/ach-return-root-cau
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:45.370Z"
+provenance_created_at: "2026-07-04T06:17:53.705Z"
 ---
 
 # ACH Return Root Cause Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:45.370Z"
 
 - **Persona:** ACH Operations Analyst
 - **Department:** banking
-- **Objective:** Analyzes daily ACH return files from the FIS Payments Hub, clustering returns by originator, SEC code, and root cause. Notifies relationship owners when an originator trends toward the 0.5% unauthorized threshold with a projected breach date. so the ACH Operations Analyst can move the Unauthorized return rate on originations KPI.
+- **Objective:** Cluster daily ACH return codes by originator and SEC code across FIS Payments Hub payment_instructions and clearing_batches, project Nacha threshold breach dates so relationship owners intervene before the network does, and drive the unauthorized return rate on originations from 0.42% to 0.19% while cutting time-to-identify a problem originator from 3 weeks to 1 day.
 
 ## KPI summary
 

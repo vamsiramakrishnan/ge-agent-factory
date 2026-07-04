@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [feedback_ticket_ingestion](/workflow/feedback-ticket-ingestion.md)
+- [revenue_return_rate_impact_scoring](/workflow/revenue-return-rate-impact-scoring.md)
+- [weekly_insights_brief_escalation](/workflow/weekly-insights-brief-escalation.md)
 
 ## Evals
 
 - [Run the Voice of Customer Insights Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/voice-of-customer-insights-analyzer-end-to-end.md)
+- [Over the past 7 days, Zendesk shows 42 tickets tagged 'software' for SKU 48213077 in product_catalog_entries referencing a checkout crash. But online_orders for order_numbers 274091200-274091850 tied to that SKU show return-rate flat at 4.2%, unchanged from the trailing 8-week BigQuery historical_metrics baseline. GA4 session_events show a 30% spike in abandon_cart events on that SKU's PDP sessions. Draft this week's insights brief section for this theme -- is it a confirmed emerging defect, and what do we tell merchandising?](/tests/voice-of-customer-insights-analyzer-conflicting-signal-reconciliation.md)
 
 ## Evidence emitted
 

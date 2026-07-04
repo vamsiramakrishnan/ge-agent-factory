@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [aging_severity_scoring](/workflow/aging-severity-scoring.md)
 
 ## Evals
 
 - [Run the Trade Confirmation Break Resolution Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/trade-confirmation-break-resolution-agent-end-to-end.md)
+- [Trade 431987650 (fx_forward, CUSIP 178452963, notional $10,050,000 with Harborview Municipal Trust) has sat pending_match for 31 days past its trade_date. Historical baselines in BigQuery for this counterparty show typical resolution inside 10 days. Decide whether to auto-escalate this or keep working it in the normal queue.](/tests/trade-confirmation-break-resolution-agent-aging-threshold-edge.md)
 
 ## Evidence emitted
 

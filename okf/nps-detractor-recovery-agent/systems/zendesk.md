@@ -25,3 +25,4 @@ tickets, macros, satisfaction scores records
 ## Tools using this system
 
 - [query_zendesk_tickets](/tools/query-zendesk-tickets.md)
+- [lookup_nps_detractor_recovery_agent_retention_offer_authorization_matrix](/tools/lookup-nps-detractor-recovery-agent-retention-offer-authorization-matrix.md)

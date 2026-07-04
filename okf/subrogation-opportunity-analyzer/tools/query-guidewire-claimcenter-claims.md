@@ -53,12 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_claim_exposure_intake](/workflow/nightly-claim-exposure-intake.md)
+- [referral_packaging_audit_close_out](/workflow/referral-packaging-audit-close-out.md)
 
 ## Evals
 
 - [Run the Subrogation Opportunity Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/subrogation-opportunity-analyzer-end-to-end.md)
+- [Claim CLM-2031558 (personal_auto, TX, loss_date 2024-07-02) closed with paid_amount $18,400 against claim_exposures coverage_code COLL_collision; the adjuster notes cite the other driver as at-fault, but reserve_lines shows no subrogation_recovery_offset entry was ever set, and Texas's statute of limitations on this loss lapses in under 60 days. Determine whether to open a subrogation referral now.](/tests/subrogation-opportunity-analyzer-near-sol-conflict.md)
+- [For claim CLM-2044210 (commercial_property, FL), claims.reserve_amount shows $62,000 but the latest reserve_lines transaction (reserve_line_id RL-88231, transaction_type reserve_increase) posted transaction_amount $58,500 under authority_level_used adjuster_25k, and claim_exposures lists demand_amount $210,000 with attorney_represented=true. Reconcile the reserve picture and decide whether this claim can proceed through automated subrogation scoring.](/tests/subrogation-opportunity-analyzer-reserve-authority-reconciliation.md)
 
 ## Evidence emitted
 

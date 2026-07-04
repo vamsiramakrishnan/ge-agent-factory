@@ -37,3 +37,4 @@ Must cite: guidewire_billingcenter.billing_accounts, bigquery.analytics_events
 # Citations
 
 - [Unapplied Cash Resolution Agent Authority & Referral Guide](/documents/unapplied-cash-resolution-agent-authority-guide.md)
+- [Cash Application Suspense Aging & Escheatment Service Level Schedule](/documents/unapplied-cash-resolution-agent-suspense-aging-sla.md)

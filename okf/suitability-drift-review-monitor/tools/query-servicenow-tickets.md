@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [service_now_review_case_triage_assignment](/workflow/service-now-review-case-triage-assignment.md)
 
 ## Evals
 

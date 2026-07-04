@@ -25,3 +25,4 @@ accounts, opportunities, campaign influence records
 ## Tools using this system
 
 - [query_salesforce_marketing_cloud_accounts](/tools/query-salesforce-marketing-cloud-accounts.md)
+- [lookup_loyalty_points_liability_redemption_policy](/tools/lookup-loyalty-points-liability-redemption-policy.md)

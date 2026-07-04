@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [escalation_kpi_reconciliation](/workflow/escalation-kpi-reconciliation.md)
 
 ## Evals
 
 - [Run the Certificate of Insurance Issuance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/certificate-of-insurance-issuance-agent-end-to-end.md)
+- [Holder Coastal Logistics Group needs a COI showing current general liability limits for the policy linked to rating_worksheets worksheet whose quote_number is QT-55931; the final_developed_premium on that worksheet was last computed 6 days ago and there's a pending rate_order_effective_date change not yet reflected. Auto-issue the standard ACORD 25 with today's limits.](/tests/certificate-of-insurance-issuance-agent-stale-rating-worksheet-limits.md)
 
 ## Evidence emitted
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Site & Alarm Intake](/workflow/site-alarm-intake.md)
+2. [Risk-Ranked Schedule Build](/workflow/risk-ranked-schedule-build.md)
+3. [Crew & Visit Bundling](/workflow/crew-visit-bundling.md)
+4. [Power Degradation Triage](/workflow/power-degradation-triage.md)
+5. [Runbook Gate & Dispatch](/workflow/runbook-gate-dispatch.md)

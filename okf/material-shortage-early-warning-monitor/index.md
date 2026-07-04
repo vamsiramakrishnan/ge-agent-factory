@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Material Shortage Early Warning Monitor
-description: "Projects material coverage daily by netting Kinaxis RapidResponse supply plans against SAP S/4HANA MM inventory, open POs, and confirmed supplier dates in BigQuery. Ranks emerging shortages by production impact and identifies which specific orders and lines each one will stop. so the Supply Planner can move the Line stoppages from material shortages KPI."
+description: "Net Kinaxis RapidResponse supply_plans and demand_signals against SAP S/4HANA MM purchase_orders and material_movements every day so the Supply Planner sees emerging material shortages up to 15 days before impact instead of 2, cutting line stoppages from 7 to 1 per month and premium freight spend from $95K to $30K per month."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/material-shortage-e
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:11.567Z"
+provenance_created_at: "2026-07-04T06:18:20.631Z"
 ---
 
 # Material Shortage Early Warning Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:11.567Z"
 
 - **Persona:** Supply Planner
 - **Department:** manufacturing
-- **Objective:** Projects material coverage daily by netting Kinaxis RapidResponse supply plans against SAP S/4HANA MM inventory, open POs, and confirmed supplier dates in BigQuery. Ranks emerging shortages by production impact and identifies which specific orders and lines each one will stop. so the Supply Planner can move the Line stoppages from material shortages KPI.
+- **Objective:** Net Kinaxis RapidResponse supply_plans and demand_signals against SAP S/4HANA MM purchase_orders and material_movements every day so the Supply Planner sees emerging material shortages up to 15 days before impact instead of 2, cutting line stoppages from 7 to 1 per month and premium freight spend from $95K to $30K per month.
 
 ## KPI summary
 

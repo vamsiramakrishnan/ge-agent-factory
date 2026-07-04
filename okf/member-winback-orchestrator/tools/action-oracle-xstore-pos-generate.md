@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [lapse_detection_reason_inference](/workflow/lapse-detection-reason-inference.md)
+- [playbook_loyalty_terms_guardrail_gating](/workflow/playbook-loyalty-terms-guardrail-gating.md)
+- [reactivation_confirmation_nurture_audit](/workflow/reactivation-confirmation-nurture-audit.md)
 
 ## Evals
 

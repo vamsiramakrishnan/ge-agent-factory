@@ -26,3 +26,6 @@ client households, financial accounts, advisory referrals records
 
 - [query_salesforce_financial_services_cloud_client_households](/tools/query-salesforce-financial-services-cloud-client-households.md)
 - [action_salesforce_financial_services_cloud_recommend](/tools/action-salesforce-financial-services-cloud-recommend.md)
+- [query_salesforce_financial_services_cloud_financial_accounts](/tools/query-salesforce-financial-services-cloud-financial-accounts.md)
+- [query_salesforce_financial_services_cloud_advisory_referrals](/tools/query-salesforce-financial-services-cloud-advisory-referrals.md)
+- [lookup_reg_bi_rollover_suitability_playbook](/tools/lookup-reg-bi-rollover-suitability-playbook.md)

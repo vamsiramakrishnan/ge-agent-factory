@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_market_conduct_exam_prep_orchestrator_authority_guide](/tools/lookup-market-conduct-exam-prep-orchestrator-authority-guide.md)
+- [lookup_naic_market_conduct_data_call_response_playbook](/tools/lookup-naic-market-conduct-data-call-response-playbook.md)

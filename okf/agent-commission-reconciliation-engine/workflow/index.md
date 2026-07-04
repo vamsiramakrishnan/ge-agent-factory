@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Commission Run Intake](/workflow/commission-run-intake.md)
+2. [Agency Rate & Chargeback Verification](/workflow/agency-rate-chargeback-verification.md)
+3. [Variance & Duplicate-Payment Detection](/workflow/variance-duplicate-payment-detection.md)
+4. [Dispute Evidence & Variance Reporting](/workflow/dispute-evidence-variance-reporting.md)
+5. [Statement Release & Audit Publish](/workflow/statement-release-audit-publish.md)

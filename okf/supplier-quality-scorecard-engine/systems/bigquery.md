@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_supplier_quality_scorecard_engine_sop](/tools/lookup-supplier-quality-scorecard-engine-sop.md)
+- [lookup_supplier_risk_classification_policy](/tools/lookup-supplier-risk-classification-policy.md)

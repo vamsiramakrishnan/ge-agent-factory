@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Application Fraud Screening Agent
-description: "Screens every application at quote and bind against FRISS device, identity, and behavior signals plus LexisNexis household and vehicle data. Flags discrepancies — garaging mismatches, undisclosed operators, recycled identities — and routes them for verification before issue. so the Underwriting Fraud Analyst can move the Material misrepresentation caught at bind KPI."
+description: "Screen 100% of new-business applications at quote and bind against FRISS Fraud Detection's fraud_screening_scores and LexisNexis Risk Solutions' prefill_datasets and mvr_records so material misrepresentation caught at bind rises from 9% to 48% while holding the false-positive hold rate on clean applications at or below 3%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/application-fraud-s
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:04.011Z"
+provenance_created_at: "2026-07-04T06:18:12.983Z"
 ---
 
 # Application Fraud Screening Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:04.011Z"
 
 - **Persona:** Underwriting Fraud Analyst
 - **Department:** insurance
-- **Objective:** Screens every application at quote and bind against FRISS device, identity, and behavior signals plus LexisNexis household and vehicle data. Flags discrepancies — garaging mismatches, undisclosed operators, recycled identities — and routes them for verification before issue. so the Underwriting Fraud Analyst can move the Material misrepresentation caught at bind KPI.
+- **Objective:** Screen 100% of new-business applications at quote and bind against FRISS Fraud Detection's fraud_screening_scores and LexisNexis Risk Solutions' prefill_datasets and mvr_records so material misrepresentation caught at bind rises from 9% to 48% while holding the false-positive hold rate on clean applications at or below 3%.
 
 ## KPI summary
 

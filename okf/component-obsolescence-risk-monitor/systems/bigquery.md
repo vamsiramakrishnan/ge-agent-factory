@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_component_obsolescence_risk_monitor_sop](/tools/lookup-component-obsolescence-risk-monitor-sop.md)
+- [lookup_export_control_technical_data_handling_policy](/tools/lookup-export-control-technical-data-handling-policy.md)

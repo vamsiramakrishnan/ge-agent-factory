@@ -26,3 +26,6 @@ field work orders, technician schedules, service appointments records
 
 - [query_oracle_field_service_field_work_orders](/tools/query-oracle-field-service-field-work-orders.md)
 - [action_oracle_field_service_file](/tools/action-oracle-field-service-file.md)
+- [query_oracle_field_service_technician_schedules](/tools/query-oracle-field-service-technician-schedules.md)
+- [query_oracle_field_service_service_appointments](/tools/query-oracle-field-service-service-appointments.md)
+- [lookup_truck_roll_avoidance_agent_materials_skill_match_schedule](/tools/lookup-truck-roll-avoidance-agent-materials-skill-match-schedule.md)

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Policyholder Correspondence Drafting Agent
-description: "Drafts personalized correspondence grounded in the customer's actual Duck Creek policy forms, endorsements, and Zendesk interaction history. Checks every draft against approved coverage-interpretation language and plain-language readability standards before it reaches review. so the Customer Service Team Lead can move the Written inquiry response time KPI."
+description: "Cut written inquiry response time from 3.2 days to 4 hours and correspondence requiring supervisor rewrite from 22% to 4% by drafting every coverage-explanation and complaint-response letter directly from the policyholder's Duck Creek policy_forms, endorsement_records, and Zendesk tickets, with every exclusion citation validated against the Authority & Referral Guide before it reaches the Customer Service Team Lead's one-pass review."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/policyholder-corres
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:00.259Z"
+provenance_created_at: "2026-07-04T06:18:09.185Z"
 ---
 
 # Policyholder Correspondence Drafting Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:00.259Z"
 
 - **Persona:** Customer Service Team Lead
 - **Department:** insurance
-- **Objective:** Drafts personalized correspondence grounded in the customer's actual Duck Creek policy forms, endorsements, and Zendesk interaction history. Checks every draft against approved coverage-interpretation language and plain-language readability standards before it reaches review. so the Customer Service Team Lead can move the Written inquiry response time KPI.
+- **Objective:** Cut written inquiry response time from 3.2 days to 4 hours and correspondence requiring supervisor rewrite from 22% to 4% by drafting every coverage-explanation and complaint-response letter directly from the policyholder's Duck Creek policy_forms, endorsement_records, and Zendesk tickets, with every exclusion citation validated against the Authority & Referral Guide before it reaches the Customer Service Team Lead's one-pass review.
 
 ## KPI summary
 

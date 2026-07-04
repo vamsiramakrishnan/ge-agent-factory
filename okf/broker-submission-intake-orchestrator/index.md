@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Broker Submission Intake Orchestrator
-description: "Parses ACORD forms, loss runs, and SOV spreadsheets and creates structured submission records in Duck Creek Policy automatically. Detects missing or inconsistent fields and generates a single consolidated information request to the broker, including a DocuSign envelope for unsigned forms. so the Underwriting Assistant can move the Submission data entry time KPI."
+description: "Convert broker-submitted ACORD applications, loss runs, and SOV schedules into structured, evidence-cited Duck Creek Policy submission records, cutting submission data entry time from 45 minutes to 4 minutes per submission and missing-information follow-up cycles from 2.7 to 0.8 per submission while holding intake data accuracy at 99.2%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/broker-submission-i
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:53.105Z"
+provenance_created_at: "2026-07-04T06:18:01.419Z"
 ---
 
 # Broker Submission Intake Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:53.105Z"
 
 - **Persona:** Underwriting Assistant
 - **Department:** insurance
-- **Objective:** Parses ACORD forms, loss runs, and SOV spreadsheets and creates structured submission records in Duck Creek Policy automatically. Detects missing or inconsistent fields and generates a single consolidated information request to the broker, including a DocuSign envelope for unsigned forms. so the Underwriting Assistant can move the Submission data entry time KPI.
+- **Objective:** Convert broker-submitted ACORD applications, loss runs, and SOV schedules into structured, evidence-cited Duck Creek Policy submission records, cutting submission data entry time from 45 minutes to 4 minutes per submission and missing-information follow-up cycles from 2.7 to 0.8 per submission while holding intake data accuracy at 99.2%.
 
 ## KPI summary
 

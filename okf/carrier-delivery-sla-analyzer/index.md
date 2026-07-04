@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Carrier Delivery SLA Analyzer
-description: "Audits every carrier invoice against contract rate cards and delivery scans in BigQuery. Drafts dispute claims for late deliveries and overbilling with shipment-level evidence attached. so the Transportation Manager can move the On-time delivery rate KPI."
+description: "Reconcile every carrier invoice against contracted rate cards and delivery scans captured in warehouse_orders and pick_tasks so the on-time delivery rate climbs from 89% to 97% and the carrier claim recovery cycle compresses from 45 days to 7 days, with every disputed charge cited against BigQuery baselines before a dispute claim or lane reassignment is drafted."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/carrier-delivery-sl
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:21.689Z"
+provenance_created_at: "2026-07-04T06:18:30.719Z"
 ---
 
 # Carrier Delivery SLA Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:21.689Z"
 
 - **Persona:** Transportation Manager
 - **Department:** retail
-- **Objective:** Audits every carrier invoice against contract rate cards and delivery scans in BigQuery. Drafts dispute claims for late deliveries and overbilling with shipment-level evidence attached. so the Transportation Manager can move the On-time delivery rate KPI.
+- **Objective:** Reconcile every carrier invoice against contracted rate cards and delivery scans captured in warehouse_orders and pick_tasks so the on-time delivery rate climbs from 89% to 97% and the carrier claim recovery cycle compresses from 45 days to 7 days, with every disputed charge cited against BigQuery baselines before a dispute claim or lane reassignment is drafted.
 
 ## KPI summary
 

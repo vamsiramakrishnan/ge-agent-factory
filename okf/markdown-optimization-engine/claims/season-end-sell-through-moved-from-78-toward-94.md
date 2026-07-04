@@ -37,3 +37,4 @@ Must cite: revionics_price_optimization.price_recommendations, oracle_retail_mfc
 # Citations
 
 - [Markdown Optimization Engine Retail Execution Playbook](/documents/markdown-optimization-engine-execution-playbook.md)
+- [Vendor Minimum Advertised Price (MAP) & Unit Pricing Compliance Bulletin](/documents/markdown-optimization-engine-map-compliance-bulletin.md)

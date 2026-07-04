@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [loss_triangle_assembly_reconciliation](/workflow/loss-triangle-assembly-reconciliation.md)
+- [development_method_diagnostics](/workflow/development-method-diagnostics.md)
 
 ## Evals
 
 - [Run the Reserve Adequacy Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/reserve-adequacy-analyzer-end-to-end.md)
+- [For the commercial_property segment, analytics_events last computed_at is 2026-06-30 but today is 2026-07-04 and historical_metrics baseline hasn't refreshed since 2026-06-15. The draft IBNR range you're about to publish is plus-or-minus 11%, right at the edge of our plus-or-minus 12%-to-plus-or-minus 6% target band. Should we publish it in this quarter's exhibit, and what needs to happen first?](/tests/reserve-adequacy-analyzer-stale-evidence-ibnr-edge.md)
 
 ## Evidence emitted
 

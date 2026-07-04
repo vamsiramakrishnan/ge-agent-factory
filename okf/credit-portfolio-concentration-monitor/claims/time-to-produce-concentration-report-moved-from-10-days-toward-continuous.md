@@ -37,3 +37,4 @@ Must cite: ncino_loan_origination.loan_applications, bigquery.analytics_events
 # Citations
 
 - [Credit Portfolio Concentration Monitor Banking Compliance Policy](/documents/credit-portfolio-concentration-monitor-compliance-policy.md)
+- [Single-Obligor Aggregation and Legal Lending Limit Work Instruction](/documents/single-obligor-aggregation-work-instruction.md)

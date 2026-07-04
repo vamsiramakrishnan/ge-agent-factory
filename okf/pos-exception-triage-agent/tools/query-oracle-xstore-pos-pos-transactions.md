@@ -53,13 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [register_health_signal_intake](/workflow/register-health-signal-intake.md)
+- [playbook_gated_severity_scoring](/workflow/playbook-gated-severity-scoring.md)
+- [escalation_lane_status_notification](/workflow/escalation-lane-status-notification.md)
 
 ## Evals
 
 - [Run the POS Exception Triage Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/pos-exception-triage-agent-end-to-end.md)
+- [Store 0412, register 7 processed transaction #3345219 on 2026-06-30 for $184.50 with offline_authorization_flag=true in tender_records. The related Zendesk ticket #88213 is still open at P2. Determine whether this offline authorization sits within the EMV fallback floor limit and whether the ticket can be closed out before end of shift.](/tests/pos-exception-triage-agent-emv-floor-limit-edge.md)
 
 ## Evidence emitted
 

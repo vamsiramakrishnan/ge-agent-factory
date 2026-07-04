@@ -25,3 +25,4 @@ Historical baselines, analytics events, and KPI aggregates
 ## Tools using this system
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [lookup_site_search_relevance_engine_rule_governance_standard](/tools/lookup-site-search-relevance-engine-rule-governance-standard.md)

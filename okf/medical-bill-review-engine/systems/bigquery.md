@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_medical_bill_review_engine_authority_guide](/tools/lookup-medical-bill-review-engine-authority-guide.md)
+- [lookup_medical_bill_review_engine_fee_schedule_playbook](/tools/lookup-medical-bill-review-engine-fee-schedule-playbook.md)

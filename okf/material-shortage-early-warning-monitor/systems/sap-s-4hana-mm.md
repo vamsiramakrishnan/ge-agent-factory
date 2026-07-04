@@ -26,3 +26,4 @@ purchase orders, material movements, vendors records
 
 - [query_sap_s_4hana_mm_purchase_orders](/tools/query-sap-s-4hana-mm-purchase-orders.md)
 - [action_sap_s_4hana_mm_draft](/tools/action-sap-s-4hana-mm-draft.md)
+- [lookup_expedite_allocation_authority_matrix](/tools/lookup-expedite-allocation-authority-matrix.md)

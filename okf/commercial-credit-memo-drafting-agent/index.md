@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Commercial Credit Memo Drafting Agent
-description: "Assembles borrower financial spreads, global exposure, and collateral positions from nCino and BigQuery into the bank's memo template. Drafts the narrative sections including industry outlook, repayment analysis, and risk mitigants for analyst review. so the Commercial Credit Analyst can move the Time to first-draft credit memo KPI."
+description: "Assemble borrower financial spreads, global exposure, and collateral positions from nCino Loan Origination's loan_applications and credit_memos into a committee-ready draft memo, cutting time to first-draft credit memo from 3 days to 45 minutes while lifting deals underwritten per analyst per month from 6 to 15."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/commercial-credit-m
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:42.379Z"
+provenance_created_at: "2026-07-04T06:17:50.712Z"
 ---
 
 # Commercial Credit Memo Drafting Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:42.379Z"
 
 - **Persona:** Commercial Credit Analyst
 - **Department:** banking
-- **Objective:** Assembles borrower financial spreads, global exposure, and collateral positions from nCino and BigQuery into the bank's memo template. Drafts the narrative sections including industry outlook, repayment analysis, and risk mitigants for analyst review. so the Commercial Credit Analyst can move the Time to first-draft credit memo KPI.
+- **Objective:** Assemble borrower financial spreads, global exposure, and collateral positions from nCino Loan Origination's loan_applications and credit_memos into a committee-ready draft memo, cutting time to first-draft credit memo from 3 days to 45 minutes while lifting deals underwritten per analyst per month from 6 to 15.
 
 ## KPI summary
 

@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_qm.inspection_lots, servicenow.tickets
 # Citations
 
 - [CAPA Orchestration Agent Standard Operating Procedure](/documents/capa-orchestration-agent-sop.md)
+- [Nonconformance Disposition & Material Review Board Authority Matrix](/documents/nonconformance-disposition-mrb-authority-matrix.md)

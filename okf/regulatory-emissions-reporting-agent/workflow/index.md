@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Continuous Emissions & Permit Data Pull](/workflow/continuous-emissions-permit-data-pull.md)
+2. [Rolling-Average Threshold Screening](/workflow/rolling-average-threshold-screening.md)
+3. [Exceedance & Downtime Reconciliation](/workflow/exceedance-downtime-reconciliation.md)
+4. [SOP & Rate Manual Evidence Gate](/workflow/sop-rate-manual-evidence-gate.md)
+5. [Draft Submission & Audit Trail](/workflow/draft-submission-audit-trail.md)

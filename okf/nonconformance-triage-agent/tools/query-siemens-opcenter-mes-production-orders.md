@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [mes_genealogy_correlation](/workflow/mes-genealogy-correlation.md)
 
 ## Evals
 
 - [Run the Nonconformance Triage Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/nonconformance-triage-agent-end-to-end.md)
+- [NC 642118 and NC 642305 both reference production order 1483207 but nonconformance_records shows defect_code dimensional for one and contamination for the other, both detected within the last two shifts. Reconcile these against inspection_lots and the Opcenter MES production_orders genealogy and tell me whether they're the same escape or two separate issues before I brief the plant manager.](/tests/nonconformance-triage-agent-conflicting-nc-reconciliation.md)
 
 ## Evidence emitted
 

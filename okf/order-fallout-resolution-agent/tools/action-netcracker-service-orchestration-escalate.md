@@ -53,9 +53,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [fallout_queue_intake_correlation](/workflow/fallout-queue-intake-correlation.md)
+- [baseline_benchmarking](/workflow/baseline-benchmarking.md)
+- [auto_remediation_replay](/workflow/auto-remediation-replay.md)
+- [runbook_gated_escalation_review](/workflow/runbook-gated-escalation-review.md)
+- [escalate_audit](/workflow/escalate-audit.md)
 
 ## Evals
 

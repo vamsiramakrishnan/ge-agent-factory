@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [non_renewal_candidate_identification](/workflow/non-renewal-candidate-identification.md)
+- [notice_drafting_citation_validation](/workflow/notice-drafting-citation-validation.md)
 
 ## Evals
 

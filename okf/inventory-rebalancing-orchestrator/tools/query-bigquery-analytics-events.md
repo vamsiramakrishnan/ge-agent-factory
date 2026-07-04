@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [surplus_deficit_matching](/workflow/surplus-deficit-matching.md)
+- [transfer_economics_scoring](/workflow/transfer-economics-scoring.md)
 
 ## Evals
 

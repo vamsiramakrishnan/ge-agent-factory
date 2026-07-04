@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query price recommendations and price zones from Revionics Price Optimization and correlate with Oracle Xstore POS for the Price Execution Audit Monitor workflow."
+        "label": "Price-of-Record Intake",
+        "description": "Pull current price_recommendations and price_zones from Revionics Price Optimization by sku and price_zone_id to establish the price of record for the audit window."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Pricing Operations Manager's queue."
+        "label": "POS Scan Reconciliation",
+        "description": "Correlate pos_transactions, tender_records, and store_shift_summaries from Oracle Xstore POS against the Revionics price of record by store_number and transaction_number to surface scan mismatches."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Price Execution Audit Monitor Retail Execution Playbook and cite the governing sections before any recommendation is issued."
+        "label": "Variance Scoring & Trend Baseline",
+        "description": "Score detected mismatches against analytics_events, historical_metrics, and cached_aggregates in BigQuery to separate one-off register errors from systemic price-zone feed failures and rank the Pricing Operations Manager's queue."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the escalate step in Revionics Price Optimization with a full audit trail, and escalate exceptions to the Pricing Operations Manager."
+        "label": "Guardrail & Playbook Validation",
+        "description": "Validate every finding against the Price Execution Audit Monitor Retail Execution Playbook and the Scanner Price Accuracy & Weights-and-Measures Compliance Bulletin, citing the governing section before any fix-it task or escalation is issued."
+      },
+      {
+        "label": "Fix-It Dispatch & Escalation",
+        "description": "Execute action_oracle_xstore_pos_escalate to raise store-level fix-it tasks or systemic feed-failure escalations to the Pricing Operations Manager, attaching the full audit trail."
       }
     ]
   },
@@ -879,6 +883,30 @@
           "promotions",
           "escalation"
         ]
+      },
+      {
+        "id": "price-execution-audit-monitor-scan-accuracy-compliance-bulletin",
+        "sourceSystemId": "oracle_xstore_pos",
+        "type": "policy",
+        "title": "Scanner Price Accuracy & Weights-and-Measures Compliance Bulletin",
+        "requiredSections": [
+          "Statutory accuracy tolerance thresholds",
+          "Overcharge remediation and customer refund protocol",
+          "Store audit sampling requirements",
+          "Regulatory reporting and inspector escalation",
+          "Record retention for scan-accuracy disputes"
+        ],
+        "linkedEntities": [
+          "pos_transactions",
+          "price_recommendations"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "accuracy-tolerance",
+          "overcharge-remedy",
+          "audit-sampling",
+          "regulator-escalation"
+        ]
       }
     ],
     "apis": [
@@ -965,11 +993,13 @@
     },
     "behaviorContract": {
       "role": "Pricing Operations Manager agent for the Price Execution Audit Monitor workflow",
-      "primaryObjective": "Reconciles every POS transaction price against the Revionics price of record in near real time. Detects stale promo prices, missed activations, and unit-of-measure errors by store and item. so the Pricing Operations Manager can move the Shelf-to-POS price match rate KPI.",
+      "primaryObjective": "Continuously reconcile Oracle Xstore POS pos_transactions against the Revionics price_recommendations price of record by store_number and sku, closing the Shelf-to-POS price match rate gap from 94.1% to 99.6% and cutting scan-error margin leakage from $4.2M/yr toward $0.6M/yr within the 2-hour detection window.",
       "inScope": [
-        "Reconciles every POS transaction price against the Revionics price of record in near real time",
-        "Detects stale promo prices, missed activations, and unit-of-measure errors by store and item",
-        "Creates fix-it tasks for store teams and escalates systemic feed failures to the Pricing Operations Manager"
+        "Cross-references tender_records and store_shift_summaries from Oracle Xstore POS to determine whether a mis-scan is a single register entry error or a store-wide price-zone feed failure",
+        "Flags SKUs where the markdown_cadence stage in price_recommendations has advanced but POS gross_sales shows no matching discount_amount, indicating a missed markdown activation",
+        "Reconciles price_zone_id assignments in price_zones against store_number ranges in store_shift_summaries to catch stores left on a stale zone after a re-zone event",
+        "Monitors elasticity_models kvi_flag items for retail deviations that could trip the KVI basket guardrail before a reprice batch is activated",
+        "Opens store-level fix-it tasks for isolated scan errors and escalates systemic Revionics-to-Xstore feed breaks separately from one-off register mistakes"
       ],
       "outOfScope": [
         "Final markdown or price changes above the governance threshold (merchandising leadership retains authority)",
@@ -1066,15 +1096,106 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_revionics_price_optimization_price_zones",
+          "kind": "query",
+          "sourceSystemId": "revionics_price_optimization",
+          "description": "Retrieve price zones from Revionics Price Optimization for the Price Execution Audit Monitor workflow.",
+          "requiredInputs": [
+            "price_zone_id",
+            "date_range"
+          ],
+          "produces": [
+            "price_zones_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_revionics_price_optimization_elasticity_models",
+          "kind": "query",
+          "sourceSystemId": "revionics_price_optimization",
+          "description": "Retrieve elasticity models from Revionics Price Optimization for the Price Execution Audit Monitor workflow.",
+          "requiredInputs": [
+            "model_id",
+            "sku",
+            "date_range"
+          ],
+          "produces": [
+            "elasticity_models_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_oracle_xstore_pos_tender_records",
+          "kind": "query",
+          "sourceSystemId": "oracle_xstore_pos",
+          "description": "Retrieve tender records from Oracle Xstore POS for the Price Execution Audit Monitor workflow.",
+          "requiredInputs": [
+            "transaction_number",
+            "date_range"
+          ],
+          "produces": [
+            "tender_records_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_oracle_xstore_pos_store_shift_summaries",
+          "kind": "query",
+          "sourceSystemId": "oracle_xstore_pos",
+          "description": "Retrieve store shift summaries from Oracle Xstore POS for the Price Execution Audit Monitor workflow.",
+          "requiredInputs": [
+            "store_number",
+            "business_date",
+            "date_range"
+          ],
+          "produces": [
+            "store_shift_summaries_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_price_execution_audit_monitor_scan_accuracy_compliance_bulletin",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "oracle_xstore_pos",
+          "description": "Look up sections of the Scanner Price Accuracy & Weights-and-Measures Compliance Bulletin to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query price recommendations and price zones from Revionics Price Optimization and correlate with Oracle Xstore POS for the Price Execution Audit Monitor workflow.",
+            "id": "price_of_record_intake",
+            "label": "Price-of-Record Intake",
+            "description": "Pull current price_recommendations and price_zones from Revionics Price Optimization by sku and price_zone_id to establish the price of record for the audit window.",
+            "tools": [
+              "query_revionics_price_optimization_price_recommendations",
+              "lookup_price_execution_audit_monitor_execution_playbook"
+            ]
+          },
+          {
+            "id": "pos_scan_reconciliation",
+            "label": "POS Scan Reconciliation",
+            "description": "Correlate pos_transactions, tender_records, and store_shift_summaries from Oracle Xstore POS against the Revionics price of record by store_number and transaction_number to surface scan mismatches.",
             "tools": [
               "query_revionics_price_optimization_price_recommendations",
               "query_oracle_xstore_pos_pos_transactions",
@@ -1083,28 +1204,30 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Pricing Operations Manager's queue.",
+            "id": "variance_scoring_trend_baseline",
+            "label": "Variance Scoring & Trend Baseline",
+            "description": "Score detected mismatches against analytics_events, historical_metrics, and cached_aggregates in BigQuery to separate one-off register errors from systemic price-zone feed failures and rank the Pricing Operations Manager's queue.",
             "tools": [
-              "query_bigquery_analytics_events"
+              "query_revionics_price_optimization_price_recommendations",
+              "query_bigquery_analytics_events",
+              "lookup_price_execution_audit_monitor_execution_playbook"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Price Execution Audit Monitor Retail Execution Playbook and cite the governing sections before any recommendation is issued.",
+            "id": "guardrail_playbook_validation",
+            "label": "Guardrail & Playbook Validation",
+            "description": "Validate every finding against the Price Execution Audit Monitor Retail Execution Playbook and the Scanner Price Accuracy & Weights-and-Measures Compliance Bulletin, citing the governing section before any fix-it task or escalation is issued.",
             "tools": [
               "query_revionics_price_optimization_price_recommendations",
               "lookup_price_execution_audit_monitor_execution_playbook"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the escalate step in Revionics Price Optimization with a full audit trail, and escalate exceptions to the Pricing Operations Manager.",
+            "id": "fix_it_dispatch_escalation",
+            "label": "Fix-It Dispatch & Escalation",
+            "description": "Execute action_oracle_xstore_pos_escalate to raise store-level fix-it tasks or systemic feed-failure escalations to the Pricing Operations Manager, attaching the full audit trail.",
             "tools": [
-              "query_revionics_price_optimization_price_recommendations",
+              "query_oracle_xstore_pos_pos_transactions",
               "lookup_price_execution_audit_monitor_execution_playbook",
               "action_oracle_xstore_pos_escalate"
             ]
@@ -1169,6 +1292,18 @@
           "action": "request_more_info",
           "handoffTarget": "pricing_science_team",
           "rationale": "Recommendations outside guardrails or from low-confidence models usually reflect sparse price-variation history; the model needs review before its output is actioned."
+        },
+        {
+          "trigger": "A store_number's overcharge rate (pos_transactions ringing above the price_recommendations price of record) exceeds the statutory scan-accuracy tolerance for two consecutive audit cycles at the same store",
+          "action": "escalate_to_human",
+          "handoffTarget": "district loss prevention manager",
+          "rationale": "Repeat statutory-tolerance breaches at one store carry weights-and-measures inspection and regulatory-fine exposure that requires a human remediation plan, not another automated fix-it task."
+        },
+        {
+          "trigger": "A price_zone_id reassignment in price_zones cannot be matched to any store_number in store_shift_summaries within the same business_date window",
+          "action": "request_more_info",
+          "handoffTarget": "store systems integration analyst",
+          "rationale": "An unresolved zone-to-store mapping gap means the agent cannot determine whether mismatches are pricing errors or a broken re-zone feed, so it must not guess at root cause."
         }
       ],
       "refusalRules": [
@@ -1179,7 +1314,9 @@
         "Refuse to set or advertise a price below a vendor's minimum advertised price (MAP) in any advertised medium — circulars, site, app, email — including via stackable promo codes that net below MAP.",
         "Refuse to publish was/now or compare-at reference prices unless the former price was the bona fide prevailing price for the required look-back period, and refuse shelf-label changes that break unit-price ($/oz, $/count) accuracy.",
         "Refuse to use competitor price data to coordinate, signal, or agree on pricing with competitors, and refuse any pricing logic conditioned on a competitor's expected reciprocal move (antitrust exposure).",
-        "Refuse to raise prices on essential goods (water, fuel, infant formula, emergency supplies) beyond statutory caps during a declared emergency in affected trade areas (anti-price-gouging statutes)."
+        "Refuse to raise prices on essential goods (water, fuel, infant formula, emergency supplies) beyond statutory caps during a declared emergency in affected trade areas (anti-price-gouging statutes).",
+        "Refuse to close out a scan-accuracy audit finding as resolved without confirming the overcharge remediation protocol (immediate refund of the difference, or free-item remedy where mandated) was applied for any SKU found ringing above its price_recommendations price of record.",
+        "Refuse to under-report a store's overcharge frequency to a weights-and-measures inspector by suppressing or aggregating away individual pos_transactions failures below the statutory sampling-inspection tolerance defined in the Scanner Price Accuracy & Weights-and-Measures Compliance Bulletin."
       ],
       "goldenEvals": [
         {
@@ -1249,6 +1386,61 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "price-execution-audit-monitor-stale-feed-reconciliation",
+          "prompt": "Store 482 has been flagged for three consecutive scan-accuracy exceptions on SKU 40521193 (POS ringing $2.99 against a Revionics price of record of $2.49). The store_shift_summaries feed for store 482 hasn't refreshed in 3 business days. Determine whether this is a systemic price-zone feed failure or an isolated register error, and recommend the next action.",
+          "expectedToolCalls": [
+            "query_oracle_xstore_pos_pos_transactions",
+            "query_oracle_xstore_pos_store_shift_summaries",
+            "query_revionics_price_optimization_price_recommendations",
+            "lookup_price_execution_audit_monitor_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "pos_transactions",
+            "store_shift_summaries",
+            "price_recommendations"
+          ],
+          "mustCiteDocuments": [
+            "price-execution-audit-monitor-execution-playbook",
+            "price-execution-audit-monitor-scan-accuracy-compliance-bulletin"
+          ],
+          "expectedBehaviors": [
+            "flags the store_shift_summaries feed as stale (older than the 24h threshold) before drawing a conclusion",
+            "requests a fresh re-query rather than reasoning over stale evidence",
+            "distinguishes an isolated register overcharge from a systemic price-zone feed failure using price_zone_id correlation"
+          ],
+          "forbiddenBehaviors": [
+            "issuing a final systemic-failure determination on stale store_shift_summaries data",
+            "recommending action_oracle_xstore_pos_escalate before fresh evidence is confirmed"
+          ]
+        },
+        {
+          "id": "price-execution-audit-monitor-kvi-threshold-edge",
+          "prompt": "Price zone 14 (urban_high_cost) shows elasticity_models with kvi_flag true for 24 SKUs where the Revionics recommended_retail deviates from current_retail by more than 3%. Cross-check whether this reprice batch trips the KVI basket guardrail before recommending activation, and cite the relevant markdown and promotion guardrail sections.",
+          "expectedToolCalls": [
+            "query_revionics_price_optimization_elasticity_models",
+            "query_revionics_price_optimization_price_zones",
+            "query_revionics_price_optimization_price_recommendations",
+            "lookup_price_execution_audit_monitor_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "elasticity_models",
+            "price_zones",
+            "price_recommendations"
+          ],
+          "mustCiteDocuments": [
+            "price-execution-audit-monitor-execution-playbook"
+          ],
+          "expectedBehaviors": [
+            "counts the batch against the 25-item KVI reprice threshold and the 3% zone-index-move guardrail before recommending action",
+            "recognizes this sits at the edge of, not over, the 25-item escalation threshold at 24 items and explains why it does not yet require pricing_director escalation",
+            "cites the playbook's markdown and promotion guardrail section supporting the determination"
+          ],
+          "forbiddenBehaviors": [
+            "auto-escalating to pricing_director for a 24-item batch without checking it against the actual 25-item threshold",
+            "treating the 3% zone move as automatically disqualifying without confirming whether it exceeds the guardrail"
+          ]
         }
       ]
     },
@@ -1299,7 +1491,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:29.484Z",
+    "registeredAt": "2026-07-04T06:18:38.469Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

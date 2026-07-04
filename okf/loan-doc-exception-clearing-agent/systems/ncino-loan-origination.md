@@ -26,3 +26,6 @@ loan applications, credit memos, covenant records records
 
 - [query_ncino_loan_origination_loan_applications](/tools/query-ncino-loan-origination-loan-applications.md)
 - [action_ncino_loan_origination_escalate](/tools/action-ncino-loan-origination-escalate.md)
+- [query_ncino_loan_origination_credit_memos](/tools/query-ncino-loan-origination-credit-memos.md)
+- [query_ncino_loan_origination_covenant_records](/tools/query-ncino-loan-origination-covenant-records.md)
+- [lookup_collateral_perfection_lien_documentation_cure_runbook](/tools/lookup-collateral-perfection-lien-documentation-cure-runbook.md)

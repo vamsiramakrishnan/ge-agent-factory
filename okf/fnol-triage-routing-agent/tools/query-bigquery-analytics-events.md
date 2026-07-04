@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [severity_complexity_scoring](/workflow/severity-complexity-scoring.md)
 
 ## Evals
 
 - [Run the FNOL Triage & Routing Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/fnol-triage-routing-agent-end-to-end.md)
+- [Claim CLM-2026-098213 is a homeowners claim in FL flagged with cat_code PCS_2418_wind_hail. The claims record shows incurred_amount of $61,000 as of this morning. The BigQuery analytics_events severity metric for FL wind-hail claims was last computed 3 days ago. Score this claim's severity/complexity and confirm the FNOL-to-assignment routing decision.](/tests/fnol-triage-routing-agent-stale-baseline-severity.md)
 
 ## Evidence emitted
 

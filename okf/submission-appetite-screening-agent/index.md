@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Submission Appetite Screening Agent
-description: "Extracts risk attributes from inbound submissions and scores them against the current appetite matrix within minutes of receipt. Routes in-appetite submissions to the right underwriting desk and drafts decline letters for clear out-of-appetite risks. so the Underwriter can move the Submission-to-quote turnaround KPI."
+description: "Screens inbound underwriting_submissions and policy_quotes against the current appetite matrix and LexisNexis risk_reports/mvr_records evidence within minutes of receipt, cutting out-of-appetite submissions worked from 34% to 6% and lifting Underwriter throughput from 12 to 38 submissions triaged per day."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/submission-appetite
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:52.685Z"
+provenance_created_at: "2026-07-04T06:18:00.981Z"
 ---
 
 # Submission Appetite Screening Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:52.685Z"
 
 - **Persona:** Underwriter
 - **Department:** insurance
-- **Objective:** Extracts risk attributes from inbound submissions and scores them against the current appetite matrix within minutes of receipt. Routes in-appetite submissions to the right underwriting desk and drafts decline letters for clear out-of-appetite risks. so the Underwriter can move the Submission-to-quote turnaround KPI.
+- **Objective:** Screens inbound underwriting_submissions and policy_quotes against the current appetite matrix and LexisNexis risk_reports/mvr_records evidence within minutes of receipt, cutting out-of-appetite submissions worked from 34% to 6% and lifting Underwriter throughput from 12 to 38 submissions triaged per day.
 
 ## KPI summary
 

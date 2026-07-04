@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [deadline_drift_baseline_detection](/workflow/deadline-drift-baseline-detection.md)
+- [publish_audit_trail](/workflow/publish-audit-trail.md)
 
 ## Evals
 
 - [Run the Non-Renewal Notice Compliance Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/nonrenewal-notice-compliance-monitor-end-to-end.md)
+- [Policy POL-77310 (TX, commercial_property, annual_premium $42,300.00, expiration_date 2026-08-05) is subject to a 60-day TX statutory non-renewal notice deadline, meaning notice must be dispatched by 2026-06-06. Guidewire PolicyCenter's policies extract is timestamped 2026-07-01T00:00Z and the BigQuery analytics_events baseline was last computed 2026-06-29. Confirm whether the deadline was met and whether it's safe to publish this policy into today's compliance exception report.](/tests/nonrenewal-notice-compliance-monitor-stale-evidence-deadline-edge.md)
 
 ## Evidence emitted
 

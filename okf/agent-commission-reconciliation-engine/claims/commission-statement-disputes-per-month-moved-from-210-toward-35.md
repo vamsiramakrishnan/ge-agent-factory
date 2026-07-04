@@ -37,3 +37,4 @@ Must cite: guidewire_billingcenter.billing_accounts, bigquery.analytics_events
 # Citations
 
 - [Agent Commission Reconciliation Engine Authority & Referral Guide](/documents/agent-commission-reconciliation-engine-authority-guide.md)
+- [Commission Chargeback & Rate Adjustment Runbook](/documents/agent-commission-reconciliation-engine-chargeback-rate-runbook.md)

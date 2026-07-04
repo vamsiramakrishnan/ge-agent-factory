@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_qm.inspection_lots, siemens_opcenter_mes.production_order
 # Citations
 
 - [SPC Drift Detection Monitor Standard Operating Procedure](/documents/spc-drift-detection-monitor-sop.md)
+- [CTQ Characteristic Control Plan and Out-of-Control Reaction Plan](/documents/spc-drift-detection-monitor-control-plan.md)

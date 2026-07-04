@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [chase_list_publish_escalation](/workflow/chase-list-publish-escalation.md)
 
 ## Evals
 
 - [Run the Supplier Delivery Risk Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/supplier-delivery-risk-analyzer-end-to-end.md)
+- [Looker's on-time-delivery dashboard shows 92% this quarter for vendor 'Ashgrove Metal Works', but BigQuery analytics_events lists a -18.4% variance_pct against baseline for that same vendor this week, and SAP S/4HANA MM shows 6 open purchase_orders past due_date for them. Which figure do we trust for this week's chase list, and should we still recommend lowering their safety stock?](/tests/supplier-delivery-risk-analyzer-signal-reconciliation.md)
 
 ## Evidence emitted
 

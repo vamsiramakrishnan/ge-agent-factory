@@ -9,7 +9,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Deal & Cost Intake](/workflow/deal-cost-intake.md)
+2. [Scan & Markdown Execution Matching](/workflow/scan-markdown-execution-matching.md)
+3. [Collected-vs-Committed Variance Scoring](/workflow/collected-vs-committed-variance-scoring.md)
+4. [Playbook & Deal-Terms Evidence Gating](/workflow/playbook-deal-terms-evidence-gating.md)
+5. [Claim & Dispute Drafting](/workflow/claim-dispute-drafting.md)
+6. [Generate & Audit](/workflow/generate-audit.md)

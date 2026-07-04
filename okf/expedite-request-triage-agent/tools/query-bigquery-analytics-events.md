@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [impact_cost_scoring](/workflow/impact-cost-scoring.md)
+- [supplier_commit_audit_logging](/workflow/supplier-commit-audit-logging.md)
 
 ## Evals
 

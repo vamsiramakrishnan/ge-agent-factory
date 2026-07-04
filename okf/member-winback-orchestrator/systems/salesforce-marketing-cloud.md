@@ -25,3 +25,4 @@ accounts, opportunities, campaign influence records
 ## Tools using this system
 
 - [query_salesforce_marketing_cloud_accounts](/tools/query-salesforce-marketing-cloud-accounts.md)
+- [lookup_member_winback_orchestrator_loyalty_program_terms](/tools/lookup-member-winback-orchestrator-loyalty-program-terms.md)

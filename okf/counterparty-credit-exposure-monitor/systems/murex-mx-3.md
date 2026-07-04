@@ -26,3 +26,6 @@ trades, positions, risk measures records
 
 - [query_murex_mx_3_trades](/tools/query-murex-mx-3-trades.md)
 - [action_murex_mx_3_file](/tools/action-murex-mx-3-file.md)
+- [query_murex_mx_3_positions](/tools/query-murex-mx-3-positions.md)
+- [query_murex_mx_3_risk_measures](/tools/query-murex-mx-3-risk-measures.md)
+- [lookup_csa_margin_call_dispute_runbook](/tools/lookup-csa-margin-call-dispute-runbook.md)

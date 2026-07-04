@@ -37,3 +37,4 @@ Must cite: oracle_field_service.field_work_orders, bigquery.analytics_events
 # Citations
 
 - [Fiber Build Permitting Agent Service Assurance Runbook](/documents/fiber-build-permitting-agent-assurance-runbook.md)
+- [Municipal Right-of-Way Permitting & 811 Locate Compliance Playbook](/documents/fiber-build-permitting-agent-row-permit-playbook.md)

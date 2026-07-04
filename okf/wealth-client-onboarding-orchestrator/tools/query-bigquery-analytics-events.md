@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [acat_custodian_transfer_tracking](/workflow/acat-custodian-transfer-tracking.md)
+- [funded_status_publish_advisor_client_sync](/workflow/funded-status-publish-advisor-client-sync.md)
 
 ## Evals
 
 - [Run the Wealth Client Onboarding Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/wealth-client-onboarding-orchestrator-end-to-end.md)
+- [Household 6041288's account 80417723 (rollover_401k) had its DocuSign envelope rejected NIGO twice this week -- the custodian cites a missing spousal consent on today's third resubmission -- but Salesforce Financial Services Cloud still shows the account as 'active' with the ACAT transfer marked complete in yesterday's BigQuery analytics_events snapshot. Reconcile the record and tell me whether we can publish the funded status to the advisor.](/tests/wealth-client-onboarding-orchestrator-nigo-resubmission-conflict.md)
 
 ## Evidence emitted
 

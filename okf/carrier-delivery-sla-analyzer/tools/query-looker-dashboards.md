@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [lane_carrier_scorecard_scoring](/workflow/lane-carrier-scorecard-scoring.md)
 
 ## Evals
 
 - [Run the Carrier Delivery SLA Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/carrier-delivery-sla-analyzer-end-to-end.md)
+- [Carrier Estes has posted a 90.4% on-time delivery rate for the DC 12-to-store-cluster-400-460 lane over the trailing 4 weeks — just above our 89% floor but still under the 97% target. Cached_aggregates shows their cost-per-package variance at +6.2% against contract. Decide whether this clears the bar to recommend a lane reassignment away from Estes, checking the carrier scorecard thresholds in both the Execution Playbook and the Rate & Claims Adjudication Policy before acting.](/tests/carrier-delivery-sla-analyzer-lane-reassignment-threshold.md)
 
 ## Evidence emitted
 

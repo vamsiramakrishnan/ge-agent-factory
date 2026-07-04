@@ -26,3 +26,5 @@ network alarms, cell sites, performance counters records
 
 - [query_ericsson_network_manager_network_alarms](/tools/query-ericsson-network-manager-network-alarms.md)
 - [lookup_network_slice_sla_monitor_assurance_runbook](/tools/lookup-network-slice-sla-monitor-assurance-runbook.md)
+- [query_ericsson_network_manager_cell_sites](/tools/query-ericsson-network-manager-cell-sites.md)
+- [query_ericsson_network_manager_performance_counters](/tools/query-ericsson-network-manager-performance-counters.md)

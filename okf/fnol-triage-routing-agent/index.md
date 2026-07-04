@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "FNOL Triage & Routing Agent"
-description: "Reads every inbound FNOL, extracts loss facts, and scores severity and complexity at the moment of receipt. Routes each claim to the best-fit adjuster based on line, severity, licensing, jurisdiction, and current workload in ClaimCenter. so the Claims Intake Specialist can move the FNOL-to-assignment time KPI."
+description: "Cut FNOL-to-assignment time from 26 hours to 35 minutes by extracting loss facts and scoring severity/complexity on claims and claim_exposures at the moment of intake, then routing each claim in Guidewire ClaimCenter to the best-fit licensed adjuster while holding misrouted claims requiring reassignment at or below the 4% target."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/fnol-triage-routing
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:54.769Z"
+provenance_created_at: "2026-07-04T06:18:03.500Z"
 ---
 
 # FNOL Triage & Routing Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:54.769Z"
 
 - **Persona:** Claims Intake Specialist
 - **Department:** insurance
-- **Objective:** Reads every inbound FNOL, extracts loss facts, and scores severity and complexity at the moment of receipt. Routes each claim to the best-fit adjuster based on line, severity, licensing, jurisdiction, and current workload in ClaimCenter. so the Claims Intake Specialist can move the FNOL-to-assignment time KPI.
+- **Objective:** Cut FNOL-to-assignment time from 26 hours to 35 minutes by extracting loss facts and scoring severity/complexity on claims and claim_exposures at the moment of intake, then routing each claim in Guidewire ClaimCenter to the best-fit licensed adjuster while holding misrouted claims requiring reassignment at or below the 4% target.
 
 ## KPI summary
 

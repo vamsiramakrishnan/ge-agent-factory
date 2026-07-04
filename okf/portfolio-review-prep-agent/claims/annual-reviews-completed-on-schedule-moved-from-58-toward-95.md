@@ -37,3 +37,4 @@ Must cite: salesforce_financial_services_cloud.client_households, bigquery.analy
 # Citations
 
 - [Portfolio Review Preparation Agent Banking Compliance Policy](/documents/portfolio-review-prep-agent-compliance-policy.md)
+- [Annual Review Cadence & Concentration Limits Playbook](/documents/annual-review-cadence-and-concentration-playbook.md)

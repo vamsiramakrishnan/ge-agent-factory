@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Correspondence Trigger Intake](/workflow/correspondence-trigger-intake.md)
+2. [Policy & Endorsement Record Pull](/workflow/policy-endorsement-record-pull.md)
+3. [Coverage-Language & Filed-Status Validation](/workflow/coverage-language-filed-status-validation.md)
+4. [Draft Assembly & Readability Scoring](/workflow/draft-assembly-readability-scoring.md)
+5. [Team-Lead Routing & Audit](/workflow/team-lead-routing-audit.md)

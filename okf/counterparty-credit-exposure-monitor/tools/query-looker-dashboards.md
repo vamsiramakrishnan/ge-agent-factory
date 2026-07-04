@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [margin_call_dispute_reconciliation](/workflow/margin-call-dispute-reconciliation.md)
 
 ## Evals
 

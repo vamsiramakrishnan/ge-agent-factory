@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [capa_notification_intake](/workflow/capa-notification-intake.md)
+- [stalled_task_escalation](/workflow/stalled-task-escalation.md)
+- [effectiveness_verification_reopen_gate](/workflow/effectiveness-verification-reopen-gate.md)
 
 ## Evals
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: VaR Limit Breach Triage Monitor
-description: "Decomposes each Murex MX.3 limit breach to the contributing trades, risk factors, and market moves within minutes of the risk run. Drafts the breach notification memo with root-cause analysis and routes acknowledgment tasks through ServiceNow. so the Market Risk Analyst can move the Time from breach to explained root cause KPI."
+description: "Decompose every Murex MX.3 risk_measures limit breach to the specific trades and positions driving it, cite BigQuery historical_metrics and analytics_events baselines in the root-cause narrative, and cut time from breach to explained root cause from 6 hours to 30 minutes while holding limit excesses aged past the policy escalation deadline at or below 1 per quarter."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/var-limit-breach-tr
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:50.980Z"
+provenance_created_at: "2026-07-04T06:17:59.284Z"
 ---
 
 # VaR Limit Breach Triage Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:50.980Z"
 
 - **Persona:** Market Risk Analyst
 - **Department:** banking
-- **Objective:** Decomposes each Murex MX.3 limit breach to the contributing trades, risk factors, and market moves within minutes of the risk run. Drafts the breach notification memo with root-cause analysis and routes acknowledgment tasks through ServiceNow. so the Market Risk Analyst can move the Time from breach to explained root cause KPI.
+- **Objective:** Decompose every Murex MX.3 risk_measures limit breach to the specific trades and positions driving it, cite BigQuery historical_metrics and analytics_events baselines in the root-cause narrative, and cut time from breach to explained root cause from 6 hours to 30 minutes while holding limit excesses aged past the policy escalation deadline at or below 1 per quarter.
 
 ## KPI summary
 

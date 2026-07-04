@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [fnol_fraud_score_intake](/workflow/fnol-fraud-score-intake.md)
+- [baseline_precision_trend_scoring](/workflow/baseline-precision-trend-scoring.md)
+- [authority_gated_referral_route_decision](/workflow/authority-gated-referral-route-decision.md)
 
 ## Evals
 

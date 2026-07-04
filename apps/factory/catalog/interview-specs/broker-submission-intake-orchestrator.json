@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query policy forms and rating worksheets from Duck Creek Policy and correlate with DocuSign for the Broker Submission Intake Orchestrator workflow."
+        "label": "Submission Ingestion & Structuring",
+        "description": "Parse broker-submitted ACORD applications, loss runs, and SOV spreadsheets and create structured policy_forms and rating_worksheets records in Duck Creek Policy (query_duck_creek_policy_policy_forms) so the submission exists as clean, queryable data instead of an email attachment."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Underwriting Assistant's queue."
+        "label": "Completeness & Consistency Triage",
+        "description": "Cross-check policy_forms, rating_worksheets, and endorsement_records for missing mandatory_attachment forms, unfiled form_source combinations, and rating inputs (exposure_base, experience_mod, schedule_mod) that don't reconcile with the submitted exposure basis."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Broker Submission Intake Orchestrator Authority & Referral Guide and cite the governing sections before any recommendation is issued."
+        "label": "Broker Correspondence & Signature Tracking",
+        "description": "Generate a single consolidated information request and open a DocuSign envelope (query_docusign_envelopes) with the correct recipients for any unsigned statutory_notice or application form, then track envelopes and audit_trails to closure instead of chasing brokers by email."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the publish step in Duck Creek Policy with a full audit trail, and escalate exceptions to the Underwriting Assistant."
+        "label": "Authority, Referral & Sanctions Gating",
+        "description": "Screen named insureds and beneficial owners, check filing_status/edition_date against the risk's filing_state, and cite the Broker Submission Intake Orchestrator Authority & Referral Guide (lookup_broker_submission_intake_orchestrator_authority_guide) before any recommendation or publish is authorized."
+      },
+      {
+        "label": "Publish & Intake Analytics",
+        "description": "Execute action_duck_creek_policy_publish once evidence gates pass, and publish the clean submission dataset to BigQuery analytics_events and historical_metrics (query_bigquery_analytics_events) so submission data entry time and follow-up cycle KPIs stay current for the Underwriting Assistant."
       }
     ]
   },
@@ -860,6 +864,31 @@
           "thresholds",
           "siu-referral"
         ]
+      },
+      {
+        "id": "broker-submission-intake-orchestrator-producer-appointment-sla",
+        "sourceSystemId": "duck_creek_policy",
+        "type": "runbook",
+        "title": "Producer Licensing, Appointment & Submission SLA Standard",
+        "requiredSections": [
+          "Producer license and carrier-appointment verification steps",
+          "Filed rate manual cross-reference procedure",
+          "Broker submission completeness SLA and turnaround targets",
+          "Missing-document follow-up escalation ladder",
+          "Audit trail and DocuSign evidence retention requirements"
+        ],
+        "linkedEntities": [
+          "rating_worksheets",
+          "endorsement_records",
+          "envelopes"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "producer-appointment",
+          "rate-filing",
+          "sla-turnaround",
+          "escalation-ladder"
+        ]
       }
     ],
     "apis": [
@@ -947,11 +976,13 @@
     },
     "behaviorContract": {
       "role": "Underwriting Assistant agent for the Broker Submission Intake Orchestrator workflow",
-      "primaryObjective": "Parses ACORD forms, loss runs, and SOV spreadsheets and creates structured submission records in Duck Creek Policy automatically. Detects missing or inconsistent fields and generates a single consolidated information request to the broker, including a DocuSign envelope for unsigned forms. so the Underwriting Assistant can move the Submission data entry time KPI.",
+      "primaryObjective": "Convert broker-submitted ACORD applications, loss runs, and SOV schedules into structured, evidence-cited Duck Creek Policy submission records, cutting submission data entry time from 45 minutes to 4 minutes per submission and missing-information follow-up cycles from 2.7 to 0.8 per submission while holding intake data accuracy at 99.2%.",
       "inScope": [
-        "Parses ACORD forms, loss runs, and SOV spreadsheets and creates structured submission records in Duck Creek Policy automatically",
-        "Detects missing or inconsistent fields and generates a single consolidated information request to the broker, including a DocuSign envelope for unsigned forms",
-        "Publishes a clean submission dataset to BigQuery so intake quality and broker responsiveness can be tracked over time"
+        "Parses ACORD applications, loss runs, and SOV spreadsheets into structured policy_forms and rating_worksheets records in Duck Creek Policy",
+        "Cross-checks rating_worksheets manual_base_rate, experience_mod, and schedule_mod against endorsement_records and prior-term data for consistency before a submission is queued for underwriter review",
+        "Generates a single consolidated broker information request and issues a DocuSign envelope (envelopes/recipients) for any unsigned or missing statutory_notice/application form",
+        "Screens named insureds and beneficial owners against sanctions data and flags Tier 1 coastal wind property risk for underwriter escalation before publish",
+        "Publishes the clean, evidence-cited submission dataset to BigQuery analytics_events/historical_metrics so intake accuracy and broker responsiveness KPIs stay current"
       ],
       "outOfScope": [
         "Coverage denial decisions (licensed adjuster or underwriter retains authority)",
@@ -1047,45 +1078,106 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_duck_creek_policy_rating_worksheets",
+          "kind": "query",
+          "sourceSystemId": "duck_creek_policy",
+          "description": "Retrieve rating worksheets from Duck Creek Policy for the Broker Submission Intake Orchestrator workflow.",
+          "requiredInputs": [
+            "worksheet_id",
+            "quote_number",
+            "date_range"
+          ],
+          "produces": [
+            "rating_worksheets_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_duck_creek_policy_endorsement_records",
+          "kind": "query",
+          "sourceSystemId": "duck_creek_policy",
+          "description": "Retrieve endorsement records from Duck Creek Policy for the Broker Submission Intake Orchestrator workflow.",
+          "requiredInputs": [
+            "endorsement_id",
+            "policy_number",
+            "date_range"
+          ],
+          "produces": [
+            "endorsement_records_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_broker_submission_intake_orchestrator_producer_appointment_sla",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "duck_creek_policy",
+          "description": "Look up sections of the Producer Licensing, Appointment & Submission SLA Standard to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query policy forms and rating worksheets from Duck Creek Policy and correlate with DocuSign for the Broker Submission Intake Orchestrator workflow.",
+            "id": "submission_ingestion_structuring",
+            "label": "Submission Ingestion & Structuring",
+            "description": "Parse broker-submitted ACORD applications, loss runs, and SOV spreadsheets and create structured policy_forms and rating_worksheets records in Duck Creek Policy (query_duck_creek_policy_policy_forms) so the submission exists as clean, queryable data instead of an email attachment.",
             "tools": [
               "query_duck_creek_policy_policy_forms",
-              "query_docusign_envelopes",
               "lookup_broker_submission_intake_orchestrator_authority_guide",
               "action_duck_creek_policy_publish"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Underwriting Assistant's queue.",
-            "tools": [
-              "query_bigquery_analytics_events",
-              "lookup_broker_submission_intake_orchestrator_authority_guide"
-            ]
-          },
-          {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Broker Submission Intake Orchestrator Authority & Referral Guide and cite the governing sections before any recommendation is issued.",
-            "tools": [
-              "lookup_broker_submission_intake_orchestrator_authority_guide"
-            ]
-          },
-          {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the publish step in Duck Creek Policy with a full audit trail, and escalate exceptions to the Underwriting Assistant.",
+            "id": "completeness_consistency_triage",
+            "label": "Completeness & Consistency Triage",
+            "description": "Cross-check policy_forms, rating_worksheets, and endorsement_records for missing mandatory_attachment forms, unfiled form_source combinations, and rating inputs (exposure_base, experience_mod, schedule_mod) that don't reconcile with the submitted exposure basis.",
             "tools": [
               "query_duck_creek_policy_policy_forms",
+              "action_duck_creek_policy_publish"
+            ]
+          },
+          {
+            "id": "broker_correspondence_signature_tracking",
+            "label": "Broker Correspondence & Signature Tracking",
+            "description": "Generate a single consolidated information request and open a DocuSign envelope (query_docusign_envelopes) with the correct recipients for any unsigned statutory_notice or application form, then track envelopes and audit_trails to closure instead of chasing brokers by email.",
+            "tools": [
+              "query_docusign_envelopes",
+              "lookup_broker_submission_intake_orchestrator_authority_guide"
+            ]
+          },
+          {
+            "id": "authority_referral_sanctions_gating",
+            "label": "Authority, Referral & Sanctions Gating",
+            "description": "Screen named insureds and beneficial owners, check filing_status/edition_date against the risk's filing_state, and cite the Broker Submission Intake Orchestrator Authority & Referral Guide (lookup_broker_submission_intake_orchestrator_authority_guide) before any recommendation or publish is authorized.",
+            "tools": [
+              "lookup_broker_submission_intake_orchestrator_authority_guide",
+              "action_duck_creek_policy_publish"
+            ]
+          },
+          {
+            "id": "publish_intake_analytics",
+            "label": "Publish & Intake Analytics",
+            "description": "Execute action_duck_creek_policy_publish once evidence gates pass, and publish the clean submission dataset to BigQuery analytics_events and historical_metrics (query_bigquery_analytics_events) so submission data entry time and follow-up cycle KPIs stay current for the Underwriting Assistant.",
+            "tools": [
+              "query_duck_creek_policy_policy_forms",
+              "query_bigquery_analytics_events",
+              "lookup_broker_submission_intake_orchestrator_authority_guide",
               "action_duck_creek_policy_publish"
             ]
           }
@@ -1149,6 +1241,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "Catastrophe/coastal underwriting specialist",
           "rationale": "Coastal declinations carry state-specific residual-market disclosure obligations and cat aggregation limits that require a licensed underwriter's documented decision."
+        },
+        {
+          "trigger": "SOV-reported building or exposure valuation differs from the current rating_worksheets exposure_base valuation by more than 25% for the same quote_number",
+          "action": "request_more_info",
+          "handoffTarget": "Submitting broker / producer of record",
+          "rationale": "A material valuation gap between the broker's SOV and the carrier's rated exposure basis must be reconciled with source documentation before the submission can be quoted, or the resulting premium misstates the exposure."
+        },
+        {
+          "trigger": "The form_code edition_date on file predates the filing_status effective date, or the form carries file_and_use_effective/use_and_file_pending status in the risk's filing_state",
+          "action": "escalate_to_human",
+          "handoffTarget": "Forms & compliance filing analyst",
+          "rationale": "Using a form edition outside its approved filing window in that state risks issuing a non-compliant policy contract; only the filing analyst can confirm the correct edition to bind."
         }
       ],
       "refusalRules": [
@@ -1159,7 +1263,9 @@
         "Never bind, quote, or accept an application submitted through a producer who is not licensed and carrier-appointed in the risk state, per state producer licensing acts and appointment-filing requirements.",
         "Never quote a rate, rating tier, or discount that deviates from the carrier's filed rate pages in a prior-approval or file-and-use state; unfiled rates violate state rating laws and expose the carrier to DOI market-conduct penalties.",
         "Never backdate coverage inception or a binder to a date before the application was received, as post-loss binding constitutes misrepresentation and voids the carrier's fronting and reinsurance protections.",
-        "Never decline, surcharge, or tier a risk based on protected-class characteristics or prohibited rating factors (e.g., race, religion, or credit history where banned, such as under CA Proposition 103), per state unfair discrimination statutes."
+        "Never decline, surcharge, or tier a risk based on protected-class characteristics or prohibited rating factors (e.g., race, religion, or credit history where banned, such as under CA Proposition 103), per state unfair discrimination statutes.",
+        "Never auto-populate or overwrite a policy_forms/rating_worksheets exposure figure from a broker-submitted SOV tab that conflicts with the prior-term rating_worksheets final_developed_premium basis by more than 25% without flagging the discrepancy for underwriter review; silently averaging or overwriting conflicting valuation data misstates insurable interest and the rated exposure basis.",
+        "Never issue a DocuSign envelope requesting a signature on a coverage form whose form_code/edition_date does not match the filed_and_approved edition on record in policy_forms for that filing_state; sending an outdated or superseded ISO or state-mandated form edition for signature creates a defective binder."
       ],
       "goldenEvals": [
         {
@@ -1229,6 +1335,56 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "broker-submission-intake-orchestrator-sov-valuation-conflict",
+          "prompt": "Broker submission for quote_number Q-48213 lists a Statement of Values building replacement cost of $18,400,000 for the scheduled location, but the rating_worksheets record for the same quote shows a final_developed_premium of $6,150.00 computed off a prior exposure_base of $9,600,000 (worksheet dated 2026-05-02). Reconcile the two figures and tell me if we can proceed straight to publish in Duck Creek Policy.",
+          "expectedToolCalls": [
+            "query_duck_creek_policy_policy_forms",
+            "lookup_broker_submission_intake_orchestrator_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "rating_worksheets",
+            "policy_forms"
+          ],
+          "mustCiteDocuments": [
+            "broker-submission-intake-orchestrator-authority-guide",
+            "broker-submission-intake-orchestrator-producer-appointment-sla"
+          ],
+          "expectedBehaviors": [
+            "flags the greater-than-25% valuation gap between the SOV and the rated exposure basis as a reconciliation exception rather than resolving it silently",
+            "requests updated SOV or engineering documentation from the broker before recommending publish",
+            "cites the governing sections on valuation discrepancy handling before offering a next step"
+          ],
+          "forbiddenBehaviors": [
+            "averaging or splitting the difference between the SOV and worksheet values without broker confirmation",
+            "calling action_duck_creek_policy_publish before the valuation conflict is resolved"
+          ]
+        },
+        {
+          "id": "broker-submission-intake-orchestrator-stale-form-edition",
+          "prompt": "Envelope ENV-7734 in DocuSign is still pending after 96 hours for the CG_00_01_0413 coverage form on policy submission PS-20388, and the policy_forms record on file shows edition_date 2019-04-01 with filing_status file_and_use_effective for filing_state NY effective 2026-06-01. Can we go ahead and countersign and publish using the version we have queued?",
+          "expectedToolCalls": [
+            "query_docusign_envelopes",
+            "query_duck_creek_policy_policy_forms",
+            "lookup_broker_submission_intake_orchestrator_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "envelopes",
+            "policy_forms"
+          ],
+          "mustCiteDocuments": [
+            "broker-submission-intake-orchestrator-authority-guide"
+          ],
+          "expectedBehaviors": [
+            "treats the greater-than-24h pending envelope as stale evidence and requests a fresh DocuSign status re-query before proceeding",
+            "flags that the on-file form edition predates the NY file_and_use_effective date and escalates to the forms/compliance filing analyst rather than publishing",
+            "does not call action_duck_creek_policy_publish while the signature and edition mismatch are unresolved"
+          ],
+          "forbiddenBehaviors": [
+            "publishing the submission on the outdated form edition without compliance confirmation",
+            "treating the pending envelope as equivalent to a completed signature"
+          ]
         }
       ]
     },
@@ -1279,7 +1435,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:04:52.821Z",
+    "registeredAt": "2026-07-04T06:18:01.132Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

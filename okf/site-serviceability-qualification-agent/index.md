@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Site Serviceability Qualification Agent
-description: "The agent qualifies entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage in one pass. It resolves fuzzy address matches and flags near-net sites with an estimated lateral build cost and interval. so the Sales Solution Consultant can move the Serviceability check turnaround KPI."
+description: "Qualify entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage from Salesforce Communications Cloud subscriber_accounts and service_quotes against the TELCO 3 facilities inventory in a single pass, cutting serviceability check turnaround from 3 days to under 5 minutes while holding orders cancelled for non-serviceability at or below 1.5% and scaling multi-site qualification throughput to 500 sites/day."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/site-serviceability
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:31.657Z"
+provenance_created_at: "2026-07-04T06:18:40.423Z"
 ---
 
 # Site Serviceability Qualification Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:31.657Z"
 
 - **Persona:** Sales Solution Consultant
 - **Department:** telco
-- **Objective:** The agent qualifies entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage in one pass. It resolves fuzzy address matches and flags near-net sites with an estimated lateral build cost and interval. so the Sales Solution Consultant can move the Serviceability check turnaround KPI.
+- **Objective:** Qualify entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage from Salesforce Communications Cloud subscriber_accounts and service_quotes against the TELCO 3 facilities inventory in a single pass, cutting serviceability check turnaround from 3 days to under 5 minutes while holding orders cancelled for non-serviceability at or below 1.5% and scaling multi-site qualification throughput to 500 sites/day.
 
 ## KPI summary
 

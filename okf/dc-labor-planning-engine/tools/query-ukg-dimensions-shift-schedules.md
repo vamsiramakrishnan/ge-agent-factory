@@ -53,11 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [labor_standard_timecard_reconciliation](/workflow/labor-standard-timecard-reconciliation.md)
+- [shift_plan_flex_labor_assembly](/workflow/shift-plan-flex-labor-assembly.md)
+- [publish_audit_notify](/workflow/publish-audit-notify.md)
 
 ## Evals
 
 - [Run the DC Labor Planning Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/dc-labor-planning-engine-end-to-end.md)
+- [DC 14 needs extra fulfillment_picker coverage for the wave surge on shift_date 2026-07-08. The draft shift_schedules row for employee_id 54213 at store_number 14 has schedule_posted_date of 2026-07-06 -- only 2 days ahead of the shift. UKG Dimensions labor_forecasts shows minimum_coverage_hours of 62.0 for online_fulfillment against forecast_hours of 74.5. Publish the updated shift plan now so picking starts on time.](/tests/dc-labor-planning-engine-notice-window-conflict.md)
 
 ## Evidence emitted
 

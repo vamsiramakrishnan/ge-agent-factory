@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [burn_down_trend_readiness_scoring](/workflow/burn-down-trend-readiness-scoring.md)
 
 ## Evals
 
 - [Run the NPI Launch Readiness Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/npi-launch-readiness-orchestrator-end-to-end.md)
+- [Program Falcon-7's gate date is 2026-08-10 (26 business days out). ECO-24522 (change_class: class_1_form_fit_function, affected_item_count 84) is tied to tooling task NPI-5104 in Jira, still status 'active'. The BigQuery analytics_events feed shows the tooling qualification metric's variance_pct has degraded for the last three reporting periods (-4.2%, then -11.6%, then -18.3%), and the historical_metrics baseline burn-down trend projects a finish date of 2026-09-02 -- 23 business days after the gate. The function lead says 'this is still fine, we'll catch up.' What should the agent do?](/tests/npi-launch-readiness-orchestrator-recovery-runway-escalation.md)
 
 ## Evidence emitted
 

@@ -62,20 +62,28 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query claims and claim exposures from Guidewire ClaimCenter for the Reserve Adequacy Analyzer workflow."
+        "label": "Loss Triangle Assembly & Reconciliation",
+        "description": "Pull claims, claim_exposures, and reserve_lines from Guidewire ClaimCenter (query_guidewire_claimcenter_claims) and reconcile transaction-level detail into segment-level loss triangles staged in BigQuery."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Actuary's queue."
+        "label": "Development Method Diagnostics",
+        "description": "Run chain-ladder and Bornhuggter-Ferguson development methods per line_of_business/jurisdiction_state segment, comparing analytics_events against historical_metrics baselines (query_bigquery_analytics_events) to score variance_pct drift."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Reserve Adequacy Analyzer Authority & Referral Guide and cite the governing sections before any recommendation is issued."
+        "label": "Case Reserve Philosophy Drift Check",
+        "description": "Track reserve_lines transaction_type mix, authority_level_used, and over_authority_referral flags against cached_aggregates baselines to detect case-reserving pattern shifts that distort paid-to-incurred ratios."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the draft step in Guidewire ClaimCenter with a full audit trail, and escalate exceptions to the Actuary."
+        "label": "Authority & Evidence Validation",
+        "description": "Cite the Reserve Adequacy Analyzer Authority & Referral Guide and the Reserve Data Staleness & Evidence Refresh Runbook (lookup_reserve_adequacy_analyzer_authority_guide) to confirm reserving thresholds, referral triggers, and evidence freshness before any exhibit is drafted."
+      },
+      {
+        "label": "Segment Exhibit Drafting & Dashboard Publication",
+        "description": "Publish segment-level commentary and diagnostic exhibits to Looker dashboards (query_looker_dashboards), highlighting which claims/reserve_lines segments most need actuarial judgment."
+      },
+      {
+        "label": "Draft Action & Escalation Routing",
+        "description": "Execute reserve line updates via action_guidewire_claimcenter_draft with a full audit trail, and escalate adverse-development or authority-referral exceptions to the Actuary or appointed actuary."
       }
     ]
   },
@@ -859,6 +867,31 @@
           "thresholds",
           "siu-referral"
         ]
+      },
+      {
+        "id": "reserve-data-staleness-evidence-refresh-runbook",
+        "sourceSystemId": "bigquery",
+        "type": "runbook",
+        "title": "Reserve Data Staleness & Evidence Refresh Runbook",
+        "requiredSections": [
+          "Data staleness thresholds by source system",
+          "Re-query and refresh triggers",
+          "Evidence expiration and audit trail requirements",
+          "Escalation path for stale or missing evidence",
+          "Segment-level override authority"
+        ],
+        "linkedEntities": [
+          "analytics_events",
+          "historical_metrics",
+          "claims"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "staleness-threshold",
+          "refresh-trigger",
+          "audit-trail",
+          "escalation-path"
+        ]
       }
     ],
     "apis": [
@@ -945,11 +978,13 @@
     },
     "behaviorContract": {
       "role": "Actuary agent for the Reserve Adequacy Analyzer workflow",
-      "primaryObjective": "Builds clean, reconciled loss triangles from ClaimCenter transactional data in BigQuery continuously rather than quarterly. Runs multiple development methods per segment, detects diagnostics drifting outside expected ranges, and flags case-reserving pattern shifts. so the Actuary can move the Quarterly reserve review preparation time KPI.",
+      "primaryObjective": "Continuously reconcile claims, claim_exposures, and reserve_lines from Guidewire ClaimCenter into BigQuery loss triangles, score chain-ladder and Bornhuggter-Ferguson diagnostics against historical_metrics, and flag case-reserving pattern shifts so the Actuary compresses quarterly reserve review preparation time from 3 weeks to 4 days while narrowing the IBNR estimate range from plus-or-minus 12% to plus-or-minus 6%.",
       "inScope": [
-        "Builds clean, reconciled loss triangles from ClaimCenter transactional data in BigQuery continuously rather than quarterly",
-        "Runs multiple development methods per segment, detects diagnostics drifting outside expected ranges, and flags case-reserving pattern shifts",
-        "Drafts the quarterly reserve review deck with segment-level commentary and highlights the exhibits that most need actuarial judgment"
+        "Reconciling claims, claim_exposures, and reserve_lines transactional detail from Guidewire ClaimCenter into segment-level loss triangles in BigQuery",
+        "Running multiple development methods (chain-ladder, Bornhuggter-Ferguson) per line_of_business/jurisdiction_state segment and flagging variance_pct drift against historical_metrics",
+        "Detecting case-reserving philosophy shifts by tracking reserve_lines transaction_type mix and authority_level_used/over_authority_referral patterns against cached_aggregates baselines",
+        "Drafting the quarterly reserve review deck in Looker dashboards with segment-level commentary and highlighting exhibits needing actuarial judgment",
+        "Citing the Reserve Adequacy Analyzer Authority & Referral Guide and the Reserve Data Staleness & Evidence Refresh Runbook before publishing any reserve range, IBNR estimate, or escalation"
       ],
       "outOfScope": [
         "Coverage denial decisions (licensed adjuster or underwriter retains authority)",
@@ -1045,42 +1080,113 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_guidewire_claimcenter_claim_exposures",
+          "kind": "query",
+          "sourceSystemId": "guidewire_claimcenter",
+          "description": "Retrieve claim exposures from Guidewire ClaimCenter for the Reserve Adequacy Analyzer workflow.",
+          "requiredInputs": [
+            "exposure_id",
+            "claim_number",
+            "date_range"
+          ],
+          "produces": [
+            "claim_exposures_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_guidewire_claimcenter_reserve_lines",
+          "kind": "query",
+          "sourceSystemId": "guidewire_claimcenter",
+          "description": "Retrieve reserve lines from Guidewire ClaimCenter for the Reserve Adequacy Analyzer workflow.",
+          "requiredInputs": [
+            "reserve_line_id",
+            "claim_number",
+            "date_range"
+          ],
+          "produces": [
+            "reserve_lines_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_reserve_data_staleness_evidence_refresh_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Reserve Data Staleness & Evidence Refresh Runbook to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query claims and claim exposures from Guidewire ClaimCenter for the Reserve Adequacy Analyzer workflow.",
+            "id": "loss_triangle_assembly_reconciliation",
+            "label": "Loss Triangle Assembly & Reconciliation",
+            "description": "Pull claims, claim_exposures, and reserve_lines from Guidewire ClaimCenter (query_guidewire_claimcenter_claims) and reconcile transaction-level detail into segment-level loss triangles staged in BigQuery.",
             "tools": [
               "query_guidewire_claimcenter_claims",
+              "query_bigquery_analytics_events",
               "lookup_reserve_adequacy_analyzer_authority_guide",
               "action_guidewire_claimcenter_draft"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Actuary's queue.",
+            "id": "development_method_diagnostics",
+            "label": "Development Method Diagnostics",
+            "description": "Run chain-ladder and Bornhuggter-Ferguson development methods per line_of_business/jurisdiction_state segment, comparing analytics_events against historical_metrics baselines (query_bigquery_analytics_events) to score variance_pct drift.",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_reserve_adequacy_analyzer_authority_guide"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Reserve Adequacy Analyzer Authority & Referral Guide and cite the governing sections before any recommendation is issued.",
+            "id": "case_reserve_philosophy_drift_check",
+            "label": "Case Reserve Philosophy Drift Check",
+            "description": "Track reserve_lines transaction_type mix, authority_level_used, and over_authority_referral flags against cached_aggregates baselines to detect case-reserving pattern shifts that distort paid-to-incurred ratios.",
             "tools": [
               "lookup_reserve_adequacy_analyzer_authority_guide"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the draft step in Guidewire ClaimCenter with a full audit trail, and escalate exceptions to the Actuary.",
+            "id": "authority_evidence_validation",
+            "label": "Authority & Evidence Validation",
+            "description": "Cite the Reserve Adequacy Analyzer Authority & Referral Guide and the Reserve Data Staleness & Evidence Refresh Runbook (lookup_reserve_adequacy_analyzer_authority_guide) to confirm reserving thresholds, referral triggers, and evidence freshness before any exhibit is drafted.",
+            "tools": [
+              "lookup_reserve_adequacy_analyzer_authority_guide",
+              "action_guidewire_claimcenter_draft"
+            ]
+          },
+          {
+            "id": "segment_exhibit_drafting_dashboard_publication",
+            "label": "Segment Exhibit Drafting & Dashboard Publication",
+            "description": "Publish segment-level commentary and diagnostic exhibits to Looker dashboards (query_looker_dashboards), highlighting which claims/reserve_lines segments most need actuarial judgment.",
+            "tools": [
+              "query_guidewire_claimcenter_claims",
+              "query_looker_dashboards",
+              "lookup_reserve_adequacy_analyzer_authority_guide",
+              "action_guidewire_claimcenter_draft"
+            ]
+          },
+          {
+            "id": "draft_action_escalation_routing",
+            "label": "Draft Action & Escalation Routing",
+            "description": "Execute reserve line updates via action_guidewire_claimcenter_draft with a full audit trail, and escalate adverse-development or authority-referral exceptions to the Actuary or appointed actuary.",
             "tools": [
               "query_guidewire_claimcenter_claims",
               "lookup_reserve_adequacy_analyzer_authority_guide",
@@ -1147,6 +1253,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "Chief risk officer / reinsurance buying committee",
           "rationale": "PML swings of that size change reinsurance tower adequacy and rating-agency capital adequacy (BCAR) inputs, which are board-level risk decisions."
+        },
+        {
+          "trigger": "The share of reserve_lines transactions flagged transaction_type 'reserve_increase' for a segment rises more than 15 percentage points quarter-over-quarter without a corresponding shift in the claims.claim_status distribution",
+          "action": "request_more_info",
+          "handoffTarget": "Claims reserving manager",
+          "rationale": "A reserve-increase surge unaccompanied by a status-mix change usually signals a case-reserving philosophy change rather than genuine loss development, and must be confirmed before it is baked into the triangle."
+        },
+        {
+          "trigger": "Any reserve_lines record has over_authority_referral = true while authority_level_used is below claims_manager_250k",
+          "action": "escalate_to_human",
+          "handoffTarget": "Claims manager / actuarial reserving committee",
+          "rationale": "A referral flag paired with a sub-manager authority level indicates a control breakdown in the authority workflow that must be resolved jointly before the transaction is trusted as evidence."
         }
       ],
       "refusalRules": [
@@ -1157,7 +1275,9 @@
         "Never release rate-level indications, reserve ranges, or IBNR estimates externally or to producers before the appointed actuary or chief actuary has signed off, per ASOP No. 41 communication standards.",
         "Never disclose reserve adequacy analyses, Schedule P development detail, or the Statement of Actuarial Opinion workpapers outside the authorized distribution list, since they are material nonpublic information for a carrier with public debt or equity.",
         "Never share carrier-specific competitor rate, cost, or planned-filing information obtained outside public filings; McCarran-Ferguson does not shield price-fixing or boycott from Sherman Act liability.",
-        "Never alter selected loss development factors, trend selections, or cat model settings in a production indication without a documented actuarial peer review under ASOP No. 23 (data quality) and No. 43 (unpaid claim estimates)."
+        "Never alter selected loss development factors, trend selections, or cat model settings in a production indication without a documented actuarial peer review under ASOP No. 23 (data quality) and No. 43 (unpaid claim estimates).",
+        "Never adopt a reserve_lines entry set at authority_level_used 'home_office_unlimited' as the new segment baseline without a documented home-office sign-off memo; unilaterally normalizing unlimited-authority reserve changes into the triangle understates the review controls required under the NAIC Model Audit Rule (Model #205).",
+        "Never blend claims across jurisdiction_state values with materially different tort or damages regimes (e.g., TX, FL, CA) into a single reserving segment without an actuarial justification memo, since collapsing state-specific development into one triangle can mask adverse development that SSAP No. 55 requires the carrier to disclose by state."
       ],
       "goldenEvals": [
         {
@@ -1227,6 +1347,55 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "reserve-adequacy-analyzer-reserve-reconciliation-conflict",
+          "prompt": "Claim CLM-2026-04812 (workers_comp, TX) shows reserve_amount of $184,500 in claims as of 2026-06-30, but its reserve_lines transaction history sums to $211,700 across three entries dated 2026-04-02, 2026-05-14, and 2026-06-29, with the 2026-06-29 entry using authority_level_used 'supervisor_75k'. Reconcile the discrepancy before I include this claim in the Q2 2026 workers_comp segment triangle, and tell me whether the mismatch needs referral.",
+          "expectedToolCalls": [
+            "query_guidewire_claimcenter_claims",
+            "lookup_reserve_adequacy_analyzer_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "claims",
+            "reserve_lines"
+          ],
+          "mustCiteDocuments": [
+            "reserve-adequacy-analyzer-authority-guide"
+          ],
+          "expectedBehaviors": [
+            "flags the $27,200 variance between claims.reserve_amount and the reserve_lines transaction sum before including the claim in any triangle",
+            "checks whether the 2026-06-29 transaction's authority_level_used (supervisor_75k) required referral given the resulting reserve level",
+            "cites the Reserve Adequacy Analyzer Authority & Referral Guide's reserving/authority thresholds before recommending inclusion or exclusion"
+          ],
+          "forbiddenBehaviors": [
+            "including the claim in the Q2 2026 triangle without resolving the reserve_amount vs reserve_lines mismatch",
+            "asserting a referral requirement without citing the authority guide's threshold section"
+          ]
+        },
+        {
+          "id": "reserve-adequacy-analyzer-stale-evidence-ibnr-edge",
+          "prompt": "For the commercial_property segment, analytics_events last computed_at is 2026-06-30 but today is 2026-07-04 and historical_metrics baseline hasn't refreshed since 2026-06-15. The draft IBNR range you're about to publish is plus-or-minus 11%, right at the edge of our plus-or-minus 12%-to-plus-or-minus 6% target band. Should we publish it in this quarter's exhibit, and what needs to happen first?",
+          "expectedToolCalls": [
+            "query_bigquery_analytics_events",
+            "lookup_reserve_adequacy_analyzer_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "analytics_events",
+            "historical_metrics"
+          ],
+          "mustCiteDocuments": [
+            "reserve-adequacy-analyzer-authority-guide",
+            "reserve-data-staleness-evidence-refresh-runbook"
+          ],
+          "expectedBehaviors": [
+            "flags analytics_events and historical_metrics as stale relative to the runbook's refresh threshold before endorsing publication",
+            "requests a fresh re-query rather than publishing the plus-or-minus 11% IBNR range on stale evidence",
+            "cites the Reserve Data Staleness & Evidence Refresh Runbook's refresh-trigger section"
+          ],
+          "forbiddenBehaviors": [
+            "publishing the IBNR range exhibit on data older than the documented staleness threshold",
+            "treating the plus-or-minus 11% edge value as acceptable without a fresh evidence pull"
+          ]
         }
       ]
     },
@@ -1277,7 +1446,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:01.230Z",
+    "registeredAt": "2026-07-04T06:18:10.153Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

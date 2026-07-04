@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Proactive Outage Notification Orchestrator
-description: "The orchestrator maps each confirmed network incident to the exact affected customer base using service topology. It notifies affected customers via their preferred channel with cause, ETA, and updates as restoration progresses. so the Customer Experience Manager can move the Outage-driven inbound calls KPI."
+description: "Cut outage-driven inbound call volume on Genesys Cloud CX to 38% of pre-notification baseline and raise customers notified before calling from 12% to 78% by binding each confirmed ServiceNow incidents record to the exact affected customer_interactions and queue_metrics population and publishing cause/ETA messaging before contact volume peaks."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/proactive-outage-no
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:40.209Z"
+provenance_created_at: "2026-07-04T06:18:48.851Z"
 ---
 
 # Proactive Outage Notification Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:40.209Z"
 
 - **Persona:** Customer Experience Manager
 - **Department:** telco
-- **Objective:** The orchestrator maps each confirmed network incident to the exact affected customer base using service topology. It notifies affected customers via their preferred channel with cause, ETA, and updates as restoration progresses. so the Customer Experience Manager can move the Outage-driven inbound calls KPI.
+- **Objective:** Cut outage-driven inbound call volume on Genesys Cloud CX to 38% of pre-notification baseline and raise customers notified before calling from 12% to 78% by binding each confirmed ServiceNow incidents record to the exact affected customer_interactions and queue_metrics population and publishing cause/ETA messaging before contact volume peaks.
 
 ## KPI summary
 

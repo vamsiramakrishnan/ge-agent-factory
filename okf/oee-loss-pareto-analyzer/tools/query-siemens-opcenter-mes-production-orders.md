@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [shift_line_data_pull](/workflow/shift-line-data-pull.md)
+- [loss_bucket_decomposition_dollarization](/workflow/loss-bucket-decomposition-dollarization.md)
+- [pareto_publish_kaizen_handoff](/workflow/pareto-publish-kaizen-handoff.md)
 
 ## Evals
 
 - [Run the OEE Loss Pareto Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/oee-loss-pareto-analyzer-end-to-end.md)
+- [Production order 1483221 at plant 1020 shows a scrap_qty of 92 against a planned_qty of 640 for the July 2 day shift, but the BigQuery historical_metrics baseline for that line still shows quality-loss variance_pct at only -4% versus last month. Before you publish the loss Pareto to Looker, tell me which number governs and what the OEE Loss Classification and Calculation Standard says about dollarizing it.](/tests/oee-loss-pareto-analyzer-conflicting-baseline.md)
 
 ## Evidence emitted
 

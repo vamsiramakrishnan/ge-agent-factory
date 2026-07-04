@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [kvi_move_detection_elasticity_scoring](/workflow/kvi-move-detection-elasticity-scoring.md)
 
 ## Evals
 

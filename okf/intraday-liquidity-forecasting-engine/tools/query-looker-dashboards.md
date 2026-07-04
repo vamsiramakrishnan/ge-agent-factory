@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [funding_plan_publish_cutoff_escalation](/workflow/funding-plan-publish-cutoff-escalation.md)
 
 ## Evals
 

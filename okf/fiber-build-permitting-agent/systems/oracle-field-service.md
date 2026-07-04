@@ -26,3 +26,6 @@ field work orders, technician schedules, service appointments records
 
 - [query_oracle_field_service_field_work_orders](/tools/query-oracle-field-service-field-work-orders.md)
 - [action_oracle_field_service_escalate](/tools/action-oracle-field-service-escalate.md)
+- [query_oracle_field_service_technician_schedules](/tools/query-oracle-field-service-technician-schedules.md)
+- [query_oracle_field_service_service_appointments](/tools/query-oracle-field-service-service-appointments.md)
+- [lookup_fiber_build_permitting_agent_row_permit_playbook](/tools/lookup-fiber-build-permitting-agent-row-permit-playbook.md)

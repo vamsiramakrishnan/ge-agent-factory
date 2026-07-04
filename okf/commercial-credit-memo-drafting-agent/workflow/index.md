@@ -9,7 +9,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Deal Intake & Financial Spread Assembly](/workflow/deal-intake-financial-spread-assembly.md)
+2. [Global Exposure & Covenant Aggregation](/workflow/global-exposure-covenant-aggregation.md)
+3. [Policy & Authority Threshold Screening](/workflow/policy-authority-threshold-screening.md)
+4. [Narrative Drafting via Vertex AI](/workflow/narrative-drafting-via-vertex-ai.md)
+5. [Exception Escalation & Committee Routing](/workflow/exception-escalation-committee-routing.md)
+6. [Memo Generation & Audit Trail](/workflow/memo-generation-audit-trail.md)

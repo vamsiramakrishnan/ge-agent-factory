@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [EOL Signal & BOM Correlation](/workflow/eol-signal-bom-correlation.md)
+2. [Exposure & Last-Time-Buy Quantification](/workflow/exposure-last-time-buy-quantification.md)
+3. [SOP & Export-Control Citation Gate](/workflow/sop-export-control-citation-gate.md)
+4. [Disposition Recommendation & Change-Control Routing](/workflow/disposition-recommendation-change-control-routing.md)
+5. [Action Execution, Audit Trail & Escalation](/workflow/action-execution-audit-trail-escalation.md)

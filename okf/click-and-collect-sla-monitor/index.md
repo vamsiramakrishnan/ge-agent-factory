@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Click-and-Collect SLA Monitor"
-description: "Tracks every BOPIS order against its SLA clock and predicts breaches from store pick-rate telemetry. Escalates at-risk orders to store leadership and reroutes overflow to nearby locations with inventory. so the Fulfillment Operations Manager can move the BOPIS orders ready within 2-hour SLA KPI."
+description: "Continuously track every BOPIS and curbside online_orders record against its 2-hour SLA clock using Manhattan Active WM pick_tasks telemetry, predicting breaches early enough to lift BOPIS orders ready within 2-hour SLA from 81% to 97%, cut pickup order cancellation rate from 7.2% to 2.0%, and bring curbside wait time down from 11 minutes to 3 minutes."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/click-and-collect-s
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:25.468Z"
+provenance_created_at: "2026-07-04T06:18:34.496Z"
 ---
 
 # Click-and-Collect SLA Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:25.468Z"
 
 - **Persona:** Fulfillment Operations Manager
 - **Department:** retail
-- **Objective:** Tracks every BOPIS order against its SLA clock and predicts breaches from store pick-rate telemetry. Escalates at-risk orders to store leadership and reroutes overflow to nearby locations with inventory. so the Fulfillment Operations Manager can move the BOPIS orders ready within 2-hour SLA KPI.
+- **Objective:** Continuously track every BOPIS and curbside online_orders record against its 2-hour SLA clock using Manhattan Active WM pick_tasks telemetry, predicting breaches early enough to lift BOPIS orders ready within 2-hour SLA from 81% to 97%, cut pickup order cancellation rate from 7.2% to 2.0%, and bring curbside wait time down from 11 minutes to 3 minutes.
 
 ## KPI summary
 

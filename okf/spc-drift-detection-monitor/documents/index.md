@@ -7,3 +7,4 @@ timestamp: "2026-07-04T00:00:00.000Z"
 # Source Documents
 
 - [SPC Drift Detection Monitor Standard Operating Procedure](/documents/spc-drift-detection-monitor-sop.md)
+- [CTQ Characteristic Control Plan and Out-of-Control Reaction Plan](/documents/spc-drift-detection-monitor-control-plan.md)

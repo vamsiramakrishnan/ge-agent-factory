@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [escalation_board_reporting](/workflow/escalation-board-reporting.md)
 
 ## Evals
 
 - [Run the Credit Portfolio Concentration Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/credit-portfolio-concentration-monitor-end-to-end.md)
+- [The Looker dashboard shows CRE sector concentration at 71% of the board limit as of this morning, but the underlying BigQuery historical_metrics/analytics_events refresh is timestamped 2026-06-30 (four days stale) while three new CRE loan_applications were booked in nCino since then. Before you publish the updated concentration figure into the board narrative, confirm whether the dashboard number is trustworthy and what you should do next.](/tests/credit-portfolio-concentration-monitor-stale-baseline-conflict.md)
 
 ## Evidence emitted
 

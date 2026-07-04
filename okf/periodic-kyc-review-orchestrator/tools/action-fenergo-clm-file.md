@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [due_date_cohort_build](/workflow/due-date-cohort-build.md)
+- [activity_vs_profile_comparison](/workflow/activity-vs-profile-comparison.md)
+- [no_change_auto_completion_senior_routing](/workflow/no-change-auto-completion-senior-routing.md)
+- [policy_gated_filing_audit](/workflow/policy-gated-filing-audit.md)
 
 ## Evals
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Alarm Noise Reduction Engine
-description: "The engine correlates alarm storms into single root-cause cases using topology, timing, and learned fault signatures. It suppresses sympathetic and transient alarms while preserving a full evidence trail for audit. so the NOC Engineer can move the Actionable alarm ratio KPI."
+description: "Correlate raw Ericsson Network Manager network_alarms and cell_sites topology with Splunk log_events and BigQuery historical baselines into single root-cause incidents, lifting the actionable alarm ratio from 1 in 40 alarms to 1 in 3 alarms and cutting P1 MTTR from 4.2 hours to 1.4 hours while preserving a full audit trail."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/alarm-noise-reducti
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:35.140Z"
+provenance_created_at: "2026-07-04T06:18:43.800Z"
 ---
 
 # Alarm Noise Reduction Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:35.140Z"
 
 - **Persona:** NOC Engineer
 - **Department:** telco
-- **Objective:** The engine correlates alarm storms into single root-cause cases using topology, timing, and learned fault signatures. It suppresses sympathetic and transient alarms while preserving a full evidence trail for audit. so the NOC Engineer can move the Actionable alarm ratio KPI.
+- **Objective:** Correlate raw Ericsson Network Manager network_alarms and cell_sites topology with Splunk log_events and BigQuery historical baselines into single root-cause incidents, lifting the actionable alarm ratio from 1 in 40 alarms to 1 in 3 alarms and cutting P1 MTTR from 4.2 hours to 1.4 hours while preserving a full audit trail.
 
 ## KPI summary
 

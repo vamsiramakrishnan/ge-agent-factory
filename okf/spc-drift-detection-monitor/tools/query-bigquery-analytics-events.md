@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [signal_ingestion_characteristic_binding](/workflow/signal-ingestion-characteristic-binding.md)
+- [baseline_capability_reconciliation](/workflow/baseline-capability-reconciliation.md)
 
 ## Evals
 
 - [Run the SPC Drift Detection Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/spc-drift-detection-monitor-end-to-end.md)
+- [Quality check 5041872 shows bore_diameter measured_value 12.4180 against limits 12.4000-12.4300 with cpk 1.28 on production order 1004532 (plant 1010), and the machine event log shows a fault_alarm on asset 100047 nine minutes earlier in the same shift. Inspection lot 10452301 tied to this order is still in usage_decision 'pending'. Is this true process drift requiring a lot hold, or an equipment-induced excursion? Walk me through the evidence and your recommendation.](/tests/spc-drift-detection-monitor-fault-confound.md)
+- [The last quality_checks record for hardness_hrc on production order 1002210 (plant 2040) is timestamped 41 hours ago and shows cpk 1.31, just under the 1.33 minimum. No fresher check has been logged since the night shift change. Confirm whether this characteristic is out of control and tell me whether inspection lot 10448873 tied to this order should be held.](/tests/spc-drift-detection-monitor-stale-cpk-edge.md)
 
 ## Evidence emitted
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Fraud Rule Tuning Analyzer
-description: "Evaluates every Actimize rule weekly against confirmed-fraud outcomes in BigQuery, scoring precision, recall, and dollar coverage. Recommends threshold adjustments and retirement candidates with a projected impact on alert volume and detection rate. so the Fraud Strategy Manager can move the Alert volume per $1M protected KPI."
+description: "Cut Alert volume per $1M protected from 310 to 140 while lifting the fraud detection rate from 61% to 78% by weekly backtesting NICE Actimize fraud_alerts and transaction_risk_scores against confirmed-fraud outcomes in BigQuery, then recommending threshold and retirement changes through action_nice_actimize_recommend on a weekly rather than quarterly cycle."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/fraud-rule-tuning-a
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:45.800Z"
+provenance_created_at: "2026-07-04T06:17:54.144Z"
 ---
 
 # Fraud Rule Tuning Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:45.800Z"
 
 - **Persona:** Fraud Strategy Manager
 - **Department:** banking
-- **Objective:** Evaluates every Actimize rule weekly against confirmed-fraud outcomes in BigQuery, scoring precision, recall, and dollar coverage. Recommends threshold adjustments and retirement candidates with a projected impact on alert volume and detection rate. so the Fraud Strategy Manager can move the Alert volume per $1M protected KPI.
+- **Objective:** Cut Alert volume per $1M protected from 310 to 140 while lifting the fraud detection rate from 61% to 78% by weekly backtesting NICE Actimize fraud_alerts and transaction_risk_scores against confirmed-fraud outcomes in BigQuery, then recommending threshold and retirement changes through action_nice_actimize_recommend on a weekly rather than quarterly cycle.
 
 ## KPI summary
 

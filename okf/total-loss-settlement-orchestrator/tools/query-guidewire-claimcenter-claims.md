@@ -53,13 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [fnol_total_loss_trigger_intake](/workflow/fnol-total-loss-trigger-intake.md)
+- [title_salvage_payment_reconciliation](/workflow/title-salvage-payment-reconciliation.md)
 
 ## Evals
 
 - [Run the Total Loss Settlement Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/total-loss-settlement-orchestrator-end-to-end.md)
+- [Claim CLM-2026-05892 was declared a total loss on 2026-06-30. The vehicle valuation behind the proposed settlement offer was pulled from BigQuery historical_metrics on 2026-06-20 (10 days old), and finalizing the offer would push cumulative incurred on the claim from $98,400 to $104,750. Can we send the DocuSign settlement package today?](/tests/total-loss-settlement-orchestrator-stale-valuation-reserve-threshold.md)
 
 ## Evidence emitted
 

@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [alert_intake_case_binding](/workflow/alert-intake-case-binding.md)
+- [transaction_counterparty_reconstruction](/workflow/transaction-counterparty-reconstruction.md)
+- [narrative_drafting_disposition_recommendation](/workflow/narrative-drafting-disposition-recommendation.md)
+- [filing_escalation_audit_handoff](/workflow/filing-escalation-audit-handoff.md)
 
 ## Evals
 

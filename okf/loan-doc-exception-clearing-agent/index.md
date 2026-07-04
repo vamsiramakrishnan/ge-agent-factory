@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Loan Documentation Exception Clearing Agent
-description: "Classifies every new nCino exception by risk severity and cure path the moment it is created. Drafts borrower and insurer request letters, routes signature items through DocuSign, and opens ServiceNow tasks for internal cure steps. so the Loan Operations Manager can move the Open documentation exceptions KPI."
+description: "Classify and clear every open documentation exception in nCino Loan Origination's loan_applications, credit_memos, and covenant_records the moment it posts, cutting open documentation exceptions from 2,400 to 350 and average exception age from 94 days to 12 days while holding exam findings on collateral perfection to 0-1 per exam."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/loan-doc-exception-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:42.804Z"
+provenance_created_at: "2026-07-04T06:17:51.145Z"
 ---
 
 # Loan Documentation Exception Clearing Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:42.804Z"
 
 - **Persona:** Loan Operations Manager
 - **Department:** banking
-- **Objective:** Classifies every new nCino exception by risk severity and cure path the moment it is created. Drafts borrower and insurer request letters, routes signature items through DocuSign, and opens ServiceNow tasks for internal cure steps. so the Loan Operations Manager can move the Open documentation exceptions KPI.
+- **Objective:** Classify and clear every open documentation exception in nCino Loan Origination's loan_applications, credit_memos, and covenant_records the moment it posts, cutting open documentation exceptions from 2,400 to 350 and average exception age from 94 days to 12 days while holding exam findings on collateral perfection to 0-1 per exam.
 
 ## KPI summary
 

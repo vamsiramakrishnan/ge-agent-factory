@@ -9,7 +9,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Money-in-Motion Signal Scan](/workflow/money-in-motion-signal-scan.md)
+2. [Household & Account Context Pull](/workflow/household-account-context-pull.md)
+3. [Suitability & Concentration Screen](/workflow/suitability-concentration-screen.md)
+4. [Next Best Action Scoring](/workflow/next-best-action-scoring.md)
+5. [Evidence & Policy Citation Gate](/workflow/evidence-policy-citation-gate.md)
+6. [Task Creation, Escalation & Audit](/workflow/task-creation-escalation-audit.md)

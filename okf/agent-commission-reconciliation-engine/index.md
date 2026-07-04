@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Agent Commission Reconciliation Engine
-description: "Reconciles every commission line against the governing agency agreement, policy transactions, and premium collections in BigQuery. Flags rate mismatches, missed chargebacks, and duplicate payments before the statement run is released. so the Commission Accountant can move the Commission statement disputes per month KPI."
+description: "Reconcile every commission line in Guidewire BillingCenter's billing_accounts, premium_invoices, and payment_plans against the governing agency agreement before each statement run releases, cutting Commission statement disputes per month from 210 to 35 and reconciliation close time from 9 business days to 1.5 business days."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/agent-commission-re
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:57.288Z"
+provenance_created_at: "2026-07-04T06:18:06.146Z"
 ---
 
 # Agent Commission Reconciliation Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:57.288Z"
 
 - **Persona:** Commission Accountant
 - **Department:** insurance
-- **Objective:** Reconciles every commission line against the governing agency agreement, policy transactions, and premium collections in BigQuery. Flags rate mismatches, missed chargebacks, and duplicate payments before the statement run is released. so the Commission Accountant can move the Commission statement disputes per month KPI.
+- **Objective:** Reconcile every commission line in Guidewire BillingCenter's billing_accounts, premium_invoices, and payment_plans against the governing agency agreement before each statement run releases, cutting Commission statement disputes per month from 210 to 35 and reconciliation close time from 9 business days to 1.5 business days.
 
 ## KPI summary
 

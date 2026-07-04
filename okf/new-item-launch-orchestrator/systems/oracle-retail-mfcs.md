@@ -26,3 +26,6 @@ item master, merchandise hierarchy, cost changes records
 
 - [query_oracle_retail_mfcs_item_master](/tools/query-oracle-retail-mfcs-item-master.md)
 - [action_oracle_retail_mfcs_publish](/tools/action-oracle-retail-mfcs-publish.md)
+- [query_oracle_retail_mfcs_merchandise_hierarchy](/tools/query-oracle-retail-mfcs-merchandise-hierarchy.md)
+- [query_oracle_retail_mfcs_cost_changes](/tools/query-oracle-retail-mfcs-cost-changes.md)
+- [lookup_new_item_launch_orchestrator_vendor_compliance_manual](/tools/lookup-new-item-launch-orchestrator-vendor-compliance-manual.md)

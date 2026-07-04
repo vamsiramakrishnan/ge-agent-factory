@@ -53,8 +53,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [bad_actor_candidate_pull](/workflow/bad-actor-candidate-pull.md)
+- [defect_elimination_briefing_and_publish](/workflow/defect-elimination-briefing-and-publish.md)
 
 ## Evals
 

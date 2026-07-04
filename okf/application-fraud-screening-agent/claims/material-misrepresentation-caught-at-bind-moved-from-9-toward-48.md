@@ -37,3 +37,4 @@ Must cite: friss_fraud_detection.fraud_screening_scores, lexisnexis_risk_solutio
 # Citations
 
 - [Application Fraud Screening Agent Authority & Referral Guide](/documents/application-fraud-screening-agent-authority-guide.md)
+- [Producer Rate Evasion & Garaging Fraud Investigation Playbook](/documents/application-fraud-screening-agent-rate-evasion-playbook.md)

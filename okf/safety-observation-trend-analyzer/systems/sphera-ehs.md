@@ -26,3 +26,6 @@ safety incidents, permit records, emissions readings records
 
 - [query_sphera_ehs_safety_incidents](/tools/query-sphera-ehs-safety-incidents.md)
 - [action_sphera_ehs_publish](/tools/action-sphera-ehs-publish.md)
+- [query_sphera_ehs_permit_records](/tools/query-sphera-ehs-permit-records.md)
+- [query_sphera_ehs_emissions_readings](/tools/query-sphera-ehs-emissions-readings.md)
+- [lookup_bbs_observation_program_playbook](/tools/lookup-bbs-observation-program-playbook.md)

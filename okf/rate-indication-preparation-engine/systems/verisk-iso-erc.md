@@ -26,3 +26,6 @@ loss cost benchmarks, circular updates, territory factors records
 
 - [query_verisk_iso_erc_loss_cost_benchmarks](/tools/query-verisk-iso-erc-loss-cost-benchmarks.md)
 - [lookup_rate_indication_preparation_engine_authority_guide](/tools/lookup-rate-indication-preparation-engine-authority-guide.md)
+- [query_verisk_iso_erc_circular_updates](/tools/query-verisk-iso-erc-circular-updates.md)
+- [query_verisk_iso_erc_territory_factors](/tools/query-verisk-iso-erc-territory-factors.md)
+- [lookup_rate_indication_preparation_engine_serff_asop_crosswalk](/tools/lookup-rate-indication-preparation-engine-serff-asop-crosswalk.md)

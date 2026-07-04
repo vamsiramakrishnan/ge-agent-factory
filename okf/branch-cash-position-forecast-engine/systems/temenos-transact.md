@@ -26,3 +26,6 @@ core accounts, account transactions, standing orders records
 
 - [query_temenos_transact_core_accounts](/tools/query-temenos-transact-core-accounts.md)
 - [action_temenos_transact_publish](/tools/action-temenos-transact-publish.md)
+- [query_temenos_transact_account_transactions](/tools/query-temenos-transact-account-transactions.md)
+- [query_temenos_transact_standing_orders](/tools/query-temenos-transact-standing-orders.md)
+- [lookup_cash_in_transit_carrier_manifest_insurance_schedule](/tools/lookup-cash-in-transit-carrier-manifest-insurance-schedule.md)

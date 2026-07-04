@@ -53,10 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_exception_scan](/workflow/nightly-exception-scan.md)
+- [override_recommendation_playbook_citation](/workflow/override-recommendation-playbook-citation.md)
+- [publish_forecast_value_added_scoring](/workflow/publish-forecast-value-added-scoring.md)
 
 ## Evals
 

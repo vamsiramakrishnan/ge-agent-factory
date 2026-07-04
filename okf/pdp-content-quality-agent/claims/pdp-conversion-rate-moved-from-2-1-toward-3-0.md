@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, ga4.session_events
 # Citations
 
 - [PDP Content Quality Agent Retail Execution Playbook](/documents/pdp-content-quality-agent-execution-playbook.md)
+- [Supplier Product Content Feed Service-Level Agreement](/documents/supplier-content-feed-sla.md)

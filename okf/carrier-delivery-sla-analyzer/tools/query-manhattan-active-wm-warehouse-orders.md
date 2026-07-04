@@ -53,12 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [carrier_scan_order_intake](/workflow/carrier-scan-order-intake.md)
+- [dispute_drafting_recommend_action](/workflow/dispute-drafting-recommend-action.md)
 
 ## Evals
 
 - [Run the Carrier Delivery SLA Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/carrier-delivery-sla-analyzer-end-to-end.md)
+- [Carrier XPO disputes a $1,850 late-delivery deduction on warehouse order #48213910 out of DC 12 (ship date 2026-06-18), claiming an on-time delivery. The only evidence in Manhattan Active WM right now is the warehouse_orders ship-date field — pick_tasks for that load hasn't synced yet. Before you reverse the deduction, check BigQuery analytics_events for DC 12's on-time trend this period and tell me whether we can adjudicate this claim now or need more evidence.](/tests/carrier-delivery-sla-analyzer-invoice-dispute-reconciliation.md)
 
 ## Evidence emitted
 

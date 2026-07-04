@@ -25,3 +25,6 @@ warehouse orders, pick tasks, inventory snapshots records
 ## Tools using this system
 
 - [query_manhattan_active_wm_warehouse_orders](/tools/query-manhattan-active-wm-warehouse-orders.md)
+- [query_manhattan_active_wm_pick_tasks](/tools/query-manhattan-active-wm-pick-tasks.md)
+- [query_manhattan_active_wm_inventory_snapshots](/tools/query-manhattan-active-wm-inventory-snapshots.md)
+- [lookup_curbside_bopis_sla_service_schedule](/tools/lookup-curbside-bopis-sla-service-schedule.md)

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Holder Request Intake & Policy Match](/workflow/holder-request-intake-policy-match.md)
+2. [Coverage & Limits Verification](/workflow/coverage-limits-verification.md)
+3. [Wording Authority Gating](/workflow/wording-authority-gating.md)
+4. [ACORD Generation & DocuSign Delivery](/workflow/acord-generation-docu-sign-delivery.md)
+5. [Escalation & KPI Reconciliation](/workflow/escalation-kpi-reconciliation.md)

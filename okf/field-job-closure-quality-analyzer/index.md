@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Field Job Closure Quality Analyzer
-description: "The analyzer audits every closed job by checking photos, signal readings, and test results against workmanship standards. It scores technicians and crews on closure quality trends and recommends targeted coaching to their supervisors. so the Field Quality Auditor can move the Repeat dispatch within 30 days KPI."
+description: "Audit 100% of closed field_work_orders — completion photos, light-level readings, and test results — against workmanship standards to cut repeat dispatch within 30 days from 17% to 6% and raise as-built inventory accuracy from 82% to 97%, replacing the prior 2% manual sample review."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/field-job-closure-q
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:43.106Z"
+provenance_created_at: "2026-07-04T06:18:51.733Z"
 ---
 
 # Field Job Closure Quality Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:43.106Z"
 
 - **Persona:** Field Quality Auditor
 - **Department:** telco
-- **Objective:** The analyzer audits every closed job by checking photos, signal readings, and test results against workmanship standards. It scores technicians and crews on closure quality trends and recommends targeted coaching to their supervisors. so the Field Quality Auditor can move the Repeat dispatch within 30 days KPI.
+- **Objective:** Audit 100% of closed field_work_orders — completion photos, light-level readings, and test results — against workmanship standards to cut repeat dispatch within 30 days from 17% to 6% and raise as-built inventory accuracy from 82% to 97%, replacing the prior 2% manual sample review.
 
 ## KPI summary
 

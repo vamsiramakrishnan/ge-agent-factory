@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [backlog_ingestion_duplicate_clustering](/workflow/backlog-ingestion-duplicate-clustering.md)
 
 ## Evals
 

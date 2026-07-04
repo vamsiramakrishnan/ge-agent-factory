@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Flash-to-Final P&L Capture](/workflow/flash-to-final-p-l-capture.md)
+2. [Risk-Based Attribution Decomposition](/workflow/risk-based-attribution-decomposition.md)
+3. [Break Pattern Matching Against Historical Library](/workflow/break-pattern-matching-against-historical-library.md)
+4. [Evidence & Compliance Policy Gating](/workflow/evidence-compliance-policy-gating.md)
+5. [Sign-Off Publish & Desk Escalation](/workflow/sign-off-publish-desk-escalation.md)

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Active High-Risk Work & Permit Cross-Check](/workflow/active-high-risk-work-permit-cross-check.md)
+2. [Isolation & Atmospheric Prerequisite Verification](/workflow/isolation-atmospheric-prerequisite-verification.md)
+3. [Permit Clock & Emissions Deviation Correlation](/workflow/permit-clock-emissions-deviation-correlation.md)
+4. [SOP-Gated Notification & Escalation](/workflow/sop-gated-notification-escalation.md)
+5. [Evidence Pack Generation & Audit Trail](/workflow/evidence-pack-generation-audit-trail.md)

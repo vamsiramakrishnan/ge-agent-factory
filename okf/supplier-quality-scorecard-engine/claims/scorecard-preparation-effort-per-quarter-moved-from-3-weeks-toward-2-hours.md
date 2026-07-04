@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_qm.inspection_lots, sap_s_4hana_mm.purchase_orders
 # Citations
 
 - [Supplier Quality Scorecard Engine Standard Operating Procedure](/documents/supplier-quality-scorecard-engine-sop.md)
+- [Supplier Risk Classification & Improvement Plan Policy](/documents/supplier-risk-classification-policy.md)

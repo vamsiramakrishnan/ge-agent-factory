@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Permit-to-Work Compliance Monitor"
-description: "Cross-checks every active high-risk work order against valid permits in Sphera EHS in real time, including isolation and gas-test prerequisites. Notifies the area supervisor and EHS manager the moment work is detected against a missing, expired, or mismatched permit. so the EHS Manager can move the High-risk work performed without valid permit KPI."
+description: "Cross-checks every active permit_records entry against in-progress safety_incidents and open ServiceNow tickets in real time, verifying atmospheric_test_required and attendant_assigned prerequisites and the issue_date-plus-valid_hours permit clock, so high-risk work performed without a valid permit falls from 6 events per quarter to 0 and the expired-permit catch rate rises from 40% to 98%."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/permit-to-work-comp
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:15.785Z"
+provenance_created_at: "2026-07-04T06:18:24.799Z"
 ---
 
 # Permit-to-Work Compliance Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:15.785Z"
 
 - **Persona:** EHS Manager
 - **Department:** manufacturing
-- **Objective:** Cross-checks every active high-risk work order against valid permits in Sphera EHS in real time, including isolation and gas-test prerequisites. Notifies the area supervisor and EHS manager the moment work is detected against a missing, expired, or mismatched permit. so the EHS Manager can move the High-risk work performed without valid permit KPI.
+- **Objective:** Cross-checks every active permit_records entry against in-progress safety_incidents and open ServiceNow tickets in real time, verifying atmospheric_test_required and attendant_assigned prerequisites and the issue_date-plus-valid_hours permit clock, so high-risk work performed without a valid permit falls from 6 events per quarter to 0 and the expired-permit catch rate rises from 40% to 98%.
 
 ## KPI summary
 

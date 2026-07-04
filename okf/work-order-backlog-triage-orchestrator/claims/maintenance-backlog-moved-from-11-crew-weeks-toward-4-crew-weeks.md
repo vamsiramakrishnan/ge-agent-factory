@@ -37,3 +37,4 @@ Must cite: ibm_maximo.maintenance_work_orders, servicenow.tickets
 # Citations
 
 - [Work Order Backlog Triage Orchestrator Standard Operating Procedure](/documents/work-order-backlog-triage-orchestrator-sop.md)
+- [Preventive Maintenance Interval & Regulatory Compliance Schedule](/documents/work-order-backlog-triage-orchestrator-pm-compliance-schedule.md)

@@ -26,3 +26,6 @@ inspection lots, nonconformance records, capa actions records
 
 - [query_sap_s_4hana_qm_inspection_lots](/tools/query-sap-s-4hana-qm-inspection-lots.md)
 - [action_sap_s_4hana_qm_recommend](/tools/action-sap-s-4hana-qm-recommend.md)
+- [query_sap_s_4hana_qm_nonconformance_records](/tools/query-sap-s-4hana-qm-nonconformance-records.md)
+- [query_sap_s_4hana_qm_capa_actions](/tools/query-sap-s-4hana-qm-capa-actions.md)
+- [lookup_batch_record_ebr_data_integrity_policy](/tools/lookup-batch-record-ebr-data-integrity-policy.md)

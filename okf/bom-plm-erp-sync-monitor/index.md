@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "BOM PLM-ERP Sync Monitor"
-description: "Compares released PTC Windchill PLM structures against SAP S/4HANA PP production BOMs in BigQuery every night, item by item. Classifies each mismatch by cause — failed transfer, manual override, or pending change — and routes it to the right owner with fix instructions. so the PLM Administrator can move the BOM discrepancies between PLM and ERP KPI."
+description: "Reduce active BOM discrepancies between PTC Windchill PLM and SAP S/4HANA PP from 260 to 15 by nightly reconciling engineering_change_orders and bom_revisions against process_orders and material_stagings, cutting discrepancy detection lag from 3 weeks to 1 day and driving builds executed against stale BOMs from 6 per quarter to 0."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/bom-plm-erp-sync-mo
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:14.126Z"
+provenance_created_at: "2026-07-04T06:18:23.129Z"
 ---
 
 # BOM PLM-ERP Sync Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:14.126Z"
 
 - **Persona:** PLM Administrator
 - **Department:** manufacturing
-- **Objective:** Compares released PTC Windchill PLM structures against SAP S/4HANA PP production BOMs in BigQuery every night, item by item. Classifies each mismatch by cause — failed transfer, manual override, or pending change — and routes it to the right owner with fix instructions. so the PLM Administrator can move the BOM discrepancies between PLM and ERP KPI.
+- **Objective:** Reduce active BOM discrepancies between PTC Windchill PLM and SAP S/4HANA PP from 260 to 15 by nightly reconciling engineering_change_orders and bom_revisions against process_orders and material_stagings, cutting discrepancy detection lag from 3 weeks to 1 day and driving builds executed against stale BOMs from 6 per quarter to 0.
 
 ## KPI summary
 

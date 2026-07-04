@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [size_curve_forecast_intake](/workflow/size-curve-forecast-intake.md)
+- [pack_ratio_rounding_reconciliation](/workflow/pack-ratio-rounding-reconciliation.md)
+- [playbook_evidence_gate](/workflow/playbook-evidence-gate.md)
+- [mfcs_buy_plan_recommendation_audit](/workflow/mfcs-buy-plan-recommendation-audit.md)
 
 ## Evals
 

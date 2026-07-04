@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Advisor Next Best Action Engine
-description: "Detects money-in-motion signals such as large deposits, maturing instruments, and rollover-eligible balances from BigQuery in near real time. Recommends the next best action per client with a suggested product conversation and compliant talking points. so the Relationship Manager can move the Qualified advice conversations per month KPI."
+description: "Detect money-in-motion signals across client_households and financial_accounts using BigQuery analytics_events and historical_metrics, score and gate the next best action per household against advisory_referrals suitability data, and raise Qualified advice conversations per month from 6 per RM to 22 per RM while moving held-away asset capture toward $130M/yr."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/advisor-next-best-a
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:49.297Z"
+provenance_created_at: "2026-07-04T06:17:57.563Z"
 ---
 
 # Advisor Next Best Action Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:49.297Z"
 
 - **Persona:** Relationship Manager
 - **Department:** banking
-- **Objective:** Detects money-in-motion signals such as large deposits, maturing instruments, and rollover-eligible balances from BigQuery in near real time. Recommends the next best action per client with a suggested product conversation and compliant talking points. so the Relationship Manager can move the Qualified advice conversations per month KPI.
+- **Objective:** Detect money-in-motion signals across client_households and financial_accounts using BigQuery analytics_events and historical_metrics, score and gate the next best action per household against advisory_referrals suitability data, and raise Qualified advice conversations per month from 6 per RM to 22 per RM while moving held-away asset capture toward $130M/yr.
 
 ## KPI summary
 

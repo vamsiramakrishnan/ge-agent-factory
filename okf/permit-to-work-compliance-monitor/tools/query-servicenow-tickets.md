@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [active_high_risk_work_permit_cross_check](/workflow/active-high-risk-work-permit-cross-check.md)
 
 ## Evals
 
 - [Run the Permit-to-Work Compliance Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/permit-to-work-compliance-monitor-end-to-end.md)
+- [Permit 151874 (hot_work) was issued at 06:00 today with valid_hours 8, so it expires at 14:00. Sphera EHS still shows permit_status active at 15:40, but ServiceNow ticket INC0089213 for the same work order was marked resolved at 13:55. Reconcile whether crews are still authorized to be on that job and tell me what to do before shift change at 16:00.](/tests/permit-to-work-compliance-monitor-permit-clock-ticket-conflict.md)
 
 ## Evidence emitted
 

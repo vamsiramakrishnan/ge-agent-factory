@@ -53,12 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [forecast_override_intake](/workflow/forecast-override-intake.md)
+- [publish_escalate](/workflow/publish-escalate.md)
 
 ## Evals
 
 - [Run the Promo Forecast Accuracy Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/promo-forecast-accuracy-analyzer-end-to-end.md)
+- [For SKU 84213067 at store 1447, forecast_overrides shows an approved override_units of 620 units for the week of 2026-06-29 (override_reason: unmodeled_promotion, override_pct: 145%), but the matching demand_forecasts record for the same sku/store/week shows promo_lift_units of only 92 units with a wmape of 0.41. The post-event scorecard is due in 18 hours. Reconcile which volume should feed the incremental-lift decomposition and tell me whether we can publish.](/tests/promo-forecast-accuracy-analyzer-override-reconciliation.md)
 
 ## Evidence emitted
 

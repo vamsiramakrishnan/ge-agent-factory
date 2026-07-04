@@ -27,3 +27,5 @@ demand forecasts, forecast overrides, seasonal profiles records
 - [query_blue_yonder_demand_planning_demand_forecasts](/tools/query-blue-yonder-demand-planning-demand-forecasts.md)
 - [lookup_promo_forecast_accuracy_analyzer_execution_playbook](/tools/lookup-promo-forecast-accuracy-analyzer-execution-playbook.md)
 - [action_blue_yonder_demand_planning_publish](/tools/action-blue-yonder-demand-planning-publish.md)
+- [query_blue_yonder_demand_planning_forecast_overrides](/tools/query-blue-yonder-demand-planning-forecast-overrides.md)
+- [query_blue_yonder_demand_planning_seasonal_profiles](/tools/query-blue-yonder-demand-planning-seasonal-profiles.md)

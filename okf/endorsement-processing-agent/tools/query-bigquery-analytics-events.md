@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [audit_trail_turnaround_reconciliation](/workflow/audit-trail-turnaround-reconciliation.md)
 
 ## Evals
 

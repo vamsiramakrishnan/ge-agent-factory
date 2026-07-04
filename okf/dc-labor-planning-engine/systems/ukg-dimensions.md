@@ -25,3 +25,6 @@ shift schedules, timecards, labor forecasts records
 ## Tools using this system
 
 - [query_ukg_dimensions_shift_schedules](/tools/query-ukg-dimensions-shift-schedules.md)
+- [query_ukg_dimensions_timecards](/tools/query-ukg-dimensions-timecards.md)
+- [query_ukg_dimensions_labor_forecasts](/tools/query-ukg-dimensions-labor-forecasts.md)
+- [lookup_dc_labor_planning_engine_fair_workweek_engineered_standards_runbook](/tools/lookup-dc-labor-planning-engine-fair-workweek-engineered-standards-runbook.md)

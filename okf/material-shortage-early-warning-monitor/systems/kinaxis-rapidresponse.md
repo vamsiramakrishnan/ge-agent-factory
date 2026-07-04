@@ -26,3 +26,5 @@ supply plans, demand signals, scenario runs records
 
 - [query_kinaxis_rapidresponse_supply_plans](/tools/query-kinaxis-rapidresponse-supply-plans.md)
 - [lookup_material_shortage_early_warning_monitor_sop](/tools/lookup-material-shortage-early-warning-monitor-sop.md)
+- [query_kinaxis_rapidresponse_demand_signals](/tools/query-kinaxis-rapidresponse-demand-signals.md)
+- [query_kinaxis_rapidresponse_scenario_runs](/tools/query-kinaxis-rapidresponse-scenario-runs.md)

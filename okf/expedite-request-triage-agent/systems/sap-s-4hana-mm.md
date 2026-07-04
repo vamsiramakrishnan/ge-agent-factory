@@ -26,3 +26,4 @@ purchase orders, material movements, vendors records
 
 - [query_sap_s_4hana_mm_purchase_orders](/tools/query-sap-s-4hana-mm-purchase-orders.md)
 - [action_sap_s_4hana_mm_approve](/tools/action-sap-s-4hana-mm-approve.md)
+- [lookup_expedite_request_triage_agent_rate_schedule](/tools/lookup-expedite-request-triage-agent-rate-schedule.md)

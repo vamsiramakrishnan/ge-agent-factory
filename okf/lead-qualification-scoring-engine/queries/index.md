@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query subscriber accounts and service quotes from Salesforce Communications Cloud for the Lead Qualification Scoring Engine workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Inside Sales Representative's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Lead Qualification Scoring Engine Service Assurance Runbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the route step in Salesforce Communications Cloud with a full audit trail, and escalate exceptions to the Inside Sales Representative.](/queries/act-audit.md)
+- [Pull the new subscriber_accounts, service_quotes, and order_captures records from Salesforce Communications Cloud and verify serviceability_confirmed and credit_check_status before any scoring begins.](/queries/lead-intake-serviceability-check.md)
+- [Score the lead on service_type, rate_plan and product_bundle fit, tenure_months, and churn_risk_score signals, reconciling against any existing subscriber_accounts footprint for the same subscriber_key.](/queries/firmographic-usage-intent-scoring.md)
+- [Compare the lead's response-time and conversion signals against BigQuery analytics_events and historical_metrics, and pull Looker dashboards to confirm the lead qualifies against current-quarter MQL-to-SQL baselines.](/queries/historical-benchmark-conversion-analytics.md)
+- [Cite the Lead Qualification Scoring Engine Service Assurance Runbook and the Rate Card & Discount Delegation-of-Authority Matrix to validate discount_pct, contract_term, and credit_check_status before any quote or route action is authorized.](/queries/policy-discount-gate.md)
+- [Execute action_salesforce_communications_cloud_route to assign the hot lead to the correct territory rep in Salesforce Communications Cloud, attach the suggested opening talk track, and log the audit trail.](/queries/territory-routing-talk-track-handoff.md)

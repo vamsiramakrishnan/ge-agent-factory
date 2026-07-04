@@ -9,7 +9,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [In-Force Book Geocoding & Hazard Enrichment](/workflow/in-force-book-geocoding-hazard-enrichment.md)
+2. [Zone Accumulation Rollup](/workflow/zone-accumulation-rollup.md)
+3. [Evidence Validation & Authority Check](/workflow/evidence-validation-authority-check.md)
+4. [Publish & Reinsurer Schedule Distribution](/workflow/publish-reinsurer-schedule-distribution.md)

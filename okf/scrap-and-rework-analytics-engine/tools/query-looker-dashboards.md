@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [dashboard_publish_controller_escalation](/workflow/dashboard-publish-controller-escalation.md)
 
 ## Evals
 

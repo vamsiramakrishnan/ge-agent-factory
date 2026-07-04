@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [sim_swap_event_intake_correlation](/workflow/sim-swap-event-intake-correlation.md)
+- [step_up_hold_routing_block](/workflow/step-up-hold-routing-block.md)
+- [fraud_escalation_customer_notification](/workflow/fraud-escalation-customer-notification.md)
 
 ## Evals
 

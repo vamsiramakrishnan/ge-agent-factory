@@ -53,10 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [book_due_date_household_triage](/workflow/book-due-date-household-triage.md)
+- [account_holdings_retrieval](/workflow/account-holdings-retrieval.md)
+- [agenda_assembly_advisor_handoff](/workflow/agenda-assembly-advisor-handoff.md)
 
 ## Evals
 

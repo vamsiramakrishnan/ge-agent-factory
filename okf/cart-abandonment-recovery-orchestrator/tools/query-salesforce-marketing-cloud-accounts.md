@@ -52,13 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [cart_session_signal_capture](/workflow/cart-session-signal-capture.md)
+- [marketing_cloud_journey_orchestration_suppression](/workflow/marketing-cloud-journey-orchestration-suppression.md)
+- [evidence_gated_send_audit](/workflow/evidence-gated-send-audit.md)
 
 ## Evals
 
 - [Run the Cart Abandonment Recovery Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/cart-abandonment-recovery-orchestrator-end-to-end.md)
+- [Cart session_id 519204683 (cart_value $412.75, SKU catalog_status = 'live') abandoned at begin_checkout. The scoring model recommends a 9% incentive to recover it, which would put this week's rolling average discount per recovered order at 8.6% — more than halfway back to the pre-agent 12% blanket baseline. The Marketing Cloud accounts record for this customer shows a closed_won opportunity from a prior campaign. Decide whether to authorize the send.](/tests/cart-abandonment-recovery-orchestrator-discount-margin-edge.md)
 
 ## Evidence emitted
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [SIM Swap Event Intake & Correlation](/workflow/sim-swap-event-intake-correlation.md)
+2. [Behavioral Baseline & Risk Scoring](/workflow/behavioral-baseline-risk-scoring.md)
+3. [Step-Up Hold & Routing Block](/workflow/step-up-hold-routing-block.md)
+4. [Runbook-Gated Evidence Validation](/workflow/runbook-gated-evidence-validation.md)
+5. [Fraud Escalation & Customer Notification](/workflow/fraud-escalation-customer-notification.md)

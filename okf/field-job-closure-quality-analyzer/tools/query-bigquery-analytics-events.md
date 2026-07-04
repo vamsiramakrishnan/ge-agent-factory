@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [repeat_dispatch_technician_trend_scoring](/workflow/repeat-dispatch-technician-trend-scoring.md)
 
 ## Evals
 
 - [Run the Field Job Closure Quality Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/field-job-closure-quality-analyzer-end-to-end.md)
+- [Work order 34955012 for premise_id 5487221 (work_type install_fiber) has repeat_within_30d=true — the third truck roll to this premise in 19 days. The as-built submission attached to this closure lists a different splice enclosure location than the prior visit's as-built for the same premise, and the most recent analytics_events baseline row used for scoring has computed_at of 2026-05-02, which is 63 days stale relative to today. Recommend the next action and reconcile the inventory conflict.](/tests/field-job-closure-quality-analyzer-as-built-reconciliation.md)
 
 ## Evidence emitted
 

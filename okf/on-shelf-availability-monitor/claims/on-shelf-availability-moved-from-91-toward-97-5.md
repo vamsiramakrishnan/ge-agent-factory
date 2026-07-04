@@ -37,3 +37,4 @@ Must cite: oracle_xstore_pos.pos_transactions, bigquery.analytics_events
 # Citations
 
 - [On-Shelf Availability Monitor Retail Execution Playbook](/documents/on-shelf-availability-monitor-execution-playbook.md)
+- [Perpetual Inventory Adjustment & Cycle Count Authorization Policy](/documents/perpetual-inventory-adjustment-cycle-count-authorization-policy.md)

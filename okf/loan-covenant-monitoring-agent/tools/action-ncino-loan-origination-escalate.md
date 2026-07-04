@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [covenant_calendar_extraction](/workflow/covenant-calendar-extraction.md)
+- [financials_intake_ratio_computation](/workflow/financials-intake-ratio-computation.md)
+- [policy_runbook_evidence_gating](/workflow/policy-runbook-evidence-gating.md)
+- [escalation_waiver_memo_drafting](/workflow/escalation-waiver-memo-drafting.md)
 
 ## Evals
 

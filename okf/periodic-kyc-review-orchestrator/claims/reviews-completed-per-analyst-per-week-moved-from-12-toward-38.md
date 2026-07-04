@@ -37,3 +37,4 @@ Must cite: fenergo_clm.kyc_cases, bigquery.analytics_events
 # Citations
 
 - [Periodic KYC Review Orchestrator Banking Compliance Policy](/documents/periodic-kyc-review-orchestrator-compliance-policy.md)
+- [Periodic Review Risk-Rating & QA Sampling Work Instruction](/documents/periodic-kyc-review-risk-rating-work-instruction.md)

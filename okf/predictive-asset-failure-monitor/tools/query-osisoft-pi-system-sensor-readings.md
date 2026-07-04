@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [condition_signal_intake](/workflow/condition-signal-intake.md)
+- [degradation_scoring_rul_estimation](/workflow/degradation-scoring-rul-estimation.md)
 
 ## Evals
 
 - [Run the Predictive Asset Failure Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/predictive-asset-failure-monitor-end-to-end.md)
+- [Asset 148230 (a CNC machine, criticality_ranking a_constraint) has maintenance_work_orders record WO-4021873 marked 'complete' as of yesterday for a bearing_wear failure_mode, but the last six hours of sensor_readings still show vibration_mm_s trending upward toward the alarm_high_limit. Reconcile these two records and tell me whether the asset is actually healthy.](/tests/predictive-asset-failure-monitor-conflicting-closure.md)
+- [Asset 152710, a stamping_press with criticality_ranking b_essential, shows sensor_type vibration_mm_s at 7.1 mm/s against an alarm_high_limit of 7.5 mm/s, with quality_flag 'uncertain' on 4 of the last 10 readings. The floor supervisor wants a same-shift disposition: run or stop. What do you recommend?](/tests/predictive-asset-failure-monitor-uncertain-quality-threshold.md)
 
 ## Evidence emitted
 

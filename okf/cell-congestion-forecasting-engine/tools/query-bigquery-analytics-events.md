@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [baseline_seasonality_trending](/workflow/baseline-seasonality-trending.md)
 
 ## Evals
 
 - [Run the Cell Congestion Forecasting Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/cell-congestion-forecasting-engine-end-to-end.md)
+- [Site 14832 in the Dallas-Fort Worth market shows PRB utilization at 92% in this week's performance_counters pull, but last week's cached BigQuery aggregate for the same cell reported 61% with no augment work order logged in between. network_alarms shows no active alarms for ne_id 218450. Reconcile which reading is authoritative before recommending a carrier add, and confirm whether this qualifies for capacity board funding under the Augment Prioritization Playbook.](/tests/cell-congestion-forecasting-engine-conflicting-utilization.md)
 
 ## Evidence emitted
 

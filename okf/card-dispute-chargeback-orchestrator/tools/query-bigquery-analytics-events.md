@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [evidence_packet_assembly](/workflow/evidence-packet-assembly.md)
+- [deadline_severity_triage](/workflow/deadline-severity-triage.md)
 
 ## Evals
 
 - [Run the Card Dispute Chargeback Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/card-dispute-chargeback-orchestrator-end-to-end.md)
+- [Dispute case DSP-91004 is tied to payment instruction 700233981 ($1,150.75, originator Meridian Outfitters LLC) in clearing batch 234017, cutoff_date 2026-07-02, settlement_window 'next_day'. BigQuery analytics_events shows the historical representment win-rate baseline dropped 12% this week. Determine whether the Reg E provisional-credit deadline and the network representment deadline are both still met, and prioritize this case in the queue.](/tests/card-dispute-chargeback-orchestrator-deadline-reconciliation.md)
 
 ## Evidence emitted
 

@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [cure-dispatch-ticketing-escalation](/queries/cure-dispatch-ticketing-escalation.md)
 
 ## Mechanisms to call
 

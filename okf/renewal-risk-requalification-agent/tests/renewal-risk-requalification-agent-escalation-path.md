@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [renewal-book-selection-90-day-trigger](/queries/renewal-book-selection-90-day-trigger.md)
 
 ## Mechanisms to call
 

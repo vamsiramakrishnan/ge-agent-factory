@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [cure_dispatch_ticketing_escalation](/workflow/cure-dispatch-ticketing-escalation.md)
 
 ## Evals
 

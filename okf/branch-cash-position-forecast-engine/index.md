@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Branch Cash Position Forecast Engine
-description: "Forecasts daily cash demand per branch and ATM from Temenos Transact transaction history, seasonality, and local payroll calendars. Generates optimized shipment and return orders for the armored-carrier schedule and publishes them to each branch every morning. so the Branch Operations Manager can move the Emergency cash shipments per month KPI."
+description: "Forecast next-day vault and ATM cash demand per branch from Temenos Transact account_transactions, standing_orders payroll cycles, and BigQuery historical_metrics seasonality, then size and publish armored-carrier shipment/return orders so Emergency cash shipments per month fall from 45 to 8 and idle vault cash across the network drops from $18M to $7M."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/branch-cash-positio
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:41.548Z"
+provenance_created_at: "2026-07-04T06:17:49.813Z"
 ---
 
 # Branch Cash Position Forecast Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:41.548Z"
 
 - **Persona:** Branch Operations Manager
 - **Department:** banking
-- **Objective:** Forecasts daily cash demand per branch and ATM from Temenos Transact transaction history, seasonality, and local payroll calendars. Generates optimized shipment and return orders for the armored-carrier schedule and publishes them to each branch every morning. so the Branch Operations Manager can move the Emergency cash shipments per month KPI.
+- **Objective:** Forecast next-day vault and ATM cash demand per branch from Temenos Transact account_transactions, standing_orders payroll cycles, and BigQuery historical_metrics seasonality, then size and publish armored-carrier shipment/return orders so Emergency cash shipments per month fall from 45 to 8 and idle vault cash across the network drops from $18M to $7M.
 
 ## KPI summary
 

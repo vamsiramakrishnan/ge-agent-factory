@@ -37,3 +37,4 @@ Must cite: siemens_opcenter_mes.production_orders, sap_s_4hana_pp.process_orders
 # Citations
 
 - [Scrap and Rework Analytics Engine Standard Operating Procedure](/documents/scrap-and-rework-analytics-engine-sop.md)
+- [Scrap and Rework Cost Attribution Standard](/documents/scrap-rework-cost-attribution-standard.md)

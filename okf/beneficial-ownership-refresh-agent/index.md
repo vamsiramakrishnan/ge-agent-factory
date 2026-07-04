@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Beneficial Ownership Refresh Agent
-description: "Pre-screens each due refresh by comparing Fenergo records against corporate registries and flags entities with actual ownership changes. Drafts targeted outreach requesting only the changed documents and routes certification forms through DocuSign. so the KYC Analyst can move the Ownership refreshes completed on schedule KPI."
+description: "Complete each entity customer's periodic beneficial-ownership refresh in Fenergo CLM by distinguishing genuine ownership changes from no-change rollovers against corporate registry and FinCEN BOI data, driving ownership refreshes completed on schedule from 64% to 97% while cutting average refresh cycle time from 21 days to 4 days."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/beneficial-ownershi
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:46.231Z"
+provenance_created_at: "2026-07-04T06:17:54.567Z"
 ---
 
 # Beneficial Ownership Refresh Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:46.231Z"
 
 - **Persona:** KYC Analyst
 - **Department:** banking
-- **Objective:** Pre-screens each due refresh by comparing Fenergo records against corporate registries and flags entities with actual ownership changes. Drafts targeted outreach requesting only the changed documents and routes certification forms through DocuSign. so the KYC Analyst can move the Ownership refreshes completed on schedule KPI.
+- **Objective:** Complete each entity customer's periodic beneficial-ownership refresh in Fenergo CLM by distinguishing genuine ownership changes from no-change rollovers against corporate registry and FinCEN BOI data, driving ownership refreshes completed on schedule from 64% to 97% while cutting average refresh cycle time from 21 days to 4 days.
 
 ## KPI summary
 

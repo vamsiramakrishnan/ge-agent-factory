@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [refresh-due-date-triage](/queries/refresh-due-date-triage.md)
 
 ## Mechanisms to call
 

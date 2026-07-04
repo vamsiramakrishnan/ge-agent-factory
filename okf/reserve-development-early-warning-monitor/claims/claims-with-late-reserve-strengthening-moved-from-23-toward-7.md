@@ -37,3 +37,4 @@ Must cite: guidewire_claimcenter.claims, bigquery.analytics_events
 # Citations
 
 - [Reserve Development Early Warning Monitor Authority & Referral Guide](/documents/reserve-development-early-warning-monitor-authority-guide.md)
+- [Reserve Diary & Stair-Step Prevention Runbook](/documents/reserve-diary-stairstep-prevention-runbook.md)

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: AML Alert Investigation Agent
-description: "Assembles a complete investigation file for each Actimize alert, including transaction flows, counterparty graphs, and screening history from BigQuery. Drafts a structured case narrative summarizing activity patterns against the customer's expected profile. so the AML Investigator can move the Average investigation time per alert KPI."
+description: "Cut the average investigation time per NICE Actimize fraud_alerts case from 95 minutes to 25 minutes by auto-assembling the investigation_cases file (transaction_risk_scores, counterparty history, and BigQuery baseline evidence) and drafting a citation-backed narrative before the AML Investigator opens the case, while holding QA rework on those narratives at or below 5%."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/aml-alert-investiga
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:46.692Z"
+provenance_created_at: "2026-07-04T06:17:54.996Z"
 ---
 
 # AML Alert Investigation Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:46.692Z"
 
 - **Persona:** AML Investigator
 - **Department:** banking
-- **Objective:** Assembles a complete investigation file for each Actimize alert, including transaction flows, counterparty graphs, and screening history from BigQuery. Drafts a structured case narrative summarizing activity patterns against the customer's expected profile. so the AML Investigator can move the Average investigation time per alert KPI.
+- **Objective:** Cut the average investigation time per NICE Actimize fraud_alerts case from 95 minutes to 25 minutes by auto-assembling the investigation_cases file (transaction_risk_scores, counterparty history, and BigQuery baseline evidence) and drafting a citation-backed narrative before the AML Investigator opens the case, while holding QA rework on those narratives at or below 5%.
 
 ## KPI summary
 

@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [near_net_lateral_build_cost_interval_scoring](/workflow/near-net-lateral-build-cost-interval-scoring.md)
 
 ## Evals
 
 - [Run the Site Serviceability Qualification Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/site-serviceability-qualification-agent-end-to-end.md)
+- [Multi-site qualification request for subscriber account 3124589901: the BigQuery analytics_events refresh for that region shows computed_at of 2026-07-01, more than 24 hours stale against today's 2026-07-04 run, and the TELCO 3 facilities record (telco_3_records source_record_id 91027) puts the site at approximately 480 feet from the nearest lit fiber route — right at the near-net lateral threshold. Can we qualify this site as on-net fiber today, and if not, what access technology and cost/interval should we quote?](/tests/site-serviceability-qualification-agent-stale-evidence-near-net-edge.md)
 
 ## Evidence emitted
 

@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [monthly-household-account-roster-pull](/queries/monthly-household-account-roster-pull.md)
 
 ## Mechanisms to call
 

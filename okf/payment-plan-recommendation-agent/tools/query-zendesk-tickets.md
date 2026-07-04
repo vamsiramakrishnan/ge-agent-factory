@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [account_billing_status_pull](/workflow/account-billing-status-pull.md)
+- [plan_application_interaction_logging](/workflow/plan-application-interaction-logging.md)
 
 ## Evals
 
 - [Run the Payment Plan Recommendation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/payment-plan-recommendation-agent-end-to-end.md)
+- [Billing account BAC-004821 (policy POL-7723190) shows past_due_amount of $842.16 and account_status pending_cancel_nonpay, with a next_installment_date of 2026-06-18 already past. The customer called today, 2026-07-04, insisting they mailed a check on 2026-06-25 that BillingCenter hasn't posted. Recommend a payment plan and say whether the account can be saved from cancellation.](/tests/payment-plan-recommendation-agent-stale-payment-dispute.md)
 
 ## Evidence emitted
 

@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
 - [lookup_legacy_service_migration_orchestrator_assurance_runbook](/tools/lookup-legacy-service-migration-orchestrator-assurance-runbook.md)
 - [action_netcracker_service_orchestration_escalate](/tools/action-netcracker-service-orchestration-escalate.md)
+- [query_netcracker_service_orchestration_provisioning_tasks](/tools/query-netcracker-service-orchestration-provisioning-tasks.md)
+- [query_netcracker_service_orchestration_network_inventory_items](/tools/query-netcracker-service-orchestration-network-inventory-items.md)
+- [lookup_legacy_service_migration_orchestrator_copper_retirement_bulletin](/tools/lookup-legacy-service-migration-orchestrator-copper-retirement-bulletin.md)

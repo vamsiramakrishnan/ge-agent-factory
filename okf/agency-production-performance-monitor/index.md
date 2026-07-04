@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Agency Production Performance Monitor
-description: "Runs weekly production scans across the Duck Creek book in BigQuery and detects agencies with falling quote volume, hit ratio, or retention. Generates a briefing pack for each flagged agency with trend charts and recommended talking points before the distribution manager's visit. so the Agency Distribution Manager can move the Time to detect declining agency production KPI."
+description: "Detect agencies in the Duck Creek Policy book whose quote volume, hit ratio, or retention is slipping, using BigQuery historical baselines, and surface a cited briefing pack to the Agency Distribution Manager within one week of the decline starting -- cutting the detection lag from one quarter to one week and prep time per agency review from 3 hours to 20 minutes."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/agency-production-p
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:53.927Z"
+provenance_created_at: "2026-07-04T06:18:02.273Z"
 ---
 
 # Agency Production Performance Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:53.927Z"
 
 - **Persona:** Agency Distribution Manager
 - **Department:** insurance
-- **Objective:** Runs weekly production scans across the Duck Creek book in BigQuery and detects agencies with falling quote volume, hit ratio, or retention. Generates a briefing pack for each flagged agency with trend charts and recommended talking points before the distribution manager's visit. so the Agency Distribution Manager can move the Time to detect declining agency production KPI.
+- **Objective:** Detect agencies in the Duck Creek Policy book whose quote volume, hit ratio, or retention is slipping, using BigQuery historical baselines, and surface a cited briefing pack to the Agency Distribution Manager within one week of the decline starting -- cutting the detection lag from one quarter to one week and prep time per agency review from 3 hours to 20 minutes.
 
 ## KPI summary
 

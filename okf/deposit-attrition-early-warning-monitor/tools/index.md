@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_deposit_attrition_early_warning_monitor_compliance_policy](/tools/lookup-deposit-attrition-early-warning-monitor-compliance-policy.md)
 - [action_temenos_transact_publish](/tools/action-temenos-transact-publish.md)
+- [query_temenos_transact_account_transactions](/tools/query-temenos-transact-account-transactions.md)
+- [query_temenos_transact_standing_orders](/tools/query-temenos-transact-standing-orders.md)
+- [lookup_deposit_retention_offer_authority_matrix](/tools/lookup-deposit-retention-offer-authority-matrix.md)

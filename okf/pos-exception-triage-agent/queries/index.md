@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query pos transactions and tender records from Oracle Xstore POS and correlate with Zendesk for the POS Exception Triage Agent workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Store Manager's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the POS Exception Triage Agent Retail Execution Playbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in Oracle Xstore POS with a full audit trail, and escalate exceptions to the Store Manager.](/queries/act-audit.md)
+- [Poll Oracle Xstore POS pos_transactions, tender_records, and store_shift_summaries for the failure signatures (void spikes, offline auth flags, dead registers) that precede an associate calling the help desk.](/queries/register-health-signal-intake.md)
+- [Query Zendesk tickets and macros for the same store/register_number combination so the agent enriches an existing ticket instead of opening a duplicate, and pulls satisfaction_scores context on the assignee's recent close-outs.](/queries/ticket-correlation-dedup.md)
+- [Compare the current tender_type and settlement pattern against BigQuery historical_metrics, analytics_events, and cached_aggregates baselines to identify a known repeat-cause signature (tender driver fault, printer jam, network sync loss) rather than treating every incident as novel.](/queries/root-cause-pattern-match.md)
+- [Score the incident P1-P4 and decide self-heal versus escalate by citing the required sections of the POS Exception Triage Agent Retail Execution Playbook and, for card-present exceptions, the EMV Fallback & Offline Authorization Risk Bulletin.](/queries/playbook-gated-severity-scoring.md)
+- [Call action_oracle_xstore_pos_escalate against Oracle Xstore POS with the evidence trail attached, then notify the Store Manager of lane-down status and expected time-to-resolve.](/queries/escalation-lane-status-notification.md)

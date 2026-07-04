@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: RAN Parameter Optimization Agent
-description: "The agent analyzes per-cell performance counters and geolocated call traces to identify the worst-offending parameter sets weekly. It recommends specific tilt, power, and mobility parameter changes with predicted KPI impact, and stages them for engineer approval. so the RF Optimization Engineer can move the Drop call rate in optimized clusters KPI."
+description: "The agent scores per-cluster performance_counters and network_alarms against historical_metrics baselines to identify the worst-offending tilt, power, and mobility parameter sets, stages tilt/power/handover-threshold changes for RF Optimization Engineer approval, and verifies post-change KPIs within 24 hours -- driving drop call rate in optimized clusters from 0.9% to 0.35% and handover failure rate from 2.8% to 1.1%."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/ran-parameter-optim
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:36.865Z"
+provenance_created_at: "2026-07-04T06:18:45.476Z"
 ---
 
 # RAN Parameter Optimization Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:36.865Z"
 
 - **Persona:** RF Optimization Engineer
 - **Department:** telco
-- **Objective:** The agent analyzes per-cell performance counters and geolocated call traces to identify the worst-offending parameter sets weekly. It recommends specific tilt, power, and mobility parameter changes with predicted KPI impact, and stages them for engineer approval. so the RF Optimization Engineer can move the Drop call rate in optimized clusters KPI.
+- **Objective:** The agent scores per-cluster performance_counters and network_alarms against historical_metrics baselines to identify the worst-offending tilt, power, and mobility parameter sets, stages tilt/power/handover-threshold changes for RF Optimization Engineer approval, and verifies post-change KPIs within 24 hours -- driving drop call rate in optimized clusters from 0.9% to 0.35% and handover failure rate from 2.8% to 1.1%.
 
 ## KPI summary
 

@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [agenda_assembly_advisor_handoff](/workflow/agenda-assembly-advisor-handoff.md)
 
 ## Evals
 

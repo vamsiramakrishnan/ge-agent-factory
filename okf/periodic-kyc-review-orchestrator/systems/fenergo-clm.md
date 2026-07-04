@@ -26,3 +26,6 @@ kyc cases, entity profiles, screening results records
 
 - [query_fenergo_clm_kyc_cases](/tools/query-fenergo-clm-kyc-cases.md)
 - [action_fenergo_clm_file](/tools/action-fenergo-clm-file.md)
+- [query_fenergo_clm_entity_profiles](/tools/query-fenergo-clm-entity-profiles.md)
+- [query_fenergo_clm_screening_results](/tools/query-fenergo-clm-screening-results.md)
+- [lookup_periodic_kyc_review_risk_rating_work_instruction](/tools/lookup-periodic-kyc-review-risk-rating-work-instruction.md)

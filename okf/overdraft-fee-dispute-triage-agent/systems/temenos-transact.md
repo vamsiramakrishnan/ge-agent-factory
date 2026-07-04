@@ -26,3 +26,6 @@ core accounts, account transactions, standing orders records
 
 - [query_temenos_transact_core_accounts](/tools/query-temenos-transact-core-accounts.md)
 - [action_temenos_transact_escalate](/tools/action-temenos-transact-escalate.md)
+- [query_temenos_transact_account_transactions](/tools/query-temenos-transact-account-transactions.md)
+- [query_temenos_transact_standing_orders](/tools/query-temenos-transact-standing-orders.md)
+- [lookup_overdraft_courtesy_waiver_authority_matrix](/tools/lookup-overdraft-courtesy-waiver-authority-matrix.md)

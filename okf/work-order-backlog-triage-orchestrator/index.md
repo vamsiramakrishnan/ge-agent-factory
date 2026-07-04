@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Work Order Backlog Triage Orchestrator
-description: "Scores the entire IBM Maximo backlog weekly on asset criticality, safety impact, age, and parts availability from BigQuery. Merges duplicate requests, bundles work orders on the same asset into single visits, and drafts the weekly schedule proposal. so the Maintenance Supervisor can move the Maintenance backlog KPI."
+description: "Score every open maintenance_work_order in IBM Maximo against asset_registry_entries.criticality_ranking, failure_codes recurrence, age, and parts/crew feasibility each week so the Maintenance Supervisor cuts the Maintenance backlog from 11 crew-weeks to 4 crew-weeks and lifts Schedule compliance from 61% to 85% without the standing 3-hour Monday planning meeting."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/work-order-backlog-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:10.718Z"
+provenance_created_at: "2026-07-04T06:18:19.765Z"
 ---
 
 # Work Order Backlog Triage Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:10.718Z"
 
 - **Persona:** Maintenance Supervisor
 - **Department:** manufacturing
-- **Objective:** Scores the entire IBM Maximo backlog weekly on asset criticality, safety impact, age, and parts availability from BigQuery. Merges duplicate requests, bundles work orders on the same asset into single visits, and drafts the weekly schedule proposal. so the Maintenance Supervisor can move the Maintenance backlog KPI.
+- **Objective:** Score every open maintenance_work_order in IBM Maximo against asset_registry_entries.criticality_ranking, failure_codes recurrence, age, and parts/crew feasibility each week so the Maintenance Supervisor cuts the Maintenance backlog from 11 crew-weeks to 4 crew-weeks and lifts Schedule compliance from 61% to 85% without the standing 3-hour Monday planning meeting.
 
 ## KPI summary
 

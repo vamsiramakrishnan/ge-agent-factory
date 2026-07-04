@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_mes_sap_scrap_attribution_pull](/workflow/nightly-mes-sap-scrap-attribution-pull.md)
+- [sop_evidence_gate_variance_narrative_draft](/workflow/sop-evidence-gate-variance-narrative-draft.md)
+- [dashboard_publish_controller_escalation](/workflow/dashboard-publish-controller-escalation.md)
 
 ## Evals
 

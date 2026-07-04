@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: OEE Loss Pareto Analyzer
-description: "Decomposes OEE into availability, performance, and quality losses per line, shift, and SKU from MES data in BigQuery on request. Generates a ranked loss Pareto with dollarized impact and highlights the single biggest addressable loss bucket. so the Continuous Improvement Lead can move the OEE KPI."
+description: "Decompose OEE into availability, performance, and quality losses by line, shift, and SKU using Siemens Opcenter MES production_orders, machine_events, and quality_checks records cross-checked against BigQuery historical_metrics and analytics_events, producing a dollarized loss Pareto in under 5 minutes so Kaizen events move from 40% to 95% data-backed selection while OEE climbs from 71% toward 79%."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/oee-loss-pareto-ana
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:06.112Z"
+provenance_created_at: "2026-07-04T06:18:15.113Z"
 ---
 
 # OEE Loss Pareto Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:06.112Z"
 
 - **Persona:** Continuous Improvement Lead
 - **Department:** manufacturing
-- **Objective:** Decomposes OEE into availability, performance, and quality losses per line, shift, and SKU from MES data in BigQuery on request. Generates a ranked loss Pareto with dollarized impact and highlights the single biggest addressable loss bucket. so the Continuous Improvement Lead can move the OEE KPI.
+- **Objective:** Decompose OEE into availability, performance, and quality losses by line, shift, and SKU using Siemens Opcenter MES production_orders, machine_events, and quality_checks records cross-checked against BigQuery historical_metrics and analytics_events, producing a dollarized loss Pareto in under 5 minutes so Kaizen events move from 40% to 95% data-backed selection while OEE climbs from 71% toward 79%.
 
 ## KPI summary
 

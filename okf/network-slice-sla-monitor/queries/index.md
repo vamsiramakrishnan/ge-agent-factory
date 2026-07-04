@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query network alarms and cell sites from Ericsson Network Manager and correlate with ServiceNow for the 5G Network Slice SLA Monitor workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Service Assurance Manager's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the 5G Network Slice SLA Monitor Service Assurance Runbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in Ericsson Network Manager with a full audit trail, and escalate exceptions to the Service Assurance Manager.](/queries/act-audit.md)
+- [Pull network_alarms, cell_sites, and performance_counters for the affected NE/site cohort from Ericsson Network Manager, and correlate open tickets and incidents in ServiceNow before any scoring begins.](/queries/slice-telemetry-alarm-intake.md)
+- [Query BigQuery analytics_events against historical_metrics and cached_aggregates to compute variance_pct on latency, throughput, and availability counters versus each slice's contracted baseline.](/queries/baseline-variance-analysis.md)
+- [Score alarm severity, prb_utilization_dl_pct, volte_drop_rate_pct, and cell_availability_pct against the per-slice SLO thresholds in the SLA Credit Schedule, and compute the dollar credit exposure for any breach.](/queries/breach-scoring-credit-exposure.md)
+- [Cross-check every network_alarms and analytics_events finding against the 5G Network Slice SLA Monitor Service Assurance Runbook's cited sections before a recommendation or escalation is drafted.](/queries/runbook-evidence-validation.md)
+- [Open or update the linked ServiceNow ticket/incident, execute action_servicenow_escalate with the two-system evidence trail attached, and record the generated_audit_trail entry for the Service Assurance Manager.](/queries/escalation-ticketing-audit-close-out.md)

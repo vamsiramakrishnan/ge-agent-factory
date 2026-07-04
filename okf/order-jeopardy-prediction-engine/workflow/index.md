@@ -9,7 +9,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Order & Task Intake](/workflow/order-task-intake.md)
+2. [Baseline Comparison & Slip Scoring](/workflow/baseline-comparison-slip-scoring.md)
+3. [Runbook & SLA Evidence Validation](/workflow/runbook-sla-evidence-validation.md)
+4. [Recovery Drafting, Notification & Audit](/workflow/recovery-drafting-notification-audit.md)

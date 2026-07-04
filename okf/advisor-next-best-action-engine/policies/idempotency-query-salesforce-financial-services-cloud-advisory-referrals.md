@@ -1,0 +1,29 @@
+---
+type: Policy
+title: Idempotency policy — query_salesforce_financial_services_cloud_advisory_referrals
+description: Use idempotency key target_id+rationale for query_salesforce_financial_services_cloud_advisory_referrals.
+source_id: "idempotency-query-salesforce-financial-services-cloud-advisory-referrals"
+tags:
+  - banking
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+source_kind: generationSpec
+source_path: generationSpec.apis.salesforce_financial_services_cloud_recommend_api
+generation_status: generated
+ge_status: generated
+---
+
+# Idempotency policy — query_salesforce_financial_services_cloud_advisory_referrals
+
+- **Policy kind:** tool idempotency
+- **Spec source:** generationSpec.apis.salesforce_financial_services_cloud_recommend_api
+- **Tool:** [query_salesforce_financial_services_cloud_advisory_referrals](/tools/query-salesforce-financial-services-cloud-advisory-referrals.md)
+
+## Rule
+
+Use idempotency key target_id+rationale for query_salesforce_financial_services_cloud_advisory_referrals.
+
+# Citations
+
+- [query_salesforce_financial_services_cloud_advisory_referrals](/tools/query-salesforce-financial-services-cloud-advisory-referrals.md)

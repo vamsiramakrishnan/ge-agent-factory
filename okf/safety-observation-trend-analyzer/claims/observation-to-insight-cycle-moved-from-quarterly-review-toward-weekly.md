@@ -37,3 +37,4 @@ Must cite: sphera_ehs.safety_incidents, bigquery.analytics_events
 # Citations
 
 - [Safety Observation Trend Analyzer Standard Operating Procedure](/documents/safety-observation-trend-analyzer-sop.md)
+- [Behavior-Based Safety Observation Program Playbook](/documents/bbs-observation-program-playbook.md)

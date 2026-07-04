@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Premium Delinquency Outreach Agent
-description: "Scores every past-due account nightly on cure likelihood using payment history and policy tenure in BigQuery. Sends personalized, channel-appropriate reminders through Salesforce Marketing Cloud, including one-tap payment links and card-update prompts. so the Billing Operations Analyst can move the Cure rate before cancellation KPI."
+description: "Lift the Cure rate before cancellation KPI from 54% to 81% by nightly scoring every past-due billing_accounts record in BigQuery on self-cure likelihood, then routing personalized, channel-appropriate reminders through Salesforce Marketing Cloud while escalating only low-cure-probability, high-premium accounts to a Billing Operations Analyst with a suggested payment arrangement."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/premium-delinquency
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:56.845Z"
+provenance_created_at: "2026-07-04T06:18:05.604Z"
 ---
 
 # Premium Delinquency Outreach Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:56.845Z"
 
 - **Persona:** Billing Operations Analyst
 - **Department:** insurance
-- **Objective:** Scores every past-due account nightly on cure likelihood using payment history and policy tenure in BigQuery. Sends personalized, channel-appropriate reminders through Salesforce Marketing Cloud, including one-tap payment links and card-update prompts. so the Billing Operations Analyst can move the Cure rate before cancellation KPI.
+- **Objective:** Lift the Cure rate before cancellation KPI from 54% to 81% by nightly scoring every past-due billing_accounts record in BigQuery on self-cure likelihood, then routing personalized, channel-appropriate reminders through Salesforce Marketing Cloud while escalating only low-cure-probability, high-premium accounts to a Billing Operations Analyst with a suggested payment arrangement.
 
 ## KPI summary
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Incident and Near-Miss Triage Agent"
-description: "Classifies every new Sphera EHS report by severity potential and regulatory reportability within minutes of submission. Routes serious-injury-potential events to immediate investigation, drafts the initial investigation record, and proposes similar historical events from BigQuery. so the Site Safety Officer can move the Recordable incident rate (TRIR) KPI."
+description: "Classify every new safety_incidents report from Sphera EHS by OSHA recordability and severity potential within 4 hours of submission, driving Recordable incident rate (TRIR) from 2.4 to 1.1 and near-miss investigation start time from 5 days to 4 hours."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/incident-near-miss-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:16.210Z"
+provenance_created_at: "2026-07-04T06:18:25.214Z"
 ---
 
 # Incident and Near-Miss Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:16.210Z"
 
 - **Persona:** Site Safety Officer
 - **Department:** manufacturing
-- **Objective:** Classifies every new Sphera EHS report by severity potential and regulatory reportability within minutes of submission. Routes serious-injury-potential events to immediate investigation, drafts the initial investigation record, and proposes similar historical events from BigQuery. so the Site Safety Officer can move the Recordable incident rate (TRIR) KPI.
+- **Objective:** Classify every new safety_incidents report from Sphera EHS by OSHA recordability and severity potential within 4 hours of submission, driving Recordable incident rate (TRIR) from 2.4 to 1.1 and near-miss investigation start time from 5 days to 4 hours.
 
 ## KPI summary
 

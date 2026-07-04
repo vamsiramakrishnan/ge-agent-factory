@@ -37,3 +37,4 @@ Must cite: oracle_field_service.field_work_orders, bigquery.analytics_events
 # Citations
 
 - [Truck Roll Avoidance Agent Service Assurance Runbook](/documents/truck-roll-avoidance-agent-assurance-runbook.md)
+- [Field Service Materials Authorization & Technician Skill-Match Schedule](/documents/truck-roll-avoidance-agent-materials-skill-match-schedule.md)

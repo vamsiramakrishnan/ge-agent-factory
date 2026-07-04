@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Voice of Customer Insights Analyzer
-description: "Mines all reviews, care tickets, chat logs, and survey verbatims for themes, sentiment shifts, and defect signals. Quantifies each theme's revenue and return-rate impact and links it to specific SKUs and vendors. so the CX Insights Manager can move the Time to surface an emerging product issue KPI."
+description: "Continuously mine 100% of Zendesk tickets, satisfaction_scores, and GA4 session_events/cart_events signals -- instead of the prior 5% sampled monthly read -- to surface an emerging product-defect theme, link it to the specific SKUs in product_catalog_entries and their vendors, and get it in front of merchandising and quality owners within 2 days instead of 6 weeks."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/voice-of-customer-i
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:27.548Z"
+provenance_created_at: "2026-07-04T06:18:36.602Z"
 ---
 
 # Voice of Customer Insights Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:27.548Z"
 
 - **Persona:** CX Insights Manager
 - **Department:** retail
-- **Objective:** Mines all reviews, care tickets, chat logs, and survey verbatims for themes, sentiment shifts, and defect signals. Quantifies each theme's revenue and return-rate impact and links it to specific SKUs and vendors. so the CX Insights Manager can move the Time to surface an emerging product issue KPI.
+- **Objective:** Continuously mine 100% of Zendesk tickets, satisfaction_scores, and GA4 session_events/cart_events signals -- instead of the prior 5% sampled monthly read -- to surface an emerging product-defect theme, link it to the specific SKUs in product_catalog_entries and their vendors, and get it in front of merchandising and quality owners within 2 days instead of 6 weeks.
 
 ## KPI summary
 

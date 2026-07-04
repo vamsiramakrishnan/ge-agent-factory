@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query fraud screening scores and network link indicators from FRISS Fraud Detection and correlate with LexisNexis Risk Solutions for the Application Fraud Screening Agent workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Underwriting Fraud Analyst's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Application Fraud Screening Agent Authority & Referral Guide and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in FRISS Fraud Detection with a full audit trail, and escalate exceptions to the Underwriting Fraud Analyst.](/queries/act-audit.md)
+- [Score every incoming application at quote and bind through FRISS Fraud Detection's fraud_screening_scores model, capturing score_band, top_indicator, and iso_claimsearch_match_count before the application can advance to underwriting review.](/queries/new-business-intake-friss-screening.md)
+- [Pull LexisNexis Risk Solutions prefill_datasets and mvr_records to confirm garaging address, undisclosed operators, and license_status against the applicant's stated facts, flagging any prefill_datasets match_confidence that falls below the verification threshold.](/queries/lexis-nexis-household-mvr-verification.md)
+- [Correlate FRISS Fraud Detection network_link_indicators (shared address, phone, bank account) with BigQuery analytics_events and historical_metrics to detect recycled identities and agency-level rate-evasion clusters by producer.](/queries/network-link-producer-cluster-analysis.md)
+- [Validate every finding against the Application Fraud Screening Agent Authority & Referral Guide and the producer rate-evasion playbook before recommending hold, decline, or referral, citing the governing section anchors.](/queries/authority-gated-evidence-review.md)
+- [Execute the FRISS Fraud Detection escalate action to open a siu_referrals record with a full audit trail, and hand off cases meeting state mandatory-reporting thresholds to the SIU compliance manager.](/queries/siu-referral-escalation-audit.md)

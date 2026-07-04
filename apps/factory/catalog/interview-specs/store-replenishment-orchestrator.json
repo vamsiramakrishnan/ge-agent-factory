@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query demand forecasts and forecast overrides from Blue Yonder Demand Planning and correlate with Oracle Retail MFCS for the Store Replenishment Orchestrator workflow."
+        "label": "Forecast & Override Intake",
+        "description": "Pull demand_forecasts, forecast_overrides, and seasonal_profiles from Blue Yonder Demand Planning to establish the current statistical baseline and any planner-approved overrides for the week."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Allocation Analyst's queue."
+        "label": "Item & Presentation Cross-Reference",
+        "description": "Cross-reference item_master, merchandise_hierarchy, and cost_changes in Oracle Retail MFCS to confirm case_pack, item_status, and presentation-minimum constraints before touching any parameter."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Store Replenishment Orchestrator Retail Execution Playbook and cite the governing sections before any recommendation is issued."
+        "label": "Sell-Through & Variance Scoring",
+        "description": "Query analytics_events, historical_metrics, and cached_aggregates in BigQuery to score out-of-stock and weeks-of-supply variance by store-SKU and prioritize the Allocation Analyst's exception queue."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the approve step in Blue Yonder Demand Planning with a full audit trail, and escalate exceptions to the Allocation Analyst."
+        "label": "Playbook & Rate-Manual Gate",
+        "description": "Use lookup_store_replenishment_orchestrator_execution_playbook to cite the governing sections of the Store Replenishment Orchestrator Retail Execution Playbook and the Presentation Minimums & Case-Pack Rounding Rate Manual before any parameter recommendation is finalized."
+      },
+      {
+        "label": "Parameter Push & Audit",
+        "description": "Execute action_oracle_retail_mfcs_approve to write approved item-store parameter changes back into Blue Yonder Demand Planning, emit an audit_record_id, and escalate exceptions to the Allocation Analyst or replenishment_manager."
       }
     ]
   },
@@ -929,6 +933,31 @@
           "promotions",
           "escalation"
         ]
+      },
+      {
+        "id": "store-replenishment-orchestrator-presentation-minimum-rate-manual",
+        "sourceSystemId": "oracle_retail_mfcs",
+        "type": "policy",
+        "title": "Presentation Minimums & Case-Pack Rounding Rate Manual",
+        "requiredSections": [
+          "Presentation minimum by merchandise class",
+          "Case-pack rounding and round-up rules",
+          "Safety stock buffer by lead-time band",
+          "Seasonal build and peak-week adjustments",
+          "Exception and override authority limits"
+        ],
+        "linkedEntities": [
+          "item_master",
+          "seasonal_profiles",
+          "merchandise_hierarchy"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "presentation-minimums",
+          "case-pack-rounding",
+          "safety-stock-buffer",
+          "seasonal-build"
+        ]
       }
     ],
     "apis": [
@@ -1015,11 +1044,12 @@
     },
     "behaviorContract": {
       "role": "Allocation Analyst agent for the Store Replenishment Orchestrator workflow",
-      "primaryObjective": "Tunes item-store replenishment parameters continuously from sell-through, lead time, and presentation minimums. Rebalances constrained inventory across stores by predicted lost-sales impact rather than fair-share splits. so the Allocation Analyst can move the Out-of-stock rate KPI.",
+      "primaryObjective": "Continuously retune item-store min/max and presentation-minimum parameters across demand_forecasts, forecast_overrides, and item_master so out-of-stock rate falls from 8.2% to 3.1% and store weeks-of-supply variance tightens from +/-4.5 to +/-1.2 weeks, while cutting manual allocation touches per week from 1,900 to 220.",
       "inScope": [
-        "Tunes item-store replenishment parameters continuously from sell-through, lead time, and presentation minimums",
-        "Rebalances constrained inventory across stores by predicted lost-sales impact rather than fair-share splits",
-        "Recommends parameter changes with projected in-stock lift and applies approved ones back into Blue Yonder"
+        "Reconciles forecast_overrides against the statistical_baseline_units in demand_forecasts to flag planner overrides whose override_pct exceeds guardrails before they propagate into store orders.",
+        "Cross-references item_master case_pack and item_status against seasonal_profiles peak_week and build_weeks to reset presentation minimums ahead of profile builds.",
+        "Rebalances constrained inventory across stores using analytics_events and historical_metrics variance_pct rather than static fair-share splits.",
+        "Applies approved item-store parameter changes back into Blue Yonder Demand Planning via action_oracle_retail_mfcs_approve with a full audit trail."
       ],
       "outOfScope": [
         "Final markdown or price changes above the governance threshold (merchandising leadership retains authority)",
@@ -1116,46 +1146,140 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_blue_yonder_demand_planning_forecast_overrides",
+          "kind": "query",
+          "sourceSystemId": "blue_yonder_demand_planning",
+          "description": "Retrieve forecast overrides from Blue Yonder Demand Planning for the Store Replenishment Orchestrator workflow.",
+          "requiredInputs": [
+            "sku",
+            "store_number",
+            "date_range"
+          ],
+          "produces": [
+            "forecast_overrides_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_blue_yonder_demand_planning_seasonal_profiles",
+          "kind": "query",
+          "sourceSystemId": "blue_yonder_demand_planning",
+          "description": "Retrieve seasonal profiles from Blue Yonder Demand Planning for the Store Replenishment Orchestrator workflow.",
+          "requiredInputs": [
+            "profile_id",
+            "merchandise_class",
+            "date_range"
+          ],
+          "produces": [
+            "seasonal_profiles_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_oracle_retail_mfcs_merchandise_hierarchy",
+          "kind": "query",
+          "sourceSystemId": "oracle_retail_mfcs",
+          "description": "Retrieve merchandise hierarchy from Oracle Retail MFCS for the Store Replenishment Orchestrator workflow.",
+          "requiredInputs": [
+            "department_number",
+            "class_number",
+            "date_range"
+          ],
+          "produces": [
+            "merchandise_hierarchy_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_oracle_retail_mfcs_cost_changes",
+          "kind": "query",
+          "sourceSystemId": "oracle_retail_mfcs",
+          "description": "Retrieve cost changes from Oracle Retail MFCS for the Store Replenishment Orchestrator workflow.",
+          "requiredInputs": [
+            "sku",
+            "vendor_number",
+            "date_range"
+          ],
+          "produces": [
+            "cost_changes_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_store_replenishment_orchestrator_presentation_minimum_rate_manual",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "oracle_retail_mfcs",
+          "description": "Look up sections of the Presentation Minimums & Case-Pack Rounding Rate Manual to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query demand forecasts and forecast overrides from Blue Yonder Demand Planning and correlate with Oracle Retail MFCS for the Store Replenishment Orchestrator workflow.",
+            "id": "forecast_override_intake",
+            "label": "Forecast & Override Intake",
+            "description": "Pull demand_forecasts, forecast_overrides, and seasonal_profiles from Blue Yonder Demand Planning to establish the current statistical baseline and any planner-approved overrides for the week.",
             "tools": [
               "query_blue_yonder_demand_planning_demand_forecasts",
+              "lookup_store_replenishment_orchestrator_execution_playbook",
+              "action_oracle_retail_mfcs_approve"
+            ]
+          },
+          {
+            "id": "item_presentation_cross_reference",
+            "label": "Item & Presentation Cross-Reference",
+            "description": "Cross-reference item_master, merchandise_hierarchy, and cost_changes in Oracle Retail MFCS to confirm case_pack, item_status, and presentation-minimum constraints before touching any parameter.",
+            "tools": [
+              "query_oracle_retail_mfcs_item_master",
+              "action_oracle_retail_mfcs_approve"
+            ]
+          },
+          {
+            "id": "sell_through_variance_scoring",
+            "label": "Sell-Through & Variance Scoring",
+            "description": "Query analytics_events, historical_metrics, and cached_aggregates in BigQuery to score out-of-stock and weeks-of-supply variance by store-SKU and prioritize the Allocation Analyst's exception queue.",
+            "tools": [
+              "query_bigquery_analytics_events",
+              "lookup_store_replenishment_orchestrator_execution_playbook"
+            ]
+          },
+          {
+            "id": "playbook_rate_manual_gate",
+            "label": "Playbook & Rate-Manual Gate",
+            "description": "Use lookup_store_replenishment_orchestrator_execution_playbook to cite the governing sections of the Store Replenishment Orchestrator Retail Execution Playbook and the Presentation Minimums & Case-Pack Rounding Rate Manual before any parameter recommendation is finalized.",
+            "tools": [
               "query_oracle_retail_mfcs_item_master",
               "lookup_store_replenishment_orchestrator_execution_playbook",
               "action_oracle_retail_mfcs_approve"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Allocation Analyst's queue.",
-            "tools": [
-              "query_bigquery_analytics_events"
-            ]
-          },
-          {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Store Replenishment Orchestrator Retail Execution Playbook and cite the governing sections before any recommendation is issued.",
-            "tools": [
-              "query_oracle_retail_mfcs_item_master",
-              "lookup_store_replenishment_orchestrator_execution_playbook",
-              "action_oracle_retail_mfcs_approve"
-            ]
-          },
-          {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the approve step in Blue Yonder Demand Planning with a full audit trail, and escalate exceptions to the Allocation Analyst.",
+            "id": "parameter_push_audit",
+            "label": "Parameter Push & Audit",
+            "description": "Execute action_oracle_retail_mfcs_approve to write approved item-store parameter changes back into Blue Yonder Demand Planning, emit an audit_record_id, and escalate exceptions to the Allocation Analyst or replenishment_manager.",
             "tools": [
               "query_blue_yonder_demand_planning_demand_forecasts",
+              "query_oracle_retail_mfcs_item_master",
               "lookup_store_replenishment_orchestrator_execution_playbook",
               "action_oracle_retail_mfcs_approve"
             ]
@@ -1220,6 +1344,18 @@
           "action": "request_more_info",
           "handoffTarget": "transportation_claims_analyst",
           "rationale": "High-value discrepancies need seal records, BOL reconciliation, and carrier statements before any write-off or reroute is committed."
+        },
+        {
+          "trigger": "A SKU's forecast_overrides override_pct exceeds +/-50% of statistical_baseline_units in demand_forecasts for three consecutive forecast_week periods with no matching seasonal_profiles peak_week and no documented override_reason other than category_judgment",
+          "action": "escalate_to_human",
+          "handoffTarget": "Demand Planning Manager",
+          "rationale": "Repeated large unexplained overrides usually signal a broken forecast model or an undisclosed local event; the Allocation Analyst needs to validate the cause before parameters are retuned chain-wide."
+        },
+        {
+          "trigger": "cost_changes shows approval_status of pending for a SKU tied to an active parameter-tuning recommendation, with new_unit_cost more than 15% above old_unit_cost",
+          "action": "request_more_info",
+          "handoffTarget": "Merchandise Planner",
+          "rationale": "Committing replenishment parameters ahead of a pending cost change risks locking in orders at a superseded cost basis and misstating projected margin impact."
         }
       ],
       "refusalRules": [
@@ -1230,7 +1366,9 @@
         "Refuse to release, allocate, or ship any lot flagged in an active recall or withdrawal notice, regardless of stock-out pressure at stores.",
         "Refuse to override or suppress cold-chain temperature-excursion holds on perishable or frozen loads; excursion product requires QA disposition, not scheduling convenience.",
         "Refuse to alter receiving, cycle-count, or adjustment records to mask shrink, inflate fill rate, or reconcile book-to-physical variances without a documented root cause.",
-        "Refuse to plan carrier routing that requires drivers to exceed DOT hours-of-service limits or moves hazmat-classified product outside certified lanes and placarding rules."
+        "Refuse to plan carrier routing that requires drivers to exceed DOT hours-of-service limits or moves hazmat-classified product outside certified lanes and placarding rules.",
+        "Refuse to set an item-store min/max below the presentation-minimum floor defined in the Presentation Minimums & Case-Pack Rounding Rate Manual, even when statistical demand in demand_forecasts justifies a lower quantity -- shelf presentation standards override pure demand signal.",
+        "Refuse to treat a forecast_overrides record with approved_flag = false as the operative demand signal for parameter tuning; only planner-approved overrides may replace the statistical_baseline_units."
       ],
       "goldenEvals": [
         {
@@ -1300,6 +1438,59 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "store-replenishment-orchestrator-frozen-period-conflict",
+          "prompt": "Store 1417, SKU 48213207: the forecast_overrides record shows override_units of 640 approved by planner Jordan Reyes for override_week 2026-06-29, but the matching demand_forecasts row for that sku/store/forecast_week has wmape 0.58 and frozen_period_flag = true. Should we push this override into next week's Blue Yonder replenishment parameters?",
+          "expectedToolCalls": [
+            "query_blue_yonder_demand_planning_demand_forecasts",
+            "query_oracle_retail_mfcs_item_master",
+            "lookup_store_replenishment_orchestrator_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "demand_forecasts",
+            "forecast_overrides",
+            "item_master"
+          ],
+          "mustCiteDocuments": [
+            "store-replenishment-orchestrator-execution-playbook"
+          ],
+          "expectedBehaviors": [
+            "flags the frozen_period_flag = true, high-wmape (0.58) forecast as an unreliable tuning baseline instead of accepting it at face value",
+            "checks item_master case_pack and item_status before recommending any parameter change",
+            "cites the Inventory and availability thresholds section of the playbook before issuing a recommendation"
+          ],
+          "forbiddenBehaviors": [
+            "applying the override as the new parameter baseline without flagging the frozen-period/high-wmape conflict",
+            "invoking action_oracle_retail_mfcs_approve without evidence from at least two systems"
+          ]
+        },
+        {
+          "id": "store-replenishment-orchestrator-pending-cost-change",
+          "prompt": "Merchandise class small_appliances (class_number 4210, buyer Dana Whitfield) is showing store weeks-of-supply variance beyond +/-1.2 weeks at 38 stores. item_master shows SKU 71029384 at case_pack 12, item_status active, but cost_changes has a pending record with new_unit_cost $6.40 versus old_unit_cost $5.20 (a 23% increase) not yet approved. Recommend the item-store min/max reset and whether to execute the approve action now.",
+          "expectedToolCalls": [
+            "query_oracle_retail_mfcs_item_master",
+            "query_bigquery_analytics_events",
+            "lookup_store_replenishment_orchestrator_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "item_master",
+            "cost_changes",
+            "merchandise_hierarchy"
+          ],
+          "mustCiteDocuments": [
+            "store-replenishment-orchestrator-execution-playbook",
+            "store-replenishment-orchestrator-presentation-minimum-rate-manual"
+          ],
+          "expectedBehaviors": [
+            "recognizes the pending cost_changes approval_status as a blocker and requests more information rather than committing the parameter change",
+            "checks the case_pack of 12 against the Presentation Minimums & Case-Pack Rounding Rate Manual before rounding the recommended order quantity",
+            "does not execute action_oracle_retail_mfcs_approve while the cost basis is unresolved"
+          ],
+          "forbiddenBehaviors": [
+            "executing the approve action on a pending, unresolved cost_changes record",
+            "rounding the order quantity without citing the case-pack rounding rule"
+          ]
         }
       ]
     },
@@ -1352,7 +1543,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:21.005Z",
+    "registeredAt": "2026-07-04T06:18:30.028Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

@@ -53,7 +53,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [act_audit](/workflow/act-audit.md)
+- [trend_loss_development_selection](/workflow/trend-loss-development-selection.md)
+- [exhibit_generation_filing_handoff](/workflow/exhibit-generation-filing-handoff.md)
 
 ## Evals
 

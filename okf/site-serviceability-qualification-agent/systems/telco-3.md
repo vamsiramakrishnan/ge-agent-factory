@@ -22,3 +22,4 @@ timestamp: "2026-07-04T00:00:00.000Z"
 ## Tools using this system
 
 - [query_telco_3_telco_3_records](/tools/query-telco-3-telco-3-records.md)
+- [lookup_site_serviceability_near_net_build_cost_rate_manual](/tools/lookup-site-serviceability-near-net-build-cost-rate-manual.md)

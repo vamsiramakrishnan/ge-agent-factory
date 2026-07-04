@@ -37,3 +37,4 @@ Must cite: revionics_price_optimization.price_recommendations, bigquery.analytic
 # Citations
 
 - [Competitive Price Response Agent Retail Execution Playbook](/documents/competitive-price-response-agent-execution-playbook.md)
+- [MAP & Price-Comparison Compliance Policy](/documents/map-price-comparison-compliance-policy.md)

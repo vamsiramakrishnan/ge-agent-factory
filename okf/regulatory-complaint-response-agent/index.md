@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Regulatory Complaint Response Agent
-description: "Assembles the complete customer file — policy transactions from PolicyCenter, correspondence, Zendesk interactions — the moment a DOI complaint is logged. Drafts the regulator response with a factual timeline and citations to the governing policy provisions and state rules. so the Compliance Officer can move the DOI complaint response time KPI."
+description: "Assemble the complete DOI complaint file from Guidewire PolicyCenter policies, policy_quotes, and underwriting_submissions plus Zendesk correspondence, draft a citation-backed regulator response, and hold every statutory deadline so DOI complaint response time falls from 18 days to 5 days while late-response regulator follow-ups drop from 12% to 0.5%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/regulatory-complain
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:04.429Z"
+provenance_created_at: "2026-07-04T06:18:13.402Z"
 ---
 
 # Regulatory Complaint Response Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:04.429Z"
 
 - **Persona:** Compliance Officer
 - **Department:** insurance
-- **Objective:** Assembles the complete customer file — policy transactions from PolicyCenter, correspondence, Zendesk interactions — the moment a DOI complaint is logged. Drafts the regulator response with a factual timeline and citations to the governing policy provisions and state rules. so the Compliance Officer can move the DOI complaint response time KPI.
+- **Objective:** Assemble the complete DOI complaint file from Guidewire PolicyCenter policies, policy_quotes, and underwriting_submissions plus Zendesk correspondence, draft a citation-backed regulator response, and hold every statutory deadline so DOI complaint response time falls from 18 days to 5 days while late-response regulator follow-ups drop from 12% to 0.5%.
 
 ## KPI summary
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Credit Portfolio Concentration Monitor
-description: Recomputes exposure against every board concentration limit daily as commitments and outstandings change in nCino. Simulates the concentration impact of pipeline deals and notifies underwriters when a pending approval would breach a limit. so the Credit Portfolio Manager can move the Time to produce concentration report KPI.
+description: "Continuously aggregate committed and outstanding exposure from nCino loan_applications, credit_memos, and covenant_records against board concentration limits so that 92% of limit breaches are caught before booking, moving the quarterly concentration report from a stale 10-day spreadsheet cycle to a continuously refreshed Looker dashboard."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/credit-portfolio-co
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:43.638Z"
+provenance_created_at: "2026-07-04T06:17:52.018Z"
 ---
 
 # Credit Portfolio Concentration Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:43.638Z"
 
 - **Persona:** Credit Portfolio Manager
 - **Department:** banking
-- **Objective:** Recomputes exposure against every board concentration limit daily as commitments and outstandings change in nCino. Simulates the concentration impact of pipeline deals and notifies underwriters when a pending approval would breach a limit. so the Credit Portfolio Manager can move the Time to produce concentration report KPI.
+- **Objective:** Continuously aggregate committed and outstanding exposure from nCino loan_applications, credit_memos, and covenant_records against board concentration limits so that 92% of limit breaches are caught before booking, moving the quarterly concentration report from a stale 10-day spreadsheet cycle to a continuously refreshed Looker dashboard.
 
 ## KPI summary
 

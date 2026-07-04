@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Contact Authentication & Context Assembly](/workflow/contact-authentication-context-assembly.md)
+2. [Queue & Baseline Health Check](/workflow/queue-baseline-health-check.md)
+3. [Repeat-Contact & Known-Issue Correlation](/workflow/repeat-contact-known-issue-correlation.md)
+4. [Governing-Document & Offer-Cap Gate](/workflow/governing-document-offer-cap-gate.md)
+5. [Disposition Draft & Escalation Routing](/workflow/disposition-draft-escalation-routing.md)

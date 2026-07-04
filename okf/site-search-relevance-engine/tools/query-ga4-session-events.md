@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
+- [null_low_click_query_mining](/workflow/null-low-click-query-mining.md)
+- [assortment_gap_triage](/workflow/assortment-gap-triage.md)
+- [a_b_test_gating_evidence_validation](/workflow/a-b-test-gating-evidence-validation.md)
 
 ## Evals
 
 - [Run the Site Search Relevance Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/site-search-relevance-engine-end-to-end.md)
+- [session_events record for session 74213099 shows zero results returned for 'quilted jacket' as of this morning, but bigquery historical_metrics last computed_at is from 30 hours ago and cached_aggregates still shows the old 14% null-rate baseline. Reconcile the two and tell me whether we should redirect 'quilted jacket' to the puffer-jacket category page.](/tests/site-search-relevance-engine-conflicting-staleness-reconciliation.md)
 
 ## Evidence emitted
 

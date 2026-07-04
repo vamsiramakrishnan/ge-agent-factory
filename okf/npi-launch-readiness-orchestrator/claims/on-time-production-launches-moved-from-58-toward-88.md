@@ -37,3 +37,4 @@ Must cite: ptc_windchill_plm.engineering_change_orders, jira.issues
 # Citations
 
 - [NPI Launch Readiness Orchestrator Standard Operating Procedure](/documents/npi-launch-readiness-orchestrator-sop.md)
+- [Engineering Change Control Board Authority & Effectivity Matrix](/documents/eccb-authority-effectivity-matrix.md)

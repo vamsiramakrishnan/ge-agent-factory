@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, lexisnexis_risk_solutions.risk_repor
 # Citations
 
 - [Renewal Risk Requalification Agent Authority & Referral Guide](/documents/renewal-risk-requalification-agent-authority-guide.md)
+- [Renewal Non-Renewal & Rate Action Notice Timing Manual](/documents/renewal-risk-requalification-agent-nonrenewal-notice-manual.md)

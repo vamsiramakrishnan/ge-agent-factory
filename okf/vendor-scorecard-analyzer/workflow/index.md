@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Vendor & Item Reconciliation](/workflow/vendor-item-reconciliation.md)
+2. [Fill Rate, Lead-Time & Invoice Scoring](/workflow/fill-rate-lead-time-invoice-scoring.md)
+3. [Compliance & Chargeback Evidence Assembly](/workflow/compliance-chargeback-evidence-assembly.md)
+4. [QBR Narrative Drafting](/workflow/qbr-narrative-drafting.md)
+5. [Manager Routing & Audit](/workflow/manager-routing-audit.md)

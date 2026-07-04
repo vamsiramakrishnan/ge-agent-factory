@@ -27,3 +27,6 @@ risk reports, mvr records, prefill datasets records
 - [query_lexisnexis_risk_solutions_risk_reports](/tools/query-lexisnexis-risk-solutions-risk-reports.md)
 - [lookup_premium_leakage_detection_analyzer_authority_guide](/tools/lookup-premium-leakage-detection-analyzer-authority-guide.md)
 - [action_lexisnexis_risk_solutions_publish](/tools/action-lexisnexis-risk-solutions-publish.md)
+- [query_lexisnexis_risk_solutions_mvr_records](/tools/query-lexisnexis-risk-solutions-mvr-records.md)
+- [query_lexisnexis_risk_solutions_prefill_datasets](/tools/query-lexisnexis-risk-solutions-prefill-datasets.md)
+- [lookup_premium_audit_field_procedures_manual](/tools/lookup-premium-audit-field-procedures-manual.md)

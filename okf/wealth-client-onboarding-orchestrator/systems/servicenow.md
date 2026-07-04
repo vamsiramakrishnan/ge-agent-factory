@@ -25,3 +25,4 @@ tickets, change requests, incidents records
 ## Tools using this system
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
+- [lookup_wealth_client_onboarding_orchestrator_acat_nigo_runbook](/tools/lookup-wealth-client-onboarding-orchestrator-acat-nigo-runbook.md)

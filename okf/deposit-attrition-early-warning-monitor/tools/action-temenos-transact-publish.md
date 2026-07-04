@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [weekly_balance_velocity_outflow_scan](/workflow/weekly-balance-velocity-outflow-scan.md)
+- [segment_heatmap_publication_to_looker](/workflow/segment-heatmap-publication-to-looker.md)
+- [evidence_gated_publish_escalation](/workflow/evidence-gated-publish-escalation.md)
 
 ## Evals
 

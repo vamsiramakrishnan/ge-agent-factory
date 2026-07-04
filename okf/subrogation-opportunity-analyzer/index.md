@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Subrogation Opportunity Analyzer
-description: "Scans open and recently closed claims nightly, reading adjuster notes, police reports, and loss descriptions for third-party liability signals. Scores each claim's recovery likelihood and expected value using historical recovery outcomes stored in BigQuery. so the Subrogation Specialist can move the Subrogation identification rate KPI."
+description: "Lift the subrogation identification rate from 11% to 27% of eligible claims by mining claims, claim_exposures, and reserve_lines in Guidewire ClaimCenter nightly for unflagged third-party liability signals, cutting the payment-to-referral cycle from 94 days to 9 days before evidence and statute-of-limitations value erode."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/subrogation-opportu
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:55.183Z"
+provenance_created_at: "2026-07-04T06:18:03.932Z"
 ---
 
 # Subrogation Opportunity Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:55.183Z"
 
 - **Persona:** Subrogation Specialist
 - **Department:** insurance
-- **Objective:** Scans open and recently closed claims nightly, reading adjuster notes, police reports, and loss descriptions for third-party liability signals. Scores each claim's recovery likelihood and expected value using historical recovery outcomes stored in BigQuery. so the Subrogation Specialist can move the Subrogation identification rate KPI.
+- **Objective:** Lift the subrogation identification rate from 11% to 27% of eligible claims by mining claims, claim_exposures, and reserve_lines in Guidewire ClaimCenter nightly for unflagged third-party liability signals, cutting the payment-to-referral cycle from 94 days to 9 days before evidence and statute-of-limitations value erode.
 
 ## KPI summary
 

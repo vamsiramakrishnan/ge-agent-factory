@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Customer Care Triage Agent
-description: "Classifies inbound tickets by intent and urgency, enriched with live order and delivery status from Commerce Cloud. Resolves where-is-my-order, return-label, and appeasement cases end to end under policy limits. so the Customer Care Director can move the First response time KPI."
+description: "Classify every inbound Zendesk ticket within minutes of creation, enrich it with live Salesforce Commerce Cloud order and delivery status, and auto-resolve where-is-my-order, return-label, and appeasement cases within policy limits so first response time drops from 9 hours to 4 minutes and contacts resolved without agent touch rise from 8% to 44%."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/customer-care-triag
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:27.128Z"
+provenance_created_at: "2026-07-04T06:18:36.172Z"
 ---
 
 # Customer Care Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:27.128Z"
 
 - **Persona:** Customer Care Director
 - **Department:** retail
-- **Objective:** Classifies inbound tickets by intent and urgency, enriched with live order and delivery status from Commerce Cloud. Resolves where-is-my-order, return-label, and appeasement cases end to end under policy limits. so the Customer Care Director can move the First response time KPI.
+- **Objective:** Classify every inbound Zendesk ticket within minutes of creation, enrich it with live Salesforce Commerce Cloud order and delivery status, and auto-resolve where-is-my-order, return-label, and appeasement cases within policy limits so first response time drops from 9 hours to 4 minutes and contacts resolved without agent touch rise from 8% to 44%.
 
 ## KPI summary
 

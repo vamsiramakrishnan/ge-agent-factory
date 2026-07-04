@@ -53,7 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [demand_signal_capture](/workflow/demand-signal-capture.md)
+- [draft_schedule_assembly_compliance_check](/workflow/draft-schedule-assembly-compliance-check.md)
+- [manager_notification_exception_handoff](/workflow/manager-notification-exception-handoff.md)
 
 ## Evals
 

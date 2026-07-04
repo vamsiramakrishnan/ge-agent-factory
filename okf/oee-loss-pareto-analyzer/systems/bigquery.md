@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_oee_loss_pareto_analyzer_sop](/tools/lookup-oee-loss-pareto-analyzer-sop.md)
+- [lookup_oee_loss_classification_standard](/tools/lookup-oee-loss-classification-standard.md)

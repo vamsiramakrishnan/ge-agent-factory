@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Promo Forecast Accuracy Analyzer
-description: "Forecasts event-level lift with decomposition into true incremental, cannibalized, and pulled-forward volume. Publishes an automated post-event scorecard for every promotion within 72 hours of event close. so the Promotions Manager can move the Promo lift forecast error KPI."
+description: "Decompose event-level promo lift in demand_forecasts into true incremental, cannibalized, and pulled-forward volume using elasticity_models and price_recommendations from Revionics, cutting promo lift forecast error from 42% to 16% while publishing an automated post-event scorecard within 72 hours of event close for 100% of promotions instead of the current 10%."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/promo-forecast-accu
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:29.236Z"
+provenance_created_at: "2026-07-04T06:18:38.322Z"
 ---
 
 # Promo Forecast Accuracy Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:29.236Z"
 
 - **Persona:** Promotions Manager
 - **Department:** retail
-- **Objective:** Forecasts event-level lift with decomposition into true incremental, cannibalized, and pulled-forward volume. Publishes an automated post-event scorecard for every promotion within 72 hours of event close. so the Promotions Manager can move the Promo lift forecast error KPI.
+- **Objective:** Decompose event-level promo lift in demand_forecasts into true incremental, cannibalized, and pulled-forward volume using elasticity_models and price_recommendations from Revionics, cutting promo lift forecast error from 42% to 16% while publishing an automated post-event scorecard within 72 hours of event close for 100% of promotions instead of the current 10%.
 
 ## KPI summary
 

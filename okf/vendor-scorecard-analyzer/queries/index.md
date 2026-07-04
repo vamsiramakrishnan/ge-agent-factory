@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query item master and merchandise hierarchy from Oracle Retail MFCS for the Vendor Performance Scorecard Analyzer workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Vendor Performance Manager's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Vendor Performance Scorecard Analyzer Retail Execution Playbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the route step in Oracle Retail MFCS with a full audit trail, and escalate exceptions to the Vendor Performance Manager.](/queries/act-audit.md)
+- [Query item_master, merchandise_hierarchy, and cost_changes from Oracle Retail MFCS to reconcile each vendor_number's active SKUs, buyer assignment, and latest cost changes for the scorecard period.](/queries/vendor-item-reconciliation.md)
+- [Run query_bigquery_analytics_events against historical_metrics and cached_aggregates baselines in BigQuery to compute weekly fill rate, on-time delivery, lead-time variance, and invoice accuracy per vendor.](/queries/fill-rate-lead-time-invoice-scoring.md)
+- [Cross-reference cost_changes deltas and Looker dashboards/metric_definitions against the Vendor Performance Scorecard Analyzer Retail Execution Playbook and the Vendor Chargeback & Compliance Claims Rate Schedule via lookup_vendor_scorecard_analyzer_execution_playbook to assemble PO-level compliance-claim packets.](/queries/compliance-chargeback-evidence-assembly.md)
+- [Use Vertex AI grounded reasoning over Looker dashboards, explore_queries, and metric_definitions to draft the quarterly business review narrative with trend commentary and benchmark comparisons per vendor_number.](/queries/qbr-narrative-drafting.md)
+- [Execute action_oracle_retail_mfcs_route to route finished scorecards and compliance-claim packets to the Vendor Performance Manager in Oracle Retail MFCS, logging a full audit trail and escalating threshold breaches.](/queries/manager-routing-audit.md)

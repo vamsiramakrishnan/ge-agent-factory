@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Intraday Liquidity Forecasting Engine
-description: "Forecasts intraday cash positions per currency by combining Murex MX.3 settlement ladders, historical payment flows, and scheduled client activity. Publishes an hourly-updated funding plan to Looker with recommended money-market actions per currency. so the Treasury Manager can move the Intraday forecast error KPI."
+description: "Forecast each currency's intraday cash position from Murex MX.3 trades, positions, and risk_measures settlement ladders reconciled against BigQuery historical_metrics seasonality, publish an hourly funding plan via action_murex_mx_3_publish, and hold the Intraday forecast error inside ±5% while cutting the excess liquidity buffer held from $900M to $550M."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/intraday-liquidity-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:50.562Z"
+provenance_created_at: "2026-07-04T06:17:58.853Z"
 ---
 
 # Intraday Liquidity Forecasting Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:50.562Z"
 
 - **Persona:** Treasury Manager
 - **Department:** banking
-- **Objective:** Forecasts intraday cash positions per currency by combining Murex MX.3 settlement ladders, historical payment flows, and scheduled client activity. Publishes an hourly-updated funding plan to Looker with recommended money-market actions per currency. so the Treasury Manager can move the Intraday forecast error KPI.
+- **Objective:** Forecast each currency's intraday cash position from Murex MX.3 trades, positions, and risk_measures settlement ladders reconciled against BigQuery historical_metrics seasonality, publish an hourly funding plan via action_murex_mx_3_publish, and hold the Intraday forecast error inside ±5% while cutting the excess liquidity buffer held from $900M to $550M.
 
 ## KPI summary
 

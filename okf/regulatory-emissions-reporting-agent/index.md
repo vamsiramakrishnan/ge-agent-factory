@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Regulatory Emissions Reporting Agent
-description: "Aggregates continuous emissions data from the PI System with fuel and production records in BigQuery, validated daily against permit limits in Sphera EHS. Notifies the compliance specialist immediately when any rolling-average parameter trends toward a permit threshold. so the Environmental Compliance Specialist can move the Emissions report preparation time KPI."
+description: "Aggregate emissions_readings and permit_records from Sphera EHS with sensor_readings from the OSIsoft PI System daily so the Environmental Compliance Specialist catches permit-limit exceedances before violation, raising the catch rate from 50% to 96% while cutting emissions report preparation time from 3 weeks to 2 days per cycle."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/regulatory-emission
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:17.062Z"
+provenance_created_at: "2026-07-04T06:18:26.052Z"
 ---
 
 # Regulatory Emissions Reporting Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:17.062Z"
 
 - **Persona:** Environmental Compliance Specialist
 - **Department:** manufacturing
-- **Objective:** Aggregates continuous emissions data from the PI System with fuel and production records in BigQuery, validated daily against permit limits in Sphera EHS. Notifies the compliance specialist immediately when any rolling-average parameter trends toward a permit threshold. so the Environmental Compliance Specialist can move the Emissions report preparation time KPI.
+- **Objective:** Aggregate emissions_readings and permit_records from Sphera EHS with sensor_readings from the OSIsoft PI System daily so the Environmental Compliance Specialist catches permit-limit exceedances before violation, raising the catch rate from 50% to 96% while cutting emissions report preparation time from 3 weeks to 2 days per cycle.
 
 ## KPI summary
 

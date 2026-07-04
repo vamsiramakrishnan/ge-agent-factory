@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Cart Abandonment Recovery Orchestrator
-description: "Scores each abandoned cart on purchase intent, margin, and stock risk from Segment and Commerce Cloud signals. Chooses the recovery play per shopper — reminder, social proof, low-stock nudge, or minimal viable incentive. so the Digital Marketing Manager can move the Abandoned cart recovery rate KPI."
+description: "Score every abandoned cart_events record within 35 minutes of abandonment using Commerce Cloud, Marketing Cloud, and Segment signals, then dispatch the minimal viable recovery play so the Abandoned cart recovery rate climbs from 4.5% to 11% while average discount given per recovered order falls from 12% to 5%."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/cart-abandonment-re
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:25.058Z"
+provenance_created_at: "2026-07-04T06:18:34.075Z"
 ---
 
 # Cart Abandonment Recovery Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:25.058Z"
 
 - **Persona:** Digital Marketing Manager
 - **Department:** retail
-- **Objective:** Scores each abandoned cart on purchase intent, margin, and stock risk from Segment and Commerce Cloud signals. Chooses the recovery play per shopper — reminder, social proof, low-stock nudge, or minimal viable incentive. so the Digital Marketing Manager can move the Abandoned cart recovery rate KPI.
+- **Objective:** Score every abandoned cart_events record within 35 minutes of abandonment using Commerce Cloud, Marketing Cloud, and Segment signals, then dispatch the minimal viable recovery play so the Abandoned cart recovery rate climbs from 4.5% to 11% while average discount given per recovered order falls from 12% to 5%.
 
 ## KPI summary
 

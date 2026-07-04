@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [continuous_emissions_permit_data_pull](/workflow/continuous-emissions-permit-data-pull.md)
+- [sop_rate_manual_evidence_gate](/workflow/sop-rate-manual-evidence-gate.md)
+- [draft_submission_audit_trail](/workflow/draft-submission-audit-trail.md)
 
 ## Evals
 

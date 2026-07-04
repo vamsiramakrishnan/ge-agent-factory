@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [monthly_household_account_roster_pull](/workflow/monthly-household-account-roster-pull.md)
+- [risk_tolerance_vs_portfolio_drift_scoring](/workflow/risk-tolerance-vs-portfolio-drift-scoring.md)
+- [advisor_re_profiling_outreach_draft_audit_log](/workflow/advisor-re-profiling-outreach-draft-audit-log.md)
 
 ## Evals
 

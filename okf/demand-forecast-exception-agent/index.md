@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Demand Forecast Exception Agent
-description: "Triages the exception queue nightly, auto-clearing noise and enriching real exceptions with causal context. Recommends override values with confidence intervals and the driver evidence behind each one. so the Demand Planner can move the Forecast accuracy (WMAPE) KPI."
+description: "Nightly, triage every item-location exception in demand_forecasts and forecast_overrides where wmape or bias_pct breaches tolerance, attach causal evidence from analytics_events and seasonal_profiles, and drive Forecast accuracy (WMAPE) from 68% to 86% while cutting planner override time from 60% to 15% of the week."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/demand-forecast-exc
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:20.024Z"
+provenance_created_at: "2026-07-04T06:18:29.055Z"
 ---
 
 # Demand Forecast Exception Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:20.024Z"
 
 - **Persona:** Demand Planner
 - **Department:** retail
-- **Objective:** Triages the exception queue nightly, auto-clearing noise and enriching real exceptions with causal context. Recommends override values with confidence intervals and the driver evidence behind each one. so the Demand Planner can move the Forecast accuracy (WMAPE) KPI.
+- **Objective:** Nightly, triage every item-location exception in demand_forecasts and forecast_overrides where wmape or bias_pct breaches tolerance, attach causal evidence from analytics_events and seasonal_profiles, and drive Forecast accuracy (WMAPE) from 68% to 86% while cutting planner override time from 60% to 15% of the week.
 
 ## KPI summary
 

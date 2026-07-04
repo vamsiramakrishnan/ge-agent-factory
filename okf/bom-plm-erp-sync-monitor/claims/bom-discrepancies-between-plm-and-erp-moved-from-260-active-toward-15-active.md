@@ -37,3 +37,4 @@ Must cite: ptc_windchill_plm.engineering_change_orders, sap_s_4hana_pp.process_o
 # Citations
 
 - [BOM PLM-ERP Sync Monitor Standard Operating Procedure](/documents/bom-plm-erp-sync-monitor-sop.md)
+- [Engineering Change Control Board (CCB) Effectivity & BOM Cut-In Policy](/documents/eco-effectivity-change-control-policy.md)

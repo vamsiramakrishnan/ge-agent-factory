@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [registry_fin_cen_boi_cross_check](/workflow/registry-fin-cen-boi-cross-check.md)
 
 ## Evals
 

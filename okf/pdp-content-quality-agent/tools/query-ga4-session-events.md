@@ -52,12 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
+- [traffic_revenue_impact_scoring](/workflow/traffic-revenue-impact-scoring.md)
+- [evidence_playbook_validation](/workflow/evidence-playbook-validation.md)
 
 ## Evals
 
 - [Run the PDP Content Quality Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/pdp-content-quality-agent-end-to-end.md)
+- [SKU 84213067 (product_catalog_entries id 41) shows content_completeness_score 0.93, but its session_events tied to conversion_path id 118 haven't refreshed since June 30 (5 days stale), and cart_events show 14 abandon_cart events against only 2 complete_purchase events in the trailing 48 hours. Merchandising wants this SKU published to the enriched queue today. What do you do?](/tests/pdp-content-quality-agent-stale-conversion-evidence.md)
 
 ## Evidence emitted
 

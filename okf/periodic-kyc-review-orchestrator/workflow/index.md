@@ -9,7 +9,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Due-Date Cohort Build](/workflow/due-date-cohort-build.md)
+2. [Activity-vs-Profile Comparison](/workflow/activity-vs-profile-comparison.md)
+3. [No-Change Auto-Completion & Senior Routing](/workflow/no-change-auto-completion-senior-routing.md)
+4. [Policy-Gated Filing & Audit](/workflow/policy-gated-filing-audit.md)

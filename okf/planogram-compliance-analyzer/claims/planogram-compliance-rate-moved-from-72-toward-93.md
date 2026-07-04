@@ -37,3 +37,4 @@ Must cite: oracle_retail_mfcs.item_master, oracle_xstore_pos.pos_transactions
 # Citations
 
 - [Planogram Compliance Analyzer Retail Execution Playbook](/documents/planogram-compliance-analyzer-execution-playbook.md)
+- [Planogram Reset & Space Standards Manual](/documents/planogram-reset-space-standards-manual.md)

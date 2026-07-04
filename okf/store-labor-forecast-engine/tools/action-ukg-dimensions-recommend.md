@@ -53,13 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [interval_level_labor_forecasting](/workflow/interval-level-labor-forecasting.md)
+- [draft_schedule_assembly_compliance_check](/workflow/draft-schedule-assembly-compliance-check.md)
+- [playbook_gated_recommend_publish](/workflow/playbook-gated-recommend-publish.md)
+- [manager_notification_exception_handoff](/workflow/manager-notification-exception-handoff.md)
 
 ## Evals
 
 - [Run the Store Labor Forecast Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-labor-forecast-engine-end-to-end.md)
+- [Store 0417's labor_forecasts row for forecast_week 2026-06-29 shows variance_to_budget_pct of +11.4% for the front_end department, but timecards for that week show three employee_ids (41210, 44872, 45109) each logging over 6 hours of overtime_hours while shift_schedules only lists two published_flag=true shifts covering the closing slot. Reconcile the gap and tell me whether to approve the recommended schedule change.](/tests/store-labor-forecast-engine-overtime-coverage-reconciliation.md)
 
 ## Evidence emitted
 

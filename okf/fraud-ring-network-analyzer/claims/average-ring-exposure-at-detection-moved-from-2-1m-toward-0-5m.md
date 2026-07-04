@@ -37,3 +37,4 @@ Must cite: friss_fraud_detection.fraud_screening_scores, lexisnexis_risk_solutio
 # Citations
 
 - [Fraud Ring Network Analyzer Authority & Referral Guide](/documents/fraud-ring-network-analyzer-authority-guide.md)
+- [SIU Ring Consolidation & Evidence Staleness Runbook](/documents/siu-ring-consolidation-runbook.md)

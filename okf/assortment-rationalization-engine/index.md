@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Assortment Rationalization Engine
-description: "Continuously scores every SKU in BigQuery on productivity, incrementality, and transferable demand. Generates a ranked keep/delist/swap recommendation deck for each category ahead of line review. so the Category Manager can move the SKU productivity (sales per SKU) KPI."
+description: "Continuously score every SKU in Oracle Retail MFCS item_master against BigQuery productivity and transferable-demand baselines to drive a ranked keep/delist/swap deck that lifts SKU productivity from $8,200/yr toward $11,900/yr and cuts tail-SKU share of assortment from 31% to 14% ahead of each line review."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/assortment-rational
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:17.915Z"
+provenance_created_at: "2026-07-04T06:18:26.884Z"
 ---
 
 # Assortment Rationalization Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:17.915Z"
 
 - **Persona:** Category Manager
 - **Department:** retail
-- **Objective:** Continuously scores every SKU in BigQuery on productivity, incrementality, and transferable demand. Generates a ranked keep/delist/swap recommendation deck for each category ahead of line review. so the Category Manager can move the SKU productivity (sales per SKU) KPI.
+- **Objective:** Continuously score every SKU in Oracle Retail MFCS item_master against BigQuery productivity and transferable-demand baselines to drive a ranked keep/delist/swap deck that lifts SKU productivity from $8,200/yr toward $11,900/yr and cuts tail-SKU share of assortment from 31% to 14% ahead of each line review.
 
 ## KPI summary
 

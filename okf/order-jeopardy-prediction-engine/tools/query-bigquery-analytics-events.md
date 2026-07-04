@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [baseline_comparison_slip_scoring](/workflow/baseline-comparison-slip-scoring.md)
 
 ## Evals
 
 - [Run the Order Jeopardy Prediction Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/order-jeopardy-prediction-engine-end-to-end.md)
+- [Order 7433981 (enterprise, port_in) shows fallout_status=inventory_shortfall in service_orders with due_date 2026-07-15, but the linked provisioning_task snapshot in the queue is over 40 hours old, and network_inventory_items shows the target network element already sitting in decommission_pending admin_state at 96.4% capacity_utilization_pct. BigQuery analytics_events still shows negative variance_pct for this segment's on-time delivery metric. Determine whether this order's jeopardy score is trustworthy and recommend the next action before any draft is issued.](/tests/order-jeopardy-prediction-engine-stale-evidence-conflict.md)
 
 ## Evidence emitted
 

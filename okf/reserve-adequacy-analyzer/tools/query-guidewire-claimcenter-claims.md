@@ -53,12 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [loss_triangle_assembly_reconciliation](/workflow/loss-triangle-assembly-reconciliation.md)
+- [segment_exhibit_drafting_dashboard_publication](/workflow/segment-exhibit-drafting-dashboard-publication.md)
+- [draft_action_escalation_routing](/workflow/draft-action-escalation-routing.md)
 
 ## Evals
 
 - [Run the Reserve Adequacy Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/reserve-adequacy-analyzer-end-to-end.md)
+- [Claim CLM-2026-04812 (workers_comp, TX) shows reserve_amount of $184,500 in claims as of 2026-06-30, but its reserve_lines transaction history sums to $211,700 across three entries dated 2026-04-02, 2026-05-14, and 2026-06-29, with the 2026-06-29 entry using authority_level_used 'supervisor_75k'. Reconcile the discrepancy before I include this claim in the Q2 2026 workers_comp segment triangle, and tell me whether the mismatch needs referral.](/tests/reserve-adequacy-analyzer-reserve-reconciliation-conflict.md)
 
 ## Evidence emitted
 

@@ -37,3 +37,4 @@ Must cite: sphera_ehs.safety_incidents, servicenow.tickets
 # Citations
 
 - [Permit-to-Work Compliance Monitor Standard Operating Procedure](/documents/permit-to-work-compliance-monitor-sop.md)
+- [Confined Space & Hot Work Permit Issuance Policy](/documents/confined-space-hot-work-issuance-policy.md)

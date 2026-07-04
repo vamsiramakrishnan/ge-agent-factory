@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [active_high_risk_work_permit_cross_check](/workflow/active-high-risk-work-permit-cross-check.md)
+- [sop_gated_notification_escalation](/workflow/sop-gated-notification-escalation.md)
+- [evidence_pack_generation_audit_trail](/workflow/evidence-pack-generation-audit-trail.md)
 
 ## Evals
 

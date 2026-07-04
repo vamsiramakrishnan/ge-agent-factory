@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [slice_telemetry_alarm_intake](/workflow/slice-telemetry-alarm-intake.md)
+- [escalation_ticketing_audit_close_out](/workflow/escalation-ticketing-audit-close-out.md)
 
 ## Evals
 
 - [Run the 5G Network Slice SLA Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/network-slice-sla-monitor-end-to-end.md)
+- [Site 14032 shows alarm_id 812345678 (severity: major, probable_cause: backhaul_congestion, first_occurrence 2026-07-02) still clear_status 'active' in Ericsson Network Manager, but the linked ServiceNow ticket #2041987 shows status 'resolved' as of 2026-07-01 — a day before the alarm's own first_occurrence. The account team wants to know if slice SLA credits apply for the outage window. Reconcile the records and tell me whether to escalate.](/tests/network-slice-sla-monitor-conflicting-evidence-reconciliation.md)
 
 ## Evidence emitted
 

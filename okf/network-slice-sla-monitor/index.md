@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "5G Network Slice SLA Monitor"
-description: "The monitor evaluates per-slice latency, throughput, and availability against contracted SLOs continuously. It triggers slice reconfiguration or resource reallocation workflows when a KPI trends toward breach. so the Service Assurance Manager can move the Slice SLA breach detection time KPI."
+description: "Detect and score private 5G slice breaches across network_alarms and performance_counters against contracted SLOs in under 60 seconds, cutting SLA credits paid to slice customers from $1.8M/year toward $400K/year while every confirmed breach is escalated through ServiceNow with a full audit trail."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/network-slice-sla-m
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:36.452Z"
+provenance_created_at: "2026-07-04T06:18:45.065Z"
 ---
 
 # 5G Network Slice SLA Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:36.452Z"
 
 - **Persona:** Service Assurance Manager
 - **Department:** telco
-- **Objective:** The monitor evaluates per-slice latency, throughput, and availability against contracted SLOs continuously. It triggers slice reconfiguration or resource reallocation workflows when a KPI trends toward breach. so the Service Assurance Manager can move the Slice SLA breach detection time KPI.
+- **Objective:** Detect and score private 5G slice breaches across network_alarms and performance_counters against contracted SLOs in under 60 seconds, cutting SLA credits paid to slice customers from $1.8M/year toward $400K/year while every confirmed breach is escalated through ServiceNow with a full audit trail.
 
 ## KPI summary
 

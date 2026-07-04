@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_pdp_content_quality_agent_execution_playbook](/tools/lookup-pdp-content-quality-agent-execution-playbook.md)
 - [action_salesforce_commerce_cloud_publish](/tools/action-salesforce-commerce-cloud-publish.md)
+- [query_salesforce_commerce_cloud_product_catalog_entries](/tools/query-salesforce-commerce-cloud-product-catalog-entries.md)
+- [query_salesforce_commerce_cloud_cart_events](/tools/query-salesforce-commerce-cloud-cart-events.md)
+- [lookup_supplier_content_feed_sla](/tools/lookup-supplier-content-feed-sla.md)

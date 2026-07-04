@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [fnol_intake_loss_fact_extraction](/workflow/fnol-intake-loss-fact-extraction.md)
+- [coverage_exposure_verification](/workflow/coverage-exposure-verification.md)
+- [adjuster_assignment_claimant_notification](/workflow/adjuster-assignment-claimant-notification.md)
 
 ## Evals
 

@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [sell_through_variance_scoring](/workflow/sell-through-variance-scoring.md)
 
 ## Evals
 
 - [Run the Store Replenishment Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-replenishment-orchestrator-end-to-end.md)
+- [Merchandise class small_appliances (class_number 4210, buyer Dana Whitfield) is showing store weeks-of-supply variance beyond +/-1.2 weeks at 38 stores. item_master shows SKU 71029384 at case_pack 12, item_status active, but cost_changes has a pending record with new_unit_cost $6.40 versus old_unit_cost $5.20 (a 23% increase) not yet approved. Recommend the item-store min/max reset and whether to execute the approve action now.](/tests/store-replenishment-orchestrator-pending-cost-change.md)
 
 ## Evidence emitted
 

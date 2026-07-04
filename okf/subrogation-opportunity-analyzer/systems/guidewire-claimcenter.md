@@ -26,3 +26,6 @@ claims, claim exposures, reserve lines records
 
 - [query_guidewire_claimcenter_claims](/tools/query-guidewire-claimcenter-claims.md)
 - [action_guidewire_claimcenter_close](/tools/action-guidewire-claimcenter-close.md)
+- [query_guidewire_claimcenter_claim_exposures](/tools/query-guidewire-claimcenter-claim-exposures.md)
+- [query_guidewire_claimcenter_reserve_lines](/tools/query-guidewire-claimcenter-reserve-lines.md)
+- [lookup_subrogation_sol_arbitration_work_instruction](/tools/lookup-subrogation-sol-arbitration-work-instruction.md)

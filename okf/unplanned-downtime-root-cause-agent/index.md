@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Unplanned Downtime Root-Cause Agent"
-description: "Listens for downtime events from Opcenter MES and automatically pulls the surrounding sensor window from the PI historian into BigQuery. Correlates the event against historical failure signatures and drafts a ranked root-cause hypothesis with supporting trend charts. so the Plant Manager can move the Unplanned downtime hours per month KPI."
+description: "Cut unplanned downtime from 62 hours to 38 hours per month by automatically correlating Siemens Opcenter MES machine_events and OSIsoft PI System downtime_events with the surrounding sensor_readings window, driving mean time to root cause from 3.5 days down to under 4 hours."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/unplanned-downtime-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:05.262Z"
+provenance_created_at: "2026-07-04T06:18:14.266Z"
 ---
 
 # Unplanned Downtime Root-Cause Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:05.262Z"
 
 - **Persona:** Plant Manager
 - **Department:** manufacturing
-- **Objective:** Listens for downtime events from Opcenter MES and automatically pulls the surrounding sensor window from the PI historian into BigQuery. Correlates the event against historical failure signatures and drafts a ranked root-cause hypothesis with supporting trend charts. so the Plant Manager can move the Unplanned downtime hours per month KPI.
+- **Objective:** Cut unplanned downtime from 62 hours to 38 hours per month by automatically correlating Siemens Opcenter MES machine_events and OSIsoft PI System downtime_events with the surrounding sensor_readings window, driving mean time to root cause from 3.5 days down to under 4 hours.
 
 ## KPI summary
 

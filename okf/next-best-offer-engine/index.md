@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Next Best Offer Engine
-description: "Unifies POS and digital signals in BigQuery to model each member's category propensities and price sensitivity. Selects the next best offer per member per channel under budget and margin guardrails. so the CRM Manager can move the Offer redemption rate KPI."
+description: "Raise offer redemption rate from 3.2% to 12.5% and incremental revenue per contacted member from $1.80 to $6.40 by scoring each loyalty_id's category propensity and price sensitivity from pos_transactions and campaign_influence in BigQuery, then publishing one guardrail-cleared offer per member per channel instead of a blanket segment coupon."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/next-best-offer-eng
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:26.722Z"
+provenance_created_at: "2026-07-04T06:18:35.760Z"
 ---
 
 # Next Best Offer Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:26.722Z"
 
 - **Persona:** CRM Manager
 - **Department:** retail
-- **Objective:** Unifies POS and digital signals in BigQuery to model each member's category propensities and price sensitivity. Selects the next best offer per member per channel under budget and margin guardrails. so the CRM Manager can move the Offer redemption rate KPI.
+- **Objective:** Raise offer redemption rate from 3.2% to 12.5% and incremental revenue per contacted member from $1.80 to $6.40 by scoring each loyalty_id's category propensity and price sensitivity from pos_transactions and campaign_influence in BigQuery, then publishing one guardrail-cleared offer per member per channel instead of a blanket segment coupon.
 
 ## KPI summary
 

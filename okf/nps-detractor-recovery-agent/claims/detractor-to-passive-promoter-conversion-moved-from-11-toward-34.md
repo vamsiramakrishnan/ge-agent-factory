@@ -37,3 +37,4 @@ Must cite: genesys_cloud_cx.customer_interactions, bigquery.analytics_events
 # Citations
 
 - [NPS Detractor Recovery Agent Service Assurance Runbook](/documents/nps-detractor-recovery-agent-assurance-runbook.md)
+- [Retention Save-Offer Authorization Matrix](/documents/nps-detractor-recovery-agent-retention-offer-authorization-matrix.md)

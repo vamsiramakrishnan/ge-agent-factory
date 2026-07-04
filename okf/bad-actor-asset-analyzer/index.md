@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Bad Actor Asset Analyzer
-description: "Ranks assets on a combined index of repair cost, downtime contribution, and failure frequency from IBM Maximo and PI System data in BigQuery on request. Clusters each bad actor's work order text into dominant failure modes and summarizes the recurring mechanism. so the Reliability Engineer can move the Maintenance cost on top-10 bad actors KPI."
+description: "Rank the top-10 bad-actor assets in IBM Maximo's asset_registry_entries by a combined repair-cost, downtime, and failure-frequency index built from maintenance_work_orders and OSIsoft PI System downtime_events, driving maintenance cost on those assets from $1.8M/yr toward $0.9M/yr and MTBF from 42 days toward 115 days."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/bad-actor-asset-ana
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:11.141Z"
+provenance_created_at: "2026-07-04T06:18:20.223Z"
 ---
 
 # Bad Actor Asset Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:11.141Z"
 
 - **Persona:** Reliability Engineer
 - **Department:** manufacturing
-- **Objective:** Ranks assets on a combined index of repair cost, downtime contribution, and failure frequency from IBM Maximo and PI System data in BigQuery on request. Clusters each bad actor's work order text into dominant failure modes and summarizes the recurring mechanism. so the Reliability Engineer can move the Maintenance cost on top-10 bad actors KPI.
+- **Objective:** Rank the top-10 bad-actor assets in IBM Maximo's asset_registry_entries by a combined repair-cost, downtime, and failure-frequency index built from maintenance_work_orders and OSIsoft PI System downtime_events, driving maintenance cost on those assets from $1.8M/yr toward $0.9M/yr and MTBF from 42 days toward 115 days.
 
 ## KPI summary
 

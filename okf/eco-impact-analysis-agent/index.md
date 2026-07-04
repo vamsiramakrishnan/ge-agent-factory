@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: ECO Impact Analysis Agent
-description: "Traces full where-used impact across PTC Windchill PLM product structures the moment an ECO enters review, joined with open orders, WIP, and inventory from SAP S/4HANA PP in BigQuery. Recommends the effectivity date that minimizes stranded inventory and open-order disruption, with the cost trade-off quantified. so the Manufacturing Engineer can move the ECO cycle time KPI."
+description: "Trace the full where-used impact of an engineering_change_orders record across bom_revisions and cad_document_records in PTC Windchill PLM, cross-reference open process_orders, work_center_confirmations, and material_stagings in SAP S/4HANA PP, and recommend the effectivity date that minimizes stranded inventory — cutting obsolete inventory write-off from $45K to $12K avg per change while pulling ECO cycle time from 34 days to 12 days."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/eco-impact-analysis
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:13.701Z"
+provenance_created_at: "2026-07-04T06:18:22.726Z"
 ---
 
 # ECO Impact Analysis Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:13.701Z"
 
 - **Persona:** Manufacturing Engineer
 - **Department:** manufacturing
-- **Objective:** Traces full where-used impact across PTC Windchill PLM product structures the moment an ECO enters review, joined with open orders, WIP, and inventory from SAP S/4HANA PP in BigQuery. Recommends the effectivity date that minimizes stranded inventory and open-order disruption, with the cost trade-off quantified. so the Manufacturing Engineer can move the ECO cycle time KPI.
+- **Objective:** Trace the full where-used impact of an engineering_change_orders record across bom_revisions and cad_document_records in PTC Windchill PLM, cross-reference open process_orders, work_center_confirmations, and material_stagings in SAP S/4HANA PP, and recommend the effectivity date that minimizes stranded inventory — cutting obsolete inventory write-off from $45K to $12K avg per change while pulling ECO cycle time from 34 days to 12 days.
 
 ## KPI summary
 

@@ -37,3 +37,4 @@ Must cite: manhattan_active_wm.warehouse_orders, ukg_dimensions.shift_schedules
 # Citations
 
 - [DC Labor Planning Engine Retail Execution Playbook](/documents/dc-labor-planning-engine-execution-playbook.md)
+- [Fair Workweek Predictive Scheduling & Engineered Labor Standards Runbook](/documents/dc-labor-planning-engine-fair-workweek-engineered-standards-runbook.md)

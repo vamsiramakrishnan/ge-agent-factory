@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_qm.inspection_lots, siemens_opcenter_mes.production_order
 # Citations
 
 - [Nonconformance Triage Agent Standard Operating Procedure](/documents/nonconformance-triage-agent-sop.md)
+- [Material Review Board Disposition Authority Matrix](/documents/mrb-disposition-authority-matrix.md)

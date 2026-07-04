@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [churn_driver_clv_triangulation](/workflow/churn-driver-clv-triangulation.md)
 
 ## Evals
 
 - [Run the Churn Save Desk Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/churn-save-desk-agent-end-to-end.md)
+- [Account 48213077 (interaction_id 612044501) called in with intent=cancel_request on 2026-07-02. The rep's agent_notes say 'customer says internet keeps dropping' but queue_metrics for the retention queue on that date shows service_level_80_20_pct at 91.4% and abandon_rate_pct at 2.1% — no service degradation. Before recommending a save offer, reconcile the stated complaint against the queue telemetry and tell me what's actually driving this cancellation and what offer to lead with.](/tests/churn-save-desk-agent-driver-misattribution.md)
 
 ## Evidence emitted
 

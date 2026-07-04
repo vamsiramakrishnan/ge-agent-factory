@@ -26,3 +26,6 @@ kyc cases, entity profiles, screening results records
 
 - [query_fenergo_clm_kyc_cases](/tools/query-fenergo-clm-kyc-cases.md)
 - [action_fenergo_clm_escalate](/tools/action-fenergo-clm-escalate.md)
+- [query_fenergo_clm_entity_profiles](/tools/query-fenergo-clm-entity-profiles.md)
+- [query_fenergo_clm_screening_results](/tools/query-fenergo-clm-screening-results.md)
+- [lookup_sanctions_list_source_and_interdiction_runbook](/tools/lookup-sanctions-list-source-and-interdiction-runbook.md)

@@ -26,3 +26,6 @@ billing accounts, premium invoices, payment plans records
 
 - [query_guidewire_billingcenter_billing_accounts](/tools/query-guidewire-billingcenter-billing-accounts.md)
 - [action_guidewire_billingcenter_file](/tools/action-guidewire-billingcenter-file.md)
+- [query_guidewire_billingcenter_premium_invoices](/tools/query-guidewire-billingcenter-premium-invoices.md)
+- [query_guidewire_billingcenter_payment_plans](/tools/query-guidewire-billingcenter-payment-plans.md)
+- [lookup_unapplied_cash_resolution_agent_suspense_aging_sla](/tools/lookup-unapplied-cash-resolution-agent-suspense-aging-sla.md)

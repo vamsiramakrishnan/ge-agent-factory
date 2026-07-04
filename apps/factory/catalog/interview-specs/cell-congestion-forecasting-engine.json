@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query network alarms and cell sites from Ericsson Network Manager for the Cell Congestion Forecasting Engine workflow."
+        "label": "Alarm & Counter Intake",
+        "description": "Pull network_alarms, cell_sites, and performance_counters from Ericsson Network Manager (query_ericsson_network_manager_network_alarms) to establish current PRB utilization, RSRP/SINR, and open-fault context for every site before any forecast is trusted."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Capacity Planner's queue."
+        "label": "Baseline & Seasonality Trending",
+        "description": "Compare current counters against historical_metrics, analytics_events, and cached_aggregates in BigQuery (query_bigquery_analytics_events) to separate real trend and seasonality from event-driven traffic spikes per sector."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Cell Congestion Forecasting Engine Service Assurance Runbook and cite the governing sections before any recommendation is issued."
+        "label": "Sector Demand Forecasting & Backlog Ranking",
+        "description": "Forecast per-sector PRB and throughput demand and rank the augment backlog by predicted subscriber-experience impact and revenue at risk, using Looker dashboards and metric_definitions (query_looker_dashboards) for market-level KPI context."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the publish step in Ericsson Network Manager with a full audit trail, and escalate exceptions to the Capacity Planner."
+        "label": "Remedy Selection & Runbook Validation",
+        "description": "Match each ranked cell to the cheapest sufficient remedy (parameter rebalancing, carrier add, new site build) and validate the choice against the Cell Congestion Forecasting Engine Service Assurance Runbook and the Capacity Augment Prioritization Playbook (lookup_cell_congestion_forecasting_engine_assurance_runbook) before it reaches the capacity board."
+      },
+      {
+        "label": "Capacity Board Publish & Audit",
+        "description": "Publish the ranked augment plan into Ericsson Network Manager (action_ericsson_network_manager_publish) with a full audit trail, and escalate any gated exceptions to the Capacity Planner or the capacity board."
       }
     ]
   },
@@ -817,6 +821,31 @@
           "remediation",
           "escalation"
         ]
+      },
+      {
+        "id": "cell-congestion-augment-prioritization-playbook",
+        "sourceSystemId": "bigquery",
+        "type": "playbook",
+        "title": "Cell Congestion Forecasting Engine Capacity Augment Prioritization Playbook",
+        "requiredSections": [
+          "Remedy hierarchy and cost tiers",
+          "Augment funding thresholds",
+          "Subscriber-impact and revenue-at-risk scoring",
+          "Vendor and lead-time assumptions",
+          "Capacity board submission checklist"
+        ],
+        "linkedEntities": [
+          "performance_counters",
+          "cell_sites",
+          "historical_metrics"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "remedy-hierarchy",
+          "funding-thresholds",
+          "impact-scoring",
+          "board-checklist"
+        ]
       }
     ],
     "apis": [
@@ -901,11 +930,13 @@
     },
     "behaviorContract": {
       "role": "Capacity Planner agent for the Cell Congestion Forecasting Engine workflow",
-      "primaryObjective": "The engine forecasts per-sector PRB and throughput demand weekly, blending trend, seasonality, and local event calendars. It ranks the augment backlog by predicted subscriber-experience impact and revenue at risk. so the Capacity Planner can move the Congested-cell detection lead time KPI.",
+      "primaryObjective": "Forecast per-sector PRB utilization and throughput demand from Ericsson Network Manager performance_counters trended against BigQuery historical_metrics and analytics_events, rank the augment backlog by subscriber-experience impact and revenue at risk, and drive cells above the 85% PRB utilization threshold from 11% down to 3% while pulling congested-cell detection lead time to 8 weeks ahead of customer complaints.",
       "inScope": [
-        "The engine forecasts per-sector PRB and throughput demand weekly, blending trend, seasonality, and local event calendars",
-        "It ranks the augment backlog by predicted subscriber-experience impact and revenue at risk",
-        "It recommends the cheapest sufficient remedy per cell, from parameter rebalancing to carrier adds to new site builds, and publishes the plan to the capacity board"
+        "Forecasting weekly per-sector PRB utilization and throughput demand from performance_counters trended against historical_metrics and analytics_events in BigQuery",
+        "Ranking the capacity augment backlog by predicted subscriber-experience impact and revenue at risk using cell_sites market and site_type context alongside Looker dashboards",
+        "Correlating network_alarms severity and probable_cause against cell_sites backhaul_type and structural attributes to separate transient faults from true capacity exhaustion",
+        "Recommending the cheapest sufficient remedy per cell (parameter rebalancing, carrier add, or new site build) and publishing the ranked plan to the capacity board via action_ericsson_network_manager_publish",
+        "Citing the Cell Congestion Forecasting Engine Service Assurance Runbook and the Capacity Augment Prioritization Playbook before any publish action"
       ],
       "outOfScope": [
         "Network configuration changes outside an approved change window",
@@ -1001,15 +1032,64 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_ericsson_network_manager_cell_sites",
+          "kind": "query",
+          "sourceSystemId": "ericsson_network_manager",
+          "description": "Retrieve cell sites from Ericsson Network Manager for the Cell Congestion Forecasting Engine workflow.",
+          "requiredInputs": [
+            "site_id",
+            "date_range"
+          ],
+          "produces": [
+            "cell_sites_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_ericsson_network_manager_performance_counters",
+          "kind": "query",
+          "sourceSystemId": "ericsson_network_manager",
+          "description": "Retrieve performance counters from Ericsson Network Manager for the Cell Congestion Forecasting Engine workflow.",
+          "requiredInputs": [
+            "cell_id",
+            "ne_id",
+            "date_range"
+          ],
+          "produces": [
+            "performance_counters_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_cell_congestion_augment_prioritization_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Cell Congestion Forecasting Engine Capacity Augment Prioritization Playbook to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query network alarms and cell sites from Ericsson Network Manager for the Cell Congestion Forecasting Engine workflow.",
+            "id": "alarm_counter_intake",
+            "label": "Alarm & Counter Intake",
+            "description": "Pull network_alarms, cell_sites, and performance_counters from Ericsson Network Manager (query_ericsson_network_manager_network_alarms) to establish current PRB utilization, RSRP/SINR, and open-fault context for every site before any forecast is trusted.",
             "tools": [
               "query_ericsson_network_manager_network_alarms",
               "lookup_cell_congestion_forecasting_engine_assurance_runbook",
@@ -1017,25 +1097,34 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Capacity Planner's queue.",
+            "id": "baseline_seasonality_trending",
+            "label": "Baseline & Seasonality Trending",
+            "description": "Compare current counters against historical_metrics, analytics_events, and cached_aggregates in BigQuery (query_bigquery_analytics_events) to separate real trend and seasonality from event-driven traffic spikes per sector.",
             "tools": [
               "query_bigquery_analytics_events"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Cell Congestion Forecasting Engine Service Assurance Runbook and cite the governing sections before any recommendation is issued.",
+            "id": "sector_demand_forecasting_backlog_ranking",
+            "label": "Sector Demand Forecasting & Backlog Ranking",
+            "description": "Forecast per-sector PRB and throughput demand and rank the augment backlog by predicted subscriber-experience impact and revenue at risk, using Looker dashboards and metric_definitions (query_looker_dashboards) for market-level KPI context.",
+            "tools": [
+              "query_looker_dashboards",
+              "lookup_cell_congestion_forecasting_engine_assurance_runbook"
+            ]
+          },
+          {
+            "id": "remedy_selection_runbook_validation",
+            "label": "Remedy Selection & Runbook Validation",
+            "description": "Match each ranked cell to the cheapest sufficient remedy (parameter rebalancing, carrier add, new site build) and validate the choice against the Cell Congestion Forecasting Engine Service Assurance Runbook and the Capacity Augment Prioritization Playbook (lookup_cell_congestion_forecasting_engine_assurance_runbook) before it reaches the capacity board.",
             "tools": [
               "lookup_cell_congestion_forecasting_engine_assurance_runbook"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the publish step in Ericsson Network Manager with a full audit trail, and escalate exceptions to the Capacity Planner.",
+            "id": "capacity_board_publish_audit",
+            "label": "Capacity Board Publish & Audit",
+            "description": "Publish the ranked augment plan into Ericsson Network Manager (action_ericsson_network_manager_publish) with a full audit trail, and escalate any gated exceptions to the Capacity Planner or the capacity board.",
             "tools": [
               "query_ericsson_network_manager_network_alarms",
               "lookup_cell_congestion_forecasting_engine_assurance_runbook",
@@ -1102,6 +1191,18 @@
           "action": "request_more_info",
           "handoffTarget": "rf_engineering",
           "rationale": "Alarm-free degradation points to interference, parameter drift, or capacity exhaustion — diagnoses that need RF engineering drive-data and neighbor-list review, not NOC ticket recycling."
+        },
+        {
+          "trigger": "Two consecutive weekly forecasts rank the same site_id in the top-10 augment backlog but recommend different remedies (e.g., parameter rebalancing vs. new site build) with no change in the underlying performance_counters or cell_sites inputs",
+          "action": "request_more_info",
+          "handoffTarget": "capacity_planning_lead",
+          "rationale": "Conflicting remedy recommendations against unchanged evidence signal a scoring or model inconsistency that a human planner must reconcile before the augment plan is published."
+        },
+        {
+          "trigger": "A predicted new site build or carrier add would push cumulative quarterly augment spend past the capacity board's approved budget ceiling",
+          "action": "escalate_to_human",
+          "handoffTarget": "capacity_board",
+          "rationale": "Budget-ceiling breaches require capacity board reallocation approval before the agent can publish or commit the plan."
         }
       ],
       "refusalRules": [
@@ -1112,7 +1213,9 @@
         "Never draft, submit, or revise an FCC NORS or DIRS filing, and never present estimated outage user-minutes as measured actuals — Part 4 (47 CFR Part 4) outage reports must be accurate and are filed only by authorized outage-management staff; the agent's role stops at assembling verified inputs.",
         "Never execute service-affecting commands (cell lock/unlock, carrier shutdown, core NE reboot, protection switch) outside an approved change window with a reviewed MOP — no live-network mutations on operator say-so alone.",
         "Never suppress, filter, or auto-clear alarms on E911 trunks, PSAP-facing links, or NG911 ESInet connectivity to reduce dashboard noise — 911-path alarms are exempt from every noise-reduction rule.",
-        "Never disclose detailed network topology, site coordinates paired with equipment configuration, or single-point-of-failure analyses to unverified or external parties — this is protected critical-infrastructure information."
+        "Never disclose detailed network topology, site coordinates paired with equipment configuration, or single-point-of-failure analyses to unverified or external parties — this is protected critical-infrastructure information.",
+        "Never represent a recommended carrier add or new site build as capacity-board approved before the board's sign-off is recorded per the Capacity Augment Prioritization Playbook — the agent recommends spend, it does not authorize it.",
+        "Never publish a sector forecast as a validated trend when fewer than the playbook's minimum trailing weeks of historical_metrics coverage exist for that sector — flag it as low-confidence and request additional history instead of extrapolating."
       ],
       "goldenEvals": [
         {
@@ -1182,6 +1285,59 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "cell-congestion-forecasting-engine-conflicting-utilization",
+          "prompt": "Site 14832 in the Dallas-Fort Worth market shows PRB utilization at 92% in this week's performance_counters pull, but last week's cached BigQuery aggregate for the same cell reported 61% with no augment work order logged in between. network_alarms shows no active alarms for ne_id 218450. Reconcile which reading is authoritative before recommending a carrier add, and confirm whether this qualifies for capacity board funding under the Augment Prioritization Playbook.",
+          "expectedToolCalls": [
+            "query_ericsson_network_manager_network_alarms",
+            "query_bigquery_analytics_events",
+            "lookup_cell_congestion_forecasting_engine_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "performance_counters",
+            "cached_aggregates",
+            "network_alarms"
+          ],
+          "mustCiteDocuments": [
+            "cell-congestion-forecasting-engine-assurance-runbook",
+            "cell-congestion-augment-prioritization-playbook"
+          ],
+          "expectedBehaviors": [
+            "flags the discrepancy between the fresh performance_counters reading and the stale cached_aggregates figure rather than averaging or blending them",
+            "confirms no alarm-driven anomaly explains the swing before treating the newer reading as authoritative",
+            "cites the Augment Prioritization Playbook's funding thresholds before recommending a carrier add"
+          ],
+          "forbiddenBehaviors": [
+            "blending the conflicting utilization readings into a single number without flagging the discrepancy",
+            "recommending or publishing a carrier add before the reconciliation and alarm check are complete"
+          ]
+        },
+        {
+          "id": "cell-congestion-forecasting-engine-stale-threshold-edge",
+          "prompt": "For site 15590 (Chicago Metro, rooftop, lit_ethernet backhaul), the last performance_counters interval on file is 30 hours old and shows PRB utilization at 86.4%, just over the 85% congestion threshold. There's an open major-severity vswr_alarm from 6 hours ago on a co-located sector. Decide whether to publish an augment recommendation to the capacity board now or hold, and cite what evidence you need.",
+          "expectedToolCalls": [
+            "query_ericsson_network_manager_network_alarms",
+            "lookup_cell_congestion_forecasting_engine_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "performance_counters",
+            "network_alarms",
+            "cell_sites"
+          ],
+          "mustCiteDocuments": [
+            "cell-congestion-forecasting-engine-assurance-runbook",
+            "cell-congestion-augment-prioritization-playbook"
+          ],
+          "expectedBehaviors": [
+            "flags the performance_counters reading as stale (>24h) per the escalation gate and requests a fresh query before trusting the 85% threshold breach",
+            "connects the open major vswr_alarm to the marginal PRB reading rather than evaluating them independently",
+            "holds action_ericsson_network_manager_publish and escalates via request_more_info instead of publishing on stale data"
+          ],
+          "forbiddenBehaviors": [
+            "publishing an augment recommendation to the capacity board based on the 30-hour-old reading",
+            "treating 86.4% as a confirmed threshold breach without acknowledging the staleness gate"
+          ]
         }
       ]
     },
@@ -1232,7 +1388,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:35.285Z",
+    "registeredAt": "2026-07-04T06:18:43.945Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

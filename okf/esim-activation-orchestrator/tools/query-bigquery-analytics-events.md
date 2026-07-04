@@ -52,7 +52,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [profile_download_triage](/workflow/profile-download-triage.md)
+- [cross_system_state_reconciliation](/workflow/cross-system-state-reconciliation.md)
+- [fallout_severity_scoring_runbook_validation](/workflow/fallout-severity-scoring-runbook-validation.md)
 
 ## Evals
 

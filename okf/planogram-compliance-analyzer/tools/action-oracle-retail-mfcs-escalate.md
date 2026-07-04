@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [reset_window_trigger_evidence_intake](/workflow/reset-window-trigger-evidence-intake.md)
+- [sales_rate_planogram_reconciliation](/workflow/sales-rate-planogram-reconciliation.md)
+- [playbook_gated_evidence_validation](/workflow/playbook-gated-evidence-validation.md)
+- [corrective_task_assignment_chronic_non_compliance_escalation](/workflow/corrective-task-assignment-chronic-non-compliance-escalation.md)
 
 ## Evals
 

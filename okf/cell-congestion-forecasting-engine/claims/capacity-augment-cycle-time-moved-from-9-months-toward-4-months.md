@@ -37,3 +37,4 @@ Must cite: ericsson_network_manager.network_alarms, bigquery.analytics_events
 # Citations
 
 - [Cell Congestion Forecasting Engine Service Assurance Runbook](/documents/cell-congestion-forecasting-engine-assurance-runbook.md)
+- [Cell Congestion Forecasting Engine Capacity Augment Prioritization Playbook](/documents/cell-congestion-augment-prioritization-playbook.md)

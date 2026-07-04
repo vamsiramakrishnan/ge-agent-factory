@@ -53,14 +53,17 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [ticket_to_work_order_correlation](/workflow/ticket-to-work-order-correlation.md)
+- [remote_diagnostic_battery](/workflow/remote-diagnostic-battery.md)
+- [no_fault_found_risk_scoring](/workflow/no-fault-found-risk-scoring.md)
+- [runbook_gated_remediation_decision](/workflow/runbook-gated-remediation-decision.md)
+- [dispatch_filing_technician_brief](/workflow/dispatch-filing-technician-brief.md)
 
 ## Evals
 
 - [Run the Truck Roll Avoidance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/truck-roll-avoidance-agent-end-to-end.md)
+- [Work order WO-34418902 (premise 5521187) has Zendesk ticket #88214 opened 2026-07-02 reporting an intermittent drop, priority P2. The last BigQuery analytics_events line-diagnostic reading for this premise is dated 2026-06-29 (five days old) and shows a passing provisioning check, but the field_work_orders record shows repeat_within_30d=true with truck_rolls already at 2 for this premise. Decide whether to close this remotely or dispatch, and file the disposition.](/tests/truck-roll-avoidance-agent-stale-diagnostic-conflict.md)
+- [Work order WO-34477215 (premise 6603341, work_type=install_fixed_wireless) needs a tower crew for antenna work. The only technician_schedules record available in the am_8_12 window at west_garage has primary_skill=cpe_advanced and tower_climb_certified=false. materials_cost_usd on the work order is quoted at $812.40, and the customer's service_appointments record already shows reschedule_count=2. Assign the job and file the dispatch.](/tests/truck-roll-avoidance-agent-skill-mismatch-cost-edge.md)
 
 ## Evidence emitted
 

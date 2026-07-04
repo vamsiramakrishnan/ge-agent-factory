@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [runtime_correlation](/workflow/runtime-correlation.md)
+- [interval_scoring](/workflow/interval-scoring.md)
+- [route_package_draft_planner_approval](/workflow/route-package-draft-planner-approval.md)
 
 ## Evals
 
 - [Run the PM Schedule Optimization Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/pm-schedule-optimization-engine-end-to-end.md)
+- [Work order WO-4512873 against asset 118204 (a_constraint, cnc_machine) is logged in Maximo as complete with no findings for the last 6 PM cycles. Recommend extending its preventive maintenance interval from quarterly to semi-annual.](/tests/pm-schedule-optimization-engine-vibration-conflict.md)
 
 ## Evidence emitted
 

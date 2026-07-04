@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [backlog_pull_duplicate_merge](/workflow/backlog-pull-duplicate-merge.md)
+- [sop_gated_escalation](/workflow/sop-gated-escalation.md)
 
 ## Evals
 
 - [Run the Work Order Backlog Triage Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/work-order-backlog-triage-orchestrator-end-to-end.md)
+- [Work orders WO-4123456 and WO-4123789 were both opened on 2026-06-29 against asset 118420, a robot_cell ranked a_constraint. WO-4123456 lists failure_mode bearing_wear and WO-4123789 lists failure_mode electrical_short. The planner wants to merge them into one visit to save a crew-week during this week's triage. Should we merge them, and how do we schedule it?](/tests/work-order-backlog-triage-orchestrator-duplicate-failure-mode-conflict.md)
 
 ## Evidence emitted
 

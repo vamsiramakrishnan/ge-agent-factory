@@ -37,3 +37,4 @@ Must cite: genesys_cloud_cx.customer_interactions, bigquery.analytics_events
 # Citations
 
 - [Complaint Root Cause Analyzer Service Assurance Runbook](/documents/complaint-root-cause-analyzer-assurance-runbook.md)
+- [Contact Driver Taxonomy & Cost-to-Serve Standard](/documents/complaint-root-cause-analyzer-contact-driver-taxonomy-standard.md)

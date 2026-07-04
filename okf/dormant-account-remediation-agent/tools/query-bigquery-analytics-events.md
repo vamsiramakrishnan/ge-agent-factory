@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [activity_baseline_reconciliation](/workflow/activity-baseline-reconciliation.md)
 
 ## Evals
 
 - [Run the Dormant Account Remediation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/dormant-account-remediation-agent-end-to-end.md)
+- [For account 71950234 (product_type = iolta, current_balance $58,900.00), core_accounts shows account_status = dormant since 2025-01-15. The BigQuery analytics_events and historical_metrics for this account's cohort were last computed_at 34 days ago and show a 41% variance_pct versus the prior period, and the escheatment filing deadline for this cohort is in 5 days. Decide whether to proceed with escalation and filing now.](/tests/dormant-account-remediation-agent-stale-baseline-iolta.md)
 
 ## Evidence emitted
 

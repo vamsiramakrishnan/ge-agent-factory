@@ -25,3 +25,4 @@ tickets, change requests, incidents records
 ## Tools using this system
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
+- [lookup_suitability_exception_remediation_playbook](/tools/lookup-suitability-exception-remediation-playbook.md)

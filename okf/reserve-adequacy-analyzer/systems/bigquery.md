@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_reserve_adequacy_analyzer_authority_guide](/tools/lookup-reserve-adequacy-analyzer-authority-guide.md)
+- [lookup_reserve_data_staleness_evidence_refresh_runbook](/tools/lookup-reserve-data-staleness-evidence-refresh-runbook.md)

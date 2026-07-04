@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Vendor Lot Reconciliation](/workflow/vendor-lot-reconciliation.md)
+2. [PPM & CAPA Trend Compute](/workflow/ppm-capa-trend-compute.md)
+3. [Risk Tiering & Improvement-Plan Flagging](/workflow/risk-tiering-improvement-plan-flagging.md)
+4. [Scorecard Evidence Gate](/workflow/scorecard-evidence-gate.md)
+5. [QBR Publish & Sourcing Handoff](/workflow/qbr-publish-sourcing-handoff.md)

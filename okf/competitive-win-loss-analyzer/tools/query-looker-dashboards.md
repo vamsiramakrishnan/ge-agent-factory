@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [segment_ranking_counter_play_briefing](/workflow/segment-ranking-counter-play-briefing.md)
 
 ## Evals
 

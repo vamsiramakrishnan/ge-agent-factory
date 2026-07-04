@@ -37,3 +37,4 @@ Must cite: nice_actimize.fraud_alerts, bigquery.analytics_events
 # Citations
 
 - [Fraud Rule Tuning Analyzer Banking Compliance Policy](/documents/fraud-rule-tuning-analyzer-compliance-policy.md)
+- [Fraud Detection Model Risk & Backtesting Standard (SR 11-7 Aligned)](/documents/fraud-rule-tuning-analyzer-model-risk-backtesting-standard.md)

@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [catalog-change-baseline-watch](/queries/catalog-change-baseline-watch.md)
 
 ## Mechanisms to call
 

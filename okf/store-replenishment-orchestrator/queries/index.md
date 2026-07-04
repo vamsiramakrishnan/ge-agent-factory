@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query demand forecasts and forecast overrides from Blue Yonder Demand Planning and correlate with Oracle Retail MFCS for the Store Replenishment Orchestrator workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Allocation Analyst's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Store Replenishment Orchestrator Retail Execution Playbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the approve step in Blue Yonder Demand Planning with a full audit trail, and escalate exceptions to the Allocation Analyst.](/queries/act-audit.md)
+- [Pull demand_forecasts, forecast_overrides, and seasonal_profiles from Blue Yonder Demand Planning to establish the current statistical baseline and any planner-approved overrides for the week.](/queries/forecast-override-intake.md)
+- [Cross-reference item_master, merchandise_hierarchy, and cost_changes in Oracle Retail MFCS to confirm case_pack, item_status, and presentation-minimum constraints before touching any parameter.](/queries/item-presentation-cross-reference.md)
+- [Query analytics_events, historical_metrics, and cached_aggregates in BigQuery to score out-of-stock and weeks-of-supply variance by store-SKU and prioritize the Allocation Analyst's exception queue.](/queries/sell-through-variance-scoring.md)
+- [Use lookup_store_replenishment_orchestrator_execution_playbook to cite the governing sections of the Store Replenishment Orchestrator Retail Execution Playbook and the Presentation Minimums & Case-Pack Rounding Rate Manual before any parameter recommendation is finalized.](/queries/playbook-rate-manual-gate.md)
+- [Execute action_oracle_retail_mfcs_approve to write approved item-store parameter changes back into Blue Yonder Demand Planning, emit an audit_record_id, and escalate exceptions to the Allocation Analyst or replenishment_manager.](/queries/parameter-push-audit.md)

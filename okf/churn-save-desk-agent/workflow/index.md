@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [CPNI Authentication & Call Intercept](/workflow/cpni-authentication-call-intercept.md)
+2. [Churn Driver & CLV Triangulation](/workflow/churn-driver-clv-triangulation.md)
+3. [Save Offer Ranking Against Rate Card & Governance Cap](/workflow/save-offer-ranking-against-rate-card-governance-cap.md)
+4. [Offer Approval & Audit Trail](/workflow/offer-approval-audit-trail.md)
+5. [Fix-Verification Follow-Up](/workflow/fix-verification-follow-up.md)

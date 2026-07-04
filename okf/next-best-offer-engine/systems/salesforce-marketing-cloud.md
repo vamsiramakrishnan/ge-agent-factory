@@ -25,3 +25,4 @@ accounts, opportunities, campaign influence records
 ## Tools using this system
 
 - [query_salesforce_marketing_cloud_accounts](/tools/query-salesforce-marketing-cloud-accounts.md)
+- [lookup_next_best_offer_margin_liability_rate_card](/tools/lookup-next-best-offer-margin-liability-rate-card.md)

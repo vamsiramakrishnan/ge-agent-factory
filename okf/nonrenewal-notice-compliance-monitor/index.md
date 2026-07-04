@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Non-Renewal Notice Compliance Monitor"
-description: "Audits every planned non-renewal daily against state-specific deadline, delivery-method, and permissible-reason rules. Alerts the servicing team weeks ahead of each notice deadline and drafts compliant notice language with the correct statutory citations. so the Compliance Officer can move the Non-renewals with defective notice KPI."
+description: "Daily audit every planned non-renewal in Guidewire PolicyCenter's policies and policy_quotes against state-specific notice-deadline, delivery-method, and permissible-reason rules, cutting non-renewals with defective notice from 2.6% to 0.05% and forced-renewal premium leakage from $1.9M to $0.1M annually."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/nonrenewal-notice-c
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:59.842Z"
+provenance_created_at: "2026-07-04T06:18:08.766Z"
 ---
 
 # Non-Renewal Notice Compliance Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:59.842Z"
 
 - **Persona:** Compliance Officer
 - **Department:** insurance
-- **Objective:** Audits every planned non-renewal daily against state-specific deadline, delivery-method, and permissible-reason rules. Alerts the servicing team weeks ahead of each notice deadline and drafts compliant notice language with the correct statutory citations. so the Compliance Officer can move the Non-renewals with defective notice KPI.
+- **Objective:** Daily audit every planned non-renewal in Guidewire PolicyCenter's policies and policy_quotes against state-specific notice-deadline, delivery-method, and permissible-reason rules, cutting non-renewals with defective notice from 2.6% to 0.05% and forced-renewal premium leakage from $1.9M to $0.1M annually.
 
 ## KPI summary
 

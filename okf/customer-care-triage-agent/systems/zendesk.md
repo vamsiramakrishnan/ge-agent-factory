@@ -25,3 +25,4 @@ tickets, macros, satisfaction scores records
 ## Tools using this system
 
 - [query_zendesk_tickets](/tools/query-zendesk-tickets.md)
+- [lookup_customer_care_appeasement_authority_matrix](/tools/lookup-customer-care-appeasement-authority-matrix.md)

@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_site_search_relevance_engine_execution_playbook](/tools/lookup-site-search-relevance-engine-execution-playbook.md)
 - [action_salesforce_commerce_cloud_route](/tools/action-salesforce-commerce-cloud-route.md)
+- [query_salesforce_commerce_cloud_product_catalog_entries](/tools/query-salesforce-commerce-cloud-product-catalog-entries.md)
+- [query_salesforce_commerce_cloud_cart_events](/tools/query-salesforce-commerce-cloud-cart-events.md)
+- [lookup_site_search_relevance_engine_rule_governance_standard](/tools/lookup-site-search-relevance-engine-rule-governance-standard.md)

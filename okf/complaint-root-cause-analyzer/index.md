@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Complaint Root Cause Analyzer
-description: "The analyzer mines call transcripts, chat logs, and tickets daily to classify true contact reasons independent of disposition codes. It detects emerging complaint clusters and correlates them with recent releases, bill runs, and network changes. so the Care Team Lead can move the Repeat contact rate KPI."
+description: "Classify true contact drivers from customer_interactions and queue_metrics independent of agent disposition codes, correlate spikes in analytics_events against historical_metrics baselines to catch emerging defects within 48 hours, and drive the Repeat contact rate KPI from 28% toward 14% while cutting regulator complaint escalations from 85 to 30 per quarter."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/complaint-root-caus
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:40.602Z"
+provenance_created_at: "2026-07-04T06:18:49.265Z"
 ---
 
 # Complaint Root Cause Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:40.602Z"
 
 - **Persona:** Care Team Lead
 - **Department:** telco
-- **Objective:** The analyzer mines call transcripts, chat logs, and tickets daily to classify true contact reasons independent of disposition codes. It detects emerging complaint clusters and correlates them with recent releases, bill runs, and network changes. so the Care Team Lead can move the Repeat contact rate KPI.
+- **Objective:** Classify true contact drivers from customer_interactions and queue_metrics independent of agent disposition codes, correlate spikes in analytics_events against historical_metrics baselines to catch emerging defects within 48 hours, and drive the Repeat contact rate KPI from 28% toward 14% while cutting regulator complaint escalations from 85 to 30 per quarter.
 
 ## KPI summary
 

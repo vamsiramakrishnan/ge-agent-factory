@@ -37,3 +37,4 @@ Must cite: salesforce_financial_services_cloud.client_households, bigquery.analy
 # Citations
 
 - [Advisory Fee Billing Anomaly Analyzer Banking Compliance Policy](/documents/advisory-fee-billing-anomaly-analyzer-compliance-policy.md)
+- [Advisory Fee Schedule & Breakpoint Rate Manual](/documents/advisory-fee-schedule-breakpoint-rate-manual.md)

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Gate Deliverable Reconciliation](/workflow/gate-deliverable-reconciliation.md)
+2. [Burn-Down Trend & Readiness Scoring](/workflow/burn-down-trend-readiness-scoring.md)
+3. [Change-Class & Export-Control Gate Check](/workflow/change-class-export-control-gate-check.md)
+4. [Critical-Path Escalation](/workflow/critical-path-escalation.md)
+5. [Gate Review Readiness Pack Compilation](/workflow/gate-review-readiness-pack-compilation.md)

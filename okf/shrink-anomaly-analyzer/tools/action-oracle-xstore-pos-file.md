@@ -53,8 +53,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_register_exception_scoring](/workflow/nightly-register-exception-scoring.md)
+- [shift_cashier_attribution](/workflow/shift-cashier-attribution.md)
+- [case_file_assembly_risk_ranking](/workflow/case-file-assembly-risk-ranking.md)
+- [playbook_cash_accountability_evidence_gate](/workflow/playbook-cash-accountability-evidence-gate.md)
+- [case_filing_district_ap_handoff](/workflow/case-filing-district-ap-handoff.md)
 
 ## Evals
 

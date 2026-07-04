@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Submission Intake & ACORD Data Capture](/workflow/submission-intake-acord-data-capture.md)
+2. [Appetite Matrix & Line-of-Business Screening](/workflow/appetite-matrix-line-of-business-screening.md)
+3. [Loss History & Risk Enrichment](/workflow/loss-history-risk-enrichment.md)
+4. [Referral, Authority & Sanctions Gating](/workflow/referral-authority-sanctions-gating.md)
+5. [Desk Assignment, Decline Drafting & Audit Filing](/workflow/desk-assignment-decline-drafting-audit-filing.md)

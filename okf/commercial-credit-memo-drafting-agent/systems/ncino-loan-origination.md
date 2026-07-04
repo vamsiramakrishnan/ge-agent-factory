@@ -26,3 +26,6 @@ loan applications, credit memos, covenant records records
 
 - [query_ncino_loan_origination_loan_applications](/tools/query-ncino-loan-origination-loan-applications.md)
 - [action_ncino_loan_origination_generate](/tools/action-ncino-loan-origination-generate.md)
+- [query_ncino_loan_origination_credit_memos](/tools/query-ncino-loan-origination-credit-memos.md)
+- [query_ncino_loan_origination_covenant_records](/tools/query-ncino-loan-origination-covenant-records.md)
+- [lookup_commercial_credit_memo_drafting_agent_delegated_authority_matrix](/tools/lookup-commercial-credit-memo-drafting-agent-delegated-authority-matrix.md)

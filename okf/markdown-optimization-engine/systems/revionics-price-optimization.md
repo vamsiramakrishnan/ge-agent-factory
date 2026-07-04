@@ -26,3 +26,5 @@ price recommendations, price zones, elasticity models records
 
 - [query_revionics_price_optimization_price_recommendations](/tools/query-revionics-price-optimization-price-recommendations.md)
 - [lookup_markdown_optimization_engine_execution_playbook](/tools/lookup-markdown-optimization-engine-execution-playbook.md)
+- [query_revionics_price_optimization_price_zones](/tools/query-revionics-price-optimization-price-zones.md)
+- [query_revionics_price_optimization_elasticity_models](/tools/query-revionics-price-optimization-elasticity-models.md)

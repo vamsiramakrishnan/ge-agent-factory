@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Energy Intensity Monitoring Engine
-description: "Computes energy intensity per line and product daily by joining PI System meter data with production output in BigQuery. Detects consumption anomalies against weather- and volume-normalized baselines and identifies the likely equipment source. so the Sustainability Lead can move the Energy intensity (kWh per unit produced) KPI."
+description: "Cut energy intensity from 14.2 to 11.6 kWh per unit produced by reconciling OSIsoft PI System sensor_readings against BigQuery production baselines daily, collapsing anomaly detection lag from 30 days at the utility bill to 1 day so idle-hour and equipment waste is caught and remediated before it compounds across a billing cycle."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/energy-intensity-mo
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:16.640Z"
+provenance_created_at: "2026-07-04T06:18:25.630Z"
 ---
 
 # Energy Intensity Monitoring Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:16.640Z"
 
 - **Persona:** Sustainability Lead
 - **Department:** manufacturing
-- **Objective:** Computes energy intensity per line and product daily by joining PI System meter data with production output in BigQuery. Detects consumption anomalies against weather- and volume-normalized baselines and identifies the likely equipment source. so the Sustainability Lead can move the Energy intensity (kWh per unit produced) KPI.
+- **Objective:** Cut energy intensity from 14.2 to 11.6 kWh per unit produced by reconciling OSIsoft PI System sensor_readings against BigQuery production baselines daily, collapsing anomaly detection lag from 30 days at the utility bill to 1 day so idle-hour and equipment waste is caught and remediated before it compounds across a billing cycle.
 
 ## KPI summary
 

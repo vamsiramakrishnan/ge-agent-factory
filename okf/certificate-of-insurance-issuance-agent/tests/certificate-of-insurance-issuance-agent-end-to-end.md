@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [acord-generation-docu-sign-delivery](/queries/acord-generation-docu-sign-delivery.md)
 
 ## Mechanisms to call
 

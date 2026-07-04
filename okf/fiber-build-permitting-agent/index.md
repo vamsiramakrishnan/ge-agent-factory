@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Fiber Build Permitting Agent
-description: "The agent drafts permit applications pre-filled with route drawings, traffic plans, and jurisdiction-specific requirements from a maintained rules library. It tracks every application's status, ages against jurisdiction SLAs, and escalates stalled permits with the required follow-up action. so the Construction Program Manager can move the Permit application preparation time KPI."
+description: "Cut permit application preparation time from 6 hours to 35 minutes per application and hold the rejection/resubmission rate at or below 10% by pre-filling jurisdiction-specific applications from field_work_orders and technician_schedules records, ageing every submission against BigQuery SLA baselines, and escalating stalled permits before locate windows or grants expire."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/fiber-build-permitt
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:42.276Z"
+provenance_created_at: "2026-07-04T06:18:50.905Z"
 ---
 
 # Fiber Build Permitting Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:42.276Z"
 
 - **Persona:** Construction Program Manager
 - **Department:** telco
-- **Objective:** The agent drafts permit applications pre-filled with route drawings, traffic plans, and jurisdiction-specific requirements from a maintained rules library. It tracks every application's status, ages against jurisdiction SLAs, and escalates stalled permits with the required follow-up action. so the Construction Program Manager can move the Permit application preparation time KPI.
+- **Objective:** Cut permit application preparation time from 6 hours to 35 minutes per application and hold the rejection/resubmission rate at or below 10% by pre-filling jurisdiction-specific applications from field_work_orders and technician_schedules records, ageing every submission against BigQuery SLA baselines, and escalating stalled permits before locate windows or grants expire.
 
 ## KPI summary
 

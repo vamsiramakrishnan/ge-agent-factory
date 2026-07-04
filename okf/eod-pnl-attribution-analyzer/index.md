@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "End-of-Day P&L Attribution Analyzer"
-description: "Runs risk-based P&L attribution per desk each night, decomposing moves into market factors, new trades, and amendments from Murex MX.3 data. Matches residual breaks against a learned library of historical break patterns and drafts the likely explanation for controller review. so the Product Control Analyst can move the Unexplained P&L above threshold KPI."
+description: "Decompose each desk's nightly P&L move in Murex MX.3 trades, positions, and risk_measures into market-factor, new-trade, and amendment components, match residual breaks against the historical break-pattern library in BigQuery, and drive unexplained P&L above threshold from 15 desks/day down to 2 desks/day while the attribution pack is signed off and published to Looker before the 10am T+1 deadline."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/eod-pnl-attribution
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:51.398Z"
+provenance_created_at: "2026-07-04T06:17:59.707Z"
 ---
 
 # End-of-Day P&L Attribution Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:51.398Z"
 
 - **Persona:** Product Control Analyst
 - **Department:** banking
-- **Objective:** Runs risk-based P&L attribution per desk each night, decomposing moves into market factors, new trades, and amendments from Murex MX.3 data. Matches residual breaks against a learned library of historical break patterns and drafts the likely explanation for controller review. so the Product Control Analyst can move the Unexplained P&L above threshold KPI.
+- **Objective:** Decompose each desk's nightly P&L move in Murex MX.3 trades, positions, and risk_measures into market-factor, new-trade, and amendment components, match residual breaks against the historical break-pattern library in BigQuery, and drive unexplained P&L above threshold from 15 desks/day down to 2 desks/day while the attribution pack is signed off and published to Looker before the 10am T+1 deadline.
 
 ## KPI summary
 

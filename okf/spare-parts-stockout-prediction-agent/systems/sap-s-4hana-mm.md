@@ -25,3 +25,4 @@ purchase orders, material movements, vendors records
 ## Tools using this system
 
 - [query_sap_s_4hana_mm_purchase_orders](/tools/query-sap-s-4hana-mm-purchase-orders.md)
+- [lookup_reorder_point_safety_stock_policy](/tools/lookup-reorder-point-safety-stock-policy.md)

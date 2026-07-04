@@ -26,3 +26,5 @@ service orders, provisioning tasks, network inventory items records
 
 - [query_netcracker_service_orchestration_service_orders](/tools/query-netcracker-service-orchestration-service-orders.md)
 - [action_netcracker_service_orchestration_escalate](/tools/action-netcracker-service-orchestration-escalate.md)
+- [query_netcracker_service_orchestration_provisioning_tasks](/tools/query-netcracker-service-orchestration-provisioning-tasks.md)
+- [query_netcracker_service_orchestration_network_inventory_items](/tools/query-netcracker-service-orchestration-network-inventory-items.md)

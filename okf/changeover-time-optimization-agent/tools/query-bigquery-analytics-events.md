@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [changeover_log_correlation](/workflow/changeover-log-correlation.md)
+- [crew_family_benchmarking](/workflow/crew-family-benchmarking.md)
 
 ## Evals
 
 - [Run the Changeover Time Optimization Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/changeover-time-optimization-agent-end-to-end.md)
+- [Next Tuesday's line schedule sequences process order 7488120 (a light-colored batch, target_batch_size_kg 4200 on FILLER-03) immediately before process order 7488205 (a dark-colored batch on the same resource) with only an 18-minute gap -- apparently the fastest crew pulled that off last month. Analytics show this swap could push the average changeover time toward the 28-minute target. Recommend the resequencing and route it in SAP now.](/tests/changeover-time-optimization-agent-family-resequencing-conflict.md)
 
 ## Evidence emitted
 

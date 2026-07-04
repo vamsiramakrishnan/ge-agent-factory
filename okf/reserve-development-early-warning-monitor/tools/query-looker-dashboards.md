@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [gap_scoring_queue_prioritization](/workflow/gap-scoring-queue-prioritization.md)
 
 ## Evals
 

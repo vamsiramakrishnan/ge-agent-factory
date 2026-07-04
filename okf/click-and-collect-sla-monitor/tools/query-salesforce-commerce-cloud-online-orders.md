@@ -52,12 +52,16 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [bopis_curbside_order_intake_sla_clock_start](/workflow/bopis-curbside-order-intake-sla-clock-start.md)
+- [pick_task_telemetry_correlation](/workflow/pick-task-telemetry-correlation.md)
+- [breach_risk_scoring_against_historical_baselines](/workflow/breach-risk-scoring-against-historical-baselines.md)
+- [inventory_substitution_validation](/workflow/inventory-substitution-validation.md)
+- [playbook_gated_escalation_customer_notification](/workflow/playbook-gated-escalation-customer-notification.md)
 
 ## Evals
 
 - [Run the Click-and-Collect SLA Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/click-and-collect-sla-monitor-end-to-end.md)
+- [Order number 483920175 (BOPIS, placed 9:14 AM) has been sitting in 'picking' status for 3 hours 10 minutes against the 2-hour SLA. The only pick_tasks record we have for it is task_number 4821093 in wave_id 5502, and that snapshot is 29 hours old. Should we escalate this to store leadership or reroute it to a nearby store, and what's the evidence?](/tests/click-and-collect-sla-monitor-stale-pick-evidence.md)
 
 ## Evidence emitted
 

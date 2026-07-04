@@ -37,3 +37,4 @@ Must cite: oracle_field_service.field_work_orders, bigquery.analytics_events
 # Citations
 
 - [Field Job Closure Quality Analyzer Service Assurance Runbook](/documents/field-job-closure-quality-analyzer-assurance-runbook.md)
+- [Closure Evidence & As-Built Documentation Playbook](/documents/closure-evidence-as-built-documentation-playbook.md)

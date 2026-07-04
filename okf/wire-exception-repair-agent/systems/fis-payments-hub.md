@@ -26,3 +26,6 @@ payment instructions, clearing batches, settlement records records
 
 - [query_fis_payments_hub_payment_instructions](/tools/query-fis-payments-hub-payment-instructions.md)
 - [action_fis_payments_hub_escalate](/tools/action-fis-payments-hub-escalate.md)
+- [query_fis_payments_hub_clearing_batches](/tools/query-fis-payments-hub-clearing-batches.md)
+- [query_fis_payments_hub_settlement_records](/tools/query-fis-payments-hub-settlement-records.md)
+- [lookup_wire_exception_repair_agent_cutoff_recall_playbook](/tools/lookup-wire-exception-repair-agent-cutoff-recall-playbook.md)

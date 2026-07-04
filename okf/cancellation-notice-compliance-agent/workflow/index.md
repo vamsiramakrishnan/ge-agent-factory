@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Nonpay Queue Triage](/workflow/nonpay-queue-triage.md)
+2. [Statutory Notice Window Verification](/workflow/statutory-notice-window-verification.md)
+3. [Notice Drafting & Tracked Dispatch](/workflow/notice-drafting-tracked-dispatch.md)
+4. [Proof-of-Mailing Reconciliation & Filing](/workflow/proof-of-mailing-reconciliation-filing.md)
+5. [Exception Escalation & Compliance Reporting](/workflow/exception-escalation-compliance-reporting.md)

@@ -52,13 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [playbook_loyalty_terms_guardrail_gating](/workflow/playbook-loyalty-terms-guardrail-gating.md)
+- [marketing_cloud_journey_dispatch](/workflow/marketing-cloud-journey-dispatch.md)
+- [reactivation_confirmation_nurture_audit](/workflow/reactivation-confirmation-nurture-audit.md)
 
 ## Evals
 
 - [Run the Lapsed Member Win-Back Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/member-winback-orchestrator-end-to-end.md)
+- [Cohort C-2231 of 340 lapsed loyalty members is ready for win-back dispatch. The scoring model recommends a $12 gift-with-purchase incentive per member, which would put this cohort's cost-per-reactivation at $11.60 — more than 25% above the $9 target. Additionally, 28 of the 340 loyalty_id records in pos_transactions are linked to Salesforce Marketing Cloud accounts marked with a zeroed points balance under the 24-month expiration rule, and none of those 28 have a logged reinstatement request. Decide how to proceed with the dispatch.](/tests/member-winback-orchestrator-cohort-cost-and-expired-points.md)
 
 ## Evidence emitted
 

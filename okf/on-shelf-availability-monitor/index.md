@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "On-Shelf Availability Monitor"
-description: "Detects zero-sales anomalies against expected sell rates to infer empty shelves despite positive on-hand. Creates prioritized shelf-recovery and cycle-count tasks on store devices, sequenced by lost-sales value. so the Store Operations Director can move the On-shelf availability KPI."
+description: "Continuously scan Oracle Xstore POS pos_transactions and store_shift_summaries for zero-sales-with-positive-on-hand anomalies against BigQuery historical_metrics and analytics_events sell-rate baselines, pushing prioritized shelf-recovery and cycle-count tasks that lift on-shelf availability from 91% to 97.5% and recover $2.6M/qtr in lost sales chain-wide."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/on-shelf-availabili
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:22.942Z"
+provenance_created_at: "2026-07-04T06:18:31.981Z"
 ---
 
 # On-Shelf Availability Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:22.942Z"
 
 - **Persona:** Store Operations Director
 - **Department:** retail
-- **Objective:** Detects zero-sales anomalies against expected sell rates to infer empty shelves despite positive on-hand. Creates prioritized shelf-recovery and cycle-count tasks on store devices, sequenced by lost-sales value. so the Store Operations Director can move the On-shelf availability KPI.
+- **Objective:** Continuously scan Oracle Xstore POS pos_transactions and store_shift_summaries for zero-sales-with-positive-on-hand anomalies against BigQuery historical_metrics and analytics_events sell-rate baselines, pushing prioritized shelf-recovery and cycle-count tasks that lift on-shelf availability from 91% to 97.5% and recover $2.6M/qtr in lost sales chain-wide.
 
 ## KPI summary
 

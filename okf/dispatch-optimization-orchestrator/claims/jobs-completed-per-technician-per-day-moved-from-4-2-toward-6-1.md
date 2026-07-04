@@ -37,3 +37,4 @@ Must cite: oracle_field_service.field_work_orders, bigquery.analytics_events
 # Citations
 
 - [Dispatch Optimization Orchestrator Service Assurance Runbook](/documents/dispatch-optimization-orchestrator-assurance-runbook.md)
+- [Field Technician Certification & Safety Work Instruction](/documents/field-technician-certification-safety-work-instruction.md)

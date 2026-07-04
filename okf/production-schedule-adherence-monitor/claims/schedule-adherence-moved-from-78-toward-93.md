@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_pp.process_orders, siemens_opcenter_mes.production_orders
 # Citations
 
 - [Production Schedule Adherence Monitor Standard Operating Procedure](/documents/production-schedule-adherence-monitor-sop.md)
+- [Constraint Asset Re-Sequencing and Expedite Freight Authorization Work Instruction](/documents/constraint-resequencing-work-instruction.md)

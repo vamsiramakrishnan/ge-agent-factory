@@ -53,9 +53,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [alert_to_outcome_reconciliation](/workflow/alert-to-outcome-reconciliation.md)
+- [rule_change_proposal_actimize_deployment](/workflow/rule-change-proposal-actimize-deployment.md)
 
 ## Evals
 

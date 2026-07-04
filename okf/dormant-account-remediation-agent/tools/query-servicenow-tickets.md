@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [branch_queue_task_routing](/workflow/branch-queue-task-routing.md)
 
 ## Evals
 

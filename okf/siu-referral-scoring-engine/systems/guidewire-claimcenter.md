@@ -25,3 +25,5 @@ claims, claim exposures, reserve lines records
 ## Tools using this system
 
 - [query_guidewire_claimcenter_claims](/tools/query-guidewire-claimcenter-claims.md)
+- [query_guidewire_claimcenter_claim_exposures](/tools/query-guidewire-claimcenter-claim-exposures.md)
+- [query_guidewire_claimcenter_reserve_lines](/tools/query-guidewire-claimcenter-reserve-lines.md)

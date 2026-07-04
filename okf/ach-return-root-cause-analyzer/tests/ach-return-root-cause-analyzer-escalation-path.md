@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [return-file-ingestion-sec-code-triage](/queries/return-file-ingestion-sec-code-triage.md)
 
 ## Mechanisms to call
 

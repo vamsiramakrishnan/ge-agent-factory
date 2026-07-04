@@ -37,3 +37,4 @@ Must cite: temenos_transact.core_accounts, bigquery.analytics_events
 # Citations
 
 - [Deposit Attrition Early Warning Monitor Banking Compliance Policy](/documents/deposit-attrition-early-warning-monitor-compliance-policy.md)
+- [Deposit Retention Offer Authority & Rate Exception Matrix](/documents/deposit-retention-offer-authority-matrix.md)

@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_register_exception_scoring](/workflow/nightly-register-exception-scoring.md)
+- [shift_cashier_attribution](/workflow/shift-cashier-attribution.md)
+- [case_file_assembly_risk_ranking](/workflow/case-file-assembly-risk-ranking.md)
+- [case_filing_district_ap_handoff](/workflow/case-filing-district-ap-handoff.md)
 
 ## Evals
 
 - [Run the Shrink Anomaly Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/shrink-anomaly-analyzer-end-to-end.md)
+- [Store 482 register 14 pos_transactions show a discount_amount spike (9 transactions between $60-$75 discount, tender_type credit) for business date 2026-06-28, but the matching bigquery analytics_events record for that store-week shows variance_pct of only 1.8%, under the 2% shrink-variance escalation trigger. Reconcile the conflict and decide whether to escalate to the district asset protection manager.](/tests/shrink-anomaly-analyzer-conflicting-signal-reconciliation.md)
 
 ## Evidence emitted
 

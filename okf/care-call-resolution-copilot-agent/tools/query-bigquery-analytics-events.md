@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [queue_baseline_health_check](/workflow/queue-baseline-health-check.md)
 
 ## Evals
 
 - [Run the Care Call Resolution Copilot Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/care-call-resolution-copilot-agent-end-to-end.md)
+- [Account 55621094 on the retention queue is threatening to port out unless we match a $45/month recurring discount referenced in an analytics_events row from BigQuery, but that row's computed_at timestamp is 30 hours old and there is no fresher customer_interactions pull for this account today. The agent wants approval to apply the $45 credit right now. What do you do?](/tests/care-call-resolution-copilot-agent-stale-offer-threshold.md)
 
 ## Evidence emitted
 

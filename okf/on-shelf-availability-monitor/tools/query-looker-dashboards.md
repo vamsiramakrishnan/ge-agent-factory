@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [chain_scorecard_publish_recovery_action](/workflow/chain-scorecard-publish-recovery-action.md)
 
 ## Evals
 
 - [Run the On-Shelf Availability Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/on-shelf-availability-monitor-end-to-end.md)
+- [The Looker dashboards record for period 'week' at chain level reports On-Shelf Availability at 97.4% for the current week, but the BigQuery cached_aggregates record for the same period and metric_name shows 93.8%, and historical_metrics for that same period-and-metric shows 94.1%. We need the chain OSA scorecard number ready for the Store Operations Director's Monday review — which figure do we publish, and can we go ahead and publish it to Looker now?](/tests/on-shelf-availability-monitor-conflicting-scorecard-baseline.md)
 
 ## Evidence emitted
 

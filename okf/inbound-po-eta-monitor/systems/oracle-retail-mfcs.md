@@ -25,3 +25,5 @@ item master, merchandise hierarchy, cost changes records
 ## Tools using this system
 
 - [query_oracle_retail_mfcs_item_master](/tools/query-oracle-retail-mfcs-item-master.md)
+- [query_oracle_retail_mfcs_merchandise_hierarchy](/tools/query-oracle-retail-mfcs-merchandise-hierarchy.md)
+- [query_oracle_retail_mfcs_cost_changes](/tools/query-oracle-retail-mfcs-cost-changes.md)

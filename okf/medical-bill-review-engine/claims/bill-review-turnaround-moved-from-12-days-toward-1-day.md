@@ -37,3 +37,4 @@ Must cite: guidewire_claimcenter.claims, bigquery.analytics_events
 # Citations
 
 - [Medical Bill Review Engine Authority & Referral Guide](/documents/medical-bill-review-engine-authority-guide.md)
+- [Medical Bill Review Fee Schedule & Coding Edits Playbook](/documents/medical-bill-review-engine-fee-schedule-playbook.md)

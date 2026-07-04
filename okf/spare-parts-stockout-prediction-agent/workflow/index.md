@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Demand Signal Aggregation](/workflow/demand-signal-aggregation.md)
+2. [Coverage & Lead-Time Exposure Check](/workflow/coverage-lead-time-exposure-check.md)
+3. [Stockout Risk Scoring](/workflow/stockout-risk-scoring.md)
+4. [Reorder Policy & Requisition Drafting](/workflow/reorder-policy-requisition-drafting.md)
+5. [Requisition Execution & Audit](/workflow/requisition-execution-audit.md)

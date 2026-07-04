@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [vendor_item_setup_intake](/workflow/vendor-item-setup-intake.md)
+- [attribute_cost_validation_gate](/workflow/attribute-cost-validation-gate.md)
+- [first_allocation_price_activation_publish](/workflow/first-allocation-price-activation-publish.md)
+- [launch_readiness_scorecard_escalation](/workflow/launch-readiness-scorecard-escalation.md)
 
 ## Evals
 

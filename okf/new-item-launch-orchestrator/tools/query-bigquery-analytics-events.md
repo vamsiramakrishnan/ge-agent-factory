@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [hierarchy_placement_gmroi_fit_check](/workflow/hierarchy-placement-gmroi-fit-check.md)
 
 ## Evals
 
 - [Run the New Item Launch Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/new-item-launch-orchestrator-end-to-end.md)
+- [Item SKU 48213077 (UPC 007123456789) was submitted by vendor 402981 for launch in department 'dairy_frozen' on 2026-07-18. cost_changes shows a pending new_unit_cost of $6.40 (up from $5.10, a 25.5% increase) effective 2026-07-10, but item_master still lists item_status as 'new' with unit_cost at $5.10 and base_retail unchanged at $8.99. Reconcile the cost discrepancy, tell me whether this vendor cost jump requires escalation, and confirm whether it's safe to publish to Oracle Retail MFCS.](/tests/new-item-launch-orchestrator-cost-reconciliation-edge.md)
 
 ## Evidence emitted
 

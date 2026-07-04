@@ -37,3 +37,4 @@ Must cite: ncino_loan_origination.loan_applications, bigquery.analytics_events
 # Citations
 
 - [Loan Covenant Monitoring Agent Banking Compliance Policy](/documents/loan-covenant-monitoring-agent-compliance-policy.md)
+- [Financial Covenant Testing & Waiver Administration Runbook](/documents/loan-covenant-testing-waiver-runbook.md)

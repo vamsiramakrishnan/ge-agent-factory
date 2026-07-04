@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Sanctions Screening Hit Analyzer
-description: "Compares each hit's identifiers against Fenergo customer data and list-entry details, scoring true-match likelihood with cited evidence. Auto-clears obvious mismatches with a standardized, auditable rationale and releases the associated payments. so the Sanctions Screening Analyst can move the Screening hits auto-adjudicated KPI."
+description: "Auto-adjudicate sanctions screening_results hits from Fenergo CLM against OFAC SDN, UN 1267 Committee, and EU Consolidated list entries by scoring fuzzy_match_score against entity_profiles and kyc_cases identifiers, lifting Screening hits auto-adjudicated from 0% to 62% and cutting average hit disposition time from 22 minutes to 3 minutes, while routing every true_match or fincen_314a_match hit to a senior analyst with cited evidence instead of auto-clearing it."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/sanctions-screening
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:47.937Z"
+provenance_created_at: "2026-07-04T06:17:56.280Z"
 ---
 
 # Sanctions Screening Hit Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:47.937Z"
 
 - **Persona:** Sanctions Screening Analyst
 - **Department:** banking
-- **Objective:** Compares each hit's identifiers against Fenergo customer data and list-entry details, scoring true-match likelihood with cited evidence. Auto-clears obvious mismatches with a standardized, auditable rationale and releases the associated payments. so the Sanctions Screening Analyst can move the Screening hits auto-adjudicated KPI.
+- **Objective:** Auto-adjudicate sanctions screening_results hits from Fenergo CLM against OFAC SDN, UN 1267 Committee, and EU Consolidated list entries by scoring fuzzy_match_score against entity_profiles and kyc_cases identifiers, lifting Screening hits auto-adjudicated from 0% to 62% and cutting average hit disposition time from 22 minutes to 3 minutes, while routing every true_match or fincen_314a_match hit to a senior analyst with cited evidence instead of auto-clearing it.
 
 ## KPI summary
 

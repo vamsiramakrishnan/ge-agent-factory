@@ -37,3 +37,4 @@ Must cite: murex_mx_3.trades, bigquery.analytics_events
 # Citations
 
 - [Trade Confirmation Break Resolution Agent Banking Compliance Policy](/documents/trade-confirmation-break-resolution-agent-compliance-policy.md)
+- [Trade Confirmation Matching & Affirmation SLA Schedule](/documents/trade-confirmation-matching-sla-schedule.md)

@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query payment instructions and clearing batches from FIS Payments Hub and correlate with ServiceNow for the Wire Exception Repair Agent workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Payments Operations Manager's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Wire Exception Repair Agent Banking Compliance Policy and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in FIS Payments Hub with a full audit trail, and escalate exceptions to the Payments Operations Manager.](/queries/act-audit.md)
+- [Pull payment_instructions and clearing_batches kicked to the repair queue from the FIS Payments Hub and correlate open ServiceNow tickets to separate known root causes (prior BIC/ABA errors, duplicate NOAD) from novel exceptions.](/queries/repair-queue-intake-triage.md)
+- [Reconstruct the correct beneficiary_aba_routing and originator_name on each payment_instructions record by cross-referencing settlement_records history and BigQuery historical_metrics/analytics_events baselines for the same corridor.](/queries/beneficiary-data-reconstruction.md)
+- [Check ofac_screening_status on payment_instructions and evaluate business-email-compromise indicators against the Wire Exception Repair Agent Banking Compliance Policy before any candidate repair can be released.](/queries/sanctions-bec-risk-screening.md)
+- [Apply high-confidence corrections directly to payment_instructions, or route ambiguous cases with ranked candidate fixes to a repair clerk, then call action_fis_payments_hub_escalate for anything requiring supervisor sign-off.](/queries/confidence-scored-repair-release.md)
+- [Track clearing_batches cutoff_date and settlement_window against repair-queue depth and ServiceNow ticket volume, notifying the Payments Operations Manager before a same-day cutoff is missed.](/queries/cutoff-monitoring-queue-escalation.md)

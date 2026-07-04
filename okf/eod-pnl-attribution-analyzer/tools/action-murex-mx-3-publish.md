@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [flash_to_final_p_l_capture](/workflow/flash-to-final-p-l-capture.md)
+- [risk_based_attribution_decomposition](/workflow/risk-based-attribution-decomposition.md)
+- [sign_off_publish_desk_escalation](/workflow/sign-off-publish-desk-escalation.md)
 
 ## Evals
 

@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [blast_radius_severity_scoring](/workflow/blast-radius-severity-scoring.md)
+- [diagnostic_history_prior_work_check](/workflow/diagnostic-history-prior-work-check.md)
 
 ## Evals
 
 - [Run the Fiber Cut Triage Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/fiber-cut-triage-agent-end-to-end.md)
+- [Network alarm 812345678 on ne_id 214560 (site_id 14832) shows probable_cause=fiber_cut with clear_status=active since 2026-07-02T03:14, but ticket #2456789 in ServiceNow shows status=resolved as of 2026-07-03T09:00. Splunk shows no log_events or search_job activity for that ne_id in the last 30 hours. Should we close this out and stand the crew down?](/tests/fiber-cut-triage-agent-conflicting-stale-evidence.md)
 
 ## Evidence emitted
 
