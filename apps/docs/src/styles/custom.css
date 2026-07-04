@@ -211,27 +211,49 @@ h3 {
   font-weight: 700;
 }
 
-/* Sidebar group labels and top-level links carry the display face too, like
- * the product's nav chrome. */
+/* Sidebar group labels are engraved captions — the same industrial-label
+ * register as .ge-label (mono, tiny, uppercase, wide-tracked): machine
+ * navigation chrome, not prose. Same treatment for the right-rail "On this
+ * page" caption, so both wayfinding panels read as one system. */
 nav.sidebar .top-level > li > details > summary .group-label > span {
-  font-family: var(--ge-display-font);
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
 }
 
-/* Current-page marker: the product's "blue means live" applied to nav. */
+.right-sidebar-panel h2 {
+  font-size: var(--ge-label-size);
+  font-weight: 600;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+}
+
+/* Current-page marker: a quiet recessed surface plus one lit dot — the
+ * product's "blue means live" as a single indicator light, not a flood
+ * tint. Functional color logic: the page you're on is the one interactive
+ * thing here, so it earns the one dot, not a wash of accent behind it. */
 nav.sidebar a[aria-current="page"],
 nav.sidebar a[aria-current="page"]:hover,
 nav.sidebar a[aria-current="page"]:focus {
-  background-color: var(--sl-color-accent-low);
-  color: var(--sl-color-text-accent);
+  position: relative;
+  background-color: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
   font-weight: 600;
 }
 
-:root[data-theme="light"] nav.sidebar a[aria-current="page"],
-:root[data-theme="light"] nav.sidebar a[aria-current="page"]:hover,
-:root[data-theme="light"] nav.sidebar a[aria-current="page"]:focus {
-  color: var(--sl-color-accent-high);
+nav.sidebar a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  margin-top: -0.1875rem;
+  border-radius: 999px;
+  background: var(--sl-color-accent);
 }
 
 /* Focus ring matches the product (tokens.css :focus-visible). */
@@ -240,11 +262,101 @@ nav.sidebar a[aria-current="page"]:focus {
   outline-offset: 2px;
 }
 
+/* ── Buttons: a machined key, not a web pill. Starlight's own
+ * .sl-link-button defaults to border-radius: 999rem with no press feedback
+ * at all — flatten it to the site's small geometric radius, add a hairline
+ * top/bottom bevel, and give it real travel on press (honest component
+ * anatomy: the state change is structural, not just a color swap). ──────── */
+.sl-link-button {
+  border-radius: var(--ge-radius);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.sl-link-button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+/* .minimal stays Starlight's plain text-link treatment (that's how this
+ * site's hero uses it, next to one solid .primary action) — only .secondary
+ * gets the boxed-key look, for whenever a page wants two real buttons. */
+.sl-link-button.secondary {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+:root:not([data-theme="light"]) .sl-link-button.secondary {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-link-button,
+  .sl-link-button:active {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* ── Asides — replace Starlight's thick side-stripe with a full hairline
  * border + tint, matching the product's callout treatment. ──────────────── */
 .starlight-aside {
   border: 1px solid color-mix(in srgb, var(--sl-color-asides-border) 55%, transparent);
   border-radius: var(--ge-radius-md);
+}
+
+/* ── Code: the terminal window, not a syntax-highlighted box. The astro
+ * config pins one dark theme in BOTH site themes (code is terminal content,
+ * not prose) — this chrome makes the frame read as an instrument's dark
+ * readout glass, and gives the title bar of a ```bash frame the same
+ * industrial-label register as everywhere else. ─────────────────────────── */
+.expressive-code .frame {
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.expressive-code .frame.is-terminal .header {
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
+  font-weight: 600;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+}
+
+/* Inline code stays a quiet chassis chip (readable in running prose, not a
+ * code block treatment). */
+.sl-markdown-content code:not(pre code) {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  border-radius: var(--ge-radius-sm);
+}
+
+/* Horizontal rules are measuring scales, not blank lines. */
+.sl-markdown-content hr {
+  height: 7px;
+  border: 0;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 35%, transparent);
+}
+
+/* Section joints: h2 sits on a module seam. */
+.sl-markdown-content h2 {
+  padding-bottom: var(--ge-space-2);
+  border-bottom: 1px solid var(--sl-color-gray-6);
 }
 
 /* ── Tables — this site leans heavily on wide reference tables ──────────── */
@@ -255,9 +367,23 @@ nav.sidebar a[aria-current="page"]:focus {
 
 .sl-markdown-content thead th {
   background-color: var(--sl-color-gray-6);
-  font-family: var(--ge-display-font);
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
   font-weight: 600;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
   text-align: left;
+}
+
+/* A row you're reading is a row that's "live" — the one place a wide
+ * reference table earns a hover cue. */
+.sl-markdown-content tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.sl-markdown-content tbody tr:hover {
+  background-color: var(--sl-color-gray-6);
 }
 
 /* Tabular numerals for the many duration/count columns, like the console. */
@@ -407,6 +533,23 @@ nav.sidebar a[aria-current="page"]:focus {
   -webkit-mask-image: linear-gradient(to bottom, black, transparent);
   mask-image: linear-gradient(to bottom, black, transparent);
   z-index: -1;
+}
+
+/* The hero closes on a measuring scale — the tuning-dial tick strip, same
+ * device as the hr/h2 seams above. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 8px;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 38%, transparent);
 }
 
 .hero h1 {
@@ -570,4 +713,17 @@ nav.sidebar a[aria-current="page"]:focus {
   .ge-screenshot-wall img:first-child {
     grid-row: auto;
   }
+}
+
+/* ── Steps: a numbered sequence you're actively doing (install, configure,
+ * verify), not a bullet list — the one place a solid primary fill on a
+ * small badge is earned outside a real interactive control: it marks "the
+ * live step," the same semantic as the status ramp's running-is-primary
+ * rule. Starlight ships the vertical guideline already; only the badge
+ * shape (round -> the site's small geometric radius) changes. ──────────── */
+.sl-steps > li::before {
+  color: var(--sl-color-black);
+  background-color: var(--sl-color-accent);
+  border-radius: var(--ge-radius-sm);
+  box-shadow: none;
 }
