@@ -156,6 +156,97 @@
   background-size: 8px 8px;
 }
 
+/* ── Bedienelemente: the machined control vocabulary, docs edition — the
+ * same physics the console's tokens.css defines (keys travel, lamps recess,
+ * readouts sit behind dark glass, rules are measuring scales). ───────────── */
+
+/* Buttons are machined keys: pill-shaped, a light-catching top edge, real
+ * travel on press. Starlight's hero/action buttons all go through
+ * .sl-link-button. */
+.sl-link-button {
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 1px 1px rgba(19, 19, 17, 0.15);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.sl-link-button:active {
+  transform: translateY(0.5px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28);
+}
+
+.sl-link-button.secondary,
+.sl-link-button.minimal {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(19, 19, 17, 0.06),
+    0 1px 1px rgba(19, 19, 17, 0.08);
+}
+
+:root:not([data-theme="light"]) .sl-link-button.secondary,
+:root:not([data-theme="light"]) .sl-link-button.minimal {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-link-button,
+  .sl-link-button:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Code sits behind the readout glass: the astro config pins a single dark
+ * syntax theme in BOTH site themes (code is terminal content, not prose);
+ * this chrome makes the frame read as the instrument's black dial window. */
+.expressive-code .frame {
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(10, 10, 9, 0.6);
+}
+
+.expressive-code .frame.is-terminal .header {
+  font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Inline code stays a quiet chassis chip (readable in running prose). */
+.sl-markdown-content code:not(pre code) {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  border-radius: 0.25rem;
+}
+
+/* Horizontal rules are measuring scales, not blank lines. */
+.sl-markdown-content hr {
+  height: 7px;
+  border: 0;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 35%, transparent);
+}
+
+/* Section joints: h2 sits on a module seam. */
+.sl-markdown-content h2 {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--sl-color-gray-6);
+}
+
 /* ── Type ───────────────────────────────────────────────────────────────── */
 h1,
 h2,
@@ -183,12 +274,24 @@ h3 {
   font-weight: 700;
 }
 
-/* Sidebar group labels and top-level links carry the display face too, like
- * the product's nav chrome. */
+/* Sidebar group labels are engraved captions — how every label is printed
+ * on the chassis: small, wide-tracked, uppercase. */
 nav.sidebar .top-level > li > details > summary .group-label > span {
   font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+/* Same engraving for the "On this page" caption in the right rail. */
+.right-sidebar-panel h2 {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
 }
 
 /* Current-page marker: the product's "the lit dot means on" applied to nav —
@@ -236,7 +339,11 @@ nav.sidebar a[aria-current="page"]::after {
 .sl-markdown-content thead th {
   background-color: var(--sl-color-gray-6);
   font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
   font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-2);
   text-align: left;
 }
 
@@ -327,6 +434,22 @@ nav.sidebar a[aria-current="page"]::after {
   -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 92%);
   mask-image: linear-gradient(180deg, black 0%, transparent 92%);
   z-index: -1;
+}
+
+/* The hero closes on a measuring scale — the tuning dial's tick strip. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 8px;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 38%, transparent);
 }
 
 .hero h1 {

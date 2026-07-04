@@ -22,7 +22,7 @@ function AuthChip() {
       {user.email && <span className="truncate max-w-[180px]">{user.email}</span>}
       <button
         onClick={() => { void signOut(); }}
-        className="px-2 py-1 border border-outline-variant/40 rounded-md hover:bg-surface-container-low transition-colors"
+        className="key rounded-full border border-outline/70 bg-surface-container-low px-2.5 py-1 transition-colors hover:bg-surface-container"
         title="Sign out"
       >
         Sign out
@@ -114,10 +114,12 @@ interface TopBarProps {
 
 export function TopBar({ status, mode, onModeChange, onOpenPalette }: TopBarProps) {
   return (
-    <header className="h-14 bg-surface border-b border-outline-variant/60 flex items-center justify-between px-6">
+    // The control fascia: matte lacquer face, a visible seam where it meets
+    // the work area, and the power lamp lit beside the wordmark.
+    <header className="fascia seam-b h-14 flex items-center justify-between px-6">
       <div className="flex items-center gap-2.5">
-        <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
-        <h1 className="font-headline text-sm font-semibold tracking-tight text-on-surface">
+        <span className="lamp h-2.5 w-2.5 rounded-full bg-primary" aria-hidden />
+        <h1 className="font-headline text-sm font-bold tracking-tight text-on-surface">
           GE Agent Factory
         </h1>
       </div>
@@ -139,7 +141,7 @@ export function TopBar({ status, mode, onModeChange, onOpenPalette }: TopBarProp
 
         <button
           onClick={onOpenPalette}
-          className="px-2.5 py-1 text-xs font-mono text-secondary border border-outline-variant/40 rounded-md hover:bg-surface-container-low transition-colors"
+          className="key rounded-full border border-outline/70 bg-surface-container-low px-3 py-1 font-mono text-xs text-secondary transition-colors hover:bg-surface-container hover:text-on-surface"
           title="Command Palette (⌘K)"
         >
           ⌘K

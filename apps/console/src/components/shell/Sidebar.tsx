@@ -9,7 +9,10 @@ export function Sidebar({ route }: SidebarProps) {
   return (
     <aside className="w-56 bg-surface border-r border-outline-variant/60 flex flex-col">
       <div className="px-5 pt-6 pb-3">
-        <div className="text-3xs font-semibold uppercase tracking-widest text-secondary">Spec to deploy</div>
+        <div className="flex items-center gap-3">
+          <span className="engraved">Spec to deploy</span>
+          <span className="h-px flex-1 bg-outline-variant/70" aria-hidden />
+        </div>
       </div>
       <div className="flex-1 py-2">
         <nav className="space-y-0.5 px-3">

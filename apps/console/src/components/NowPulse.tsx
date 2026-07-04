@@ -39,23 +39,26 @@ export function NowPulse() {
   if (!ok) return null;
 
   return (
+    // The live-runs counter renders behind readout glass (the one black
+    // window in the fascia, like the T1000's dial) — lit glyphs on dark,
+    // dimmed when the count is zero.
     <button
       onClick={() => { location.hash = "#/activity"; }}
-      className="inline-flex items-center gap-2 rounded-md border border-outline-variant/40 px-2 py-1 text-xs tabular-nums transition-colors hover:bg-surface-container-low"
+      className="dial-window inline-flex items-center gap-2.5 rounded-full px-3 py-1 font-mono text-xs tabular-nums transition-opacity hover:opacity-90"
       title="Live runs — open Activity"
       aria-label={`${counts.running} running, ${counts.blocked} need attention, ${counts.failed} failed, ${counts.done} done`}
     >
-      <span className={`inline-flex items-center gap-1 ${counts.running ? "text-status-running-ink" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.running ? "text-status-running" : "text-white/35"}`}>
         <span className={counts.running ? "animate-pulse motion-reduce:animate-none" : ""}>▶</span>
         {counts.running}
       </span>
-      <span className={`inline-flex items-center gap-1 ${counts.blocked ? "text-status-blocked-ink" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.blocked ? "text-status-blocked" : "text-white/35"}`}>
         ⏸{counts.blocked}
       </span>
-      <span className={`inline-flex items-center gap-1 ${counts.failed ? "text-status-failed-ink" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.failed ? "text-status-failed" : "text-white/35"}`}>
         ✕{counts.failed}
       </span>
-      <span className={`inline-flex items-center gap-1 ${counts.done ? "text-status-passed-ink" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.done ? "text-status-passed" : "text-white/35"}`}>
         ✓{counts.done}
       </span>
     </button>
