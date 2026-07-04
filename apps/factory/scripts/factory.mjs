@@ -35,11 +35,11 @@ import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { renderToolsPy } from "./factory/tools/render-tools-py.mjs";
 import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { writeOkfArtifacts } from "./factory/agents/okf-artifacts.mjs";
-import { renderAgentsCliEvalSet, renderEvalConfig, renderGoldenEvals, renderOptimizationConfig } from "./factory/evals/render-eval-artifacts.mjs";
+import { renderAgentsCliEvalSet, renderEvalConfig, renderEvalConfigYaml, renderEvalDataset, renderGoldenEvals, renderHoldoutSplit, renderOptimizationConfig, renderSplitEvalDatasets } from "./factory/evals/render-eval-artifacts.mjs";
 import { ensureAgentsCliPyprojectMetadata } from "./factory/runtime/agents-cli-metadata.mjs";
 import { bigQueryNumericType, bigQuerySafeName, bigQueryType } from "./factory/data/bigquery-types.mjs";
 import { buildCloudDataArtifacts } from "./factory/data/build-cloud-data-artifacts.mjs";
-import { renderYamlValue, snowfakeryFakeForColumn } from "./factory/data/snowfakery-recipe-render.mjs";
+import { renderYamlValue, snowfakeryFakeForColumn } from "@ge/synthkit/snowfakery";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { deriveSchemaFromUseCase } from "./factory/use-case/schema-derivation.mjs";
@@ -50,7 +50,7 @@ import { canonicalSystemId, safePyName, snakeCase, titleCase, validPythonIdentif
 import { CONTRACT_INTENT_KINDS, ensureContractQueryTables } from "./factory/core/contract-schema.mjs";
 import { FactoryCommandError, STEPS, cloudDataDir, deployPlanPath, fail, fixturesDir, loadPipeline, manifestPath, markStep, nextCommandFor, ok, readJson, requireStep, savePipeline, schemaPath, warnMkdirFailure, writeJson, writeText } from "./factory/core/pipeline.mjs";
 import { generateDocument, generateDomainDocuments, generateParagraph, pickEntityRefs } from "./factory/fixtures/document-gen.mjs";
-import { generateValue } from "./factory/fixtures/value-gen.mjs";
+import { generateValue } from "@ge/synthkit/values";
 import { buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
@@ -697,13 +697,7 @@ async function cmdTools(dir, flags) {
   }
   let agentsCliEvalSetPath = null;
   if (agentsCliEvalSet) {
-    agentsCliEvalSetPath = join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json");
-    await mkdir(join(dir, "tests", "eval", "evalsets"), { recursive: true }).catch(warnMkdirFailure(join(dir, "tests", "eval", "evalsets")));
-    await writeJson(agentsCliEvalSetPath, agentsCliEvalSet);
-    // eval_config.json so `agents-cli eval run` uses achievable criteria
-    // instead of the default response_match (which needs a reference answer).
-    await writeJson(join(dir, "tests", "eval", "eval_config.json"), renderEvalConfig(behaviorContract));
-    await writeJson(join(dir, "tests", "eval", "optimization_config.json"), renderOptimizationConfig(behaviorContract));
+    agentsCliEvalSetPath = await writeAgentsCliEvalArtifacts(dir, behaviorContract, agentsCliEvalSet);
   }
 
   const okfBundleDir = await writeOkfArtifacts({ dir, manifest, behaviorContract, generatedAt: GENERATED_AT });
@@ -740,6 +734,54 @@ async function cmdTools(dir, flags) {
     agentGenerated: !existsSync(agentPath) || true,
     nextCommand: nextCommandFor(pipeline, dir),
   });
+}
+
+// Writes the agents-cli eval-artifact family for a rendered evalset — one
+// writer shared by cmdTools and cmdEval so the two can never drift. Two
+// generations side by side during the migration window:
+//
+//   legacy (agents-cli < 0.3 / ADK `adk eval`) — byte-golden, unchanged:
+//     tests/eval/evalsets/ge_behavior_contract.evalset.json
+//     tests/eval/eval_config.json          achievable (reference-free) criteria
+//     tests/eval/optimization_config.json  optimizer wrapper (agents-cli 1.0's
+//                                          `eval optimize` still accepts the
+//                                          ADK EvalSet dataset format, so this
+//                                          default config keeps working)
+//
+//   modern (agents-cli >= 1.0 `eval generate` + `eval grade`):
+//     tests/eval/datasets/ge_behavior_contract.json             EvaluationDataset
+//     tests/eval/datasets/ge_behavior_contract.train.json       holdout partition —
+//     tests/eval/datasets/ge_behavior_contract.validation.json  direct `eval optimize` inputs
+//     tests/eval/holdout_split.json                             split provenance
+//     tests/eval/eval_config.yaml          grading metrics + behavior-contract judge
+//
+// The modern family folds in everything the retired GE_EVAL_V2 gate used to
+// add: the holdout split feeds default train/validation datasets (replacing
+// the split evalsets + optimization_config_v2.json), and judge
+// self-consistency is eval_config.yaml's judge_model_sampling_count
+// (replacing judge_panel.json).
+async function writeAgentsCliEvalArtifacts(dir, behaviorContract, agentsCliEvalSet) {
+  const evalSetPath = join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json");
+  await writeJson(evalSetPath, agentsCliEvalSet);
+  // eval_config.json so legacy `agents-cli eval run` uses achievable criteria
+  // instead of the default response_match (which needs a reference answer).
+  await writeJson(join(dir, "tests", "eval", "eval_config.json"), renderEvalConfig(behaviorContract));
+  await writeJson(join(dir, "tests", "eval", "optimization_config.json"), renderOptimizationConfig(behaviorContract));
+  const evalDataset = renderEvalDataset(agentsCliEvalSet);
+  await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.json"), evalDataset);
+  // A single-case suite cannot be partitioned (the split's balance repair
+  // needs >= 2 cases) — an empty-side dataset would be a broken `eval
+  // optimize` input, so the split artifacts are only written when both
+  // partitions are populated.
+  const split = renderHoldoutSplit(agentsCliEvalSet.eval_cases);
+  if (split.train.length && split.validation.length) {
+    await writeJson(join(dir, "tests", "eval", "holdout_split.json"), split);
+    const splitDatasets = renderSplitEvalDatasets(evalDataset, split);
+    await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.train.json"), splitDatasets.train);
+    await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.validation.json"), splitDatasets.validation);
+  }
+  await writeText(join(dir, "tests", "eval", "eval_config.yaml"), renderEvalConfigYaml(behaviorContract));
+  return evalSetPath;
 }
 
 async function cmdTest(dir, flags) {
@@ -972,23 +1014,22 @@ async function cmdEval(dir, flags) {
 
   const behaviorContract = manifest?.useCaseSpec?.behaviorContract || null;
   const evalSet = renderAgentsCliEvalSet(behaviorContract, manifest);
-  const evalSetPath = join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json");
+  let evalSetPath = null;
   if (evalSet) {
-    await mkdir(join(dir, "tests", "eval", "evalsets"), { recursive: true }).catch(warnMkdirFailure(join(dir, "tests", "eval", "evalsets")));
-    await writeJson(evalSetPath, evalSet);
-    await writeJson(join(dir, "tests", "eval", "eval_config.json"), renderEvalConfig(behaviorContract));
-    await writeJson(join(dir, "tests", "eval", "optimization_config.json"), renderOptimizationConfig(behaviorContract));
+    evalSetPath = await writeAgentsCliEvalArtifacts(dir, behaviorContract, evalSet);
   }
 
   if (!evalSet && flags.run !== "false") {
     fail("No behaviorContract.goldenEvals found; cannot run agents-cli evals for this workspace.");
   }
 
-  let evalResult = { ran: false, evalSetPath: evalSet ? evalSetPath : null };
+  let evalResult = { ran: false, evalSetPath };
   if (flags.run !== "false" && evalSet) {
     try {
-      const args = ["eval", "run", "--all"];
-      if (flags["eval-timeout"]) args.push("--timeout", String(flags["eval-timeout"]));
+      // agents-cli >= 1.0: `eval run` chains `eval generate` (inference over the
+      // EvaluationDataset) and `eval grade` (metrics from eval_config.yaml).
+      // The pre-0.3 `eval run --all` over the legacy evalset no longer exists.
+      const args = ["eval", "run", "--dataset", "tests/eval/datasets/ge_behavior_contract.json", "--config", "tests/eval/eval_config.yaml"];
       console.error(`Running: agents-cli ${args.join(" ")}`);
       const r = await runCommand("agents-cli", args, { cwd: dir, stream: true, allowFail: true, timeout: Number(flags["timeout-ms"] || 900000) });
       evalResult = { ran: true, passed: r.code === 0, exitCode: r.code, evalSetPath };
@@ -1106,9 +1147,12 @@ async function cmdQualityGate(dir, flags) {
       if (shouldRunFlag(flags, "skip-ty", true)) lintArgs.push("--skip-ty");
       results.push(await runLifecycleCommand({ dir, name: "lint", args: lintArgs, timeout: 180000, artifact: "agents-cli-lint.log.md" }));
     }
-    if (runEvals && existsSync(join(dir, "tests", "eval", "evalsets"))) {
-      const evalArgs = ["eval", "run", "--all"];
-      if (existsSync(join(dir, "tests", "eval", "eval_config.json"))) evalArgs.push("--config", "tests/eval/eval_config.json");
+    if (runEvals && existsSync(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.json"))) {
+      // agents-cli >= 1.0 flow: generate traces over the EvaluationDataset,
+      // grade them with eval_config.yaml's metrics (pre-0.3 `eval run --all`
+      // over the legacy evalsets no longer exists).
+      const evalArgs = ["eval", "run", "--dataset", "tests/eval/datasets/ge_behavior_contract.json"];
+      if (existsSync(join(dir, "tests", "eval", "eval_config.yaml"))) evalArgs.push("--config", "tests/eval/eval_config.yaml");
       results.push(await runLifecycleCommand({ dir, name: "eval", args: evalArgs, timeout: Number(flags["eval-timeout-ms"] || 900000), artifact: "agents-cli-eval.log.md" }));
     }
     if (runOptimize) {

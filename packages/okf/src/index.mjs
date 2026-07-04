@@ -177,7 +177,7 @@ export function joinBundle(outDir, ...segments) {
 // GE OKF substrate helpers. Base conformance follows the permissive OKF spec:
 // https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
 export const GE_OKF_CONCEPT_TYPES = [
-  "Agent","Enterprise Agent Contract","Capability","Query Capability","Workflow","Source System","Tool","Entity","Field","Document","Policy","Claim","Evidence","Eval","Synthetic World","Persona","Risk","Reference","Bench Profile","Proof Obligation","Promotion Gate",
+  "Agent","Enterprise Agent Contract","Capability","Query Capability","Workflow","Source System","Tool","Agent Tool","Entity","Field","Document","Policy","Claim","Evidence","Eval","Synthetic World","Persona","Risk","Reference","Bench Profile","Proof Obligation","Promotion Gate",
 ];
 
 export function conceptIdFromPath(relPath) {

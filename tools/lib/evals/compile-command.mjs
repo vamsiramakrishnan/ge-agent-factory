@@ -13,10 +13,9 @@ import { DxError } from "../errors/dx-error.mjs";
 import { join } from "node:path";
 import { REPO_ROOT, statePath } from "../state-paths.mjs";
 import { loadInterviewSpecEntries } from "../factory-catalog.mjs";
-import { compileBehavioralSuite } from "./compile.mjs";
-import { emitAdkEvalset } from "./emit-adk-evalset.mjs";
-import { emitAgentsCliDataset } from "./emit-agents-cli-dataset.mjs";
-import { writeMetricApplicability } from "./metric-applicability.mjs";
+import { compileBehavioralSuite } from "@ge/evalkit/compiler";
+import { emitAdkEvalset, emitAgentsCliDataset } from "@ge/evalkit/emitters";
+import { writeMetricApplicability } from "@ge/evalkit/metric-applicability";
 
 async function resolveSpecEnvelope({ spec, id, repoRoot = REPO_ROOT }) {
   if (spec) {
@@ -54,12 +53,14 @@ export async function compileEvals({
   spec,
   id,
   maxCases = 40,
+  perturbVariants = 0,
+  adversarial = false,
   outDir,
   repoRoot = REPO_ROOT,
 } = {}) {
   const { envelope, sourcePath } = await resolveSpecEnvelope({ spec, id, repoRoot });
   const dir = outDir || statePath("behavioral");
-  const { graph, selection, benchProfile } = compileBehavioralSuite(envelope, { sourcePath, maxCases, outDir: dir });
+  const { graph, selection, benchProfile, options } = compileBehavioralSuite(envelope, { sourcePath, maxCases, outDir: dir, perturbVariants, adversarial });
 
   const evalsetPath = `${dir}/${graph.subject.agentId}.evalset.json`;
   const evalset = emitAdkEvalset(graph, selection.selected, { evalSetId: graph.subject.agentId });
@@ -82,6 +83,9 @@ export async function compileEvals({
       dropped: selection.dropped.length,
     },
     coverageGaps: gaps,
+    // Present only when a non-default option was used — the default report
+    // (and every default artifact) stays byte-identical to the pre-options CLI.
+    ...(options ? { options } : {}),
     artifacts: {
       graph: rel(`${dir}/graph.json`),
       coverage: rel(`${dir}/coverage.json`),

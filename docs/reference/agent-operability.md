@@ -1,7 +1,7 @@
 ---
 title: Agent operability
 parent: Reference
-nav_order: 14
+nav_order: 15
 layout: default
 description: The contract that makes the factory drivable by an AI agent — position and next-command guidance, background runs, event streams, resume plans, mid-run questions and answers, and the skill-loading model.
 ---

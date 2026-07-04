@@ -232,12 +232,14 @@ def raise_failure(
     tool: str,
     entity: str = "",
     entity_id: str = "*",
+    detail: str = "injected_failure_mode",
 ) -> None:
     """Raise the typed error for ``mode`` with an audit event attached.
 
     The audit event mirrors the inline failures in ``generic.py`` (outcome = the
     failure code) so the trail and router envelope are consistent. Unknown modes
-    raise a generic ``TypedSimulatorError``.
+    raise a generic ``TypedSimulatorError``. ``detail`` distinguishes the source
+    of the injection (contract ``failureModes`` vs a chaos profile).
     """
     cls = FAILURE_CLASSES.get(mode, TypedSimulatorError)
     event = audit_event(
@@ -246,7 +248,7 @@ def raise_failure(
         entity=entity,
         entity_id=str(entity_id),
         outcome=cls.code,
-        detail="injected_failure_mode",
+        detail=detail,
     )
     raise cls(f"{tool} failed: {cls.code}", audit=event)
 
@@ -260,24 +262,53 @@ def maybe_inject_failure(
     entity: str = "",
     entity_id: str = "*",
     seed: Any = 0,
+    call_index: int | None = None,
 ) -> None:
     """Top-of-handler hook: deterministically raise an injected failure or no-op.
 
     Backward-compatible: if neither the workflow nor the contract declares
     *weighted* ``failureModes``, this resolves to ``{}`` and returns immediately,
     leaving the handler's existing behaviour untouched.
+
+    A chaos profile (opt-in, see ``chaos.py``) contributes a *second*, independent
+    deterministic draw keyed by ``(agent, system, scenario, profile, call_index,
+    tool)`` — it never perturbs the base draw above, so enabling chaos cannot
+    change which contract-declared failures fire. Chaos injections are audited
+    with ``detail="chaos:<profile>"``.
     """
     weights = resolve_weights(workflow=workflow, contract=contract)
-    if not weights:
+    if weights:
+        mode = select_failure(
+            weights,
+            agent=getattr(ctx, "agent_id", None),
+            system=getattr(ctx, "system_id", None),
+            scenario=getattr(ctx, "scenario_id", None),
+            seed=seed,
+            tool=tool,
+        )
+        if mode is not None:
+            raise_failure(mode, ctx=ctx, tool=tool, entity=entity, entity_id=entity_id)
+
+    from simulator_runtime.chaos import resolve_chaos
+
+    decision = resolve_chaos(contract=contract, workflow=workflow, tool=tool, ctx=ctx, call_index=call_index)
+    if not decision.weights:
         return
     mode = select_failure(
-        weights,
+        decision.weights,
         agent=getattr(ctx, "agent_id", None),
         system=getattr(ctx, "system_id", None),
         scenario=getattr(ctx, "scenario_id", None),
-        seed=seed,
+        seed=f"chaos:{decision.profile}:{decision.call_index}",
         tool=tool,
     )
     if mode is None:
         return
-    raise_failure(mode, ctx=ctx, tool=tool, entity=entity, entity_id=entity_id)
+    raise_failure(
+        mode,
+        ctx=ctx,
+        tool=tool,
+        entity=entity,
+        entity_id=entity_id,
+        detail=f"chaos:{decision.profile}",
+    )

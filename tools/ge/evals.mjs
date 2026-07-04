@@ -6,8 +6,8 @@
 // the same contract, so compiled suites cannot drift from what gets built.
 import { defineCommand } from "citty";
 import { guarded, common, emit, out, pc, ui } from "./shared.mjs";
-import { compileEvals } from "../lib/behavioral-compiler/compile-command.mjs";
-import { METRIC_APPLICABILITY, renderMetricApplicabilityMarkdown } from "../lib/behavioral-compiler/metric-applicability.mjs";
+import { compileEvals } from "../lib/evals/compile-command.mjs";
+import { METRIC_APPLICABILITY, renderMetricApplicabilityMarkdown } from "@ge/evalkit/metric-applicability";
 
 function renderCompile(r) {
   out(ui.title("Evals — compiled", r.subject.agentId));
@@ -18,6 +18,7 @@ function renderCompile(r) {
     ["coverage", r.coverageGaps.length ? pc.yellow(`${r.coverageGaps.length} gap(s)`) : pc.green("no gaps")],
   ]));
   if (r.coverageGaps.length) for (const gap of r.coverageGaps.slice(0, 5)) out(`    ${pc.yellow("gap")} ${pc.dim(gap)}`);
+  if (r.options) out(`    ${pc.dim(`options: --perturb ${r.options.perturbVariants} ${r.options.adversarial ? "--adversarial" : ""}`.trimEnd())}`);
   out(ui.section("Artifacts"));
   for (const [name, path] of Object.entries(r.artifacts)) out(`  ${name.padEnd(20)} ${pc.dim(path)}`);
   out(ui.next(r.next, "prove the compiled behavior against the live surface"));
@@ -30,6 +31,8 @@ const compile = defineCommand({
     spec: { type: "string", description: "A GenerationSpecEnvelope JSON file to compile (bring your own spec)" },
     id: { type: "string", description: "Registered/captured spec id (default: the only one, when exactly one exists)" },
     maxCases: { type: "string", description: "Case budget for the set-cover selection (default 40)" },
+    perturb: { type: "string", description: "Linguistic perturbation variants per selected case (default 0 — off; variants mirror selected cases)" },
+    adversarial: { type: "boolean", description: "Add adversarial/safety cases (prompt injection, spoofing, exfiltration, …) to the pool and require adversarial coverage" },
     out: { type: "string", description: "Output directory (default .ge/behavioral)" },
   },
   run: guarded(async ({ args }) => {
@@ -37,6 +40,8 @@ const compile = defineCommand({
       spec: args.spec,
       id: args.id,
       maxCases: args.maxCases ? Number(args.maxCases) : undefined,
+      perturbVariants: args.perturb ? Number(args.perturb) : undefined,
+      adversarial: !!args.adversarial,
       outDir: args.out,
     });
     emit(args, result, renderCompile);

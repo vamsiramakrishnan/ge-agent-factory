@@ -1,0 +1,24 @@
+{
+  "name": "@ge/evalkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The eval-generation and eval-metrics engine: behavioral compiler (spec envelope → graph → case expansion → set-cover selection), perturbation/adversarial case synthesis, the eval-artifact emitters (ADK evalsets, agents-cli datasets, generated-workspace eval configs), lexical-similarity metrics, and eval statistics (Wilson/bootstrap/pass@k/flakiness). Deterministic by contract — no clock, no randomness. Leaf package: imports only @ge/std, yaml, and zod, never apps/* or tools/*.",
+  "exports": {
+    "./compiler": "./src/compiler.mjs",
+    "./perturbations": "./src/perturbations.mjs",
+    "./adversarial": "./src/adversarial.mjs",
+    "./metric-applicability": "./src/metric-applicability.mjs",
+    "./emitters": "./src/emitters/index.mjs",
+    "./metrics": "./src/metrics.mjs",
+    "./stats": "./src/stats.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  },
+  "dependencies": {
+    "@ge/std": "workspace:*",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  }
+}

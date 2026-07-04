@@ -1,7 +1,7 @@
 ---
 title: Metric applicability
 parent: Reference
-nav_order: 12
+nav_order: 13
 layout: default
 description: Which eval metric families apply locally vs through the live assist surface, why, and the honest-status policy — unavailable and not_applicable are never silent passes.
 ---
@@ -20,7 +20,7 @@ Two rails run a compiled eval suite:
 
 Not every metric can grade both rails. This matrix is the single answer to
 "can metric X grade rail Y" — kept as data
-(`tools/lib/behavioral-compiler/metric-applicability.mjs`) so docs, the CLI,
+(`packages/evalkit/src/metric-applicability.mjs`) so docs, the CLI,
 and gating code all read the same source. `ge evals compile` also writes it
 to `.ge/proof/metric-applicability.json` alongside every compiled suite.
 

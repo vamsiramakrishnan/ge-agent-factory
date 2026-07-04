@@ -1,10 +1,14 @@
 // Faker-backed cell-value generation for workspace fixture tables: the
 // column-type dispatch (seq patterns, number/float/date/enum/boolean ranges,
-// cross-table refs, dotted faker paths) cmdGenerate runs per row/column to
-// fill fixtures/tables/*. Extracted from factory.mjs verbatim — output is
-// identical to the former inline function for the same faker seed state.
-// Deliberately NOT self-seeding: cmdGenerate owns the faker seed; this
-// function consumes the shared singleton's current state.
+// cross-table refs, dotted faker paths) callers run per row/column to fill
+// fixtures/tables/*. (Formerly apps/factory/scripts/factory/fixtures/value-gen.mjs,
+// where it was extracted from factory.mjs verbatim; the same logic also lived
+// as an inline duplicate in generate-mock-data.mjs — this is the single copy.)
+// Output is identical to the former inline function for the same faker seed
+// state. Deliberately NOT self-seeding: the caller (factory.mjs cmdGenerate,
+// generate-mock-data.mjs) owns the faker seed; this function consumes the
+// shared singleton's current state so fixture bytes are governed by the
+// caller's seed alone.
 import { faker } from "@faker-js/faker";
 
 export function generateValue(col, rowIndex, generatedTables) {

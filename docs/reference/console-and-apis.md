@@ -1,7 +1,7 @@
 ---
 title: Console & APIs
 parent: Reference
-nav_order: 7
+nav_order: 8
 layout: default
 ---
 
@@ -82,6 +82,7 @@ returns `202 { jobId, command }`; stream progress via
 | `POST /api/ge/evals/compile` | `ge evals compile` | Compile a captured agent contract (or any spec envelope) into the executable behavior suite: graph, coverage, selected cases, ADK evalset, dataset, load profile | `starts-local-workloads` | `bun` on PATH |
 | `POST /api/ge/up` | `ge up` | Provision infra, data, and tool planes | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` |
 | `POST /api/ge/data/up` | `ge data up` | Apply Terraform for shared stores and merge coordinates into .ge.json | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` · BigQuery API (hard) |
+| `POST /api/ge/data/synth` | `ge data synth` | Generate deterministic synthetic seed data for a simulator system twin (pack contract → recipe → seeded rows → seed.json), with an opt-in statistical realism profile | `writes-repo` | `node` on PATH |
 | `POST /api/ge/mcp/deploy` | `ge mcp deploy` | Deploy per-department MCP services | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, serviceAccount, dataBucket · cloud auth · writable `.ge.json` |
 | `POST /api/ge/agents/build` | `ge agents build` | Build selected agents through the cloud factory | `starts-workloads` | `gcloud` on PATH · `.ge.json`: project, geAppId, gatewayUrl · cloud auth · tool plane deployed |
 | `POST /api/ge/agents/sync` | `ge agents sync` | Copy generated agent code into the repository | `writes-repo` | `git` on PATH |

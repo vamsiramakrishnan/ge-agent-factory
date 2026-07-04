@@ -5,7 +5,7 @@
 // trivially deterministic — which matters more here than optimality, because
 // the selected suite is a committed artifact that must not churn between
 // runs of the same spec.
-import { DxError } from "../errors/dx-error.mjs";
+import { DxError } from "@ge/std/dx-error";
 
 function weightOf(kase, riskWeights) {
   // Per-case override lets an operator pin/boost specific cases without

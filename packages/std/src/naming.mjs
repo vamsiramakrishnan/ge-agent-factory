@@ -46,6 +46,14 @@ export function canonicalSystemId(systemName) {
   return snakeCase(String(systemName || "source_system")) || "source_system";
 }
 
+// BigQuery-legal table/column identifier: snake_cased, prefixed with "_" when
+// it would start with a non-letter, capped at BigQuery's 1024-char limit.
+// Shared by apps/factory's cloud-data packager (factory/data/bigquery-types.mjs
+// re-exports it) and @ge/synthkit's Snowfakery contract-dialect renderer.
+export function bigQuerySafeName(name) {
+  return snakeCase(name || "table").replace(/^([^a-zA-Z_])/, "_$1").slice(0, 1024);
+}
+
 export function safePyName(value, fallback = "value") {
   const normalized = snakeCase(String(value || fallback)) || fallback;
   return /^[A-Za-z_]/.test(normalized) ? normalized : `_${normalized}`;

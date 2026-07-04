@@ -1,0 +1,15 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "asc-606-contract-analyzer-end-to-end",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Run the ASC 606 Contract Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required."
+          }
+        ]
+      }
+    }
+  ]
+}

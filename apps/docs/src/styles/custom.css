@@ -141,3 +141,177 @@ nav.sidebar .top-level > li > details > summary .group-label > span {
   border-radius: 0.75rem;
   padding: 0.75rem;
 }
+
+/* ── High-polish docs landing page ──────────────────────────────────────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--sl-color-accent) 16%, transparent);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 28rem;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(138, 180, 248, 0.24), transparent 28rem),
+    radial-gradient(circle at 78% 12%, rgba(52, 168, 83, 0.18), transparent 24rem),
+    linear-gradient(135deg, rgba(26, 115, 232, 0.13), transparent 55%);
+  filter: blur(4px);
+  z-index: -1;
+}
+
+.hero h1 {
+  max-width: 11ch;
+  margin-inline: auto;
+  font-size: clamp(3rem, 9vw, 6.75rem);
+  line-height: 0.92;
+}
+
+.hero .tagline {
+  max-width: 58rem;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+}
+
+.ge-hero-panel {
+  position: relative;
+  margin: 1.5rem auto 2rem;
+  padding: clamp(0.8rem, 2vw, 1.25rem);
+  border: 1px solid color-mix(in srgb, var(--sl-color-accent) 22%, var(--sl-color-gray-5));
+  border-radius: 1.4rem;
+  background:
+    linear-gradient(var(--sl-color-black), var(--sl-color-black)) padding-box,
+    linear-gradient(135deg, rgba(138, 180, 248, 0.65), rgba(52, 168, 83, 0.45), rgba(251, 188, 5, 0.36)) border-box;
+  box-shadow: 0 24px 80px rgba(26, 115, 232, 0.16);
+}
+
+.ge-hero-panel img {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.ge-proof-strip,
+.ge-logo-row,
+.ge-value-grid,
+.ge-screenshot-wall,
+.ge-tape-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.ge-proof-strip {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin-bottom: 1rem;
+}
+
+.ge-proof-strip span {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  color: var(--sl-color-gray-2);
+  background: color-mix(in srgb, var(--sl-color-accent-low) 32%, transparent);
+  font-family: var(--ge-display-font);
+  font-size: var(--sl-text-sm);
+  text-align: center;
+}
+
+.ge-value-grid {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin: 2rem 0 3rem;
+}
+
+.ge-value-card {
+  display: flex;
+  min-height: 9rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 1rem;
+  color: inherit;
+  text-decoration: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sl-color-gray-6) 70%, transparent), transparent);
+}
+
+.ge-value-card:hover {
+  border-color: var(--sl-color-accent);
+  box-shadow: 0 16px 42px rgba(26, 115, 232, 0.12);
+}
+
+.ge-value-card strong {
+  color: var(--sl-color-white);
+  font-family: var(--ge-display-font);
+  font-size: 1.2rem;
+}
+
+.ge-value-card span {
+  color: var(--sl-color-gray-2);
+}
+
+.ge-logo-row {
+  grid-template-columns: repeat(5, minmax(3.5rem, 1fr));
+  align-items: center;
+  margin: 1.25rem 0;
+}
+
+.ge-logo-row img {
+  height: 3.5rem;
+  width: 100%;
+  object-fit: contain;
+  padding: 0.7rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.9rem;
+  background: var(--sl-color-gray-6);
+}
+
+.ge-screenshot-wall {
+  grid-template-columns: 1.25fr 1fr;
+  align-items: stretch;
+  margin: 1.5rem 0;
+}
+
+.ge-screenshot-wall img,
+.ge-tape-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 1rem;
+  background: var(--sl-color-gray-6);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
+.ge-screenshot-wall img:first-child {
+  grid-row: span 2;
+}
+
+.ge-tape-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 1.5rem 0 2rem;
+}
+
+.ge-tape-grid figure {
+  margin: 0;
+}
+
+.ge-tape-grid figcaption {
+  margin-top: 0.55rem;
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-sm);
+}
+
+@media (max-width: 50rem) {
+  .ge-logo-row,
+  .ge-screenshot-wall,
+  .ge-tape-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ge-screenshot-wall img:first-child {
+    grid-row: auto;
+  }
+}

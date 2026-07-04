@@ -7,11 +7,11 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { emitAdkEvalset, writeAdkEvalset } from "./emit-adk-evalset.mjs";
-import { compileBehavioralSuite } from "./compile.mjs";
-import { normalizeEvalset, loadEvalset } from "../evals/evalset.mjs";
+import { emitAdkEvalset, writeAdkEvalset } from "@ge/evalkit/emitters";
+import { compileBehavioralSuite } from "@ge/evalkit/compiler";
+import { normalizeEvalset, loadEvalset } from "./evalset.mjs";
 
-const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "benefits-enrollment.spec.json");
+const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "packages", "evalkit", "src", "fixtures", "benefits-enrollment.spec.json");
 const envelope = JSON.parse(readFileSync(FIXTURE, "utf8"));
 const { graph, selection } = compileBehavioralSuite(envelope, { sourcePath: FIXTURE });
 

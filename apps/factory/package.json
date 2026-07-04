@@ -40,10 +40,12 @@
   "dependencies": {
     "@faker-js/faker": "^10.4.0",
     "@ge/agent-workspace": "workspace:*",
+    "@ge/evalkit": "workspace:*",
     "@ge/okf": "workspace:*",
     "@ge/run-ledger": "workspace:*",
     "@ge/runtime": "workspace:*",
     "@ge/std": "workspace:*",
+    "@ge/synthkit": "workspace:*",
     "better-sqlite3": "^12.9.0",
     "yaml": "^2.9.0"
   }

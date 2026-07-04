@@ -58,7 +58,13 @@ steps:
       - |
         case "${_STAGE}" in
           validate)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            # agents-cli >= 1.0 (validated against 1.0.0): the modern eval flow is
+            # `eval generate` (agent inference over tests/eval/datasets/*.json in
+            # EvaluationDataset form) + `eval grade` (metrics from
+            # tests/eval/eval_config.yaml). This retires the old <0.3 pin
+            # ('eval run --all' over the legacy evalsets) and its exit-code
+            # workaround: grading verdicts are parsed from the grade-results JSON.
+            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli
             export PATH="$$HOME/.local/bin:$$PATH"
             agents-cli install
             mkdir -p artifacts
@@ -69,51 +75,92 @@ steps:
             uv run pytest tests/test_smoke.py -q
             EVAL_STATUS="skipped"
             EVAL_EXIT=0
-            if [[ "${_RUN_AGENT_EVALS}" == "true" && -d tests/eval/evalsets ]]; then
+            if [[ "${_RUN_AGENT_EVALS}" == "true" && -f tests/eval/datasets/ge_behavior_contract.json ]]; then
               EVAL_CONFIG_ARG=""
-              if [[ -f tests/eval/eval_config.json ]]; then
-                EVAL_CONFIG_ARG="--config tests/eval/eval_config.json"
+              if [[ -f tests/eval/eval_config.yaml ]]; then
+                EVAL_CONFIG_ARG="--config tests/eval/eval_config.yaml"
               fi
-              # NOTE: `agents-cli eval run --all` (ADK 0.2) exits 0 even when eval
-              # cases fail, so exit code alone is not a real gate. Capture stdout
-              # and inspect the ADK eval-history result files for FAILED cases.
-              if agents-cli eval run --all $$EVAL_CONFIG_ARG > artifacts/eval-run-stdout.log 2>&1; then
-                EVAL_STATUS="passed"
+              # Two-step form (not `eval run`) so the traces and grade results land
+              # at known artifact paths for the gate below and for debugging.
+              if agents-cli eval generate --dataset tests/eval/datasets/ge_behavior_contract.json --output artifacts/traces/ > artifacts/eval-generate-stdout.log 2>&1 \
+                && agents-cli eval grade --traces artifacts/traces/ --output artifacts/grade_results/ $$EVAL_CONFIG_ARG --project "$PROJECT_ID" > artifacts/eval-grade-stdout.log 2>&1; then
+                EVAL_STATUS="graded"
               else
                 EVAL_EXIT=$$?
                 EVAL_STATUS="failed"
               fi
-              cat artifacts/eval-run-stdout.log || true
-              # Authoritative check: parse ADK eval-history result files. Each
-              # eval_case_results[].final_eval_status is the EvalStatus enum
-              # (PASSED=1, FAILED=2, NOT_EVALUATED=3); pydantic serializes it by
-              # value, but tolerate string forms too. Only flip to failed when a
-              # case is definitively FAILED — genuinely absent results stay as-is.
-              EVAL_RESULT_VERDICT="$(python3 -c 'import glob, json; FAILED={2,"2","FAILED","EvalStatus.FAILED"}; PASSED={1,"1","PASSED","EvalStatus.PASSED"}; loads=[json.load(open(p)) for p in glob.glob("app/.adk/eval_history/*.evalset_result.json")]; cases=[c.get("final_eval_status") for d in loads for c in (d.get("eval_case_results") or [])]; print("failed" if any(s in FAILED for s in cases) else ("passed" if any(s in PASSED for s in cases) else "unknown"))' 2>/dev/null || echo unknown)"
-              if [[ "$$EVAL_RESULT_VERDICT" == "failed" ]]; then
-                EVAL_STATUS="failed"
-                if [[ "$$EVAL_EXIT" -eq 0 ]]; then
-                  EVAL_EXIT=1
-                fi
-              elif [[ "$$EVAL_RESULT_VERDICT" == "unknown" ]]; then
-                # No parseable result files — fall back to a stdout failure
-                # marker ("failed: N" with N>0). Stay robust when evals were
-                # genuinely skipped/absent (no such line -> keep current status).
-                if grep -Eiq 'failed:[[:space:]]*[1-9][0-9]*' artifacts/eval-run-stdout.log; then
+              cat artifacts/eval-generate-stdout.log artifacts/eval-grade-stdout.log 2>/dev/null || true
+              if [[ "$$EVAL_STATUS" == "graded" ]]; then
+                # Authoritative gate: `eval grade` exits 0 regardless of scores, so
+                # parse the grade-results JSON (a vertexai EvaluationResult dump:
+                # summary_metrics[].{metric_name,mean_score,num_cases_error}) and
+                # check each metric against the ge_thresholds block that the
+                # generated eval_config.yaml carries (a GE extension agents-cli
+                # ignores). Metric names are compared with the _vN suffix stripped
+                # because the SDK reports predefined metrics in versioned form.
+                # (Heredoc lines sit at the script's base indent: a literal-block
+                # heredoc terminator must be at column 0 of the resulting script.)
+                GATE_EXIT=0
+                uv run --no-project --with pyyaml python3 - <<'EVAL_GATE' || GATE_EXIT=$$?
+        import glob, json, re, sys
+        import yaml
+        results = sorted(glob.glob("artifacts/grade_results/results_*.json"))
+        verdict = {"resultsFile": results[-1] if results else None, "failures": [], "checked": []}
+        data = {}
+        if not results:
+            verdict["failures"].append("no grade-results JSON found under artifacts/grade_results/")
+        else:
+            with open(results[-1], encoding="utf-8") as f:
+                data = json.load(f)
+        try:
+            with open("tests/eval/eval_config.yaml", encoding="utf-8") as f:
+                thresholds = (yaml.safe_load(f) or {}).get("ge_thresholds") or {}
+        except FileNotFoundError:
+            thresholds = {}
+        def base(name):
+            return re.sub(r"_v\d+$$", "", name or "")
+        wanted = {base(name): threshold for name, threshold in thresholds.items()}
+        for metric in data.get("summary_metrics") or []:
+            name = base(metric.get("metric_name"))
+            errors = metric.get("num_cases_error") or 0
+            if errors:
+                verdict["failures"].append("%s: %d eval case(s) errored" % (name, errors))
+            if name not in wanted:
+                continue
+            mean = metric.get("mean_score")
+            verdict["checked"].append({"metric": name, "meanScore": mean, "threshold": wanted[name]})
+            if mean is None:
+                verdict["failures"].append("%s: no mean_score in grade results" % name)
+            elif mean < wanted[name]:
+                verdict["failures"].append("%s: mean_score %.4f below threshold %s" % (name, mean, wanted[name]))
+        missing = sorted(set(wanted) - {checked["metric"] for checked in verdict["checked"]})
+        if missing:
+            verdict["failures"].append("thresholded metrics missing from grade results: %s" % ", ".join(missing))
+        verdict["status"] = "failed" if verdict["failures"] else "passed"
+        with open("artifacts/eval-verdict.json", "w", encoding="utf-8") as f:
+            json.dump(verdict, f, indent=2)
+        print(json.dumps(verdict, indent=2))
+        sys.exit(1 if verdict["failures"] else 0)
+        EVAL_GATE
+                if [[ "$$GATE_EXIT" -eq 0 ]]; then
+                  EVAL_STATUS="passed"
+                else
                   EVAL_STATUS="failed"
-                  if [[ "$$EVAL_EXIT" -eq 0 ]]; then
-                    EVAL_EXIT=1
-                  fi
+                  EVAL_EXIT="$$GATE_EXIT"
                 fi
               fi
             fi
             if [[ "$$EVAL_STATUS" == "failed" ]]; then
-              printf '{"status":"failed","stage":"validate","owner":"cloud_build","nextStage":null,"error":"agents-cli eval run failed with exit %s","evalStatus":"failed"}\n' "$$EVAL_EXIT" > artifacts/factory-validate-result.json
+              printf '{"status":"failed","stage":"validate","owner":"cloud_build","nextStage":null,"error":"agents-cli eval generate/grade gate failed with exit %s (see artifacts/eval-verdict.json)","evalStatus":"failed"}\n' "$$EVAL_EXIT" > artifacts/factory-validate-result.json
               exit "$$EVAL_EXIT"
             fi
             OPTIMIZE_STATUS="skipped"
             if [[ "${_RUN_AGENT_OPTIMIZE}" == "true" ]]; then
               if [[ -f tests/eval/optimization_config.json ]]; then
+                # agents-cli 1.0's `eval optimize` still reads this config path by
+                # default and auto-detects its ADK-EvalSet-format datasets; the
+                # holdout EvaluationDatasets (tests/eval/datasets/*.train/.validation)
+                # are its direct --dataset inputs when a split exists.
                 agents-cli eval optimize --config tests/eval/optimization_config.json
                 OPTIMIZE_STATUS="passed"
               else
@@ -124,7 +171,7 @@ steps:
             printf '{"status":"done","stage":"validate","owner":"cloud_build","nextStage":null,"lintStatus":"%s","evalStatus":"%s","optimizeStatus":"%s"}\n' "${_RUN_AGENT_LINT}" "$$EVAL_STATUS" "$$OPTIMIZE_STATUS" > artifacts/factory-validate-result.json
             ;;
           preview)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
             export PATH="$$HOME/.local/bin:$$PATH"
             agents-cli install
             mkdir -p artifacts
@@ -142,7 +189,7 @@ steps:
             fi
             ;;
           deploy_runtime)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
             export PATH="$$HOME/.local/bin:$$PATH"
             mkdir -p artifacts
             agents-cli scaffold enhance . --name "${_AGENT_NAME}" --deployment-target agent_runtime --agent-directory app --yes
@@ -157,7 +204,7 @@ steps:
             printf '{"status":"done","stage":"deploy_runtime","owner":"cloud_build"}\n' > artifacts/factory-deploy_runtime-result.json
             ;;
           poll_runtime)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
             export PATH="$$HOME/.local/bin:$$PATH"
             mkdir -p artifacts
             # deploy_runtime used --no-wait, so deployment_metadata.json starts
@@ -194,7 +241,7 @@ steps:
             fi
             ;;
           publish_enterprise)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
             export PATH="$$HOME/.local/bin:$$PATH"
             PUBLISH_ARGS=(
               "publish" "gemini-enterprise"

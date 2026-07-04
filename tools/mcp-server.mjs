@@ -22,7 +22,7 @@ import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
 import { runDrive } from "./lib/live/drive-session.mjs";
 import { proveLive } from "./lib/live/prove-live.mjs";
 import { runBench } from "./lib/bench/runner.mjs";
-import { compileEvals } from "./lib/behavioral-compiler/compile-command.mjs";
+import { compileEvals } from "./lib/evals/compile-command.mjs";
 import { DxError } from "./lib/errors/dx-error.mjs";
 
 const cfg = () => core.loadConfig({});
@@ -101,6 +101,28 @@ const HANDLERS = {
     });
   },
   "evals.compile": (a) => compileEvals({ spec: a.spec, id: a.id, maxCases: a.maxCases }),
+  // Synthetic seed data — the same generator core as `ge data synth`
+  // (apps/factory/scripts/generate-simulator-data.mjs exports it; a
+  // CLI-boundary import like tools/ge/data.mjs's, dynamic so the server
+  // never pays for @ge/synthkit until the tool is called).
+  "data.synth": async (a) => {
+    const { synthesizeSeed } = await import("../apps/factory/scripts/generate-simulator-data.mjs");
+    const { summary, fk } = synthesizeSeed({
+      system: a.system,
+      seed: a.seed,
+      profile: a.profile,
+      edgeCaseRate: a.edgeCaseRate,
+      out: a.out,
+    });
+    if (!fk.ok) {
+      throw new DxError(`seed realized but ${fk.violations.length} foreign-key reference(s) do not resolve`, {
+        where: summary.out || summary.system,
+        why: "every ref: value in a seed must point at a generated primary key; an open reference means the pack contract and recipe disagree",
+        fix: `node apps/factory/scripts/validate-simulator-pack.mjs --system ${summary.system}`,
+      });
+    }
+    return summary;
+  },
 };
 
 for (const command of Object.values(GE_COMMANDS)) {
