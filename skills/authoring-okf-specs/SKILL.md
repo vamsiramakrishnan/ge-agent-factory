@@ -49,6 +49,21 @@ Ingest an OKF bundle back into a partial spec (printed as JSON):
 node apps/factory/scripts/okf-to-spec.mjs --bundle <dir>
 ```
 
+Compile a VARIANT bundle (root `index.md` declares `variant_of: <baseId>` +
+`variant_kind: vertical|source-swap|custom`; bindings live in a
+`Variant Binding` concept). The base resolves from the sibling directory
+`../<baseId>` or an explicit flag:
+
+```bash
+node apps/factory/scripts/okf-to-spec.mjs --bundle <variantDir> [--variant-base <baseDir>]
+ge okf compile --from bundle --to spec --bundle <variantDir> [--variant-base <baseDir>] --out <spec.json>
+```
+
+Structured compile errors (`{code, conceptPath, message, fix}` — unknown
+concept types, undeclared systems, bad bindings, variant cycles) render as a
+DxError and exit non-zero; see `packages/okf/README.md` for the concept-type
+grammar and error-code catalog.
+
 Validate the converter and the round-trip:
 
 ```bash
