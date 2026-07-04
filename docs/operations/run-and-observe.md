@@ -13,8 +13,8 @@ Google Cloud project.
 
 ## Goal
 
-Run an agent build through the pipeline — local on your machine or remote in the
-cloud factory — watch it live in the console (Run Drawer / Activity), and resume a
+Run an agent build through the pipeline, local on your machine or remote in the
+cloud factory. Watch it live in the console (Run Drawer / Activity), and resume a
 run that has blocked.
 
 <p align="center">
@@ -56,7 +56,7 @@ run that has blocked.
    (`mise run` equivalents: `CANARY=1 mise run provision`, `CANARY=1 mise run provision-local`.)
 
 3. **Watch it live in the console.** Open the console; the Run Drawer follows any
-   run (including remote runs via the run ledger SSE stream), and the Activity
+   run (including remote runs via the run ledger SSE — Server-Sent Events — stream), and the Activity
    timeline shows stage-by-stage progress and blockers.
 
 4. **Watch it from the CLI.**

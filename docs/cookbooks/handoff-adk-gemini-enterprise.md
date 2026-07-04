@@ -56,8 +56,8 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
    list of blockers.
 
    > The override (`--force` on the factory deploy, or
-   > `GE_ALLOW_UNPROMOTED=1`) exists precisely so that using it is a
-   > visible, deliberate act — it is logged as overridden, never silent.
+   > `GE_ALLOW_UNPROMOTED=1`) exists so that using it is a visible,
+   > deliberate act — it is logged as overridden, never silent.
    {: .warning }
 
    On top of the promotion gate, `ge handoff` runs the

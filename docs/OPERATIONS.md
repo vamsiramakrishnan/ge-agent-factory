@@ -129,7 +129,7 @@ former on your machine and stops at the boundary.
 | load_data · deploy_runtime · register · publish | optional via agents-cli (Vertex) | Cloud Build |
 
 **Client requirements** — local: uv, python 3.11, agents-cli, Antigravity SDK,
-shared uv cache, Vertex auth, git. remote: just gcloud auth + network (the cloud
+shared uv cache, Vertex auth, git. remote: gcloud auth + network (the cloud
 builder image carries the toolchain).
 
 `mise run deps` (run by `mise run bootstrap`) creates a repo-local **`.venv`** via uv and

@@ -38,8 +38,8 @@ projections. (The full pack contract is in
 
 The corpus — 50+ systems, from Workday and SAP S/4HANA to GitHub, Jira, and
 Datadog — is listed in `simulator-systems/registry.json`. Because the engine
-is generic, adding a system means adding *data*, not code, and every system
-gets the same realistic behavior: filtering, pagination, OData-style query
+is generic, adding a system means adding *data*, not code. Every system gets
+the same realistic behavior: filtering, pagination, OData-style query
 controls, state transitions, approval gates, idempotency, async jobs, and
 webhooks — keyed per agent/system/scenario so two agents never collide.
 

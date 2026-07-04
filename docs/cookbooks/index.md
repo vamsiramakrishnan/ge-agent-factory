@@ -8,7 +8,7 @@ layout: default
 # Guides
 
 Task-oriented guides through the layer this product adds above
-agents-cli, ADK, and Gemini Enterprise: **capture** the contract, **compile**
+agents-cli, ADK (Agent Development Kit), and Gemini Enterprise: **capture** the contract, **compile**
 it into an agent, **simulate** the source systems it touches, **prove** the
 agent against the contract, and **hand off** the result to the runtime your
 organization already operates. Every guide uses only real commands from the
@@ -17,7 +17,7 @@ API routes.
 
 Throughout, "the contract" means the enterprise agent contract — concretely,
 the use-case spec (`usecase-spec.json`, or `agent-spec.json` when it comes out
-of the interview). Its portable Markdown form is the OKF bundle. See
+of the interview). Its portable Markdown form is the OKF (Open Knowledge Format) bundle. See
 [The enterprise agent contract](../concepts/enterprise-agent-contract.html)
 and the [Glossary](../GLOSSARY.html).
 

@@ -49,9 +49,10 @@ Rule: an agent never babysits a terminal; it starts a run, then observes it.
 
 ## 3. Observation — events are streamed, replayable, and resumable
 
-- **Follow live:** `ge runs events <id> --follow` (SSE with Last-Event-ID
-  resume — a dropped connection continues from the last event seen; `--json`
-  emits NDJSON frames for machine consumption).
+- **Follow live:** `ge runs events <id> --follow` (SSE, Server-Sent Events,
+  with Last-Event-ID resume — a dropped connection continues from the last
+  event seen; `--json` emits NDJSON, newline-delimited JSON, for machine
+  consumption).
 - **Replay later:** `ge runs replay <id>` re-renders a finished run's
   recorded events at speed — a run an agent missed is a run it can still
   read.
@@ -106,7 +107,7 @@ and both paths are discoverable from the run itself — no tribal knowledge.
 | It asked me something | `ge runs respond <task> <interaction>` | interaction request/response JSON |
 | It stopped | `ge runs resume <id>` | `resumePlan.{safeToRun,commands}` |
 | It failed | error `fix:` field | stable `GE####`/`GELIVE###` codes |
-| Do it without a terminal | MCP `factory_*` tools / `/api/ge/*` routes | registry-derived, same core functions |
+| Do it without a terminal | MCP (Model Context Protocol) `factory_*` tools / `/api/ge/*` routes | registry-derived, same core functions |
 
 ## Known gaps (tracked follow-ups)
 

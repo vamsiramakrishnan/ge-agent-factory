@@ -138,8 +138,8 @@ advances an item forward through that list); station order is the cloud
 line's execution order — the two orderings differ slightly in the middle
 movement, which is expected, not drift.
 
-The retry metadata on each stage (`RETRY_POLICIES`) describes how a stage
-*may* safely be retried by an operator — it is **metadata, not an automatic
+The retry metadata on each stage (`RETRY_POLICIES`) describes how an operator
+*may* safely retry a stage — it is **metadata, not an automatic
 retry engine**; nothing re-executes a stage from those values today.
 
 ### The skill matrix — stations to commands, engines, and docs

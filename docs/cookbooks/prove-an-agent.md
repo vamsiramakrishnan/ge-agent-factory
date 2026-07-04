@@ -25,7 +25,7 @@ promotion gate that decides whether the agent may ship.
 
 ## When to use this
 
-- You just [compiled a contract](compile-a-contract.html) and want evidence
+- You recently [compiled a contract](compile-a-contract.html) and want evidence
   it behaves as the contract demands before any handoff.
 - A reviewer asked "how do you know this agent is correct?" and you need
   artifacts, not anecdotes.
@@ -42,14 +42,15 @@ synced `generated-agents/<agent>/` directory). The contract must carry
 The evals are compiled from the contract, not hand-written: for each agent
 the factory writes (see `renderAgentsCliEvalSet` in
 `apps/factory/scripts/factory.mjs`)
-`tests/eval/evalsets/ge_behavior_contract.evalset.json` (ADK-format,
-`eval_set_id: "ge_behavior_contract"`, one `eval_case` per golden eval),
+`tests/eval/evalsets/ge_behavior_contract.evalset.json` (ADK — Agent
+Development Kit — format, `eval_set_id: "ge_behavior_contract"`, one
+`eval_case` per golden eval),
 `tests/eval/eval_config.json`, and `tests/eval/optimization_config.json`.
 Each eval case is a single-turn `conversation` whose `user_content` is the
 eval prompt, plus `intermediate_data.tool_uses[]` — the expected trajectory.
-The trajectory comes from the OKF Eval-Scenario **mechanisms**
-(`deriveTestMechanisms(contract)`, the same helper that emits the OKF
-`tests/<id>.md` concepts), preferring those mechanisms over raw
+The trajectory comes from the OKF (Open Knowledge Format) Eval-Scenario
+**mechanisms** (`deriveTestMechanisms(contract)`, the same helper that
+emits the OKF `tests/<id>.md` concepts), preferring those mechanisms over raw
 `expectedToolCalls`; each tool name is canonicalized and kept only if it's an
 actual generated tool (`list_systems`, `query_<table>`, contract action
 tools). The evalset is the runnable projection of the contract's test

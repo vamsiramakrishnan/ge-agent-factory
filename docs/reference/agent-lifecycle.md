@@ -80,8 +80,8 @@ produce identical bytes.
 
 1. **Compiles the bundle** (variant resolution included — the base resolves
    as the sibling directory named by `variant_of`, falling back to the corpus
-   root). Any compile error refuses the registration with the structured
-   what/where/why/fix shape.
+   root). Any compile error blocks registration, reported in the compiler's
+   structured what/where/why/fix shape.
 2. **Flips provenance** in the root `index.md`: status → `registered`,
    `provenance_version` +1 per run, owner and `provenance_created_at`
    stamped. The edit goes through the OKF parse/render primitives, so every

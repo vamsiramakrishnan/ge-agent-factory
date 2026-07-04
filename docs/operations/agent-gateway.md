@@ -47,7 +47,7 @@ egress — landing in audit (DRY_RUN) mode.
    ```
 
    This runs a targeted `terraform apply` against `installer/terraform` (the
-   official `terraform-google-agent-gateway` module), creating just the gateway +
+   official `terraform-google-agent-gateway` module), creating only the gateway +
    its API + IAM. Defaults: `LOCATION=us-central1`,
    `GATEWAY_NAME=ge-agent-factory-agw`.
 
