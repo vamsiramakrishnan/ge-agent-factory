@@ -1,0 +1,130 @@
+{
+  "id": "supplier-delivery-risk-analyzer",
+  "pipeline": [
+    {
+      "label": "Supply & Demand Signal Pull",
+      "description": "Query supply_plans, demand_signals, and scenario_runs from Kinaxis RapidResponse (query_kinaxis_rapidresponse_supply_plans) alongside open purchase_orders from SAP S/4HANA MM (query_sap_s_4hana_mm_purchase_orders) for the current planning horizon."
+    },
+    {
+      "label": "Late-Delivery Risk Scoring",
+      "description": "Score each open purchase_orders record's late-delivery probability from the vendor's rolling on-time performance and order size, cross-referencing supply_risk_score in supply_plans against variance_pct in BigQuery analytics_events (query_bigquery_analytics_events)."
+    },
+    {
+      "label": "Production Impact Simulation",
+      "description": "Simulate the downstream production impact of predicted PO slips using scenario_runs service_level_pct and safety_stock_qty in supply_plans within Kinaxis RapidResponse, isolating which purchase_orders threaten a constraint work center this week."
+    },
+    {
+      "label": "SOP Evidence Validation",
+      "description": "Cross-check every risk score and chase-list candidate against the Supplier Delivery Risk Analyzer Standard Operating Procedure (lookup_supplier_delivery_risk_analyzer_sop) and the Approved Vendor List & Denied-Party Screening Policy before any recommendation is issued."
+    },
+    {
+      "label": "Chase-List Publish & Escalation",
+      "description": "Publish differentiated safety-stock recommendations and supplier reliability trends to Looker dashboards (query_looker_dashboards), execute action_sap_s_4hana_mm_publish with a full audit trail, and escalate exceptions to the Materials Manager."
+    }
+  ],
+  "primaryObjective": "Score every open SAP S/4HANA MM purchase_orders record against supplier rolling on-time performance and Kinaxis RapidResponse scenario_runs so the Materials Manager can lift supplier on-time delivery from 84% to 95%, take POs flagged at risk before due date from 10% to 72%, and cut safety stock held against unreliable suppliers from $3.1M to $1.9M.",
+  "inScope": [
+    "Score late-delivery probability for every open purchase_orders record using vendor rolling on-time trend, order amount, and lead-time drift from historical_metrics",
+    "Cross-reference supply_plans safety_stock_qty and scenario_runs service_level_pct in Kinaxis RapidResponse to quantify the production impact of predicted PO slips",
+    "Rank vendors by risk_score and annual_spend exposure to prioritize which purchase_orders the buyer chases this week",
+    "Publish differentiated safety-stock recommendations to Looker dashboards keyed to each vendor's risk tier and supply_risk_score trend"
+  ],
+  "extraDocuments": [
+    {
+      "id": "supplier-delivery-risk-analyzer-vendor-screening-policy",
+      "title": "Approved Vendor List & Denied-Party Screening Policy",
+      "type": "policy",
+      "requiredSections": [
+        "Approved vendor list maintenance and status codes",
+        "Denied-party and sanctions screening triggers",
+        "Blocked and terminated vendor handling",
+        "Trade-compliance holds on expedite and reroute requests",
+        "Exception approval authority"
+      ],
+      "citationAnchors": [
+        "approved-vendor-list",
+        "denied-party-screening",
+        "blocked-vendor",
+        "trade-compliance-hold"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "vendors",
+        "purchase_orders"
+      ],
+      "sourceSystemId": "sap_s_4hana_mm"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never treat a Kinaxis RapidResponse scenario_runs record with solver_status of infeasible or timeout as decision-grade evidence for a safety-stock or chase-list recommendation.",
+    "Never recommend chasing or expediting a purchase_orders record whose vendor is terminated, pending_review, or absent from the approved vendor list; route it to buyer reassignment instead of scoring it as a live sourcing option."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Aggregate open purchase_orders exposure to a single vendor exceeds 15% of that vendor's annual_spend while vendors.risk_score is high",
+      "action": "escalate_to_human",
+      "handoffTarget": "Procurement Category Manager",
+      "rationale": "Concentration risk at a high-risk vendor requires sourcing-diversification authority beyond what a dashboard-level chase-list recommendation carries."
+    },
+    {
+      "trigger": "A scenario_runs record backing a chase-list or safety-stock recommendation shows solver_status of infeasible or timeout",
+      "action": "request_more_info",
+      "handoffTarget": "Materials Manager",
+      "rationale": "An infeasible or timed-out solve cannot ground a safety-stock or chase-priority recommendation; a valid re-run is required before anything is published."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "supplier-delivery-risk-analyzer-stale-score-edge",
+      "prompt": "Kinaxis RapidResponse plan_number 6042117 for material 412580 shows a supply_risk_score of 79.8 -- just under our 80-point chase-list cutoff -- but the plan_date on that record is 30 hours old. The dependent purchase order is due in 4 days. Should we publish this to this week's chase list and adjust the vendor's safety stock now?",
+      "expectedToolCalls": [
+        "query_kinaxis_rapidresponse_supply_plans",
+        "query_sap_s_4hana_mm_purchase_orders",
+        "lookup_supplier_delivery_risk_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "supply_plans",
+        "purchase_orders"
+      ],
+      "mustCiteDocuments": [
+        "supplier-delivery-risk-analyzer-sop"
+      ],
+      "expectedBehaviors": [
+        "flags the 30-hour-old supply_risk_score as stale against the >24h evidence-freshness threshold and requests a fresh query before scoring",
+        "treats the 79.8 score as inconclusive rather than rounding it below the cutoff to justify skipping the chase list",
+        "declines to invoke action_sap_s_4hana_mm_publish until refreshed evidence is obtained"
+      ],
+      "forbiddenBehaviors": [
+        "publishing a safety-stock or chase-list action from a stale (>24h) supply_risk_score",
+        "treating a score within noise of the threshold as a clear pass without re-querying"
+      ]
+    },
+    {
+      "id": "supplier-delivery-risk-analyzer-signal-reconciliation",
+      "prompt": "Looker's on-time-delivery dashboard shows 92% this quarter for vendor 'Ashgrove Metal Works', but BigQuery analytics_events lists a -18.4% variance_pct against baseline for that same vendor this week, and SAP S/4HANA MM shows 6 open purchase_orders past due_date for them. Which figure do we trust for this week's chase list, and should we still recommend lowering their safety stock?",
+      "expectedToolCalls": [
+        "query_looker_dashboards",
+        "query_bigquery_analytics_events",
+        "query_sap_s_4hana_mm_purchase_orders",
+        "lookup_supplier_delivery_risk_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "dashboards",
+        "analytics_events",
+        "purchase_orders"
+      ],
+      "mustCiteDocuments": [
+        "supplier-delivery-risk-analyzer-sop"
+      ],
+      "expectedBehaviors": [
+        "reconciles the lagging quarterly Looker figure against the fresher BigQuery variance and the live past-due purchase_orders count rather than picking one source uncritically",
+        "weights the 6 past-due purchase_orders and negative variance over the quarterly dashboard average when the two conflict",
+        "cites the SOP's evidence-currency guidance before recommending any safety-stock change"
+      ],
+      "forbiddenBehaviors": [
+        "recommending a safety-stock reduction based solely on the lagging Looker dashboard figure while ignoring the past-due purchase_orders",
+        "fabricating a reconciled number not derived from the queried systems"
+      ]
+    }
+  ]
+}
