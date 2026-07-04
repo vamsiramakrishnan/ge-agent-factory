@@ -729,7 +729,7 @@ Explain one OKF concept's authority, backlinks, proof, citations, and gaps
 
 ### `ge okf compile`
 
-Compile spec→OKF bundle or OKF bundle→spec
+Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant resolution)
 
 | Flag | Type | Description |
 |---|---|---|
@@ -739,6 +739,7 @@ Compile spec→OKF bundle or OKF bundle→spec
 | `--bundle` | string |  |
 | `--out` | string |  |
 | `--all` | boolean | Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars |
+| `--variant-base` | string | Base bundle directory for a variant bundle (default: sibling directory named after the root's variant_of id) |
 
 ### `ge okf diff`
 
