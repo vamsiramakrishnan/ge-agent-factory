@@ -746,7 +746,7 @@ export const GE_COMMANDS = {
     expectedDuration: "under 10s",
     requirements: { bins: [], config: [] },
     mcp: {
-      tool: "factory_list_usecases",
+      tool: "factory_usecases_list",
       description: "List the agent use-case catalog (filterable by department/search).",
       params: {
         department: { type: "string", optional: true },
