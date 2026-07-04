@@ -83,6 +83,7 @@
         "@fontsource/space-grotesk": "^5",
         "astro": "^5",
         "sharp": "^0.33",
+        "tinyglobby": "^0.2.17",
       },
     },
     "apps/factory": {
