@@ -36,14 +36,14 @@ derived from the product's own design tokens
 apps read as one system:
 
 - **Colors** — `docs/_sass/color_schemes/ge.scss` re-tints just-the-docs'
-  stock purple theme to the "Proof Instrument" palette
+  stock purple theme to the "Punktraster" palette
   (`packages/design/src/palette.mjs`, the canonical source): primary
-  `#2953ff`, on-surface `#14171c`, body text `#383e47`, border `#dfe2e8`,
-  sidebar `#f3f4f7`. `docs/_sass/custom/setup.scss` re-tints the built-in
+  `#cc3d0d`, on-surface `#1a1a18`, body text `#3a3a35`, border `#d4d4cf`,
+  sidebar `#e9e9e6`. `docs/_sass/custom/setup.scss` re-tints the built-in
   blue/green swatches used by callouts to the same palette (`$blue-200:
-  #2953ff`, `$green-200: #0d6d3a`). Both files are generated — run
+  #cc3d0d`, `$green-200: #266b3d`). Both files are generated — run
   `bun run docs:tokens` after editing `palette.mjs`.
-- **Fonts** — `docs/_sass/custom/custom.scss` sets `Space Grotesk` for
+- **Fonts** — `docs/_sass/custom/custom.scss` sets `Archivo` for
   headings, nav, and site chrome (`$ge-display-font`); body copy stays on the
   theme's system-ui reading face for long-form legibility. Code uses `Geist
   Mono` (`docs/_sass/custom/setup.scss`, `$mono-font-family`) — the same
@@ -60,7 +60,7 @@ Diagram source is Mermaid, one `.mmd` file per diagram in
 `docs/diagrams-src/`. Rendering goes through
 [`beautiful-mermaid`](https://www.npmjs.com/package/beautiful-mermaid) via
 `tools/gen-docs-diagrams.mjs`, themed by `tools/lib/docs-diagram-theme.mjs`
-(`DIAGRAM_THEME` — white background, `#2953ff` cobalt accent, `#565e6c`
+(`DIAGRAM_THEME` — white background, `#cc3d0d` vermilion signal accent, `#55554f`
 graphite lines, Inter font), so every diagram in the site shares one visual system instead of
 hand-drawn ASCII art of varying quality. Output SVGs land in
 `docs/assets/diagrams/*.svg`, one per source file, same basename.
@@ -85,11 +85,11 @@ error; it silently fails to match *and* creates a phantom node literally named
 
 ```
 # correct — no semicolons
-classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#14171c
+classDef cloudbuild fill:#dfeadf,stroke:#2e7a47,color:#1a1a18
 class validate,preview cloudbuild
 
 # wrong — silently broken, adds a phantom "class" node
-classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#14171c;
+classDef cloudbuild fill:#dfeadf,stroke:#2e7a47,color:#1a1a18;
 class validate,preview cloudbuild;
 ```
 
@@ -174,15 +174,15 @@ not every node:
 
 | Meaning | classDef |
 |---|---|
-| Primary / local emphasis, data | `fill:#e6ebff,stroke:#2953ff,color:#14171c` |
-| Cloud / release / passing | `fill:#e1f3e7,stroke:#16874a,color:#14171c` |
-| Blocked / error | `fill:#fce8e5,stroke:#dc3626,color:#14171c` |
+| Primary / local emphasis, data | `fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18` |
+| Cloud / release / passing | `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` |
+| Blocked / error | `fill:#fce8e5,stroke:#b3231c,color:#1a1a18` |
 
 Example (`docs/diagrams-src/write-guard-flow.mmd`):
 
 ```
-classDef blocked fill:#fce8e5,stroke:#dc3626,color:#14171c
-classDef pass fill:#e1f3e7,stroke:#16874a,color:#14171c
+classDef blocked fill:#fce8e5,stroke:#b3231c,color:#1a1a18
+classDef pass fill:#dfeadf,stroke:#2e7a47,color:#1a1a18
 class D blocked
 class C,E pass
 ```
@@ -197,11 +197,11 @@ one of these diagrams can read any other without a legend:
 | Entity | Shape | Syntax | classDef |
 |---|---|---|---|
 | Human touchpoint (interview, review, approval) | Stadium or circle | `A(["capture"])` / `A(("review"))` | none (default node style — the theme's own white fill/border already reads as "unmarked") |
-| Contract (the use-case spec / OKF pair) | Rectangle, primary emphasis | `A["contract"]` | `contract` — `fill:#e6ebff,stroke:#2953ff,color:#14171c` |
+| Contract (the use-case spec / OKF pair) | Rectangle, primary emphasis | `A["contract"]` | `contract` — `fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18` |
 | Generated artifact (code, tools, fixtures) | Rectangle, default | `A["tools"]` | none (default node style) |
-| Source-system twin | Cylinder (data store) | `A[("twin")]` | `system` — `fill:#eceef2,stroke:#565e6c,color:#14171c` |
-| Eval / proof gate | Hexagon (gate distinct from a decision) | `A{{"promotion gate"}}` | `proof` — `fill:#e1f3e7,stroke:#16874a,color:#14171c` |
-| Handoff target (agents-cli / ADK / Gemini Enterprise) | Stadium, cloud/release emphasis | `A(["agents-cli"])` | `handoff` — `fill:#e1f3e7,stroke:#16874a,color:#14171c` |
+| Source-system twin | Cylinder (data store) | `A[("twin")]` | `system` — `fill:#e3e3df,stroke:#55554f,color:#1a1a18` |
+| Eval / proof gate | Hexagon (gate distinct from a decision) | `A{{"promotion gate"}}` | `proof` — `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` |
+| Handoff target (agents-cli / ADK / Gemini Enterprise) | Stadium, cloud/release emphasis | `A(["agents-cli"])` | `handoff` — `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` |
 
 This extends, rather than replaces, the general shape vocabulary and brand
 color convention above — those still govern diagrams outside the signature
@@ -228,11 +228,11 @@ invent a different status palette for docs:
 
 | Status | classDef |
 |---|---|
-| `pending` | `fill:#eceef2,stroke:#6b7280,color:#14171c` (the status ramp's `queued` gray) |
-| `running` | `fill:#e6ebff,stroke:#2953ff,color:#14171c` (the ramp's `running` — blue means "live") |
-| `blocked` | `fill:#fbeadb,stroke:#d9660a,color:#14171c` (the ramp's `blocked` orange) |
-| `done` | `fill:#e1f3e7,stroke:#16874a,color:#14171c` (same green as `pass`/handoff above) |
-| `failed` | `fill:#fce8e5,stroke:#dc3626,color:#14171c` (same red as the existing "Blocked / error" row) |
+| `pending` | `fill:#e3e3df,stroke:#6e6e68,color:#1a1a18` (the status ramp's `queued` gray) |
+| `running` | `fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18` (the ramp's `running` — the lit dot means "on") |
+| `blocked` | `fill:#fbeadb,stroke:#96590d,color:#1a1a18` (the ramp's `blocked` orange) |
+| `done` | `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` (same green as `pass`/handoff above) |
+| `failed` | `fill:#fce8e5,stroke:#b3231c,color:#1a1a18` (same red as the existing "Blocked / error" row) |
 
 ### Embedding a diagram in a page
 

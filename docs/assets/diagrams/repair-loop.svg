@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 582.437 507.20000000000005" width="582.437" height="507.20000000000005" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 582.437 507.20000000000005" width="582.437" height="507.20000000000005" style="--bg:#f7f7f5;--fg:#1a1a18;--line:#55554f;--accent:#cc3d0d;--muted:#7c7c74;--surface:#e3e3df;--border:#d4d4cf;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -64,12 +64,12 @@ observe → repair → retry" data-shape="hexagon">
   <text x="291.151" y="253.60000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="291.151" dy="-3.9000000000000012">ge fleet repair</tspan><tspan x="291.151" dy="16.900000000000002">observe → repair → retry</tspan></text>
 </g>
 <g class="node" data-id="PROVE" data-label="re-prove" data-shape="stadium">
-  <rect x="131.487" y="430.30000000000007" width="94.561" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="178.76749999999998" y="448.75000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">re-prove</text>
+  <rect x="131.487" y="430.30000000000007" width="94.561" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="178.76749999999998" y="448.75000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">re-prove</text>
 </g>
 <g class="node" data-id="BLOCKED" data-label="blocked" data-shape="rectangle">
-  <rect x="371.215" y="396.80000000000007" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="#fce8e5" stroke="#dc3626" stroke-width="0.75" />
-  <text x="415.902" y="415.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">blocked</text>
+  <rect x="371.215" y="396.80000000000007" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="#fce8e5" stroke="#b3231c" stroke-width="0.75" />
+  <text x="415.902" y="415.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">blocked</text>
 </g>
 <g class="node" data-id="RESUME" data-label="ge runs resume /
 ge agents resume" data-shape="rectangle">
