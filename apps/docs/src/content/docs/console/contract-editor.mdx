@@ -14,10 +14,10 @@ Two connected surfaces <a href="/ge-agent-factory/reference/glossary/#capture" t
 
 An artifact-driven interview: a chat transcript pane on one side, a live
 contract canvas on the other, and a document dropzone for grounding. You
-describe the use case (or upload a BRD and let the interview read it); the
-interview agent asks what it still needs and streams the contract into the
-canvas as it firms up — role, scope, tool intents, workflow, evidence and
-escalation rules.
+describe the use case (or upload a BRD — a Business Requirements Document —
+and let the interview read it); the interview agent asks what it still needs
+and streams the contract into the canvas as it firms up — role, scope, tool
+intents, workflow, evidence and escalation rules.
 
 Use it when no contract exists yet. The result feeds straight into the
 **<a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>** view for compilation. Step-by-step:
@@ -34,7 +34,7 @@ The Spec Review canvas renders the contract half-by-half — the behavior half
 (role, scope, rules, tool intents, workflow, golden evals) and the world
 half (source systems, entities) — with field-level editing. It is also where
 the contract's portable Markdown form is produced: the **Export <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a>** action
-and the OKF Knowledge Bundle preview
+and the OKF (Open Knowledge Format) Knowledge Bundle preview
 (`GET /api/interviews/<id>/okf` behind the scenes).
 
 :::note
