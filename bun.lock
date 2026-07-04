@@ -6,8 +6,10 @@
       "name": "ge-agent-factory-gateway",
       "dependencies": {
         "@clack/prompts": "^1.6.0",
+        "@ge/admission": "workspace:*",
         "@ge/agent-resolver": "workspace:*",
         "@ge/agent-spec": "workspace:*",
+        "@ge/agent-workspace": "workspace:*",
         "@ge/contracts": "workspace:*",
         "@ge/design": "workspace:*",
         "@ge/evalkit": "workspace:*",
@@ -138,6 +140,10 @@
         "typescript": "~5.8.2",
         "vite": "^6.2.0",
       },
+    },
+    "packages/admission": {
+      "name": "@ge/admission",
+      "version": "0.1.0",
     },
     "packages/agent-resolver": {
       "name": "@ge/agent-resolver",
@@ -460,6 +466,8 @@
     "@fontsource/geist-mono": ["@fontsource/geist-mono@5.2.8", "", {}, "sha512-YqZUb3X42GjRaHkibUNyE8K4Rk9A6I9Ez81YpJYiuJN4ggmTW2ixoQpa9EWCPfXZtIsCQJTyrDoV9OJOZO/UcA=="],
 
     "@fontsource/space-grotesk": ["@fontsource/space-grotesk@5.2.10", "", {}, "sha512-XNXEbT74OIITPqw2H6HXwPDp85fy43uxfBwFR5PU+9sLnjuLj12KlhVM9nZVN6q6dlKjkuN8JisW/OBxwxgUew=="],
+
+    "@ge/admission": ["@ge/admission@workspace:packages/admission"],
 
     "@ge/agent-resolver": ["@ge/agent-resolver@workspace:packages/agent-resolver"],
 

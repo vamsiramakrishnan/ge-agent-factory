@@ -80,6 +80,10 @@ export const GeCommandIdSchema = z.enum([
   "okf.customize",
   "agents.register",
   "agents.track",
+  // Release admission (Agent Passport + its gate):
+  "passport.emit",
+  "passport.verify",
+  "passport.admit",
 ]);
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 

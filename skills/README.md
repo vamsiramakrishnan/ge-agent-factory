@@ -49,6 +49,7 @@ registry, so the table cannot drift from those sources:
 | [`triaging-runs`](triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../packages/okf/) | [`okf.md`](../docs/reference/okf.md), [`agent-lifecycle.md`](../docs/reference/agent-lifecycle.md) |
+| [`admitting-agents`](admitting-agents/) | — | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../packages/admission/) | [`admit-an-agent.md`](../docs/cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../docs/concepts/agent-passport-and-proof-pack.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ## Composition

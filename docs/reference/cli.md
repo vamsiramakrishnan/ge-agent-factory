@@ -104,6 +104,7 @@ Hand off proven agents to a deploy target (supported today: agents-cli → Agent
 | `--target-stage` | string | Stage to stop at (default publish_enterprise) |
 | `--concurrency` | string | Parallel remote submissions (default 2) |
 | `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
+| `--force` | boolean | Break-glass: release despite a denied admission decision (the override is recorded in the decision log) |
 
 ### `ge status`
 
@@ -167,6 +168,36 @@ Which metric families apply locally vs through the live assist surface (and why)
 | Flag | Type | Description |
 |---|---|---|
 | `--markdown` | boolean | Print the markdown table instead of the human view |
+
+### `ge passport`
+
+Agent Passport: mint, verify, and admit — the signed proof-pack identity behind the handoff admission gate
+
+### `ge passport emit`
+
+Mint the signed Agent Passport for a proven workspace (digests + attestations over the proof pack)
+
+| Flag | Type | Description |
+|---|---|---|
+| `<id>` | positional (required) | Local workspace id (or use-case id) |
+
+### `ge passport verify`
+
+Verify a passport's integrity: signatures, and digest binding to the workspace bytes on disk
+
+| Flag | Type | Description |
+|---|---|---|
+| `<id>` | positional (required) | Local workspace id (or use-case id) |
+
+### `ge passport admit`
+
+Evaluate the admission gate (policy: .ge.json promotion.gates.admission) and record the decision
+
+| Flag | Type | Description |
+|---|---|---|
+| `<id>` | positional (required) | Local workspace id (or use-case id) |
+| `--stage` | string | Stage the decision is for (default handoff) |
+| `--force` | boolean | Break-glass: exit 0 despite a denial (the override is recorded in the decision log) |
 
 ### `ge up`
 

@@ -76,6 +76,9 @@ returns `202 { jobId, command }`; stream progress via
 |---|---|---|---|---|
 | `POST /api/ge/prove` | `ge prove` | Prove contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof | `starts-local-workloads` | `node`, `uv` on PATH · local toolchain |
 | `POST /api/ge/handoff` | `ge handoff` | Hand proven agents to a deploy target (agents-cli → Agent Engine → Gemini Enterprise) | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, gatewayUrl, dataBucket · cloud auth · tool plane deployed · BigQuery API (hard) · ship handoff wiring |
+| `POST /api/ge/passport/emit` | `ge passport emit` | Mint the consolidated signed Agent Passport for a proven workspace: subject digests plus DSSE attestations over the proof pack | `starts-local-workloads` | `bun` on PATH |
+| `POST /api/ge/passport/verify` | `ge passport verify` | Verify a passport's integrity: attestation signatures, and digest binding to the workspace bytes on disk | `read-only` | `bun` on PATH |
+| `POST /api/ge/passport/admit` | `ge passport admit` | Evaluate the admission gate over the passport (policy: .ge.json promotion.gates.admission) and record the allow/deny decision | `starts-local-workloads` | `bun` on PATH |
 | `POST /api/ge/drive` | `ge drive` | Talk to the deployed agent over its live assist surface with per-turn timing/responder instrumentation; record conversations as eval cases or cassettes | `starts-workloads` | `bun` on PATH |
 | `POST /api/ge/prove/live` | `ge prove --live` | Release verification: run evalset cases through the deployed agent's assist surface — metric grid, conformance baselines, live gate verdict | `starts-workloads` | `bun` on PATH |
 | `POST /api/ge/bench` | `ge bench` | Load the assist surface within hard cost guards and verdict the latency/error budgets (ttft, full response, stalls, errors, responder rates) | `starts-workloads` | `bun` on PATH |
