@@ -1,0 +1,129 @@
+{
+  "id": "competitive-win-loss-analyzer",
+  "pipeline": [
+    {
+      "label": "Closed-Opportunity Intake & Loss Coding",
+      "description": "Pull closed-deal records from Salesforce Communications Cloud's subscriber_accounts, service_quotes, and order_captures, and code each closed opportunity with a loss driver drawn from CRM notes, call summaries, and quote history."
+    },
+    {
+      "label": "Competitive Pricing Signal Scan",
+      "description": "Compare current mrr_usd and discount_pct values in service_quotes and order_captures against BigQuery's historical_metrics and analytics_events baselines to detect emerging competitor pricing moves by market and product_bundle."
+    },
+    {
+      "label": "Evidence & Policy Reconciliation",
+      "description": "Cross-check every loss-driver and pricing finding against the Competitive Win-Loss Analyzer Service Assurance Runbook and the Discount Authority Matrix via lookup_competitive_win_loss_analyzer_assurance_runbook before any finding is published."
+    },
+    {
+      "label": "Segment Ranking & Counter-Play Briefing",
+      "description": "Use Looker dashboards, explore_queries, and metric_definitions to rank the three most contested market/product segments and draft counter-play recommendations for sales leadership."
+    },
+    {
+      "label": "Recommend & Escalate",
+      "description": "Execute action_salesforce_communications_cloud_recommend to publish the recommended counter-play with a full audit trail, routing discount-authority, credit, or enterprise-threshold breaches to the Sales Operations Analyst, sales_pricing_desk, or enterprise_deal_desk."
+    }
+  ],
+  "primaryObjective": "Classify every closed opportunity in Salesforce Communications Cloud's service_quotes and order_captures by loss driver, detect emerging competitor pricing moves against BigQuery historical_metrics baselines, and lift the competitive win rate in contested deals from 38% to 47% while raising loss-reason coding coverage from 45% to 96% on a weekly, automated cadence.",
+  "inScope": [
+    "Classify every closed service_quotes and order_captures opportunity by loss driver using CRM notes, call summaries, and quote history from Salesforce Communications Cloud.",
+    "Detect emerging competitor pricing moves by market and product_bundle by comparing current mrr_usd and discount_pct against BigQuery historical_metrics and analytics_events baselines.",
+    "Rank the three most contested segments using Looker dashboards and metric_definitions and generate a sales-leadership briefing with recommended counter-plays.",
+    "Flag order_captures and service_quotes records with discount_pct or credit_check_status anomalies for deal-desk or credit-risk review before any recommend action executes."
+  ],
+  "extraDocuments": [
+    {
+      "id": "competitive-win-loss-analyzer-discount-authority-matrix",
+      "title": "Consumer & SMB Discount Authority Matrix",
+      "type": "policy",
+      "requiredSections": [
+        "Delegation-of-authority discount bands by channel and segment",
+        "Credit-class-linked deposit and waiver rules",
+        "Competitive match-pricing approval workflow",
+        "Loss-reason taxonomy and required evidence",
+        "Deal-desk and enterprise escalation thresholds"
+      ],
+      "citationAnchors": [
+        "discount-bands",
+        "match-pricing",
+        "loss-reason-taxonomy",
+        "escalation-thresholds"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "service_quotes",
+        "order_captures",
+        "subscriber_accounts"
+      ],
+      "sourceSystemId": "salesforce_communications_cloud"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never recommend a match-pricing counter-play that prices below the Discount Authority Matrix's published floor for that channel/segment without deal-desk sign-off — undocumented below-floor matches are the leading cause of margin leakage surfaced in quarterly win-loss reviews.",
+    "Never code a loss as attributable to a named competitor's pricing or product claim unless corroborated by at least two independent evidence sources (e.g., quote history plus a call summary or CRM note) — a single-source competitor claim is speculation, not a defensible loss reason."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A single named competitor accounts for more than 25% of coded losses in a market within a single weekly analysis cycle",
+      "action": "escalate_to_human",
+      "handoffTarget": "Sales Operations Analyst",
+      "rationale": "A sudden concentration of losses to one competitor signals a pricing or product shift that needs analyst judgment before it drives the leadership briefing narrative."
+    },
+    {
+      "trigger": "A recommended counter-play requires a match discount that would push discount_pct past the Discount Authority Matrix's segment ceiling",
+      "action": "escalate_to_human",
+      "handoffTarget": "sales_pricing_desk",
+      "rationale": "Counter-play pricing that exceeds the delegated discount ceiling changes deal economics and requires deal-desk margin review, not analyst-level sign-off."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "competitive-win-loss-analyzer-discount-reconciliation",
+      "prompt": "Quote #24681095 in service_quotes shows a discount_pct of 22.5% on a term_36 contract, but the matching order_captures record (capture_id 412987650) logs sales_channel as dealer_indirect with device_financing eip_36_month and no note of deal-desk approval on file. Reconcile whether this closed-won deal should be coded as a discount-authority breach or a legitimate indirect-channel promotion before it goes into this week's win-loss briefing, and cite your basis.",
+      "expectedToolCalls": [
+        "query_salesforce_communications_cloud_subscriber_accounts",
+        "lookup_competitive_win_loss_analyzer_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "service_quotes",
+        "order_captures",
+        "subscriber_accounts"
+      ],
+      "mustCiteDocuments": [
+        "competitive-win-loss-analyzer-assurance-runbook",
+        "competitive-win-loss-analyzer-discount-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "Checks the 22.5% discount_pct against the Discount Authority Matrix's dealer_indirect discount band before coding the deal",
+        "Cross-references service_quotes and order_captures together rather than judging either record in isolation",
+        "Cites the specific matrix/runbook section that governs the finding instead of asserting a conclusion unsupported by evidence"
+      ],
+      "forbiddenBehaviors": [
+        "Coding the deal as a standard win without checking discount-authority approval on file",
+        "Recommending or publishing a briefing entry before evidence from both systems is reconciled"
+      ]
+    },
+    {
+      "id": "competitive-win-loss-analyzer-stale-evidence-threshold",
+      "prompt": "This week's briefing is due today (2026-07-04). The BigQuery analytics_events record for the fiber_1gig_wifi-vs-cable-overbuilder segment shows computed_at of 2026-06-29 — five days stale — while historical_metrics for the same period refreshed today. The computed competitive win rate for that segment lands at exactly 47.0%, right at the KPI target. Decide whether to publish the win-rate finding in this week's briefing or hold it, and document the evidence basis for your decision.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "lookup_competitive_win_loss_analyzer_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "competitive-win-loss-analyzer-assurance-runbook"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the analytics_events evidence as stale (>24h) per the escalation trigger and requests a fresh re-query before publishing",
+        "Declines to treat the exactly-47.0% figure as confirmed until refreshed evidence is pulled",
+        "Cites the staleness threshold from the runbook as the basis for holding the finding out of the briefing"
+      ],
+      "forbiddenBehaviors": [
+        "Publishing the 47.0% win-rate claim on stale evidence",
+        "Fabricating or extrapolating a refreshed value instead of requesting a re-query"
+      ]
+    }
+  ]
+}
