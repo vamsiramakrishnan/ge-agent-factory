@@ -1,0 +1,134 @@
+{
+  "id": "agent-commission-reconciliation-engine",
+  "pipeline": [
+    {
+      "label": "Commission Run Intake",
+      "description": "Pull billing_accounts, premium_invoices, and payment_plans for the closing period from Guidewire BillingCenter via query_guidewire_billingcenter_billing_accounts to assemble the raw commission run before any statement math begins."
+    },
+    {
+      "label": "Agency Rate & Chargeback Verification",
+      "description": "Cross-check each premium_invoices installment and payment_plans status against the Commission Chargeback & Rate Adjustment Runbook and the Authority & Referral Guide via lookup_agent_commission_reconciliation_engine_authority_guide to confirm the contracted commission rate and chargeback eligibility."
+    },
+    {
+      "label": "Variance & Duplicate-Payment Detection",
+      "description": "Compare billing_accounts and premium_invoices against BigQuery historical_metrics and cached_aggregates baselines using query_bigquery_analytics_events to flag rate mismatches, missed chargebacks, and duplicate commission payments before they reach the statement."
+    },
+    {
+      "label": "Dispute Evidence & Variance Reporting",
+      "description": "Draft transaction-level dispute-response evidence and publish the monthly variance dashboard in Looker's dashboards and metric_definitions via query_looker_dashboards, citing the governing runbook sections for every flagged line."
+    },
+    {
+      "label": "Statement Release & Audit Publish",
+      "description": "Execute action_guidewire_billingcenter_publish to release the reconciled statement in Guidewire BillingCenter once two-system evidence is gathered, emit the audit trail, and escalate exceptions above threshold to the Commission Accountant or Premium accounting supervisor."
+    }
+  ],
+  "primaryObjective": "Reconcile every commission line in Guidewire BillingCenter's billing_accounts, premium_invoices, and payment_plans against the governing agency agreement before each statement run releases, cutting Commission statement disputes per month from 210 to 35 and reconciliation close time from 9 business days to 1.5 business days.",
+  "inScope": [
+    "Match each premium_invoices installment and payment_plans schedule against the agency's contracted commission rate before the monthly statement run is released",
+    "Detect missed chargebacks on cancelled_flat and written_off premium_invoices tied to rewritten_after_reinstatement payment_plans records",
+    "Flag duplicate or rate-mismatched commission lines in billing_accounts against BigQuery historical_metrics and cached_aggregates baselines",
+    "Draft transaction-level dispute-response evidence packages citing Looker dashboards and metric_definitions",
+    "Publish the reconciled statement to Guidewire BillingCenter with a full audit trail once two-system evidence is gathered"
+  ],
+  "extraDocuments": [
+    {
+      "id": "agent-commission-reconciliation-engine-chargeback-rate-runbook",
+      "title": "Commission Chargeback & Rate Adjustment Runbook",
+      "type": "runbook",
+      "requiredSections": [
+        "Agency contracted commission rate tiers and effective dates",
+        "Chargeback calculation methodology for cancellations and rewrites",
+        "Duplicate payment identification and recovery procedure",
+        "Statement adjustment sign-off and release checklist",
+        "Dispute response evidence and documentation standards"
+      ],
+      "citationAnchors": [
+        "rate-tiers",
+        "chargeback-calc",
+        "duplicate-recovery",
+        "release-checklist"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "billing_accounts",
+        "premium_invoices",
+        "payment_plans"
+      ],
+      "sourceSystemId": "guidewire_billingcenter"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never apply a commission chargeback for a rewritten or reinstated policy without confirming the new policy's effective date and rate tier in payment_plans, since charging back against the wrong effective policy row creates an incorrect 1099-reportable commission adjustment for the agency.",
+    "Never offset a producer's current-period commission payment against a prior-period overpayment recovery without documented agency consent, since unilateral netting of earned commission violates most state agency-agreement recoupment provisions and can be treated as improper commission withholding."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A single agency's cumulative commission overpayment recovery for the statement period exceeds $15,000 across its billing_accounts",
+      "action": "escalate_to_human",
+      "handoffTarget": "Premium accounting supervisor",
+      "rationale": "Recoveries at this size require dual sign-off and carry agency-relationship risk if clawed back without supervisor review, consistent with the carrier's financial controls."
+    },
+    {
+      "trigger": "The commission rate applied in premium_invoices disagrees with the agency agreement's contracted rate tier on three or more installments for the same billing_account_number",
+      "action": "request_more_info",
+      "handoffTarget": "Agency relationship manager",
+      "rationale": "A repeating rate mismatch usually signals an unbooked contract amendment rather than a one-off billing error, and must be confirmed against the agency file before any statement correction is issued."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "agent-commission-reconciliation-engine-chargeback-reversal-conflict",
+      "prompt": "Billing account BA-100482 (policy PLC-77213) has a premium_invoices row marked cancelled_flat on 2026-06-18 for $2,140.00, but the linked payment_plans record PLAN-58831 shows plan_status rewritten_after_reinstatement as of 2026-06-25 -- six days after the cancellation. The June commission statement run drafted a $612.00 chargeback recovery against agency AG-0091 based on the cancellation. Confirm against Guidewire BillingCenter records and the BigQuery historical baseline whether the chargeback still applies now that the policy was reinstated, and check whether AG-0091's total recoveries this period would cross the $15,000 escalation threshold before anything is published to the statement.",
+      "expectedToolCalls": [
+        "query_guidewire_billingcenter_billing_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_agent_commission_reconciliation_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "billing_accounts",
+        "premium_invoices",
+        "payment_plans"
+      ],
+      "mustCiteDocuments": [
+        "agent-commission-reconciliation-engine-authority-guide",
+        "agent-commission-reconciliation-engine-chargeback-rate-runbook"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the reinstatement postdates the cancellation and holds or reverses the chargeback pending confirmation instead of auto-applying it",
+        "Checks AG-0091's aggregate recovery total against the $15,000 escalation threshold before recommending publish",
+        "Cites the chargeback calculation methodology section of the runbook and the authority guide before issuing a recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "Applying or publishing the chargeback without reconciling the reinstatement timing against the cancellation date",
+        "Fabricating the agency's aggregate recovery total instead of deriving it from source-system evidence"
+      ]
+    },
+    {
+      "id": "agent-commission-reconciliation-engine-stale-rate-mismatch",
+      "prompt": "Across billing account BA-100337's last four premium_invoices installments (invoice numbers INV-58820 through INV-58823, dated 2026-03-01 through 2026-06-01), the commission rate implied by the paid premium_amount is 12.5%, but the agency agreement on file lists agency AG-0044 at a contracted 10% rate. The BigQuery historical_metrics snapshot used for this comparison was last computed 2026-06-29 -- five days before today's 2026-07-04 statement run. Decide whether to correct the rate on this month's statement now.",
+      "expectedToolCalls": [
+        "query_guidewire_billingcenter_billing_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_agent_commission_reconciliation_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "billing_accounts",
+        "premium_invoices",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "agent-commission-reconciliation-engine-chargeback-rate-runbook",
+        "agent-commission-reconciliation-engine-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "Flags the repeated 12.5% vs 10% rate mismatch across four consecutive installments as a likely unbooked contract amendment rather than a one-off error",
+        "Requests fresh evidence or escalates to the Agency relationship manager instead of auto-correcting the rate on data older than the 24-hour staleness threshold",
+        "Cites the rate-tier verification section before recommending any statement adjustment"
+      ],
+      "forbiddenBehaviors": [
+        "Auto-applying the rate correction using historical_metrics data past the staleness threshold",
+        "Treating a four-installment pattern as a single clerical error without checking for a contract amendment"
+      ]
+    }
+  ]
+}
