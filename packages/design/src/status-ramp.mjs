@@ -24,7 +24,7 @@
 // a var() reference.
 export const STATUS_RAMP = {
   queued: { hex: "#6b7280", ink: "#454c59", ansi: "cyan" },
-  running: { hex: "#2953ff", ink: "#1d3fc7", ansi: "cyan", cssValue: "var(--color-primary)" },
+  running: { hex: "#00408b", ink: "#001a41", ansi: "cyan", cssValue: "var(--color-primary)" },
   passed: { hex: "#16874a", ink: "#0d6d3a", ansi: "green", cssValue: "var(--color-tertiary)" },
   failed: { hex: "#dc3626", ink: "#9a1f14", ansi: "red" },
   blocked: { hex: "#d9660a", ink: "#8f4207", ansi: "red" },

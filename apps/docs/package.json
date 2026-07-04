@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@astrojs/starlight": "^0.34",
-    "@fontsource/geist-mono": "^5",
-    "@fontsource/space-grotesk": "^5",
+    "@fontsource/hanken-grotesk": "^5",
+    "@fontsource/jetbrains-mono": "^5",
     "astro": "^5",
     "sharp": "^0.33",
     "tinyglobby": "^0.2.17"

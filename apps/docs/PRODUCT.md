@@ -35,18 +35,20 @@ platform because the documentation itself feels certified.
 
 ## Brand Personality
 
-Precise, instrumented, calm. The design identity is "Proof Instrument"
-(`packages/design/src/palette.mjs`): an achromatic instrument-panel chrome
-with one reserved signal color — cobalt `#2953ff` means "live/interactive",
-one green means "passed", and all other color budget is semantic status, not
-decoration. Tone of voice in copy is expert and direct, never salesy.
+Precise, instrumented, calm. The design identity is "Modernist Functionalism"
+(`packages/design/src/palette.mjs`) — a Braun/Dieter Rams-inspired
+instrument-panel chrome: warm neutral paper, hairline strokes instead of
+shadows, one reserved signal color (Braun Blue `#00408b` means
+"live/interactive"), one green means "passed", and all other color budget is
+semantic status, not decoration. Tone of voice in copy is expert and direct,
+never salesy.
 
 ## Anti-references
 
 - Stock Material/Google-console blue (`#1a73e8`) — the palette this system
   deliberately moved away from; it reads as "default Google theme".
 - SaaS landing-page grammar: gradient text, badge walls, hero-metric strips,
-  cream/parchment backgrounds.
+  drop-shadow elevation.
 - Ad-hoc per-component colors (stock Tailwind rose/emerald/amber). Every hue
   must trace to `palette.mjs` or `status-ramp.mjs` — one blue, one green,
   one meaning, from TTY to UI to docs.
@@ -67,10 +69,11 @@ decoration. Tone of voice in copy is expert and direct, never salesy.
 ## Accessibility & Inclusion
 
 WCAG 2.1 AA. Body text ≥ 4.5:1 in both themes (light body ink is
-`secondaryInk #383e47` on white, chosen for exactly this). Dark mode is a
-first-class theme, not an inversion. Respect `prefers-reduced-motion`; the
-site has no orchestrated motion by design. Diagrams are authored on white
-and framed in dark mode rather than recolored.
+`secondaryInk #383e47` on the warm paper background, chosen for exactly
+this). Dark mode is a first-class theme, not an inversion. Respect
+`prefers-reduced-motion`; the site has no orchestrated motion by design.
+Diagrams are authored on the paper background and framed in dark mode rather
+than recolored.
 
 ## Design sources (read before styling anything)
 

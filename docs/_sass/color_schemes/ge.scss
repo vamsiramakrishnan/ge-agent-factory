@@ -5,20 +5,20 @@
 // BEGIN GENERATED: palette -- do not edit; run `bun run docs:tokens`
 $color-scheme: ge;
 
-$body-background-color: #ffffff; // --color-surface
-$body-heading-color: #14171c; // --color-on-surface
+$body-background-color: #fcf9f8; // --color-surface
+$body-heading-color: #1b1c1c; // --color-on-surface
 $body-text-color: #383e47; // secondary ink, still AA on white
-$link-color: #2953ff; // --color-primary
+$link-color: #00408b; // --color-primary
 $nav-child-link-color: #383e47;
-$sidebar-color: #f3f4f7; // --color-background
-$base-button-color: #f6f7f9; // --color-surface-container-low
-$btn-primary-color: #2953ff;
-$code-background-color: #f6f7f9;
+$sidebar-color: #fcf9f8; // --color-background
+$base-button-color: #f6f3f2; // --color-surface-container-low
+$btn-primary-color: #00408b;
+$code-background-color: #f6f3f2;
 $feedback-color: darken($sidebar-color, 3%);
-$table-background-color: #ffffff;
-$search-background-color: #ffffff;
+$table-background-color: #fcf9f8;
+$search-background-color: #fcf9f8;
 $search-result-preview-color: #383e47;
-$border-color: #dfe2e8; // --color-outline-variant
+$border-color: #c2c6d4; // --color-outline-variant
 // END GENERATED: palette
 
 @import "./vendor/accessible-pygments/github-light";

@@ -1,7 +1,7 @@
 // Shared visual theme for docs diagrams (tools/gen-docs-diagrams.mjs), derived
-// from the same "Proof Instrument" palette the console/presentation apps use
-// (packages/design/src/tokens.css) so the docs site and the product UI read as
-// one system instead of a generic canned theme.
+// from the same "Modernist Functionalism" palette the console/presentation apps
+// use (packages/design/src/tokens.css) so the docs site and the product UI read
+// as one system instead of a generic canned theme.
 //
 // Values come from packages/design/src/palette.mjs (the single JS source of
 // truth for the brand palette) rather than hardcoded hex literals, so this

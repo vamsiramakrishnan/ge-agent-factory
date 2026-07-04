@@ -67,14 +67,14 @@ test("checkTokens flags a hand-edited hex inside a marked region and writeTokens
       writeFileSync(dest, readFileSync(join(ROOT, target.relPath), "utf8"));
     }
     const setupPath = join(tmp, "docs/_sass/custom/setup.scss");
-    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #2953ff;", "$blue-200: #ff0000;"));
+    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #00408b;", "$blue-200: #ff0000;"));
 
     const drifted = checkTokens(tmp);
     expect(drifted.ok).toBe(false);
     expect(drifted.findings.map((f) => f.file)).toEqual(["docs/_sass/custom/setup.scss"]);
     const report = formatCheckReport(drifted);
     expect(report).toContain("-$blue-200: #ff0000;");
-    expect(report).toContain("+$blue-200: #2953ff;");
+    expect(report).toContain("+$blue-200: #00408b;");
 
     const { changed } = writeTokens(tmp);
     expect(changed).toEqual(["docs/_sass/custom/setup.scss"]);
@@ -115,7 +115,7 @@ test("checkDocsCustomCssAnchors flags a drifted annotated anchor in apps/docs/sr
     const dest = join(tmp, "apps/docs/src/styles/custom.css");
     mkdirSync(dirname(dest), { recursive: true });
     const original = readFileSync(join(ROOT, "apps/docs/src/styles/custom.css"), "utf8");
-    writeFileSync(dest, original.replace("--sl-color-accent: #2953ff; /* --color-primary */", "--sl-color-accent: #123456; /* --color-primary */"));
+    writeFileSync(dest, original.replace("--sl-color-accent: #00408b; /* --color-primary */", "--sl-color-accent: #123456; /* --color-primary */"));
 
     const findings = checkDocsCustomCssAnchors(tmp);
     expect(findings.length).toBeGreaterThan(0);

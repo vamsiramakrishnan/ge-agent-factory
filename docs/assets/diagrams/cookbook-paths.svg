@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1099.292 379.20000000000005" width="1099.292" height="379.20000000000005" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1099.292 379.20000000000005" width="1099.292" height="379.20000000000005" style="--bg:#fcf9f8;--fg:#1b1c1c;--line:#565e6c;--accent:#00408b;--muted:#79818e;--surface:#f0eded;--border:#c2c6d4;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -106,16 +106,16 @@ release" data-shape="stadium">
 <g class="node" data-id="PP" data-label="Provision the
 platform" data-shape="rectangle">
   <rect x="187.007" y="285.40000000000003" width="119.75500000000001" height="53.800000000000004" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="246.8845" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="246.8845" dy="-3.9000000000000012">Provision the</tspan><tspan x="246.8845" dy="16.900000000000002">platform</tspan></text>
+  <text x="246.8845" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="246.8845" dy="-3.9000000000000012">Provision the</tspan><tspan x="246.8845" dy="16.900000000000002">platform</tspan></text>
 </g>
 <g class="node" data-id="DG" data-label="Deploy the
 Agent Gateway" data-shape="rectangle">
   <rect x="354.762" y="285.40000000000003" width="128.647" height="53.800000000000004" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="419.0855" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="419.0855" dy="-3.9000000000000012">Deploy the</tspan><tspan x="419.0855" dy="16.900000000000002">Agent Gateway</tspan></text>
+  <text x="419.0855" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="419.0855" dy="-3.9000000000000012">Deploy the</tspan><tspan x="419.0855" dy="16.900000000000002">Agent Gateway</tspan></text>
 </g>
 <g class="node" data-id="RO" data-label="Run and
 observe" data-shape="rectangle">
   <rect x="531.409" y="285.40000000000003" width="92.338" height="53.800000000000004" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="577.578" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="577.578" dy="-3.9000000000000012">Run and</tspan><tspan x="577.578" dy="16.900000000000002">observe</tspan></text>
+  <text x="577.578" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="577.578" dy="-3.9000000000000012">Run and</tspan><tspan x="577.578" dy="16.900000000000002">observe</tspan></text>
 </g>
 </svg>

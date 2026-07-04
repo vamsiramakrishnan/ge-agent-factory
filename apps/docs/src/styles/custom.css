@@ -1,24 +1,38 @@
 /* Brand layer over Starlight, derived from the product's design tokens —
- * the "Proof Instrument" palette in packages/design/src/palette.mjs (chrome)
- * and packages/design/src/status-ramp.mjs (semantic status hues). Those two
- * files are THE canonical source; every hex below is either copied from them
- * verbatim or is a documented light/dark rung along one of their hues (same
- * contract as docs/_sass/custom/setup.scss's derived swatches). If the
- * palette changes, change palette.mjs first and re-derive here.
+ * the "Modernist Functionalism" palette in packages/design/src/palette.mjs
+ * (chrome) and packages/design/src/status-ramp.mjs (semantic status hues).
+ * Those two files are THE canonical source; every hex below is either
+ * copied from them verbatim or is a documented light/dark rung along one of
+ * their hues (same contract as docs/_sass/custom/setup.scss's derived
+ * swatches). If the palette changes, change palette.mjs first and
+ * re-derive here.
  *
- * Type follows the same rule as the product: Space Grotesk for headings and
- * chrome, the system reading face for body copy (a deliberate long-form
- * legibility choice, see docs/DESIGN.md), Geist Mono for code. */
-@import "@fontsource/space-grotesk/500.css";
-@import "@fontsource/space-grotesk/600.css";
-@import "@fontsource/space-grotesk/700.css";
-@import "@fontsource/geist-mono/400.css";
-@import "@fontsource/geist-mono/500.css";
-@import "@fontsource/geist-mono/600.css";
+ * Visual language is Braun/Dieter Rams industrial functionalism: hairlines
+ * instead of shadows, flat geometric shapes, lowercase technical labels,
+ * tonal layering instead of elevation. "Less, but better."
+ *
+ * Type follows the same rule as the product: Hanken Grotesk for headings
+ * and chrome, the system reading face for body copy (a deliberate
+ * long-form legibility choice, see docs/DESIGN.md), JetBrains Mono for
+ * code and technical labels. */
+@import "@fontsource/hanken-grotesk/500.css";
+@import "@fontsource/hanken-grotesk/600.css";
+@import "@fontsource/hanken-grotesk/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
 
 :root {
-  --ge-display-font: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --sl-font-mono: "Geist Mono", "SFMono-Regular", ui-monospace, menlo, consolas, monospace;
+  --ge-display-font: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --sl-font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, menlo, consolas, monospace;
+
+  /* Braun radius scale (packages/design/src/palette.mjs's design-system
+   * counterpart) — small and geometric, never a pill except toggles/dots. */
+  --ge-radius-sm: 0.125rem;
+  --ge-radius: 0.25rem;
+  --ge-radius-md: 0.375rem;
+  --ge-radius-lg: 0.5rem;
+  --ge-radius-xl: 0.75rem;
 }
 
 /* ── Status ramp (status-ramp.mjs) — one status→color vocabulary from TTY to
@@ -27,7 +41,7 @@
 :root {
   --ge-status-queued: #6b7280;
   --ge-status-queued-ink: #454c59;
-  --ge-status-running: #2953ff; /* IS --color-primary: blue means "live" */
+  --ge-status-running: #00408b; /* IS --color-primary: blue means "live" */
   --ge-status-running-ink: #1d3fc7;
   --ge-status-passed: #16874a; /* IS --color-tertiary: one green, one meaning */
   --ge-status-passed-ink: #0d6d3a;
@@ -46,7 +60,7 @@
    * the AA ink shade on light (overridden below). Components use these for
    * colored text and the raw base for dots, borders, and fills. */
   --ge-status-queued-text: color-mix(in srgb, #6b7280 45%, white);
-  --ge-status-running-text: color-mix(in srgb, #2953ff 52%, white);
+  --ge-status-running-text: color-mix(in srgb, #00408b 52%, white);
   --ge-status-passed-text: color-mix(in srgb, #16874a 55%, white);
   --ge-status-failed-text: color-mix(in srgb, #dc3626 55%, white);
   --ge-status-blocked-text: color-mix(in srgb, #d9660a 55%, white);
@@ -70,7 +84,7 @@
  * signal. Derived rungs; anchors from palette.mjs are marked. ─────────────── */
 :root {
   --sl-color-accent-low: #1a2650;
-  --sl-color-accent: #2953ff; /* --color-primary */
+  --sl-color-accent: #00408b; /* --color-primary */
   --sl-color-accent-high: #b9c8ff;
   --sl-color-text-accent: #8fa4ff;
   --sl-color-white: #f2f4f8;
@@ -84,7 +98,7 @@
 
   /* Starlight's semantic hue families (asides, badges) re-tinted to the
    * status ramp: note=running-blue, tip=purple, caution=warning, danger=failed. */
-  --sl-color-blue: #5578ff; /* --color-primary-container */
+  --sl-color-blue: #0057b8; /* --color-primary-container */
   --sl-color-blue-low: #1a2650;
   --sl-color-blue-high: #b9c8ff;
   --sl-color-green: #2fae6b;
@@ -107,20 +121,20 @@
 /* ── Light palette (--color-* in tokens.css, verbatim where marked) ───────── */
 :root[data-theme="light"] {
   --sl-color-accent-low: #e6ebff; /* --color-secondary-container */
-  --sl-color-accent: #2953ff; /* --color-primary */
-  --sl-color-accent-high: #17339e; /* $blue-300 hover/active rung */
-  --sl-color-text-accent: #2953ff; /* 5.5:1 on white */
-  --sl-color-white: #14171c; /* --color-on-surface */
+  --sl-color-accent: #00408b; /* --color-primary */
+  --sl-color-accent-high: #001a41; /* $blue-300 hover/active rung */
+  --sl-color-text-accent: #00408b; /* 5.5:1 on white */
+  --sl-color-white: #1b1c1c; /* --color-on-surface */
   --sl-color-gray-1: #2a3038;
   --sl-color-gray-2: #383e47; /* secondaryInk — body text, AA on white */
   --sl-color-gray-3: #565e6c; /* --color-secondary */
   --sl-color-gray-4: #79818e;
-  --sl-color-gray-5: #dfe2e8; /* --color-outline-variant */
-  --sl-color-gray-6: #eceef2; /* --color-surface-container */
-  --sl-color-gray-7: #f6f7f9; /* --color-surface-container-low */
-  --sl-color-black: #ffffff; /* --color-surface */
+  --sl-color-gray-5: #c2c6d4; /* --color-outline-variant */
+  --sl-color-gray-6: #f0eded; /* --color-surface-container */
+  --sl-color-gray-7: #f6f3f2; /* --color-surface-container-low */
+  --sl-color-black: #fcf9f8; /* --color-surface */
 
-  --sl-color-blue: #2953ff;
+  --sl-color-blue: #00408b;
   --sl-color-blue-low: #e6ebff; /* --color-secondary-container */
   --sl-color-blue-high: #1d3fc7; /* running-ink */
   --sl-color-green: #16874a;
@@ -200,7 +214,7 @@ nav.sidebar a[aria-current="page"]:focus {
  * border + tint, matching the product's callout treatment. ──────────────── */
 .starlight-aside {
   border: 1px solid color-mix(in srgb, var(--sl-color-asides-border) 55%, transparent);
-  border-radius: 0.75rem;
+  border-radius: var(--ge-radius-md);
 }
 
 /* ── Tables — this site leans heavily on wide reference tables ──────────── */
@@ -232,28 +246,34 @@ nav.sidebar a[aria-current="page"]:focus {
   letter-spacing: -0.02em;
 }
 
-/* ── Cards get the product's quiet elevation on hover ───────────────────── */
+/* ── Cards: no elevation — a hairline that deepens + a quiet tonal shift on
+ * hover, never a shadow. Braun rule: hierarchy is strokes and tone, not
+ * light and depth. ──────────────────────────────────────────────────────── */
 .card {
-  border-radius: 0.75rem;
-  transition: box-shadow 120ms ease, border-color 120ms ease;
+  border-radius: var(--ge-radius-md);
+  transition: border-color 120ms ease, background-color 120ms ease;
 }
 
 .card:hover {
-  border-color: color-mix(in srgb, var(--sl-color-accent) 35%, var(--sl-color-gray-5));
-  box-shadow: 0 4px 24px rgba(41, 83, 255, 0.08);
+  border-color: var(--sl-color-accent);
+  background-color: color-mix(in srgb, var(--sl-color-accent-low) 40%, transparent);
 }
 
 /* ── Landing page: the three-step first-run journey ─────────────────────── */
-/* Effort-estimate pill on each journey card — quiet chrome, not a badge wall. */
+/* Effort-estimate label on each journey card — quiet chrome, not a badge
+ * wall. Lowercase + monospace: the Braun convention for technical metadata
+ * (see packages/design's design-system doc — "product as a tool" aesthetic). */
 .ge-eta {
   display: inline-block;
   font-family: var(--sl-font-mono);
   font-size: var(--sl-text-xs);
   line-height: 1.6;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
   color: var(--sl-color-gray-3);
   background: var(--sl-color-gray-6);
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 999px;
+  border-radius: var(--ge-radius);
   padding: 0 0.6rem;
 }
 
@@ -274,7 +294,7 @@ nav.sidebar a[aria-current="page"]:focus {
 .sl-markdown-content img[src$=".svg"] {
   background: #ffffff;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.75rem;
+  border-radius: var(--ge-radius-md);
   padding: 0.75rem;
 }
 
@@ -285,19 +305,19 @@ nav.sidebar a[aria-current="page"]:focus {
   border-bottom: 1px solid color-mix(in srgb, var(--sl-color-accent) 16%, transparent);
 }
 
-/* Instrument-panel wash: cobalt is the only voice; the green (passed) and
- * teal (repairing) ramp hues sit far back as secondary glows. */
+/* Instrument-panel wash: a faint dot-grid (the Braun "ventilation grille"
+ * motif) instead of a soft color glow — texture and tonal layering carry
+ * the hero, not light bloom. */
 .hero::before {
   content: "";
   position: absolute;
-  inset: -20% -10% auto;
+  inset: 0;
   height: 28rem;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(85, 120, 255, 0.22), transparent 28rem),
-    radial-gradient(circle at 78% 12%, rgba(22, 135, 74, 0.14), transparent 24rem),
-    linear-gradient(135deg, rgba(41, 83, 255, 0.13), transparent 55%);
-  filter: blur(4px);
+  background-image: radial-gradient(color-mix(in srgb, var(--sl-color-gray-5) 90%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+  mask-image: linear-gradient(to bottom, black, transparent);
   z-index: -1;
 }
 
@@ -317,12 +337,9 @@ nav.sidebar a[aria-current="page"]:focus {
   position: relative;
   margin: 1.5rem auto 2rem;
   padding: clamp(0.8rem, 2vw, 1.25rem);
-  border: 1px solid color-mix(in srgb, var(--sl-color-accent) 22%, var(--sl-color-gray-5));
-  border-radius: 1.4rem;
-  background:
-    linear-gradient(var(--sl-color-black), var(--sl-color-black)) padding-box,
-    linear-gradient(135deg, rgba(85, 120, 255, 0.6), rgba(22, 135, 74, 0.4), rgba(15, 143, 138, 0.35)) border-box;
-  box-shadow: 0 24px 80px rgba(41, 83, 255, 0.16);
+  border: 1px solid var(--sl-color-accent);
+  border-radius: var(--ge-radius-xl);
+  background: var(--sl-color-black);
 }
 
 .ge-hero-panel img {
@@ -348,11 +365,13 @@ nav.sidebar a[aria-current="page"]:focus {
 .ge-proof-strip span {
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 999px;
+  border-radius: var(--ge-radius);
   color: var(--sl-color-gray-2);
   background: color-mix(in srgb, var(--sl-color-accent-low) 32%, transparent);
-  font-family: var(--ge-display-font);
+  font-family: var(--sl-font-mono);
   font-size: var(--sl-text-sm);
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
   text-align: center;
 }
 
@@ -373,16 +392,16 @@ nav.sidebar a[aria-current="page"]:focus {
   gap: 1rem;
   padding: 1.1rem;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 1rem;
+  border-radius: var(--ge-radius-lg);
   color: inherit;
   text-decoration: none;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sl-color-gray-6) 70%, transparent), transparent);
-  transition: box-shadow 120ms ease, border-color 120ms ease;
+  background: var(--sl-color-gray-6);
+  transition: border-color 120ms ease, background-color 120ms ease;
 }
 
 .ge-value-card:hover {
   border-color: var(--sl-color-accent);
-  box-shadow: 0 16px 42px rgba(41, 83, 255, 0.12);
+  background-color: color-mix(in srgb, var(--sl-color-accent-low) 40%, var(--sl-color-gray-6));
 }
 
 .ge-value-card strong {
@@ -407,7 +426,7 @@ nav.sidebar a[aria-current="page"]:focus {
   object-fit: contain;
   padding: 0.7rem;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.9rem;
+  border-radius: var(--ge-radius-md);
   background: var(--sl-color-gray-6);
 }
 
@@ -423,9 +442,8 @@ nav.sidebar a[aria-current="page"]:focus {
   height: 100%;
   object-fit: cover;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 1rem;
+  border-radius: var(--ge-radius-lg);
   background: var(--sl-color-gray-6);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
 }
 
 .ge-screenshot-wall img:first-child {
