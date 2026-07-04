@@ -33,7 +33,6 @@
       },
       "devDependencies": {
         "@google-cloud/discoveryengine": "^2.7.0",
-        "@google-cloud/firestore": "^8.6.0",
         "beautiful-mermaid": "^1.1.3",
         "playwright": "^1.61.1",
       },
@@ -104,6 +103,7 @@
         "@ge/std": "workspace:*",
         "@ge/synthkit": "workspace:*",
         "better-sqlite3": "^12.9.0",
+        "hono": "^4.12.27",
         "yaml": "^2.9.0",
       },
       "devDependencies": {
@@ -204,6 +204,9 @@
     "packages/run-ledger": {
       "name": "@ge/run-ledger",
       "version": "0.1.0",
+      "optionalDependencies": {
+        "@google-cloud/firestore": "^8.6.0",
+      },
     },
     "packages/runtime": {
       "name": "@ge/runtime",
