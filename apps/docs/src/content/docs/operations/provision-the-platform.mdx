@@ -12,7 +12,7 @@ import { Badge, Steps } from '@astrojs/starlight/components';
 ## Goal
 
 Stand up the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> the remote factory needs — the factory/runtime plane,
-the data plane, and the tool (MCP) plane — and drive them to readiness with the
+the data plane, and the tool (Model Context Protocol, MCP) plane — and drive them to readiness with the
 <a href="/ge-agent-factory/reference/glossary/#doctor" title="The health-check family: a set of read-only, actionable pass/fail checks over the toolchain and the three planes.">doctor</a>. Or use the guided self-service installer for a turnkey deploy.
 
 <p align="center">
@@ -48,7 +48,7 @@ the data plane, and the tool (MCP) plane — and drive them to readiness with th
    Or do all of toolchain + `ge init` + `ge up` in one shot:
 
    ```bash
-   mise run bootstrap            # add CANARY=1 to also build one agent end-to-end
+   mise run bootstrap-cloud      # add CANARY=1 to also build one agent end-to-end
    ```
 
 2. **Stand up the data plane** (GCS / BigQuery / AlloyDB / Bigtable / Firestore):
@@ -123,7 +123,7 @@ same command.
 ## Troubleshoot
 
 - **`Set GEMINI_ENTERPRISE_APP_ID first`** — export it (or have a `.ge.json`)
-  before `mise run bootstrap` / `ge up`.
+  before `mise run bootstrap-cloud` / `ge up`.
 - **`gcloud not found`** — install the Cloud SDK and `gcloud auth login`.
 - **`Error 409: Already Exists` (Firestore)** — the project already has a default
   database; use a fresh project (Firestore can't be deleted in-place).
