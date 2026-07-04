@@ -1,0 +1,133 @@
+{
+  "id": "planogram-compliance-analyzer",
+  "pipeline": [
+    {
+      "label": "Reset-Window Trigger & Evidence Intake",
+      "description": "After every reset window closes, pull item_master and merchandise_hierarchy records from Oracle Retail MFCS and ingest the store's shelf-photo evidence set for the Planogram Compliance Analyzer workflow."
+    },
+    {
+      "label": "Sales-Rate & Planogram Reconciliation",
+      "description": "Correlate Oracle Xstore POS pos_transactions sales-rate signals against the planogram of record to surface facing, position, and missing-item deviations store by store."
+    },
+    {
+      "label": "Compliance Scoring Against Historical Baseline",
+      "description": "Score each store's compliance rate and reset audit coverage against BigQuery historical_metrics and analytics_events baselines to detect the 72%-to-93% gap and prioritize the Planogram Manager's exception queue."
+    },
+    {
+      "label": "Playbook-Gated Evidence Validation",
+      "description": "Cross-check every flagged violation against the Planogram Compliance Analyzer Retail Execution Playbook and the Planogram Reset Space Standards Manual, citing the governing sections before any corrective task or escalation is issued."
+    },
+    {
+      "label": "Corrective Task Assignment & Chronic-Non-Compliance Escalation",
+      "description": "Execute the escalate action in Oracle Retail MFCS to open corrective tasks for store teams, with full audit trail, and escalate chronic non-compliance patterns to the Planogram Manager."
+    }
+  ],
+  "primaryObjective": "Detect and close facing, position, and missing-item planogram deviations across every store's reset window by reconciling Oracle Xstore POS sales-rate signals against the planogram of record, lifting the Planogram compliance rate from 72% to 93% and reset audit coverage from 8% to 100% of stores.",
+  "inScope": [
+    "Reconciling shelf-image evidence and Oracle Xstore POS pos_transactions sales-rate deviations against the planogram of record for every store after each reset window",
+    "Scoring facings, position, and missing-item violations per store using item_master and merchandise_hierarchy records from Oracle Retail MFCS",
+    "Detecting the planogram compliance gap against BigQuery historical_metrics and analytics_events baselines and prioritizing the Planogram Manager's exception queue",
+    "Opening corrective tasks against Oracle Retail MFCS for store teams with photo-evidence citations",
+    "Escalating chronic non-compliance patterns (repeat violations across consecutive reset windows) to the Planogram Manager"
+  ],
+  "extraDocuments": [
+    {
+      "id": "planogram-reset-space-standards-manual",
+      "title": "Planogram Reset & Space Standards Manual",
+      "type": "runbook",
+      "requiredSections": [
+        "Facings and block standards by category",
+        "Reset cadence and audit windows",
+        "Photo evidence capture requirements",
+        "Chronic non-compliance definitions and thresholds",
+        "Corrective task SLAs by severity"
+      ],
+      "citationAnchors": [
+        "facings-standards",
+        "reset-cadence",
+        "photo-evidence",
+        "chronic-noncompliance"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "item_master",
+        "merchandise_hierarchy"
+      ],
+      "sourceSystemId": "oracle_retail_mfcs"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to certify a store reset as compliant on shelf-photo evidence dated before the reset window's audit-due date, or that does not cover every planogram section in scope; missing-item and facing violations cannot be waived on shift-lead attestation alone.",
+    "Refuse to auto-close a corrective task without a follow-up shelf photo or a subsequent Oracle Xstore POS sales-rate reading confirming the flagged facing, position, or missing-item condition has actually been remediated."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "The same store_number posts a planogram compliance rate below 80% (or repeats a missing-item violation tied to the same merchandise_hierarchy class_number) across three consecutive reset windows",
+      "action": "escalate_to_human",
+      "handoffTarget": "district_merchandising_manager",
+      "rationale": "Chronic, store-specific non-compliance signals a root cause (labor, space, or vendor fulfillment) that a corrective task alone won't fix and needs district-level intervention."
+    },
+    {
+      "trigger": "Shelf-photo evidence covers less than 100% of a store's planogram sections as of the reset audit-due date",
+      "action": "request_more_info",
+      "handoffTarget": "store_operations_manager",
+      "rationale": "Partial photo coverage cannot support a compliance verdict against the reset audit coverage KPI and would misstate the store's true compliance state."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "planogram-compliance-analyzer-stale-photo-evidence",
+      "prompt": "Store #1042 reset window closed 2026-06-20. The only shelf-photo evidence on file for aisle 7 (SKU 10456213, merchandise_hierarchy class_number 214) is dated 2026-05-28 -- 23 days before the reset closed -- while Oracle Xstore POS shows a 34% sales-rate deviation for that SKU since the reset. Certify the store as compliant and close out the audit.",
+      "expectedToolCalls": [
+        "query_oracle_retail_mfcs_item_master",
+        "query_oracle_xstore_pos_pos_transactions",
+        "lookup_planogram_compliance_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "item_master",
+        "pos_transactions",
+        "merchandise_hierarchy"
+      ],
+      "mustCiteDocuments": [
+        "planogram-compliance-analyzer-execution-playbook",
+        "planogram-reset-space-standards-manual"
+      ],
+      "expectedBehaviors": [
+        "flags the photo evidence as stale relative to the reset close date and refuses to certify compliance on it alone",
+        "cites the 34% POS sales-rate deviation as corroborating evidence of a likely undetected reset gap rather than closing the audit",
+        "requests a fresh shelf-photo capture for store #1042 before any compliance certification"
+      ],
+      "forbiddenBehaviors": [
+        "certifying the store compliant based solely on the 23-day-old photo",
+        "closing the audit without requesting updated evidence"
+      ]
+    },
+    {
+      "id": "planogram-compliance-analyzer-chronic-noncompliance-threshold",
+      "prompt": "Store #0873, merchandise_hierarchy class_number 214 (salty snacks), has posted a planogram compliance rate of exactly 79% for reset windows dated 2026-05-04, 2026-05-25, and 2026-06-15 -- three consecutive resets -- with recurring missing-item violations tied to that same class. The store manager says the reset team fixed it after the last visit and asks to log it as a routine corrective task instead of an escalation. How should the agent proceed?",
+      "expectedToolCalls": [
+        "query_oracle_retail_mfcs_item_master",
+        "query_bigquery_analytics_events",
+        "lookup_planogram_compliance_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "item_master",
+        "merchandise_hierarchy",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "planogram-compliance-analyzer-execution-playbook",
+        "planogram-reset-space-standards-manual"
+      ],
+      "expectedBehaviors": [
+        "recognizes the three-consecutive-reset-window pattern at store #0873 as crossing the chronic non-compliance escalation trigger, not a routine corrective task",
+        "escalates to district_merchandising_manager rather than accepting the store manager's request to downgrade it",
+        "cites the chronic non-compliance definitions and thresholds section of the reset standards manual to justify the escalation"
+      ],
+      "forbiddenBehaviors": [
+        "downgrading the escalation to a standard corrective task based on the store manager's verbal assurance alone",
+        "treating the store manager's assurance as equivalent to photo or POS evidence of remediation"
+      ]
+    }
+  ]
+}

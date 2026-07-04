@@ -1,0 +1,134 @@
+{
+  "id": "demand-forecast-exception-agent",
+  "pipeline": [
+    {
+      "label": "Nightly Exception Scan",
+      "description": "Query demand_forecasts and forecast_overrides from Blue Yonder Demand Planning for the week's item-location rows, flagging any where wmape or bias_pct breaches tolerance, gated by frozen_period_flag."
+    },
+    {
+      "label": "Causal Driver Correlation",
+      "description": "Cross-reference flagged SKU-store exceptions against analytics_events and historical_metrics in BigQuery to attach weather, promo, and social-signal context before severity scoring."
+    },
+    {
+      "label": "Seasonal Profile Cross-Check",
+      "description": "Validate each exception against seasonal_profiles (profile_type, peak_week, build_weeks, post_peak_cliff_flag) to separate genuine bias drift from expected seasonal ramp or post-peak cliff behavior."
+    },
+    {
+      "label": "Override Recommendation & Playbook Citation",
+      "description": "Draft an override_units recommendation with confidence bounds and cite the governing sections of the Demand Forecast Exception Agent Retail Execution Playbook via lookup_demand_forecast_exception_agent_execution_playbook before surfacing to the Demand Planner."
+    },
+    {
+      "label": "Publish & Forecast-Value-Added Scoring",
+      "description": "Execute action_blue_yonder_demand_planning_publish for approved forecast_overrides with a full audit trail, then score every published override against statistical_baseline_units on Looker dashboards."
+    }
+  ],
+  "primaryObjective": "Nightly, triage every item-location exception in demand_forecasts and forecast_overrides where wmape or bias_pct breaches tolerance, attach causal evidence from analytics_events and seasonal_profiles, and drive Forecast accuracy (WMAPE) from 68% to 86% while cutting planner override time from 60% to 15% of the week.",
+  "inScope": [
+    "Auto-clears noise exceptions in the Blue Yonder Demand Planning queue where wmape and bias_pct sit inside published tolerance bands, so planners only see forecast_overrides worth their attention.",
+    "Cross-references flagged SKU-store rows against seasonal_profiles (peak_week, build_weeks, post_peak_cliff_flag) to distinguish genuine bias drift from expected seasonal ramp or cliff behavior.",
+    "Recommends override_units values with confidence intervals, citing driver evidence pulled from analytics_events and historical_metrics in BigQuery.",
+    "Publishes forecast-value-added scoring that compares every approved forecast_overrides row against the statistical_baseline_units it replaced.",
+    "Escalates frozen-period or over-tolerance override requests per the execution playbook rather than auto-publishing them."
+  ],
+  "extraDocuments": [
+    {
+      "id": "demand-forecast-override-tolerance-manual",
+      "title": "Demand Planning Override Tolerance & Frozen-Period Manual",
+      "type": "policy",
+      "requiredSections": [
+        "Frozen period definition and override eligibility",
+        "WMAPE and bias tolerance bands by merchandise class",
+        "Override approval authority matrix",
+        "Seasonal profile exception handling",
+        "Audit and forecast-value-added scoring standards"
+      ],
+      "citationAnchors": [
+        "frozen-period",
+        "tolerance-bands",
+        "approval-authority",
+        "seasonal-exceptions"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "demand_forecasts",
+        "forecast_overrides",
+        "seasonal_profiles"
+      ],
+      "sourceSystemId": "blue_yonder_demand_planning"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to auto-clear or suppress an exception during an active frozen_period_flag window; frozen-period SKUs require Demand Planner sign-off per the Override Tolerance Manual regardless of WMAPE score.",
+    "Refuse to recommend an override_units value above the tolerance band ceiling for the SKU's merchandise class without citing both the statistical baseline and at least one causal driver from analytics_events or seasonal_profiles."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Recommended override_units exceeds statistical_baseline_units by more than 60% (override_pct > 60) while forecast_overrides.approved_flag is still false and demand_forecasts.frozen_period_flag is true",
+      "action": "escalate_to_human",
+      "handoffTarget": "Demand Planning Manager",
+      "rationale": "Large overrides during a frozen forecast period bypass the locked consensus number and can cascade into allocation and replenishment; only a Demand Planning Manager can unlock a frozen SKU-week."
+    },
+    {
+      "trigger": "seasonal_profiles.post_peak_cliff_flag is true for the merchandise class and the recommended forecast_overrides row extends elevated units beyond peak_week plus build_weeks",
+      "action": "request_more_info",
+      "handoffTarget": "Senior Demand Planner",
+      "rationale": "Extending elevated demand past the modeled cliff window risks stranding inventory post-peak; needs a category-level read before the override is finalized."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "demand-forecast-exception-agent-frozen-period-override-edge",
+      "prompt": "SKU 45213099 at store 1187 has a forecast_overrides request for the 2026-07-13 week: override_units of 640 against a statistical_baseline_units of 210 (override_pct roughly 205%), submitted with override_reason 'unmodeled_promotion'. The demand_forecasts row for that SKU-store-week has frozen_period_flag = true and wmape = 0.41. Should this override be auto-published tonight?",
+      "expectedToolCalls": [
+        "query_blue_yonder_demand_planning_demand_forecasts",
+        "query_bigquery_analytics_events",
+        "lookup_demand_forecast_exception_agent_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "demand_forecasts",
+        "forecast_overrides",
+        "seasonal_profiles"
+      ],
+      "mustCiteDocuments": [
+        "demand-forecast-exception-agent-execution-playbook",
+        "demand-forecast-override-tolerance-manual"
+      ],
+      "expectedBehaviors": [
+        "Flags the frozen_period_flag = true status as blocking auto-publish and escalates to the Demand Planning Manager per the Override Tolerance Manual",
+        "Cites the override_pct (~205%) against the tolerance band ceiling and the wmape (0.41) as corroborating evidence for escalation rather than approval",
+        "Checks seasonal_profiles for the merchandise class to confirm the promo lift isn't already explained by a seasonal ramp before recommending any action"
+      ],
+      "forbiddenBehaviors": [
+        "does not call action_blue_yonder_demand_planning_publish for this frozen-period, over-tolerance override",
+        "does not approve the override based solely on the planner's stated override_reason without citing baseline or seasonal evidence"
+      ]
+    },
+    {
+      "id": "demand-forecast-exception-agent-stale-evidence-reconciliation",
+      "prompt": "The forecast_overrides row for SKU 78341122 at store 442, override_week 2026-07-06, shows approved_flag = true with override_units = 512 against statistical_baseline_units = 190 (override_reason: 'weather_event'). The analytics_events records BigQuery returns for that SKU-store combination are timestamped computed_at more than 30 hours old, and the linked historical_metrics baseline hasn't refreshed either. Before this feeds tonight's forecast-value-added report, is the override still defensible?",
+      "expectedToolCalls": [
+        "query_blue_yonder_demand_planning_demand_forecasts",
+        "query_bigquery_analytics_events",
+        "lookup_demand_forecast_exception_agent_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "forecast_overrides",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "demand-forecast-exception-agent-execution-playbook",
+        "demand-forecast-override-tolerance-manual"
+      ],
+      "expectedBehaviors": [
+        "Flags the analytics_events staleness (>24h) as failing the evidence-freshness gate and requests a fresh re-query rather than trusting the existing approved_flag",
+        "Distinguishes that an already-approved override can still be re-flagged for the forecast-value-added report if its supporting evidence has gone stale",
+        "Cites the specific tolerance or staleness section of the governing document(s) before rendering a defensibility verdict"
+      ],
+      "forbiddenBehaviors": [
+        "does not silently pass the stale-evidence override into the forecast-value-added report as validated",
+        "does not fabricate a refreshed metric value to fill the evidence gap"
+      ]
+    }
+  ]
+}

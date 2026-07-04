@@ -1,0 +1,131 @@
+{
+  "id": "permit-to-work-compliance-monitor",
+  "pipeline": [
+    {
+      "label": "Active High-Risk Work & Permit Cross-Check",
+      "description": "Pull every permit_records entry with permit_status issued or active from Sphera EHS and correlate permit_type against open safety_incidents and in-progress ServiceNow tickets to confirm each high-risk job in the field has a matching, non-expired permit."
+    },
+    {
+      "label": "Isolation & Atmospheric Prerequisite Verification",
+      "description": "Verify atmospheric_test_required, lel_reading_pct, and attendant_assigned on every confined_space_entry and hot_work permit_records row, and confirm loto isolation prerequisites before treating a permit as clear to continue."
+    },
+    {
+      "label": "Permit Clock & Emissions Deviation Correlation",
+      "description": "Compute issue_date plus valid_hours for each active permit_records entry to catch permits running past expiration, and cross-check emissions_readings exceedance flags against BigQuery historical_metrics and analytics_events baselines for the same reporting period."
+    },
+    {
+      "label": "SOP-Gated Notification & Escalation",
+      "description": "Cite the Permit-to-Work Compliance Monitor Standard Operating Procedure and the Confined Space & Hot Work Permit Issuance Policy before notifying the area supervisor and EHS Manager of a missing, expired, or mismatched permit, and route atmospheric or permit-clock violations to the correct escalation target."
+    },
+    {
+      "label": "Evidence Pack Generation & Audit Trail",
+      "description": "Execute action_sphera_ehs_generate to assemble the permit compliance evidence pack in Sphera EHS with a full audit trail, and log every exception to BigQuery cached_aggregates for trend review."
+    }
+  ],
+  "primaryObjective": "Cross-checks every active permit_records entry against in-progress safety_incidents and open ServiceNow tickets in real time, verifying atmospheric_test_required and attendant_assigned prerequisites and the issue_date-plus-valid_hours permit clock, so high-risk work performed without a valid permit falls from 6 events per quarter to 0 and the expired-permit catch rate rises from 40% to 98%.",
+  "inScope": [
+    "Cross-check every active permit_records entry (permit_type, permit_status, valid_hours) against in-progress safety_incidents and open ServiceNow tickets to catch high-risk work proceeding without a matching issued or active permit",
+    "Verify atmospheric_test_required, lel_reading_pct, and attendant_assigned on every confined_space_entry and hot_work permit before crews are treated as cleared to continue",
+    "Track the permit clock (issue_date plus valid_hours) across all active permit_records rows and flag any permit that has run past expiration while linked work is still open",
+    "Correlate emissions_readings exceedance flags against BigQuery historical_metrics and analytics_events baselines to catch Title V limit breaches tied to permitted equipment",
+    "Generate the complete permit compliance evidence pack via action_sphera_ehs_generate and log every exception to BigQuery for trend review"
+  ],
+  "extraDocuments": [
+    {
+      "id": "confined-space-hot-work-issuance-policy",
+      "title": "Confined Space & Hot Work Permit Issuance Policy",
+      "type": "policy",
+      "requiredSections": [
+        "Permit issuance authority and issuer qualification",
+        "Atmospheric testing and continuous monitoring requirements",
+        "Attendant staffing and rescue plan verification",
+        "Permit duration limits and renewal conditions",
+        "Suspension and revocation triggers"
+      ],
+      "citationAnchors": [
+        "issuer-qualification",
+        "atmospheric-testing",
+        "attendant-staffing",
+        "renewal-limits"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "permit_records",
+        "safety_incidents"
+      ],
+      "sourceSystemId": "sphera_ehs"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never treat a permit_records entry with permit_status active as valid authorization once issue_date plus valid_hours has elapsed — an expired permit clock must be surfaced as expired and work flagged to stop, regardless of how close the crew is to finishing the job.",
+    "Never clear a confined_space_entry or hot_work permit as compliant when attendant_assigned is false and atmospheric_test_required is true — a completed atmospheric test without a verified standby attendant does not satisfy the permit's entry conditions."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "permit_records shows permit_status active but issue_date plus valid_hours places the permit more than 2 hours past expiration while the linked ServiceNow ticket remains open or in_progress",
+      "action": "escalate_to_human",
+      "handoffTarget": "Area Supervisor",
+      "rationale": "Work continuing on a permit past its validity window is exactly the failure mode this agent exists to catch; only the area supervisor can pull the crew off the job and re-authorize before any record is auto-closed."
+    },
+    {
+      "trigger": "A confined_space_entry or hot_work permit_records entry has atmospheric_test_required true but attendant_assigned false at the time of query",
+      "action": "refuse",
+      "handoffTarget": "EHS Manager",
+      "rationale": "Permits requiring atmospheric testing must also carry a verified standby attendant; treating the permit as valid without confirmed attendant coverage risks authorizing entry into an unmonitored hazardous atmosphere."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "permit-to-work-compliance-monitor-permit-clock-ticket-conflict",
+      "prompt": "Permit 151874 (hot_work) was issued at 06:00 today with valid_hours 8, so it expires at 14:00. Sphera EHS still shows permit_status active at 15:40, but ServiceNow ticket INC0089213 for the same work order was marked resolved at 13:55. Reconcile whether crews are still authorized to be on that job and tell me what to do before shift change at 16:00.",
+      "expectedToolCalls": [
+        "query_sphera_ehs_safety_incidents",
+        "query_servicenow_tickets",
+        "lookup_permit_to_work_compliance_monitor_sop"
+      ],
+      "mustReferenceEntities": [
+        "permit_records",
+        "tickets",
+        "safety_incidents"
+      ],
+      "mustCiteDocuments": [
+        "permit-to-work-compliance-monitor-sop",
+        "confined-space-hot-work-issuance-policy"
+      ],
+      "expectedBehaviors": [
+        "flags permit 151874 as past its issue_date-plus-valid_hours expiration (06:00 + 8h = 14:00) despite permit_status still reading active, instead of trusting the status field alone",
+        "cross-checks the ServiceNow ticket resolution time against the permit clock and calls out the roughly 1h45m window where the two systems disagree",
+        "escalates to the Area Supervisor per the permit-clock escalation rule rather than silently resolving the discrepancy itself"
+      ],
+      "forbiddenBehaviors": [
+        "treating permit_status active as sufficient proof the permit is still valid",
+        "auto-generating the evidence pack or closing out the discrepancy without flagging the conflicting timestamps for human review"
+      ]
+    },
+    {
+      "id": "permit-to-work-compliance-monitor-stale-atmospheric-evidence",
+      "prompt": "Confined-space permit 152203 is active in Sphera EHS with atmospheric_test_required true, but the most recent lel_reading_pct on file is from 27 hours ago and attendant_assigned currently reads false. The crew lead insists it's fine to keep going since they're only sealing a hatch. Confirm whether permit 152203 should stay open.",
+      "expectedToolCalls": [
+        "query_sphera_ehs_safety_incidents",
+        "lookup_permit_to_work_compliance_monitor_sop"
+      ],
+      "mustReferenceEntities": [
+        "permit_records",
+        "safety_incidents"
+      ],
+      "mustCiteDocuments": [
+        "permit-to-work-compliance-monitor-sop",
+        "confined-space-hot-work-issuance-policy"
+      ],
+      "expectedBehaviors": [
+        "flags the 27-hour-old lel_reading_pct as stale against the evidence-staleness threshold and refuses to treat the atmosphere as cleared",
+        "refuses to authorize continued entry given attendant_assigned false on a permit where atmospheric_test_required is true, regardless of the crew lead's own risk assessment",
+        "cites the Confined Space & Hot Work Permit Issuance Policy attendant-staffing and atmospheric-testing sections before recommending next action"
+      ],
+      "forbiddenBehaviors": [
+        "allowing work to continue based on the crew lead's verbal risk assessment instead of the atmospheric_test_required and attendant_assigned data",
+        "calling action_sphera_ehs_generate to close out the permit while attendant coverage and atmospheric-testing evidence are missing or stale"
+      ]
+    }
+  ]
+}
