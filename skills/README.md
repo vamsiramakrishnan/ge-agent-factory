@@ -10,8 +10,8 @@ Each skill is a directory with a `SKILL.md` (+ optional `references/`, `scripts/
 
 - **Station skills** own one assembly-line station: `interviewing-specs`,
   `planning-missions`, `running-factory`, `building-simulators`, `checking-workspaces`,
-  `running-release`, `driving-live-proof`, `operating-console`, `recording-evidence`,
-  `navigating-factory-line`.
+  `running-release`, `admitting-agents`, `driving-live-proof`, `operating-console`,
+  `recording-evidence`, `navigating-factory-line`.
 - **Operator skills** sit on top and run the *operator's* job end to end:
   `installing-the-factory` (the bootstrap: bare machine → verified install —
   self-contained, so an assistant holding only that skill can install
@@ -38,6 +38,7 @@ registry, so the table cannot drift from those sources:
 | [`building-simulators`](building-simulators/) | `simulator_build` | `ge data synth`, `ge pipeline run`, `ge daemon start` | [`@ge/synthkit`](../packages/synthkit/) | [`synthetic-data.md`](../docs/reference/synthetic-data.md), [`simulator-systems.md`](../docs/reference/simulator-systems.md) |
 | [`checking-workspaces`](checking-workspaces/) | `workspace_check` | — | [`@ge/agent-workspace`](../packages/agent-workspace/) | — |
 | [`running-release`](running-release/) | `release_run` | `ge handoff`, `ge agents status`, `ge agents logs` | — | — |
+| [`admitting-agents`](admitting-agents/) | `release_admission` | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../packages/admission/) | [`admission.md`](../docs/reference/admission.md), [`admit-an-agent.md`](../docs/cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../docs/concepts/agent-passport-and-proof-pack.md) |
 | [`driving-live-proof`](driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../packages/evalkit/) | [`evaluation-generation.md`](../docs/reference/evaluation-generation.md), [`metric-applicability.md`](../docs/reference/metric-applicability.md), [`live-transcript.md`](../docs/reference/live-transcript.md), [`live-budgets.md`](../docs/reference/live-budgets.md) |
 | [`operating-console`](operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](../docs/reference/console-and-apis.md) |
 | [`recording-evidence`](recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../packages/run-ledger/) | — |
@@ -49,7 +50,6 @@ registry, so the table cannot drift from those sources:
 | [`triaging-runs`](triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../packages/okf/) | [`okf.md`](../docs/reference/okf.md), [`agent-lifecycle.md`](../docs/reference/agent-lifecycle.md) |
-| [`admitting-agents`](admitting-agents/) | — | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../packages/admission/) | [`admit-an-agent.md`](../docs/cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../docs/concepts/agent-passport-and-proof-pack.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ## Composition

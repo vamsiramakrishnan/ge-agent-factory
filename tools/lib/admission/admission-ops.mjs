@@ -15,7 +15,7 @@
 // on failure; rendering belongs to the ge.mjs boundary.
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { readJson } from "@ge/std/json-io";
+import { readJson, writeJson } from "@ge/std/json-io";
 import { ARTIFACT_PATHS, WORKSPACE_PATHS, workspacePath } from "@ge/agent-workspace";
 import {
   DEFAULT_ADMISSION_POLICY,
@@ -125,8 +125,7 @@ function subjectDigests(dir) {
 
 function writeWorkspaceJsonSync(dir, relPath, value) {
   const path = workspacePath(dir, relPath);
-  mkdirSync(join(dir, "artifacts"), { recursive: true });
-  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  writeJson(path, value); // atomic (temp + rename) — a crash mid-write never leaves a torn passport/decision
   return path;
 }
 

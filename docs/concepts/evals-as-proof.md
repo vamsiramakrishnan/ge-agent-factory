@@ -83,7 +83,12 @@ using it is a visible, deliberate act.
 
 The gate's output — the **promotion packet** — is the core of the
 [proof pack](./agent-passport-and-proof-pack.html) that travels with the
-agent at handoff.
+agent at handoff. It can also travel *verifiably*: `ge passport emit` signs
+the packet into the workspace's Agent Passport, and the
+[admission gate](../reference/admission.html) at `ge handoff` re-checks that
+evidence — signatures, digest bindings, freshness — as a recorded allow/deny
+decision, so the proof is checkable at the release boundary instead of
+trusted (see [Admit an agent](../cookbooks/admit-an-agent.html)).
 
 ## Repair, not resignation
 

@@ -1,7 +1,7 @@
 ---
 title: Bench against live budgets
 parent: Guides
-nav_order: 14
+nav_order: 15
 layout: default
 description: Load the deployed assist surface within hard cost guards and verdict the latency/error budgets — ge bench with .ge.json live.budgets, cassette replay for CI, and the k6 export.
 ---
