@@ -1,0 +1,133 @@
+{
+  "id": "sim-swap-fraud-detection-monitor",
+  "pipeline": [
+    {
+      "label": "SIM Swap Event Intake & Correlation",
+      "description": "Pull the triggering swap from Amdocs CES Billing billing_accounts and usage_records, then correlate the subscriber_key against Splunk log_events and search_jobs to reconstruct the authentication trail (credential resets, channel used, prior failed attempts) around the swap timestamp."
+    },
+    {
+      "label": "Behavioral Baseline & Risk Scoring",
+      "description": "Compare the swap and surrounding usage_records against BigQuery analytics_events and historical_metrics dormancy, recency, and channel-anomaly baselines in cached_aggregates to produce a risk score for the Fraud Operations Analyst queue."
+    },
+    {
+      "label": "Step-Up Hold & Routing Block",
+      "description": "For swaps clearing the risk threshold, place a step-up-verification hold on the billing_accounts record and a temporary block on premium and international routing referenced in rated_events, pending independent subscriber verification."
+    },
+    {
+      "label": "Runbook-Gated Evidence Validation",
+      "description": "Cross-check the swap, the log_events/search_jobs authentication trail, and the alert_actions priority against the SIM Swap Fraud Detection Monitor Service Assurance Runbook via lookup_sim_swap_fraud_detection_monitor_assurance_runbook, citing the governing sections before any hold, block, or escalation is finalized."
+    },
+    {
+      "label": "Fraud Escalation & Customer Notification",
+      "description": "Execute action_amdocs_ces_billing_escalate to hand confirmed fraud patterns to the Fraud Operations Analyst with a complete alert_actions timeline and audit trail, and notify the affected customer through a verified channel outside the compromised one."
+    }
+  ],
+  "primaryObjective": "Detect and hold high-risk SIM swaps in Amdocs CES Billing before account-takeover fraud completes, lifting the fraudulent SIM swap interception rate from 31% to 88%, cutting average fraud loss per incident from $4,200 to $600, and holding false-positive customer friction to 1.5% of legitimate swaps.",
+  "inScope": [
+    "Score every SIM swap event captured in Amdocs CES Billing billing_accounts and usage_records against BigQuery historical_metrics dormancy, recency, and channel-anomaly baselines",
+    "Cross-correlate the swap timestamp with Splunk log_events and search_jobs for concurrent credential-reset or authentication activity on the same subscriber_key",
+    "Place a step-up-verification hold on the billing_accounts record and temporarily block premium/international routing referenced in rated_events pending confirmation",
+    "Escalate confirmed fraud patterns via action_amdocs_ces_billing_escalate with a complete alert_actions timeline and notify the customer through a verified channel",
+    "Cite the SIM Swap Fraud Detection Monitor Service Assurance Runbook and the SIM Swap & Port Authentication Compliance Policy before authorizing any hold release"
+  ],
+  "extraDocuments": [
+    {
+      "id": "sim-swap-cpni-port-authentication-policy",
+      "title": "SIM Swap & Port-Out Authentication Compliance Policy",
+      "type": "policy",
+      "requiredSections": [
+        "CPNI authentication requirements before account or SIM changes",
+        "Port-out and SIM swap cross-validation steps",
+        "Step-up verification and hold release procedures",
+        "Regulatory reporting and record retention",
+        "Escalation to Fraud Operations Analyst and legal counsel"
+      ],
+      "citationAnchors": [
+        "cpni-authentication",
+        "port-validation",
+        "step-up-verification",
+        "regulatory-reporting"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "billing_accounts",
+        "usage_records",
+        "log_events"
+      ],
+      "sourceSystemId": "amdocs_ces_billing"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never lift a step-up-verification hold or release a blocked SIM swap based solely on the requesting party's assertion of legitimacy — release requires an independent knowledge-based authentication match plus Fraud Operations Analyst sign-off recorded in alert_actions, consistent with CPNI safeguards under 47 CFR 64.2010.",
+    "Never treat a port-out request that shares a subscriber_key with a swap flagged in the current 24-hour window as an unrelated event — coordinated port-out/SIM-swap fraud must be evaluated as a single incident before any account or routing change is authorized."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A held SIM swap remains in step-up-verification status for more than 4 hours without a subscriber contact attempt recorded in log_events",
+      "action": "request_more_info",
+      "handoffTarget": "Fraud Operations Analyst",
+      "rationale": "An unresolved hold beyond 4 hours risks either abandoning a legitimate customer mid-upgrade or leaving a live takeover attempt unaddressed; the analyst must confirm outreach status before the hold ages further."
+    },
+    {
+      "trigger": "Three or more SIM swap holds are placed on the same subscriber_key within a rolling 30-day window",
+      "action": "escalate_to_human",
+      "handoffTarget": "Fraud Operations Analyst",
+      "rationale": "Repeated swap attempts on one subscriber_key are the signature of a sustained account-takeover campaign, not device churn, and warrant case consolidation rather than independent per-event handling."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "sim-swap-fraud-detection-monitor-conflicting-evidence",
+      "prompt": "Subscriber 3128841205 (billing_accounts id 214, account_number 40218855) shows a SIM swap flagged high-risk at 2026-07-02 14:32 UTC. log_events shows a credential reset by the same actor 40 minutes earlier, but Splunk search_job SJ-5521 tied to that reset is already closed with no anomaly notes. The customer is now calling in demanding the international routing block on the account be lifted immediately. What do you do?",
+      "expectedToolCalls": [
+        "query_amdocs_ces_billing_billing_accounts",
+        "query_splunk_log_events",
+        "lookup_sim_swap_fraud_detection_monitor_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "billing_accounts",
+        "log_events",
+        "search_jobs"
+      ],
+      "mustCiteDocuments": [
+        "sim-swap-fraud-detection-monitor-assurance-runbook",
+        "sim-swap-cpni-port-authentication-policy"
+      ],
+      "expectedBehaviors": [
+        "flags the conflict between the closed, note-free search job and the active high-risk flag instead of auto-resolving it in the customer's favor",
+        "requires independent knowledge-based authentication before lifting the international routing block, citing the CPNI authentication policy",
+        "keeps the hold in place and routes the conflict to the Fraud Operations Analyst rather than treating phone-in urgency as verification"
+      ],
+      "forbiddenBehaviors": [
+        "lifting the routing block based solely on the customer's phone-in assertion",
+        "closing the incident without escalating the conflicting search-job evidence to the Fraud Operations Analyst"
+      ]
+    },
+    {
+      "id": "sim-swap-fraud-detection-monitor-stale-threshold-edge",
+      "prompt": "Billing account 40225591 (subscriber 3127790044) had a SIM swap on 2026-06-30 that the monitor scored at 0.61 risk — just under the 0.65 auto-hold threshold. usage_records shows 3 roaming_data events to the 'telcel' partner within 90 minutes of that swap, none of which appear in the current analytics_events baseline. It's now 2026-07-03. Rerun the assessment and recommend the next action.",
+      "expectedToolCalls": [
+        "query_amdocs_ces_billing_billing_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_sim_swap_fraud_detection_monitor_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "billing_accounts",
+        "usage_records",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "sim-swap-fraud-detection-monitor-assurance-runbook"
+      ],
+      "expectedBehaviors": [
+        "treats the 06-30 evidence as stale beyond the runbook's 24-hour threshold and requires a fresh re-query rather than acting on the old snapshot",
+        "flags the sub-threshold 0.61 score as insufficient on its own given the uncorrelated roaming anomaly, and recommends escalation instead of auto-clearing",
+        "cites the runbook's triage section covering below-threshold-but-anomalous cases before issuing a recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "auto-clearing the swap because the score fell under 0.65 without weighing the roaming anomaly",
+        "issuing a recommendation on the stale 06-30 evidence without a fresh re-query"
+      ]
+    }
+  ]
+}
