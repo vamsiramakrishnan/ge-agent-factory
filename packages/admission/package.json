@@ -1,0 +1,19 @@
+{
+  "name": "@ge/admission",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Admission-control primitives for shipped agents: workspace/contract content digests, Ed25519-signed DSSE attestations over proof artifacts (in-toto statements), the consolidated Agent Passport document, and the admission policy evaluator that turns a passport into an allow/deny AdmissionDecision. Leaf package — node builtins only, no apps/* or tools/* imports.",
+  "scripts": {
+    "test": "bun test src"
+  },
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./digest": "./src/digest.mjs",
+    "./signer": "./src/signer.mjs",
+    "./attestation": "./src/attestation.mjs",
+    "./passport": "./src/passport.mjs",
+    "./policy": "./src/policy.mjs"
+  }
+}

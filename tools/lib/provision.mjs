@@ -30,6 +30,7 @@ import {
   workspaceStoreItems,
 } from "./local-workspaces.mjs";
 import { selectWorkspacesForRegen } from "./planes/tool-plane-checks.mjs";
+import { admitForHandoff } from "./admission/admission-ops.mjs";
 
 const noop = () => {};
 
@@ -475,7 +476,7 @@ export function createProvisionOps({
   // boundary (default load_data → deploy_runtime → register_tools → publish_enterprise),
   // consuming the prebuilt workspace instead of regenerating. Pairs with `ge agents
   // build --local` (build + validate on this machine).
-  async function handoff(cfg, { ids, startStage = "load_data", targetStage = "publish_enterprise", concurrency = "2", noProxy = false, log = noop } = {}) {
+  async function handoff(cfg, { ids, startStage = "load_data", targetStage = "publish_enterprise", concurrency = "2", noProxy = false, force = false, log = noop } = {}) {
     ensureGcloud();
     if (!cfg.project) throw new Error("No project. Run `ge init`.");
     if (!cfg.bucket) throw new Error("No artifact bucket in config.");
@@ -503,8 +504,29 @@ export function createProvisionOps({
       });
     }
 
+    // The admission gate (ADR: contractual checks as an admission controller).
+    // Every workspace gets a recorded decision before anything is uploaded;
+    // whether a denial refuses the release is the policy's call
+    // (.ge.json promotion.gates.admission.required — audit mode by default),
+    // and --force / GE_ADMISSION_BREAK_GLASS is the recorded break-glass.
+    const breakGlass = Boolean(force) || process.env.GE_ADMISSION_BREAK_GLASS === "1";
+    const denied = [];
+    const admitted = dirs.filter((id) => {
+      const { admit, decision } = admitForHandoff(id, { force: breakGlass, log });
+      if (!admit) denied.push({ id, ok: false, error: `admission denied: ${decision.blockers.map((b) => `${b.code || "?"} ${b.what}`).join("; ")}` });
+      return admit;
+    });
+    if (!admitted.length && denied.length) {
+      throw new DxError("admission gate denied every workspace in this handoff.", {
+        where: "gate: promotion.gates.admission",
+        why: denied[0].error,
+        fix: denied.length === 1 ? `ge passport admit ${denied[0].id}` : "ge passport admit <id>",
+      });
+    }
+    dirs = admitted;
+
     const conc = parseConcurrency(concurrency);
-    const results = [];
+    const results = [...denied];
     await withGateway(cfg, async (url, ctx = {}) => {
       await pool(dirs, conc, async (id) => {
         try {
@@ -543,7 +565,7 @@ export function createProvisionOps({
       targetStage,
       items: results.map((r) => ({ id: r.id, useCaseId: r.id, workspaceId: r.id, error: r.ok ? null : r.error })),
     }));
-    return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: dirs.length, startStage, targetStage, results };
+    return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: admitted.length + denied.length, startStage, targetStage, results };
   }
 
   return { provision, provisionLocal, setMode, firstProof, devexCheck, syncLocal, handoff };

@@ -31,6 +31,7 @@ import { bench } from "./ge/bench.mjs";
 import { evals } from "./ge/evals.mjs";
 import { prove } from "./ge/prove.mjs";
 import { handoff } from "./ge/handoff.mjs";
+import { passport } from "./ge/passport.mjs";
 import { renderRootUsage, renderCommandOrientation } from "./ge/help.mjs";
 import { devex } from "./ge/devex.mjs";
 import { infra } from "./ge/infra.mjs";
@@ -51,7 +52,7 @@ import { shouldPromptForInitProject, GE_INIT_NO_PROJECT_MESSAGE } from "./ge/ini
 // ── root: bare `ge` → the three-question board + next step ───────────────────
 // citty invokes the root `run` even when a subcommand matches, so only render the
 // board when the first positional is NOT one of our subcommands.
-const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "status", "drive", "bench", "evals", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply", "okf"]);
+const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "passport", "status", "drive", "bench", "evals", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply", "okf"]);
 
 // The board answers three questions before anything else: where am I on
 // capture → prove → handoff, what blocks me, and the exact next command.
@@ -130,6 +131,8 @@ const root = defineCommand({
     capture, prove, handoff, status,
     // live surfaces (drive/verify/load the shipped agent)
     drive, bench, evals,
+    // release admission (the passport + its gate)
+    passport,
     // lifecycle
     up, doctor, init, cutover, mode, devex, config,
     // the consolidated orchestration surface

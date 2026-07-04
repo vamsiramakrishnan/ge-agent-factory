@@ -1,6 +1,40 @@
 {
   "schemaVersion": 1,
   "skills": {
+    "admitting-agents": {
+      "triggers": [
+        "admission",
+        "admission gate",
+        "admission controller",
+        "agent passport",
+        "passport.emit",
+        "passport.admit",
+        "attestation",
+        "sign the proof",
+        "dsse",
+        "in-toto",
+        "break-glass",
+        "geadm",
+        "admission decision"
+      ],
+      "composes": [
+        "running-release",
+        "driving-live-proof"
+      ],
+      "commands": [
+        "passport.emit",
+        "passport.verify",
+        "passport.admit",
+        "handoff"
+      ],
+      "engines": [
+        "@ge/admission"
+      ],
+      "docs": [
+        "docs/cookbooks/admit-an-agent.md",
+        "docs/concepts/agent-passport-and-proof-pack.md"
+      ]
+    },
     "authoring-okf-specs": {
       "triggers": [
         "okf",

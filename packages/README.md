@@ -11,6 +11,7 @@ command → package — see the
 
 | Package | Docs | Status | Purpose |
 |---------|------|--------|---------|
+| [`admission`](admission) | [README.md](admission/README.md) | private | Admission-control primitives for shipped agents: workspace/contract content digests, Ed25519-signed DSSE attestations (in-toto) over the proof pack, the consolidated Agent Passport document, and the `evaluateAdmission()` policy evaluator behind `ge passport` and the handoff admission gate. Driven on the line by the [`admitting-agents`](../skills/admitting-agents/SKILL.md) skill. |
 | [`agent-resolver`](agent-resolver) | [AGENTS.md](agent-resolver/AGENTS.md) | private | Pure id-algebra for the deck↔console agent identity thread (`normalizeAgentId`, `candidateKeys`, `sameAgent`). |
 | [`agent-spec`](agent-spec) | [Spec schema (generated)](../docs/reference/spec-schema.md) | private | The agent-spec contract: zod schemas + inferred types for the generation spec, behavior contract, and normalized registry entry, plus the shipped imperative validators. Leaf package — no `apps/*` or `tools/*` imports. |
 | [`agent-workspace`](agent-workspace) | [README.md](agent-workspace/README.md) | private | Pure workspace contract helpers for generated GE agents. |

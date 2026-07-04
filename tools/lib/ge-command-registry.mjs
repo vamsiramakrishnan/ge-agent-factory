@@ -155,13 +155,14 @@ export const GE_COMMANDS = {
     },
     mcp: {
       tool: "factory_handoff",
-      description: "Mutating: hand proven, locally-built agents to a deploy target. 'agents-cli' is the supported target today (uploads the prebuilt workspaces, then runs deploy→register→publish remotely). An unsupported target returns a structured what/where/why/fix error, never a stack trace. Poll the resulting cloud run(s) with factory_status.",
+      description: "Mutating: hand proven, locally-built agents to a deploy target. 'agents-cli' is the supported target today (uploads the prebuilt workspaces, then runs deploy→register→publish remotely). Every workspace passes the admission gate first (a recorded decision over its signed Agent Passport; audit-mode by default, enforced when .ge.json promotion.gates.admission.required is true). An unsupported target returns a structured what/where/why/fix error, never a stack trace. Poll the resulting cloud run(s) with factory_status.",
       params: {
         target: { type: "string", enum: ["agents-cli"], optional: true, description: "Deploy target (default agents-cli)" },
         ids: { type: "string", optional: true, description: "Comma-separated local workspace ids" },
         startStage: { type: "string", optional: true },
         targetStage: { type: "string", optional: true },
         noProxy: { type: "boolean", optional: true },
+        force: { type: "boolean", optional: true, description: "Break-glass: release despite a denied admission decision (the override is recorded in the decision log)" },
       },
     },
     argv: (body = {}) => {
@@ -169,6 +170,88 @@ export const GE_COMMANDS = {
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.startStage) argv.push("--start-stage", String(body.startStage));
       if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
+      if (body.force) argv.push("--force");
+      return argv;
+    },
+  },
+  // ── release admission (the passport + its gate) ─────────────────────────────
+  // Contractual checks operationalized as an admission controller: the proof
+  // pack becomes a signed, digest-bound Agent Passport (emit), integrity is
+  // checkable offline (verify), and a recorded allow/deny decision gates the
+  // handoff (admit — the same evaluation `ge handoff` enforces). Engine:
+  // @ge/admission; operator wiring: tools/lib/admission/admission-ops.mjs.
+  "passport.emit": {
+    id: "passport.emit",
+    method: "POST",
+    path: "/api/ge/passport/emit",
+    cli: "ge passport emit",
+    label: "Emit the Agent Passport",
+    summary: "Mint the consolidated signed Agent Passport for a proven workspace: subject digests plus DSSE attestations over the proof pack",
+    guide: {
+      when: "local proof passed and the workspace should carry verifiable evidence to the admission gate — after ge prove, before ge handoff",
+      next: ["ge passport admit <id>", "ge handoff agents-cli"],
+    },
+    risk: "starts-local-workloads",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_passport_emit",
+      description: "Local, deterministic: mint the signed Agent Passport (artifacts/agent-passport.json) for one locally-built workspace. Computes the subject identity (sha256 over everything that ships, evidence excluded, plus the contract digest) and signs in-toto/DSSE attestations over the promotion packet (and the live proof result when one exists) with the local Ed25519 issuing key (.ge/keys/, generated on first use). Requires the workspace to have a promotion packet — run factory_prove first.",
+      params: {
+        id: { type: "string", description: "Local workspace id (or use-case id)" },
+      },
+    },
+    argv: (body = {}) => ["passport", "emit", String(body.id || ""), "--json"],
+  },
+  "passport.verify": {
+    id: "passport.verify",
+    method: "POST",
+    path: "/api/ge/passport/verify",
+    cli: "ge passport verify",
+    label: "Verify the Agent Passport",
+    summary: "Verify a passport's integrity: attestation signatures, and digest binding to the workspace bytes on disk",
+    risk: "read-only",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_passport_verify",
+      description: "Read-only: verify one workspace's Agent Passport offline — every DSSE attestation signature against the trusted key, and the subject binding (workspace digest + contract digest recomputed from the bytes on disk). A failed check means the evidence no longer describes this workspace (tampered, or changed since issuance) — re-prove and re-emit.",
+      params: {
+        id: { type: "string", description: "Local workspace id (or use-case id)" },
+      },
+    },
+    argv: (body = {}) => ["passport", "verify", String(body.id || ""), "--json"],
+  },
+  "passport.admit": {
+    id: "passport.admit",
+    method: "POST",
+    path: "/api/ge/passport/admit",
+    cli: "ge passport admit",
+    label: "Run the admission gate",
+    summary: "Evaluate the admission gate over the passport (policy: .ge.json promotion.gates.admission) and record the allow/deny decision",
+    guide: {
+      when: "before a release, or in CI — the same decision ge handoff enforces, runnable standalone; the decision is recorded either way",
+      next: ["ge handoff agents-cli"],
+    },
+    risk: "starts-local-workloads",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_passport_admit",
+      description: "Local: run the admission gate for one workspace and return the AdmissionDecision — verified passport + recomputed digests + policy (.ge.json promotion.gates.admission: required, maxAgeDays, requireLiveProof) → allowed true/false with stable GEADM001–GEADM008 blockers, each naming its fix command. The decision is recorded to the workspace's artifacts/admission-decision.json and the append-only .ge/admission/decisions.jsonl audit log. Audit-mode by default (required=false): denials are recorded, only a required gate refuses.",
+      params: {
+        id: { type: "string", description: "Local workspace id (or use-case id)" },
+        stage: { type: "string", optional: true, description: "Stage the decision is for (default handoff)" },
+        force: { type: "boolean", optional: true, description: "Break-glass: exit 0 despite a denial (recorded)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["passport", "admit", String(body.id || ""), "--json"];
+      if (body.stage) argv.push("--stage", String(body.stage));
+      if (body.force) argv.push("--force");
       return argv;
     },
   },

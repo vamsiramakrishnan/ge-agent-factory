@@ -172,6 +172,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`triaging-runs`](../../skills/triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](../../skills/guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](../../skills/authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../../packages/okf/) | [`okf.md`](okf.md), [`agent-lifecycle.md`](agent-lifecycle.md) |
+| [`admitting-agents`](../../skills/admitting-agents/) | — | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../../packages/admission/) | [`admit-an-agent.md`](../cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../concepts/agent-passport-and-proof-pack.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ---
