@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ge.manifest.json — ge apply desired state",
+  "description": "Generated from tools/lib/reconcile.mjs's normalizeManifest()/planReconcile() by tools/gen-manifest-schema.mjs — do not edit; run `bun run manifest:schema`. `ge apply` diffs this against actual platform/fleet state and plans the drift in dependency order (gateway -> data -> tool plane -> agents); `ge apply --yes` executes it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema (e.g. ./ge.manifest.schema.json)."
+    },
+    "_comment": {
+      "type": "string",
+      "description": "Free-text note for humans reading the manifest — ignored by ge apply."
+    },
+    "platform": {
+      "type": "object",
+      "description": "Platform planes to bring up, opt-in — declare what must be up before the fleet is provisioned.",
+      "additionalProperties": false,
+      "properties": {
+        "infra": {
+          "type": "boolean",
+          "description": "Factory/runtime plane (ge up --infra)."
+        },
+        "data": {
+          "type": "boolean",
+          "description": "Data plane: shared stores (ge data up)."
+        },
+        "mcp": {
+          "type": "boolean",
+          "description": "Tool plane: per-department MCP services (ge mcp deploy)."
+        }
+      }
+    },
+    "fleet": {
+      "type": "object",
+      "description": "Target stage and which agents to converge on it.",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "local",
+            "remote"
+          ],
+          "default": "local",
+          "description": "Build locally via the harness, or submit to the cloud factory."
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "created",
+            "validated",
+            "harness_reviewed",
+            "harness_refined",
+            "data_packaged",
+            "previewed",
+            "deploy_planned",
+            "deploying",
+            "deployed",
+            "registered",
+            "publish_planned",
+            "published"
+          ],
+          "default": "previewed",
+          "description": "Stage every selected agent should converge to (run-ledger's LEDGER_STAGES)."
+        },
+        "agents": {
+          "description": "\"all\" (every agent in the catalog), or an explicit list of agent ids.",
+          "default": "all",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "all"
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
