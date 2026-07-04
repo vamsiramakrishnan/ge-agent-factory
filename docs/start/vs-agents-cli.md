@@ -22,7 +22,7 @@ one and use `agents-cli` directly.
 
 | Layer | Owned by | Artifacts |
 |---|---|---|
-| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable Markdown twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form) |
+| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable OKF twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form-okf) |
 | Simulation, evals, proof | **GE Agent Factory** | source-system twins, fixtures, evalsets, spec-to-code trace, verify-stage verdicts, promotion gate |
 | Agent project scaffold & code | **ADK / agents-cli** (generated and driven by the factory) | `app/agent.py`, `app/tools.py`, `pyproject.toml`, `agents-cli-manifest.yaml` |
 | Deploy & runtime | **agents-cli → Agent Engine** | deployed Agent Runtime, Agent Registry entry |

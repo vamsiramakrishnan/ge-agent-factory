@@ -3,9 +3,10 @@
 // (docs/LANGUAGE.md; the prose rule predates this gate in docs/DESIGN.md's
 // "Language discipline" section).
 //
-// The golden register (agent, contract, source system, eval, proof, passport)
+// The golden register (agent, contract, source system, eval, proof, passport,
+// OKF — the spec format itself is part of the product's front-door story)
 // is the only vocabulary allowed to LEAD. Operator-register terms are real and
-// documented — planes, daemon, canary, OKF, harness, fleet, pipeline, devex,
+// documented — planes, daemon, canary, harness, fleet, pipeline, devex,
 // mode — but they must not appear in the zones a stranger reads first:
 //
 //   1. README.md above the `## Operate` heading
@@ -28,7 +29,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // The operator register, exactly as docs/LANGUAGE.md tables it (matched as
 // whole words, case-insensitive, singular + plural).
-export const OPERATOR_TERMS = ["plane", "planes", "daemon", "daemons", "canary", "canaries", "okf", "harness", "harnesses", "fleet", "fleets", "pipeline", "pipelines", "devex", "mode", "modes"];
+export const OPERATOR_TERMS = ["plane", "planes", "daemon", "daemons", "canary", "canaries", "harness", "harnesses", "fleet", "fleets", "pipeline", "pipelines", "devex", "mode", "modes"];
 
 const TERM_RE = new RegExp(`\\b(${OPERATOR_TERMS.join("|")})\\b`, "gi");
 

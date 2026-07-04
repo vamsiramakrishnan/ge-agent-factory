@@ -2,33 +2,47 @@
 title: Home
 layout: home
 nav_order: 1
-description: GE Agent Factory compiles enterprise workflows into governed agent contracts, simulations, eval suites, and proof packs — the layer above agents-cli, ADK, and Gemini Enterprise.
+description: GE Agent Factory generates enterprise agents from a spec — an Enterprise Agent Contract in OKF — with the code, evals, synthetic data, and simulations to prove them before handoff to agents-cli, ADK, and Gemini Enterprise.
 ---
 
 # What is GE Agent Factory?
 
-GE Agent Factory compiles enterprise workflows into governed agent
-**contracts**, source-system **simulations**, **eval** suites, tool plans, and
-**proof** packs. It does not replace agents-cli, ADK, or Gemini Enterprise; it
-produces the upstream contract and proof artifacts they need.
+GE Agent Factory generates enterprise agents from a spec. It captures a
+business workflow into an Enterprise Agent **Contract**, generates the
+agent code, **eval** suites, synthetic data, and simulated **source
+systems** the contract implies, and hands the **proven** result to
+agents-cli, ADK, and Gemini Enterprise for deployment.
 
-It occupies exactly one layer:
+Spec-driven development is not a new idea. The spec is: an Enterprise Agent
+Contract captured in **OKF**, the Open Knowledge Format from Google Cloud —
+plain Markdown a business owner can review and the factory can compile, so
+intent, code, tests, and evidence never drift apart. One spec drives the
+whole path:
 
-> capture enterprise intent → compile an Enterprise Agent Contract → generate
-> simulations, evals, tools, and proof → hand off to agents-cli / ADK /
-> Gemini Enterprise.
+1. **Capture** — start from a user interview or an existing BRD; the
+   factory compiles it into a contract.
+2. **Generate** — the contract generates the agent's ADK code and tools.
+3. **Evaluate** — the contract and the generated code produce the eval
+   suite, in agents-cli's own eval format.
+4. **Simulate** — the contract's source systems become simulated backends
+   seeded with synthetic data, so every tool call is exercised before any
+   production integration exists.
+5. **Deploy** — a promotion gate checks the evidence, then the agent ships
+   through agents-cli to ADK Agent Engine.
+6. **Run** — the deployed agent is published to Gemini Enterprise, where
+   your business users talk to it.
 
 Everything below the handoff line — scaffolding the ADK project, deploying to
 Agent Engine, publishing into Gemini Enterprise — is done *by* those tools.
 The factory's job is to make sure that what reaches them is a contract you
-can read, a simulation you can test against, and proof you can show an
-auditor.
+can read, a simulation you can test against, and proof you can show a
+reviewer.
 
 <p align="center">
   <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
-## Start with skills — works with your coding agent
+## Works with your coding agent
 
 <p align="center">
   <img src="assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
@@ -38,10 +52,9 @@ auditor.
   <img src="assets/icons/mcp.svg" alt="MCP" height="44">
 </p>
 
-The recommended setup path is skills-first. The factory ships as agent skills
-— including the install itself — so a coding agent can set up a bare machine,
-verify each phase, and then run the whole line using the factory's own
-playbooks:
+Every factory job ships as an agent skill — including the install itself —
+so a coding agent can set up a bare machine, verify each step, and operate
+the factory end to end:
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install
@@ -54,16 +67,14 @@ bunx create-ge-agent-factory        # any machine: clone + guided, verified inst
 | **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` |
 | **Any MCP client** | `bun tools/mcp-server.mjs` from a checkout |
 
-The output still hands off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills are the assistant-facing setup and operations layer above that handoff.
+Generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills automate the setup and operations layer above that handoff.
 
 
-## The operating surface: from contract to proof
+## From contract to proof in the console
 
-The docs follow the same path the console actually exposes: start with the
-contract, keep its knowledge bundle beside it, prove agents through the build
-and runs surfaces, and inspect proof before handoff. That keeps the landing
-page, diagrams, console docs, and CLI language aligned without inventing a
-separate console view.
+The console exposes the same path: capture a contract, keep its knowledge
+bundle beside it, watch agents build and prove, and inspect the evidence
+before handoff.
 
 <details>
 <summary>The console views along that path, in the machinery's own names</summary>
@@ -94,8 +105,8 @@ The factory closes those seams with one artifact chain:
 | Without the factory | With the factory |
 |---|---|
 | Intent is a slide or a prompt | Intent is captured into a versioned **contract** — role, scope, tools, evidence rules, escalation and refusal rules |
-| Agents are demoed against production or nothing | Agents are exercised against **source-system twins** — simulated backends with realistic data |
-| "It works" is a vibe | **Evals are the proof**: generated eval suites, a spec-to-code trace, and a promotion gate that blocks unproven agents |
+| Agents are demoed against production or nothing | Agents are exercised against **source-system twins** — simulated backends seeded with realistic synthetic data |
+| Correctness is asserted in a demo | Correctness is **proven**: generated eval suites, a spec-to-code trace, and a promotion gate that blocks unproven agents |
 | Tool access is hand-wired | Tools are generated from the contract and governed at runtime |
 | Deployment is a bespoke script | **Handoff** is a defined step: the output is a real agents-cli / ADK project, shipped to Agent Engine and published to Gemini Enterprise in your own Google Cloud project |
 

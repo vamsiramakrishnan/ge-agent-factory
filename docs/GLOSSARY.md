@@ -232,7 +232,7 @@ via `ge handoff agents-cli`, which runs only the post-boundary stages
 
 ## The operator register
 
-The machinery's own names, for people running the factory in anger. Every
+The machinery's own names, for people operating the factory day to day. Every
 term below is real, supported, and documented — this register just doesn't
 lead: it lives in `Operate` sections, reference pages, and under-the-hood
 disclosures rather than front doors.
