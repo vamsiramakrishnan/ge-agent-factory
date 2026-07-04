@@ -147,12 +147,12 @@ By convention every `description` ends with a **"Use when …"** trigger so the 
 can route to it. After adding or editing a skill:
 
 ```bash
-mise run skills-sync     # validate the repo skills + (re)write the harness skill manifest
-mise run skills-doctor   # verify the manifest is current and the skills are discoverable
+mise run skills-sync     # (re)write the harness skill manifest, validating each skill first
+mise run skills-doctor   # health check: manifest is current and the skills are discoverable
 ```
 
 `mise run skills-install` symlinks the repo skills into a headless harness skills dir
-(`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `mise run skills-spec-audit` reports
+(`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `mise run skills-doctor-spec` reports
 Agent Skills spec portability gaps. The station-by-station map — which skill
 owns which capability, `ge` commands, and engine package — is the
 [factory-line matrix](skills/README.md#the-factory-line-matrix) in

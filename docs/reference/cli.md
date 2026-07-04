@@ -945,7 +945,7 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 
 ### Skills
 
-`mise run skills-sync` · `mise run skills-doctor` · `mise run skills-spec-audit` ·
+`mise run skills-sync` · `mise run skills-doctor` · `mise run skills-doctor-spec` ·
 `mise run skills-install` (link repo skills into a headless harness at
 `AGENTS_SKILLS_DIR`, default `~/.agents/skills`).
 
