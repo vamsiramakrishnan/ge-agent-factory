@@ -77,11 +77,11 @@ description = "Generate the use-case catalog build artifact (git-ignored) from t
 run = "cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs"
 
 [tasks.ci]
-description = "Run the CI gate locally (hygiene + lint + docs:gate + gated test suite) — mirrors cloudbuild.ci.yaml"
+description = "Run the CI gate locally (hygiene + typecheck + docs:gate + gated test suite) — mirrors cloudbuild.ci.yaml"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 bun run source:hygiene
-bun run lint
+bun run typecheck
 mise run catalog
 bun run docs:gate
 bun run test:gated

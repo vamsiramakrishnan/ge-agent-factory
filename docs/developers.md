@@ -173,7 +173,7 @@ merging shared behavior.
 | Python simulator runtime | `bun run test:py` | `mise run ci` plus simulator conformance test |
 | Terraform/platform | `ge infra plan`, `ge doctor` | Canary bootstrap in a test project |
 
-`mise run ci` mirrors `cloudbuild.ci.yaml`: source hygiene → `bun run lint` →
+`mise run ci` mirrors `cloudbuild.ci.yaml`: source hygiene → `bun run typecheck` →
 the catalog build → `bun run docs:gate` → `bun run test:gated` (the last one
 wraps `bun test apps tools packages` and cross-checks failures against
 `tools/known-test-failures.json` — see AGENTS.md's "Before you commit"
