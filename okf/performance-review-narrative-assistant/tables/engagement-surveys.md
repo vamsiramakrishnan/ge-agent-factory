@@ -1,0 +1,27 @@
+---
+type: Data Entity
+title: engagement_surveys
+description: Data entity engagement_surveys owned by Lattice.
+tags:
+  - hr
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# engagement_surveys
+
+# Schema
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| id | seq | required; primary key |
+| respondent_id | seq | required |
+| question_code | lorem.words | required |
+| score | number | required |
+| comment | lorem.sentence |  |
+| submitted_at | date | required |
+
+# Citations
+
+- Owned by [Lattice](/systems/lattice.md)

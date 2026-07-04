@@ -76,6 +76,10 @@ export const GeCommandIdSchema = z.enum([
   "prove.live",
   "bench",
   "evals.compile",
+  // The OKF agent lifecycle (customize → register → track):
+  "okf.customize",
+  "agents.register",
+  "agents.track",
 ]);
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 

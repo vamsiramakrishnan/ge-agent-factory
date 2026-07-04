@@ -1,0 +1,1380 @@
+{
+  "id": "audit-evidence-collector",
+  "title": "Audit Evidence Collector",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/AuditEvidenceCollector.tsx",
+  "subtitle": "A-4502 • IT Governance & Compliance",
+  "persona": "Compliance & GRC Lead",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-45",
+  "systems": [
+    "ServiceNow GRC",
+    "Google Drive",
+    "Jira",
+    "Slack",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Evidence collection time",
+      "before": "3-4 weeks per audit",
+      "after": "2-3 days"
+    },
+    {
+      "label": "Evidence completeness",
+      "before": "70% on first pass",
+      "after": "92% auto-collected"
+    },
+    {
+      "label": "Audit prep labor hours",
+      "before": "200+ hours",
+      "after": "40 hours"
+    }
+  ],
+  "statusQuo": [
+    "Audit evidence collection is a 3-4 week scramble involving 15+ people across the organization.",
+    "Evidence scattered across Google Drive, Jira, Slack, and email — each request requires detective work.",
+    "Auditors receive incomplete packages on first submission, triggering follow-up requests and delays."
+  ],
+  "agentification": [
+    "Gemini interprets auditor requests in audit language and maps them to specific internal evidence sources.",
+    "Auto-collects evidence from Jira, Google Drive, Slack, and ServiceNow — eliminating manual artifact hunting.",
+    "Identifies gaps before submission, reducing follow-up requests and audit cycle time."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "ServiceNow GRC",
+        "description": "Audit requests, control framework, evidence requirements"
+      },
+      {
+        "system": "Google Drive",
+        "description": "Policy documents, meeting minutes, approval records"
+      },
+      {
+        "system": "Jira",
+        "description": "Change tickets, approval workflows, remediation tracking"
+      },
+      {
+        "system": "Slack",
+        "description": "Communication records, approval threads, incident responses"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Evidence collection analytics, coverage tracking, freshness scoring"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Request interpretation, evidence gap identification"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Request Interpretation",
+        "description": "Parse the auditor's evidence request — often written in audit language. Map to specific internal systems, data types, and time periods. Identify which controls the request relates to."
+      },
+      {
+        "label": "Multi-System Collection",
+        "description": "Auto-collect evidence from mapped sources: change tickets from Jira, policy documents from Google Drive, approval threads from Slack, incident records from ServiceNow. Validate freshness and completeness."
+      },
+      {
+        "label": "Gap Analysis",
+        "description": "Analyze collected evidence for completeness against the audit request. Identify missing artifacts, stale documents, and weak evidence that may not satisfy the auditor."
+      },
+      {
+        "label": "Package Assembly",
+        "description": "Organize evidence in audit-ready format with table of contents, cross-references to controls, and narrative context. Flag gaps requiring manual collection."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Audit Evidence Collector so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "servicenow_grc",
+        "name": "ServiceNow GRC",
+        "owns": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_grc_tickets",
+          "query_servicenow_grc_change_requests",
+          "query_servicenow_grc_incidents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_drive",
+        "name": "Google Drive",
+        "owns": [
+          "documents",
+          "folder_permissions",
+          "share_events"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_drive_documents",
+          "query_google_drive_folder_permissions",
+          "query_google_drive_share_events"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "jira",
+        "name": "Jira",
+        "owns": [
+          "issues",
+          "sprints",
+          "epics"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_jira_issues",
+          "query_jira_sprints",
+          "query_jira_epics"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "tickets",
+        "sourceSystemId": "servicenow_grc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "change_requests",
+        "sourceSystemId": "servicenow_grc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "incidents",
+        "sourceSystemId": "servicenow_grc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "documents",
+        "sourceSystemId": "google_drive",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "folder_permissions",
+        "sourceSystemId": "google_drive",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "share_events",
+        "sourceSystemId": "google_drive",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "document_id",
+            "type": "ref",
+            "ref": "documents.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "issues",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sprints",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "epics",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "share_events.document_id",
+        "to": "documents.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "audit-evidence-collector-runbook",
+        "sourceSystemId": "bigquery",
+        "type": "runbook",
+        "title": "Audit Evidence Collector Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "audit-evidence-collector-baseline-gap",
+        "description": "Seed a realistic gap where Evidence collection time sits between 3-4 weeks per audit and 2-3 days, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "tickets",
+          "change_requests"
+        ],
+        "discoveryPath": [
+          "Inspect ServiceNow GRC records for the affected entities",
+          "Compare against Google Drive historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Compliance & GRC Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "audit_evidence_collector",
+        "schemas": [
+          "servicenow_grc",
+          "google_drive",
+          "jira",
+          "slack"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_audit_evidence_collector",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "audit-evidence-collector-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "audit-evidence-collector-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Audit Evidence Collector workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Compliance & GRC Lead agent for the Audit Evidence Collector workflow",
+      "primaryObjective": "Gemini interprets auditor requests in audit language and maps them to specific internal evidence sources. Auto-collects evidence from Jira, Google Drive, Slack, and ServiceNow — eliminating manual artifact hunting. so the Compliance & GRC Lead can move the Evidence collection time KPI.",
+      "inScope": [
+        "Gemini interprets auditor requests in audit language and maps them to specific internal evidence sources",
+        "Auto-collects evidence from Jira, Google Drive, Slack, and ServiceNow — eliminating manual artifact hunting",
+        "Identifies gaps before submission, reducing follow-up requests and audit cycle time"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_servicenow_grc_tickets",
+          "kind": "query",
+          "sourceSystemId": "servicenow_grc",
+          "description": "Retrieve tickets from ServiceNow GRC for the Audit Evidence Collector workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "tickets_records",
+            "tickets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_drive_documents",
+          "kind": "query",
+          "sourceSystemId": "google_drive",
+          "description": "Retrieve documents from Google Drive for the Audit Evidence Collector workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "documents_records",
+            "documents_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_jira_issues",
+          "kind": "query",
+          "sourceSystemId": "jira",
+          "description": "Retrieve issues from Jira for the Audit Evidence Collector workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "issues_records",
+            "issues_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the Audit Evidence Collector workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_audit_evidence_collector_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_drive",
+          "description": "Look up sections of the Audit Evidence Collector Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "request_interpretation",
+            "label": "Request Interpretation",
+            "description": "Parse the auditor's evidence request — often written in audit language. Map to specific internal systems, data types, and time periods. Identify which controls the request relates to.",
+            "tools": [
+              "lookup_audit_evidence_collector_runbook"
+            ]
+          },
+          {
+            "id": "multi_system_collection",
+            "label": "Multi-System Collection",
+            "description": "Auto-collect evidence from mapped sources: change tickets from Jira, policy documents from Google Drive, approval threads from Slack, incident records from ServiceNow. Validate freshness and completeness.",
+            "tools": [
+              "query_servicenow_grc_tickets",
+              "query_google_drive_documents",
+              "query_jira_issues",
+              "query_slack_messages",
+              "lookup_audit_evidence_collector_runbook"
+            ]
+          },
+          {
+            "id": "gap_analysis",
+            "label": "Gap Analysis",
+            "description": "Analyze collected evidence for completeness against the audit request. Identify missing artifacts, stale documents, and weak evidence that may not satisfy the auditor.",
+            "tools": [
+              "query_google_drive_documents",
+              "lookup_audit_evidence_collector_runbook"
+            ]
+          },
+          {
+            "id": "package_assembly",
+            "label": "Package Assembly",
+            "description": "Organize evidence in audit-ready format with table of contents, cross-references to controls, and narrative context. Flag gaps requiring manual collection.",
+            "tools": [
+              "lookup_audit_evidence_collector_runbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Evidence collection time moved from 3-4 weeks per audit toward 2-3 days",
+          "mustCite": [
+            "servicenow_grc.tickets",
+            "google_drive.documents"
+          ],
+          "sourceSystemIds": [
+            "servicenow_grc",
+            "google_drive"
+          ]
+        },
+        {
+          "claim": "Evidence completeness moved from 70% on first pass toward 92% auto-collected",
+          "mustCite": [
+            "servicenow_grc.tickets",
+            "google_drive.documents"
+          ],
+          "sourceSystemIds": [
+            "servicenow_grc",
+            "google_drive"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Evidence collection time regresses past the 3-4 weeks per audit baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Compliance & GRC Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from ServiceNow GRC (and other named systems) entities.",
+        "Never bypass Compliance & GRC Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "audit-evidence-collector-end-to-end",
+          "prompt": "Run the Audit Evidence Collector workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_servicenow_grc_tickets",
+            "query_google_drive_documents",
+            "query_jira_issues",
+            "query_slack_messages",
+            "lookup_audit_evidence_collector_runbook"
+          ],
+          "mustReferenceEntities": [
+            "tickets",
+            "documents",
+            "issues",
+            "messages",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "audit-evidence-collector-runbook"
+          ],
+          "expectedActionOutcome": "Compliance & GRC Lead receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/AuditEvidenceCollector.tsx",
+    "familyId": "audit-evidence-collector",
+    "variant": {
+      "familyId": "audit-evidence-collector",
+      "variantId": "audit-evidence-collector",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

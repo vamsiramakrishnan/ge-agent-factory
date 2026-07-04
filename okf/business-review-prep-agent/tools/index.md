@@ -1,0 +1,14 @@
+---
+type: Index
+title: Agent Tools
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Agent Tools
+
+- [query_scorecard_data_scorecard_data_records](/tools/query-scorecard-data-scorecard-data-records.md)
+- [query_contract_data_contract_data_records](/tools/query-contract-data-contract-data-records.md)
+- [query_market_intelligence_market_intelligence_records](/tools/query-market-intelligence-market-intelligence-records.md)
+- [query_google_slides_presentations](/tools/query-google-slides-presentations.md)
+- [lookup_business_review_prep_agent_policy_guide](/tools/lookup-business-review-prep-agent-policy-guide.md)
+- [action_scorecard_data_generate](/tools/action-scorecard-data-generate.md)

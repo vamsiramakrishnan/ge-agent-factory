@@ -14,7 +14,7 @@ In plain language: this skill turns a rough idea into the contract the factory c
 - **First step:** run or prepare a harness-driven interview unless the user already supplied a complete spec.
 - **Plays a role in:** user interview, spec generation, and workspace creation before `plan`.
 - **Input:** rough user idea, catalog use-case id, department, systems, or freeform description.
-- **Output:** registered interview spec in `catalog/interview-specs/` or catalog selection that can generate `mock_systems/usecase-spec.json`.
+- **Output:** a registered OKF bundle at `okf/<id>/` (the agent's source of truth; the interview spec in `catalog/interview-specs/` and the generated catalog entry are compiled artifacts) or a catalog selection that can generate `mock_systems/usecase-spec.json`.
 - **Next step:** pass the selected/generated spec to `planning-missions`.
 
 ## Workflow
@@ -26,8 +26,9 @@ In plain language: this skill turns a rough idea into the contract the factory c
 3. Register the normalized spec through the interview spec registry. Do not send a vague freeform description directly to generation unless the user explicitly asks for a throwaway draft.
 4. Generate or repair golden evals through the spec workbench, then validate them before registration.
 5. Validate the spec shape and registry quality gates. The validator is strict; do not proceed while it reports gaps such as missing document `requiredSections`, `minimumWordCount`, source systems, entities, tool intents, or golden evals.
-6. Sync/merge the registry into the generated use-case catalog.
-7. Pass the buildable spec id to `planning-missions` or `running-factory`.
+6. Emit the validated spec as an OKF bundle under the corpus root (`okf/<id>/`, or `GE_OKF_ROOT` when set) with `scripts/spec-to-okf-bundle.mjs`. From this point the **bundle is the source of truth** and the JSON spec is a compiled artifact (`ge okf compile --from bundle --to spec` regenerates it).
+7. Finish by registering the bundle: `ge agents register --bundle okf/<id>`. That compiles the bundle, flips its provenance from `draft` to `registered`, and regenerates the use-case catalog so the factory can build it.
+8. Pass the registered agent id to `planning-missions` or `running-factory`; check where it stands anytime with `ge agents track --id <id>`.
 
 ## Commands
 
@@ -41,10 +42,22 @@ node apps/factory/scripts/register-agent-spec.mjs --input <normalized-spec.json>
 
 Use `--allow-draft true` only when intentionally storing an incomplete interview result that must not build yet.
 
-Merge registered interview specs into the build catalog:
+Emit the validated spec as an OKF bundle (interview provenance, status `draft`):
 
 ```bash
-node apps/factory/scripts/sync-use-cases-from-slides.mjs
+node skills/interviewing-specs/scripts/spec-to-okf-bundle.mjs --spec <normalized-spec.json>
+```
+
+Register the bundle as a tracked agent (compiles it, flips provenance `draft` → `registered`, regenerates the catalog):
+
+```bash
+node tools/ge.mjs agents register --bundle okf/<id> --owner <email>
+```
+
+Merge registered interview specs into the build catalog (also run by `ge agents register`):
+
+```bash
+bun run catalog
 ```
 
 Build the registered spec:

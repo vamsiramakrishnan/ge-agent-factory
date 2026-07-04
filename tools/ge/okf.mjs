@@ -6,7 +6,9 @@ import pc from "picocolors";
 import { readOkfBundle, baseConformance, renderConcept, writeConceptFile } from "../../packages/okf/src/index.mjs";
 import { specToOkf } from "../../apps/factory/scripts/spec-to-okf.mjs";
 import { okfToSpec } from "../../apps/factory/scripts/okf-to-spec.mjs";
-import { common, emit, out, ui } from "./shared.mjs";
+import { compileOkfBundle, toDxError } from "../../packages/okf/src/compile/index.mjs";
+import { customizeVariant, parsePairs } from "../lib/okf-lifecycle.mjs";
+import { common, emit, guarded, out, ui } from "./shared.mjs";
 
 const EDGE_KIND = { Authority:"authority", "Required Evidence":"evidence", Tools:"tool", Evals:"eval", Citations:"citation", Risks:"risk", "Used By":"used_by", Capabilities:"capability", "Source Systems":"source_system", Workflow:"workflow", Persona:"persona", "Synthetic World":"world", "Live Proof":"live_proof" };
 function graphFromBundle(bundle, { cytoscape = false } = {}) {
@@ -82,8 +84,46 @@ async function compileAllCatalogSpecs(outDir){
 const audit=defineCommand({ meta:{name:"audit",description:"Audit an OKF bundle across base conformance, navigability, semantics, behavior, and consumption readiness"}, args:{...common, bundle:{type:"positional",required:true}, strict:{type:"boolean"}}, async run({args}){ emit(args, await auditBundle(resolve(args.bundle),{strict:args.strict}), renderAudit); }});
 const graph=defineCommand({ meta:{name:"graph",description:"Extract concept authority/relationship graph from an OKF bundle"}, args:{...common, bundle:{type:"positional",required:true}, format:{type:"string",description:"json or cytoscape"}}, async run({args}){ const b=await readOkfBundle(resolve(args.bundle)); emit(args, graphFromBundle(b,{cytoscape:args.format==="cytoscape"}), r=>out(JSON.stringify(r,null,2))); }});
 const explain=defineCommand({ meta:{name:"explain",description:"Explain one OKF concept's authority, backlinks, proof, citations, and gaps"}, args:{...common, concept:{type:"positional",required:true}, bundle:{type:"string",description:"OKF bundle directory",default:"okf"}}, async run({args}){ emit(args, await explainConcept(args.concept, resolve(args.bundle)), renderExplain); }});
-const compile=defineCommand({ meta:{name:"compile",description:"Compile spec→OKF bundle or OKF bundle→spec"}, args:{...common, from:{type:"string"}, to:{type:"string"}, spec:{type:"string"}, bundle:{type:"string"}, out:{type:"string",required:true}, all:{type:"boolean",description:"Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars"}}, async run({args}){ if(args.all){ const result = await compileAllCatalogSpecs(resolve(args.out)); return emit(args, result, r=>out(`OKF bundles: ${r.generated}/${r.requested} generated · ${r.totalConcepts} concepts · ${r.failed} failed · ${r.out}`)); } if(args.from==="spec"&&args.to==="bundle") return emit(args, await specToOkf({spec:args.spec,out:args.out}), r=>out(`OKF bundle: ${r.bundle} (${r.conceptCount} concepts)`)); if(args.from==="bundle"&&args.to==="spec"){ const spec=await okfToSpec(args.bundle); await writeSpec(args.out,spec); return emit(args,{out:args.out},r=>out(`Spec: ${r.out}`)); } throw new Error("usage: ge okf compile --all --out <dir> OR --from spec --to bundle --spec <path> --out <dir> OR --from bundle --to spec --bundle <dir> --out <spec.json>"); }});
+const compile=defineCommand({ meta:{name:"compile",description:"Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant resolution)"}, args:{...common, from:{type:"string"}, to:{type:"string"}, spec:{type:"string"}, bundle:{type:"string"}, out:{type:"string",required:true}, all:{type:"boolean",description:"Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars"}, "variant-base":{type:"string",description:"Base bundle directory for a variant bundle (default: sibling directory named after the root's variant_of id)"}}, run: guarded(async ({args})=>{ if(args.all){ const result = await compileAllCatalogSpecs(resolve(args.out)); return emit(args, result, r=>out(`OKF bundles: ${r.generated}/${r.requested} generated · ${r.totalConcepts} concepts · ${r.failed} failed · ${r.out}`)); } if(args.from==="spec"&&args.to==="bundle") return emit(args, await specToOkf({spec:args.spec,out:args.out}), r=>out(`OKF bundle: ${r.bundle} (${r.conceptCount} concepts)`)); if(args.from==="bundle"&&args.to==="spec"){ const variantBase=args["variant-base"]; const result=await compileOkfBundle(resolve(args.bundle),{ baseDir: variantBase ? resolve(variantBase) : undefined }); if(result.errors.length) throw toDxError(result.errors, args.bundle); await writeSpec(args.out,result.spec); return emit(args,{out:args.out},r=>out(`Spec: ${r.out}`)); } throw new Error("usage: ge okf compile --all --out <dir> OR --from spec --to bundle --spec <path> --out <dir> OR --from bundle --to spec --bundle <dir> [--variant-base <dir>] --out <spec.json>"); })});
 const diff=defineCommand({ meta:{name:"diff",description:"Machine-readable OKF/spec round-trip diff summary"}, args:{...common,left:{type:"positional",required:true},right:{type:"positional",required:true}}, async run({args}){ const [l,r]=await Promise.all([readFile(args.left,"utf8"),readFile(args.right,"utf8")]); const result={status:l===r?"passed":"warning", preserved:{bytes:{before:l.length,after:r.length}}, changed:l===r?[]:[{field:"file", before:args.left, after:args.right}], lost:[], added:[], unmapped:[]}; emit(args,result,x=>out(JSON.stringify(x,null,2))); }});
+// `ge okf customize` — scaffold a variant bundle from a base and compile it
+// against that base immediately, so a bad swap/rename fails here (with the
+// compiler's structured what/where/why/fix) instead of at register time.
+// Bundles resolve under the OKF corpus root (GE_OKF_ROOT, default okf/).
+function renderCustomize(r){
+  out(ui.title("OKF Variant", r.agentId));
+  out(ui.kv([
+    ["base", ui.cmd(r.baseId)],
+    ["kind", r.variantKind],
+    ["bundle", pc.dim(r.out)],
+    ["compile", r.compile.errors ? pc.red(`${r.compile.errors} errors`) : pc.green(`ok — ${r.compile.systems.length} systems · ${r.compile.tools} tools · ${r.compile.workflowSteps} workflow steps`)],
+  ]));
+  for (const f of r.files) out(pc.dim(`  ${f}`));
+  out(ui.next(r.next, "register the variant once it says what you mean"));
+}
+const customize=defineCommand({
+  meta:{name:"customize",description:"Scaffold a variant bundle from a base agent (system swaps, terminology, vertical policy overlay) and compile it against the base"},
+  args:{
+    ...common,
+    base:{type:"string",required:true,description:"Base agent id (under the OKF corpus root) or an explicit bundle directory"},
+    id:{type:"string",required:true,description:"New agent id for the variant bundle"},
+    "swap-system":{type:"string",description:"System swap <from>=<to> (repeatable, or comma-separated)"},
+    rename:{type:"string",description:"Terminology rewrite <term>=<replacement> (repeatable, or comma-separated)"},
+    vertical:{type:"string",description:"Vertical name — sets variant_kind vertical and adds a policy-overlay stub"},
+    out:{type:"string",description:"Output bundle directory (default <okf root>/<id>)"},
+  },
+  run: guarded(async ({args})=>{
+    const result = await customizeVariant({
+      base: args.base,
+      id: args.id,
+      swapSystems: parsePairs(args["swap-system"], "--swap-system"),
+      renames: parsePairs(args.rename, "--rename"),
+      vertical: args.vertical,
+      out: args.out,
+    });
+    emit(args, result, renderCustomize);
+  }),
+});
 const repair=defineCommand({ meta:{name:"repair",description:"Conservatively repair navigability (missing indexes/log); dry-run by default"}, args:{...common,bundle:{type:"positional",required:true}, dryRun:{type:"boolean",default:true}}, async run({args}){ const bundle=await readOkfBundle(resolve(args.bundle)); const writes=[]; if(!bundle.indexes.some(i=>i.path==="index.md")) writes.push({path:join(args.bundle,"index.md"), body:renderConcept({okf_version:"0.1",type:"Knowledge Bundle",title:"OKF Bundle"},"# Concepts\n")}); if(!bundle.logs.some(l=>l.path==="log.md")) writes.push({path:join(args.bundle,"log.md"), body:"# 2026-07-03\n\n- Initialized OKF log.\n"}); if(!args.dryRun) for(const w of writes) await writeConceptFile(w.path,w.body); emit(args,{dryRun:args.dryRun,writes:writes.map(w=>w.path)},r=>out(JSON.stringify(r,null,2))); }});
-export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · audit · graph · explain · diff · repair"}, subCommands:{audit,graph,explain,compile,diff,repair} });
+export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · customize · audit · graph · explain · diff · repair"}, subCommands:{audit,graph,explain,compile,customize,diff,repair} });
 export const __test = { graphFromBundle, auditBundle, explainConcept, coverageFromGraph };

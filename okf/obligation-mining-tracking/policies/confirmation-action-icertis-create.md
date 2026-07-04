@@ -1,0 +1,29 @@
+---
+type: Policy
+title: Confirmation policy — action_icertis_create
+description: "Confirm before invoking write-like tool action_icertis_create."
+source_id: "confirmation-action-icertis-create"
+tags:
+  - procurement
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents.action_icertis_create
+generation_status: inferred
+ge_status: inferred
+---
+
+# Confirmation policy — action_icertis_create
+
+- **Policy kind:** tool confirmation
+- **Spec source:** behaviorContract.toolIntents.action_icertis_create
+- **Tool:** [action_icertis_create](/tools/action-icertis-create.md)
+
+## Rule
+
+Confirm before invoking write-like tool action_icertis_create.
+
+# Citations
+
+- [action_icertis_create](/tools/action-icertis-create.md)

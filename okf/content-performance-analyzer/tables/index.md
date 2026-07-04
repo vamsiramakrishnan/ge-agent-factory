@@ -1,0 +1,23 @@
+---
+type: Index
+title: Data Entities
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Data Entities
+
+- [session_events](/tables/session-events.md)
+- [conversion_paths](/tables/conversion-paths.md)
+- [audience_segments](/tables/audience-segments.md)
+- [contacts](/tables/contacts.md)
+- [deals](/tables/deals.md)
+- [engagement_events](/tables/engagement-events.md)
+- [keyword_rankings](/tables/keyword-rankings.md)
+- [backlink_profile](/tables/backlink-profile.md)
+- [competitor_data](/tables/competitor-data.md)
+- [analytics_events](/tables/analytics-events.md)
+- [historical_metrics](/tables/historical-metrics.md)
+- [cached_aggregates](/tables/cached-aggregates.md)
+- [dashboards](/tables/dashboards.md)
+- [explore_queries](/tables/explore-queries.md)
+- [metric_definitions](/tables/metric-definitions.md)

@@ -398,6 +398,78 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  // ── the OKF agent lifecycle (customize → register → track) ────────────────
+  // One bundle per agent under the OKF corpus root (GE_OKF_ROOT, default
+  // okf/); the bundle is the agent's source of truth and the generated
+  // catalog is compiled FROM it (`bun run catalog`).
+  "okf.customize": {
+    id: "okf.customize",
+    method: "POST",
+    path: "/api/ge/okf/customize",
+    cli: "ge okf customize",
+    label: "Customize an agent",
+    summary: "Scaffold a variant OKF bundle from a base agent (system swaps, terminology rewrites, vertical policy overlay) and compile it against the base",
+    guide: {
+      when: "an existing agent should be adapted — same behavior contract, different source systems, vocabulary, or vertical policy",
+      next: ["ge agents register --bundle <id>", "ge okf compile --from bundle --to spec --bundle <dir> --out <spec.json>"],
+    },
+    risk: "writes-repo",
+    expectedDuration: "under 10s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_okf_customize",
+      description: "Local, deterministic: scaffold a variant OKF bundle from a base agent's bundle. Writes the minimal variant (root index.md declaring variant_of/variant_kind + a Variant Binding concept) under the OKF corpus root, then immediately compiles it against the base with full variant resolution — a bad swap target or unknown term comes back as a structured error, never a silent no-op. base/id are agent ids under okf/ (or explicit paths). Register the result with factory_agents_register.",
+      params: {
+        base: { type: "string", description: "Base agent id (under the OKF corpus root) or bundle directory" },
+        id: { type: "string", description: "New agent id for the variant" },
+        swapSystem: { type: "string", optional: true, description: "System swaps, comma-separated <from>=<to> pairs" },
+        rename: { type: "string", optional: true, description: "Terminology rewrites, comma-separated <term>=<replacement> pairs" },
+        vertical: { type: "string", optional: true, description: "Vertical name (sets variant_kind vertical + a policy-overlay stub)" },
+        out: { type: "string", optional: true, description: "Output bundle directory (default <okf root>/<id>)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["okf", "customize", "--json"];
+      if (body.base) argv.push("--base", String(body.base));
+      if (body.id) argv.push("--id", String(body.id));
+      if (body.swapSystem) argv.push("--swap-system", String(body.swapSystem));
+      if (body.rename) argv.push("--rename", String(body.rename));
+      if (body.vertical) argv.push("--vertical", String(body.vertical));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "agents.register": {
+    id: "agents.register",
+    method: "POST",
+    path: "/api/ge/agents/register",
+    cli: "ge agents register",
+    label: "Register an agent",
+    summary: "Register an OKF bundle as a tracked agent: compile it, flip provenance draft→registered (version +1), and refresh the generated catalog",
+    guide: {
+      when: "a bundle (interview-emitted, migrated, or customized) says what it means and should become a tracked, buildable agent",
+      next: ["ge agents track --id <id>", "ge agents build --ids <id> --local"],
+    },
+    risk: "writes-repo",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_agents_register",
+      description: "Mutating (repo): register an OKF bundle as a tracked agent. Compiles the bundle (variant resolution included) and fails with the compiler's structured errors if it does not resolve; on success flips provenance_status draft→registered in the bundle's root index.md, bumps provenance_version by one, stamps the owner, and re-runs the catalog regeneration so the generated registry picks the agent up. Returns {agentId, version, status, catalogEntry}.",
+      params: {
+        bundle: { type: "string", description: "Agent id (under the OKF corpus root) or bundle directory" },
+        owner: { type: "string", optional: true, description: "Owner email to stamp into provenance" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["agents", "register", "--json"];
+      if (body.bundle) argv.push("--bundle", String(body.bundle));
+      if (body.owner) argv.push("--owner", String(body.owner));
+      return argv;
+    },
+  },
   "mcp.deploy": {
     id: "mcp.deploy",
     method: "POST",
@@ -669,6 +741,29 @@ export const GE_COMMANDS = {
       if (body.runId) argv.push(String(body.runId));
       if (body.stage) argv.push("--stage", String(body.stage));
       if (body.item) argv.push("--item", String(body.item));
+      return argv;
+    },
+  },
+  "agents.track": {
+    id: "agents.track",
+    method: null,
+    path: null,
+    cli: "ge agents track",
+    label: "Track an agent",
+    summary: "Report one agent's lifecycle state: provenance block, registry presence, and the variant lineage chain back to the root base",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_agents_track",
+      description: "Read-only: report one agent's lifecycle state from its OKF bundle. Returns the provenance block (origin, status draft|registered|promoted|retired, version, owner), whether the generated registry currently carries the agent, and the variant lineage chain — variant_of walked bundle by bundle to the root base, with missing links and cycles called out.",
+      params: {
+        id: { type: "string", description: "Agent id (under the OKF corpus root) or bundle directory" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["agents", "track", "--json"];
+      if (body.id) argv.push("--id", String(body.id));
       return argv;
     },
   },

@@ -1,0 +1,1177 @@
+{
+  "id": "supplier-onboarding-orchestrator",
+  "title": "Supplier Onboarding Orchestrator",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SupplierOnboardingOrchestrator.tsx",
+  "subtitle": "A-1305 • Supplier Discovery",
+  "persona": "Buyer",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-13",
+  "systems": [
+    "SAP S/4HANA (XK01)",
+    "Ariba SLP",
+    "Banking Systems",
+    "IRS TIN"
+  ],
+  "kpis": [
+    {
+      "label": "Onboarding cycle time",
+      "before": "15-25 days",
+      "after": "3-5 days"
+    },
+    {
+      "label": "Duplicate vendor creation",
+      "before": "8-12% of new records",
+      "after": "< 1%"
+    },
+    {
+      "label": "Document chase time",
+      "before": "4-6 follow-ups",
+      "after": "Automated reminders"
+    }
+  ],
+  "statusQuo": [
+    "Onboarding is a multi-week manual process with documents chased via email across 4-6 touchpoints.",
+    "Entity name mismatches between W-9, bank letters, and insurance certificates create duplicate vendor records.",
+    "Missing documents discovered only at payment time, delaying first invoice processing by weeks."
+  ],
+  "agentification": [
+    "Orchestrates end-to-end workflow from document collection through vendor master creation in SAP XK01.",
+    "LLM reads non-standard document formats and detects entity inconsistencies — bank letter says 'Acme LLC' but W-9 says 'Acme Industries Inc.'",
+    "Context-aware follow-up emails generated automatically for missing documents with supplier-specific instructions."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "SAP S/4HANA (XK01)",
+        "description": "Vendor master creation, payment term setup, system access"
+      },
+      {
+        "system": "Ariba SLP",
+        "description": "Supplier application intake, document collection portal"
+      },
+      {
+        "system": "IRS TIN Matching",
+        "description": "W-9 TIN validation against IRS database"
+      },
+      {
+        "system": "Banking Systems",
+        "description": "Bank account verification, ACH setup validation"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Document extraction from non-standard formats, entity consistency detection"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Document Collection & Extraction",
+        "description": "Manage multi-step document collection workflow. LLM reads submitted W-9 forms, insurance certificates, and banking letters — even from non-standard formats — and extracts key data fields for validation."
+      },
+      {
+        "label": "Verification & Consistency Checks",
+        "description": "TIN/W-9 validated via IRS matching service. Bank account verified. Entity name consistency checked across all documents — bank letter says 'Acme LLC' but W-9 says 'Acme Industries Inc.' flagged for verification rather than creating duplicates."
+      },
+      {
+        "label": "Vendor Master Creation & Provisioning",
+        "description": "Create vendor master record in SAP S/4HANA (XK01) with validated data. Configure payment terms, purchasing organization assignments, and system access. Send welcome notification with portal credentials."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Supplier Onboarding Orchestrator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "sap_s_4hana_xk01",
+        "name": "SAP S/4HANA (XK01)",
+        "owns": [
+          "sap_s_4hana_xk01_records",
+          "sap_s_4hana_xk01_events",
+          "sap_s_4hana_xk01_audit_trail"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_xk01_sap_s_4hana_xk01_records",
+          "query_sap_s_4hana_xk01_sap_s_4hana_xk01_events",
+          "query_sap_s_4hana_xk01_sap_s_4hana_xk01_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "ariba_slp",
+        "name": "Ariba SLP",
+        "owns": [
+          "ariba_slp_records",
+          "ariba_slp_events",
+          "ariba_slp_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_ariba_slp_ariba_slp_records",
+          "query_ariba_slp_ariba_slp_events",
+          "query_ariba_slp_ariba_slp_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "banking_systems",
+        "name": "Banking Systems",
+        "owns": [
+          "banking_systems_records",
+          "banking_systems_events",
+          "banking_systems_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_banking_systems_banking_systems_records",
+          "query_banking_systems_banking_systems_events",
+          "query_banking_systems_banking_systems_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "irs_tin",
+        "name": "IRS TIN",
+        "owns": [
+          "irs_tin_records",
+          "irs_tin_events",
+          "irs_tin_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_irs_tin_irs_tin_records",
+          "query_irs_tin_irs_tin_events",
+          "query_irs_tin_irs_tin_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "sap_s_4hana_xk01_records",
+        "sourceSystemId": "sap_s_4hana_xk01",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sap_s_4hana_xk01_events",
+        "sourceSystemId": "sap_s_4hana_xk01",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "sap_s_4hana_xk01_record_id",
+            "type": "ref",
+            "ref": "sap_s_4hana_xk01_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "sap_s_4hana_xk01_audit_trail",
+        "sourceSystemId": "sap_s_4hana_xk01",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "ariba_slp_records",
+        "sourceSystemId": "ariba_slp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "ariba_slp_events",
+        "sourceSystemId": "ariba_slp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "ariba_slp_record_id",
+            "type": "ref",
+            "ref": "ariba_slp_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "ariba_slp_audit_trail",
+        "sourceSystemId": "ariba_slp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "banking_systems_records",
+        "sourceSystemId": "banking_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "banking_systems_events",
+        "sourceSystemId": "banking_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "banking_systems_record_id",
+            "type": "ref",
+            "ref": "banking_systems_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "banking_systems_audit_trail",
+        "sourceSystemId": "banking_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "irs_tin_records",
+        "sourceSystemId": "irs_tin",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "irs_tin_events",
+        "sourceSystemId": "irs_tin",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "irs_tin_record_id",
+            "type": "ref",
+            "ref": "irs_tin_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "irs_tin_audit_trail",
+        "sourceSystemId": "irs_tin",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "sap_s_4hana_xk01_events.sap_s_4hana_xk01_record_id",
+        "to": "sap_s_4hana_xk01_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "ariba_slp_events.ariba_slp_record_id",
+        "to": "ariba_slp_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "banking_systems_events.banking_systems_record_id",
+        "to": "banking_systems_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "irs_tin_events.irs_tin_record_id",
+        "to": "irs_tin_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "supplier-onboarding-orchestrator-policy-guide",
+        "sourceSystemId": "sap_s_4hana_xk01",
+        "type": "policy",
+        "title": "Supplier Onboarding Orchestrator Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "sap_s_4hana_xk01_records",
+          "sap_s_4hana_xk01_events",
+          "sap_s_4hana_xk01_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "sap_s_4hana_xk01_generate_api",
+        "sourceSystemId": "sap_s_4hana_xk01",
+        "method": "POST",
+        "path": "/api/sap_s_4hana_xk01/generate",
+        "description": "Synchronous endpoint the agent calls to generate in SAP S/4HANA (XK01) after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "supplier-onboarding-orchestrator-baseline-gap",
+        "description": "Seed a realistic gap where Onboarding cycle time sits between 15-25 days and 3-5 days, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "sap_s_4hana_xk01_records",
+          "sap_s_4hana_xk01_events"
+        ],
+        "discoveryPath": [
+          "Inspect SAP S/4HANA (XK01) records for the affected entities",
+          "Compare against Ariba SLP historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Buyer action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "supplier_onboarding_orchestrator",
+        "schemas": [
+          "sap_s_4hana_xk01",
+          "ariba_slp",
+          "banking_systems",
+          "irs_tin"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_supplier_onboarding_orchestrator",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "supplier-onboarding-orchestrator-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "supplier-onboarding-orchestrator-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Supplier Onboarding Orchestrator workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Buyer agent for the Supplier Onboarding Orchestrator workflow",
+      "primaryObjective": "Orchestrates end-to-end workflow from document collection through vendor master creation in SAP XK01. LLM reads non-standard document formats and detects entity inconsistencies — bank letter says 'Acme LLC' but W-9 says 'Acme Industries Inc.' so the Buyer can move the Onboarding cycle time KPI.",
+      "inScope": [
+        "Orchestrates end-to-end workflow from document collection through vendor master creation in SAP XK01",
+        "LLM reads non-standard document formats and detects entity inconsistencies — bank letter says 'Acme LLC' but W-9 says 'Acme Industries Inc.'",
+        "Context-aware follow-up emails generated automatically for missing documents with supplier-specific instructions"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_xk01_sap_s_4hana_xk01_records",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_xk01",
+          "description": "Retrieve sap s 4hana xk01 records from SAP S/4HANA (XK01) for the Supplier Onboarding Orchestrator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sap_s_4hana_xk01_records_records",
+            "sap_s_4hana_xk01_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_ariba_slp_ariba_slp_records",
+          "kind": "query",
+          "sourceSystemId": "ariba_slp",
+          "description": "Retrieve ariba slp records from Ariba SLP for the Supplier Onboarding Orchestrator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "ariba_slp_records_records",
+            "ariba_slp_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_banking_systems_banking_systems_records",
+          "kind": "query",
+          "sourceSystemId": "banking_systems",
+          "description": "Retrieve banking systems records from Banking Systems for the Supplier Onboarding Orchestrator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "banking_systems_records_records",
+            "banking_systems_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_irs_tin_irs_tin_records",
+          "kind": "query",
+          "sourceSystemId": "irs_tin",
+          "description": "Retrieve irs tin records from IRS TIN for the Supplier Onboarding Orchestrator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "irs_tin_records_records",
+            "irs_tin_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_supplier_onboarding_orchestrator_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "sap_s_4hana_xk01",
+          "description": "Look up sections of the Supplier Onboarding Orchestrator Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_s_4hana_xk01_generate",
+          "kind": "action",
+          "sourceSystemId": "sap_s_4hana_xk01",
+          "description": "Execute the generate step in SAP S/4HANA (XK01) after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "document_collection_extraction",
+            "label": "Document Collection & Extraction",
+            "description": "Manage multi-step document collection workflow. LLM reads submitted W-9 forms, insurance certificates, and banking letters — even from non-standard formats — and extracts key data fields for validation.",
+            "tools": [
+              "query_banking_systems_banking_systems_records"
+            ]
+          },
+          {
+            "id": "verification_consistency_checks",
+            "label": "Verification & Consistency Checks",
+            "description": "TIN/W-9 validated via IRS matching service. Bank account verified. Entity name consistency checked across all documents — bank letter says 'Acme LLC' but W-9 says 'Acme Industries Inc.' flagged for verification rather than creating duplicates.",
+            "tools": [
+              "query_irs_tin_irs_tin_records"
+            ]
+          },
+          {
+            "id": "vendor_master_creation_provisioning",
+            "label": "Vendor Master Creation & Provisioning",
+            "description": "Create vendor master record in SAP S/4HANA (XK01) with validated data. Configure payment terms, purchasing organization assignments, and system access. Send welcome notification with portal credentials.",
+            "tools": [
+              "query_sap_s_4hana_xk01_sap_s_4hana_xk01_records",
+              "lookup_supplier_onboarding_orchestrator_policy_guide",
+              "action_sap_s_4hana_xk01_generate"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Onboarding cycle time moved from 15-25 days toward 3-5 days",
+          "mustCite": [
+            "sap_s_4hana_xk01.sap_s_4hana_xk01_records",
+            "ariba_slp.ariba_slp_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_xk01",
+            "ariba_slp"
+          ]
+        },
+        {
+          "claim": "Duplicate vendor creation moved from 8-12% of new records toward < 1%",
+          "mustCite": [
+            "sap_s_4hana_xk01.sap_s_4hana_xk01_records",
+            "ariba_slp.ariba_slp_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_xk01",
+            "ariba_slp"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Onboarding cycle time regresses past the 15-25 days baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Buyer",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA (XK01) (and other named systems) entities.",
+        "Never bypass Buyer approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "supplier-onboarding-orchestrator-end-to-end",
+          "prompt": "Run the Supplier Onboarding Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_xk01_sap_s_4hana_xk01_records",
+            "query_ariba_slp_ariba_slp_records",
+            "query_banking_systems_banking_systems_records",
+            "query_irs_tin_irs_tin_records",
+            "lookup_supplier_onboarding_orchestrator_policy_guide",
+            "action_sap_s_4hana_xk01_generate"
+          ],
+          "mustReferenceEntities": [
+            "sap_s_4hana_xk01_records",
+            "ariba_slp_records",
+            "banking_systems_records",
+            "irs_tin_records"
+          ],
+          "mustCiteDocuments": [
+            "supplier-onboarding-orchestrator-policy-guide"
+          ],
+          "expectedActionOutcome": "Action generate executed against SAP S/4HANA (XK01), with audit-trail entry and Buyer notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SupplierOnboardingOrchestrator.tsx",
+    "familyId": "supplier-onboarding-orchestrator",
+    "variant": {
+      "familyId": "supplier-onboarding-orchestrator",
+      "variantId": "supplier-onboarding-orchestrator",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

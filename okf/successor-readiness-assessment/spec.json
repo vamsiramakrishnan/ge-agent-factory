@@ -1,0 +1,1054 @@
+{
+  "id": "successor-readiness-assessment",
+  "title": "Successor Readiness Assessment",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/SuccessorReadiness.tsx",
+  "subtitle": "A-308 • Talent Mgmt",
+  "persona": "CHRO",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "scheduled",
+  "domainId": "domain-3",
+  "systems": [
+    "Workday",
+    "Google BigQuery",
+    "Assessment Platform"
+  ],
+  "kpis": [
+    {
+      "label": "9-box accuracy",
+      "before": "Subjective",
+      "after": "Data-driven"
+    },
+    {
+      "label": "Successor coverage",
+      "before": "40% of critical roles",
+      "after": "90%"
+    },
+    {
+      "label": "Readiness assessment",
+      "before": "Annual",
+      "after": "Continuous"
+    }
+  ],
+  "statusQuo": [
+    "9-box placement based on subjective manager judgment.",
+    "Successors identified primarily through personal networks.",
+    "Readiness data scattered across siloed HR systems."
+  ],
+  "agentification": [
+    "Data-driven readiness scores using multi-source evidence.",
+    "Automated 9-box mapping from performance and potential data.",
+    "Predictive identification of 'hidden' high-potential talent."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Performance history, career data, leadership assessments"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Talent analytics, potential modeling data, 9-box metrics"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Multi-factor potential scoring, successor matching, gap analysis"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Talent Data Aggregation",
+        "description": "Aggregate performance ratings, assessment results, leadership indicators, and career trajectory data from Workday into BigQuery talent warehouse."
+      },
+      {
+        "label": "Potential Modeling & 9-Box",
+        "description": "Multi-factor potential scoring using performance data, assessment results, and leadership indicators. Automated 9-box placement with data-driven evidence."
+      },
+      {
+        "label": "Successor Matching & Dev Plans",
+        "description": "Gemini maps high-potential candidates to critical roles by readiness level. Generates personalized development plans to close succession gaps."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Successor Readiness Assessment so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_bigquery",
+        "name": "Google BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_google_bigquery_analytics_events",
+          "query_google_bigquery_historical_metrics",
+          "query_google_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "assessment_platform",
+        "name": "Assessment Platform",
+        "owns": [
+          "assessment_platform_records",
+          "assessment_platform_events",
+          "assessment_platform_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_assessment_platform_assessment_platform_records",
+          "query_assessment_platform_assessment_platform_events",
+          "query_assessment_platform_assessment_platform_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "assessment_platform_records",
+        "sourceSystemId": "assessment_platform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "assessment_platform_events",
+        "sourceSystemId": "assessment_platform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "assessment_platform_record_id",
+            "type": "ref",
+            "ref": "assessment_platform_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "assessment_platform_audit_trail",
+        "sourceSystemId": "assessment_platform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "assessment_platform_events.assessment_platform_record_id",
+        "to": "assessment_platform_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "successor-readiness-assessment-policy-handbook",
+        "sourceSystemId": "google_bigquery",
+        "type": "policy",
+        "title": "Successor Readiness Assessment Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "successor-readiness-assessment-baseline-gap",
+        "description": "Seed a realistic gap where 9-box accuracy sits between Subjective and Data-driven, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "employees",
+          "positions"
+        ],
+        "discoveryPath": [
+          "Inspect Workday records for the affected entities",
+          "Compare against Google BigQuery historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next CHRO action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "successor_readiness_assessment",
+        "schemas": [
+          "workday",
+          "assessment_platform"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_successor_readiness_assessment",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "successor-readiness-assessment-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "successor-readiness-assessment-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Successor Readiness Assessment workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "CHRO agent for the Successor Readiness Assessment workflow",
+      "primaryObjective": "Data-driven readiness scores using multi-source evidence. Automated 9-box mapping from performance and potential data. so the CHRO can move the 9-box accuracy KPI.",
+      "inScope": [
+        "Data-driven readiness scores using multi-source evidence",
+        "Automated 9-box mapping from performance and potential data",
+        "Predictive identification of 'hidden' high-potential talent"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the Successor Readiness Assessment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "google_bigquery",
+          "description": "Retrieve analytics events from Google BigQuery for the Successor Readiness Assessment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_assessment_platform_assessment_platform_records",
+          "kind": "query",
+          "sourceSystemId": "assessment_platform",
+          "description": "Retrieve assessment platform records from Assessment Platform for the Successor Readiness Assessment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "assessment_platform_records_records",
+            "assessment_platform_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_successor_readiness_assessment_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_bigquery",
+          "description": "Look up sections of the Successor Readiness Assessment Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "talent_data_aggregation",
+            "label": "Talent Data Aggregation",
+            "description": "Aggregate performance ratings, assessment results, leadership indicators, and career trajectory data from Workday into BigQuery talent warehouse.",
+            "tools": [
+              "query_workday_employees",
+              "query_google_bigquery_analytics_events",
+              "query_assessment_platform_assessment_platform_records",
+              "lookup_successor_readiness_assessment_policy_handbook"
+            ]
+          },
+          {
+            "id": "potential_modeling_9_box",
+            "label": "Potential Modeling & 9-Box",
+            "description": "Multi-factor potential scoring using performance data, assessment results, and leadership indicators. Automated 9-box placement with data-driven evidence.",
+            "tools": [
+              "query_assessment_platform_assessment_platform_records",
+              "lookup_successor_readiness_assessment_policy_handbook"
+            ]
+          },
+          {
+            "id": "successor_matching_dev_plans",
+            "label": "Successor Matching & Dev Plans",
+            "description": "Gemini maps high-potential candidates to critical roles by readiness level. Generates personalized development plans to close succession gaps.",
+            "tools": [
+              "lookup_successor_readiness_assessment_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "9-box accuracy moved from Subjective toward Data-driven",
+          "mustCite": [
+            "workday.employees",
+            "google_bigquery.analytics_events"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "google_bigquery"
+          ]
+        },
+        {
+          "claim": "Successor coverage moved from 40% of critical roles toward 90%",
+          "mustCite": [
+            "workday.employees",
+            "google_bigquery.analytics_events"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "google_bigquery"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "9-box accuracy regresses past the Subjective baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "CHRO",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+        "Never bypass CHRO approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "successor-readiness-assessment-end-to-end",
+          "prompt": "Run the Successor Readiness Assessment workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_google_bigquery_analytics_events",
+            "query_assessment_platform_assessment_platform_records",
+            "lookup_successor_readiness_assessment_policy_handbook"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "analytics_events",
+            "assessment_platform_records"
+          ],
+          "mustCiteDocuments": [
+            "successor-readiness-assessment-policy-handbook"
+          ],
+          "expectedActionOutcome": "CHRO receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/SuccessorReadiness.tsx",
+    "familyId": "successor-readiness-assessment",
+    "variant": {
+      "familyId": "successor-readiness-assessment",
+      "variantId": "successor-readiness-assessment",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

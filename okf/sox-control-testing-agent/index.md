@@ -1,0 +1,48 @@
+---
+okf_version: "0.1"
+type: Knowledge Bundle
+title: SOX Control Testing Agent
+description: "Gemini evaluates control evidence for sufficiency and identifies gaps requiring additional testing. Risk-based statistical sampling ensures high-risk areas receive proportional coverage. so the Internal Audit Lead can move the Test cycle time KPI."
+tags:
+  - finance
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+provenance_origin: deck
+provenance_source_ref: "../presentation/src/components/slides/use-cases/finance/SOXControlTestingAgent.tsx"
+provenance_version: "1"
+provenance_status: registered
+provenance_created_at: "2026-07-01T00:00:00.000Z"
+---
+
+# SOX Control Testing Agent
+
+> A-2601 • Internal Audit & Controls
+
+## Overview
+
+- **Persona:** Internal Audit Lead
+- **Department:** finance
+- **Objective:** Gemini evaluates control evidence for sufficiency and identifies gaps requiring additional testing. Risk-based statistical sampling ensures high-risk areas receive proportional coverage. so the Internal Audit Lead can move the Test cycle time KPI.
+
+## KPI summary
+
+- **Test cycle time**: 6-8 weeks → 1-2 weeks
+- **Controls tested per quarter**: 50-70 manual → 200+ automated
+- **Deficiency detection**: Year-end discovery → Continuous identification
+
+## Contents
+
+- [Playbook — role, scope, guardrails](/playbook.md)
+- [Source Systems](/systems/index.md)
+- [Data Entities](/tables/index.md)
+- [Agent Tools](/tools/index.md)
+- [Workflow Stages](/workflow/index.md)
+- [Query Capabilities](/queries/index.md)
+- [Eval Scenarios](/tests/index.md)
+- [Source Documents](/documents/index.md)
+- [Claims](/claims/index.md)
+- [Policies](/policies/index.md)
+- [Proof Obligations](/proof-obligations/index.md)
+- [KPIs](/kpis.md)
+- [Golden Evals](/evals.md)

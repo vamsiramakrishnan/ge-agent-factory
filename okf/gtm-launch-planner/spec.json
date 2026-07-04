@@ -1,0 +1,1164 @@
+{
+  "id": "gtm-launch-planner",
+  "title": "GTM Launch Planner",
+  "department": "marketing",
+  "sourcePath": "../presentation/src/components/slides/use-cases/marketing/GTMLaunchPlanner.tsx",
+  "subtitle": "A-2904 \\u2022 Marketing Strategy",
+  "persona": "VP Marketing",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "event",
+  "domainId": "domain-29",
+  "systems": [
+    "Asana",
+    "Google Workspace",
+    "Salesforce CRM",
+    "HubSpot",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Launch plan creation",
+      "before": "2-3 weeks",
+      "after": "1 day"
+    },
+    {
+      "label": "Cross-functional alignment",
+      "before": "5+ meetings",
+      "after": "Auto-orchestrated"
+    },
+    {
+      "label": "Launch readiness score",
+      "before": "Subjective",
+      "after": "Data-driven checklist"
+    }
+  ],
+  "statusQuo": [
+    "Launch plans manually assembled from templates with limited adaptation to launch type or audience.",
+    "Cross-functional coordination through meetings and email chains with frequent miscommunication.",
+    "Messaging frameworks created from scratch each time without systematic use of historical launch performance."
+  ],
+  "agentification": [
+    "Gemini interprets product requirements to generate tailored launch checklists appropriate for the launch tier.",
+    "LLM reasons about which channels and tactics are appropriate for different launch types based on historical performance.",
+    "Draft messaging frameworks and coordinate cross-functional dependencies automatically through Asana and Slack."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Asana",
+        "description": "Project plan creation, task assignment, milestone tracking"
+      },
+      {
+        "system": "Google Workspace",
+        "description": "Product requirements docs, positioning briefs, launch assets"
+      },
+      {
+        "system": "Salesforce CRM",
+        "description": "Historical launch performance, pipeline impact benchmarks"
+      },
+      {
+        "system": "HubSpot",
+        "description": "Campaign setup, email sequence configuration, UTM tracking"
+      },
+      {
+        "system": "Slack",
+        "description": "Milestone notifications, cross-functional coordination alerts"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Requirements interpretation, launch plan generation, messaging frameworks"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Requirements Parsing",
+        "description": "Interpret product requirements documents and positioning briefs to understand launch scope, audience, and key differentiators. Classify launch tier (major product vs. feature update vs. partnership)."
+      },
+      {
+        "label": "Historical Benchmarking",
+        "description": "Pull performance data from prior launches of similar tier. Analyze timeline risks based on past delays and resource utilization patterns."
+      },
+      {
+        "label": "Plan & Messaging Generation",
+        "description": "Generate tailored launch checklist, channel strategy, and messaging framework based on launch tier. Draft launch messaging and coordinate cross-functional dependencies."
+      },
+      {
+        "label": "Orchestration & Setup",
+        "description": "Create project plan in Asana, assign tasks across functions, set up HubSpot campaign, and schedule Slack notifications at key milestones."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for GTM Launch Planner so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "asana",
+        "name": "Asana",
+        "owns": [
+          "asana_records",
+          "asana_events",
+          "asana_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_asana_asana_records",
+          "query_asana_asana_events",
+          "query_asana_asana_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_workspace",
+        "name": "Google Workspace",
+        "owns": [
+          "accounts",
+          "group_memberships",
+          "license_assignments"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_workspace_accounts",
+          "query_google_workspace_group_memberships",
+          "query_google_workspace_license_assignments"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "salesforce_crm",
+        "name": "Salesforce CRM",
+        "owns": [
+          "accounts",
+          "opportunities",
+          "campaign_influence"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_salesforce_crm_accounts",
+          "query_salesforce_crm_opportunities",
+          "query_salesforce_crm_campaign_influence"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "hubspot",
+        "name": "HubSpot",
+        "owns": [
+          "contacts",
+          "deals",
+          "engagement_events"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_hubspot_contacts",
+          "query_hubspot_deals",
+          "query_hubspot_engagement_events"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "asana_records",
+        "sourceSystemId": "asana",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "asana_events",
+        "sourceSystemId": "asana",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "asana_record_id",
+            "type": "ref",
+            "ref": "asana_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "asana_audit_trail",
+        "sourceSystemId": "asana",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "accounts",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "group_memberships",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "license_assignments",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "opportunities",
+        "sourceSystemId": "salesforce_crm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "campaign_influence",
+        "sourceSystemId": "salesforce_crm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "contacts",
+        "sourceSystemId": "hubspot",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "company",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "new",
+              "qualified",
+              "engaged",
+              "opportunity",
+              "lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "deals",
+        "sourceSystemId": "hubspot",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "engagement_events",
+        "sourceSystemId": "hubspot",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "company",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "new",
+              "qualified",
+              "engaged",
+              "opportunity",
+              "lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "contact_id",
+            "type": "ref",
+            "ref": "contacts.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "asana_events.asana_record_id",
+        "to": "asana_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "engagement_events.contact_id",
+        "to": "contacts.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "gtm-launch-planner-playbook",
+        "sourceSystemId": "asana",
+        "type": "playbook",
+        "title": "GTM Launch Planner Playbook",
+        "requiredSections": [
+          "Audience guidelines",
+          "Brand voice rules",
+          "Channel-specific guardrails",
+          "Measurement framework",
+          "Approval thresholds"
+        ],
+        "linkedEntities": [
+          "asana_records",
+          "asana_events",
+          "asana_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "audience",
+          "brand-voice",
+          "channels",
+          "approvals"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "asana_generate_api",
+        "sourceSystemId": "asana",
+        "method": "POST",
+        "path": "/api/asana/generate",
+        "description": "Synchronous endpoint the agent calls to generate in Asana after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "gtm-launch-planner-baseline-gap",
+        "description": "Seed a realistic gap where Launch plan creation sits between 2-3 weeks and 1 day, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "asana_records",
+          "asana_events"
+        ],
+        "discoveryPath": [
+          "Inspect Asana records for the affected entities",
+          "Compare against Google Workspace historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next VP Marketing action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "gtm_launch_planner",
+        "schemas": [
+          "asana",
+          "google_workspace",
+          "salesforce_crm",
+          "hubspot"
+        ]
+      },
+      "bigquery": {
+        "dataset": "marketing_gtm_launch_planner",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "gtm-launch-planner-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "gtm-launch-planner-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the GTM Launch Planner workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "VP Marketing agent for the GTM Launch Planner workflow",
+      "primaryObjective": "Gemini interprets product requirements to generate tailored launch checklists appropriate for the launch tier. LLM reasons about which channels and tactics are appropriate for different launch types based on historical performance. so the VP Marketing can move the Launch plan creation KPI.",
+      "inScope": [
+        "Gemini interprets product requirements to generate tailored launch checklists appropriate for the launch tier",
+        "LLM reasons about which channels and tactics are appropriate for different launch types based on historical performance",
+        "Draft messaging frameworks and coordinate cross-functional dependencies automatically through Asana and Slack"
+      ],
+      "outOfScope": [
+        "Final approval of paid spend reallocations above the governance threshold",
+        "Trademark, legal, or regulated-industry claim approval",
+        "Crisis communications without comms-team sign-off"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_asana_asana_records",
+          "kind": "query",
+          "sourceSystemId": "asana",
+          "description": "Retrieve asana records from Asana for the GTM Launch Planner workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "asana_records_records",
+            "asana_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_workspace_accounts",
+          "kind": "query",
+          "sourceSystemId": "google_workspace",
+          "description": "Retrieve accounts from Google Workspace for the GTM Launch Planner workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "accounts_records",
+            "accounts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_salesforce_crm_accounts",
+          "kind": "query",
+          "sourceSystemId": "salesforce_crm",
+          "description": "Retrieve accounts from Salesforce CRM for the GTM Launch Planner workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "accounts_records",
+            "accounts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_hubspot_contacts",
+          "kind": "query",
+          "sourceSystemId": "hubspot",
+          "description": "Retrieve contacts from HubSpot for the GTM Launch Planner workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "contacts_records",
+            "contacts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_gtm_launch_planner_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "asana",
+          "description": "Look up sections of the GTM Launch Planner Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_asana_generate",
+          "kind": "action",
+          "sourceSystemId": "asana",
+          "description": "Execute the generate step in Asana after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "requirements_parsing",
+            "label": "Requirements Parsing",
+            "description": "Interpret product requirements documents and positioning briefs to understand launch scope, audience, and key differentiators. Classify launch tier (major product vs. feature update vs. partnership).",
+            "tools": [
+              "lookup_gtm_launch_planner_playbook"
+            ]
+          },
+          {
+            "id": "historical_benchmarking",
+            "label": "Historical Benchmarking",
+            "description": "Pull performance data from prior launches of similar tier. Analyze timeline risks based on past delays and resource utilization patterns.",
+            "tools": [
+              "lookup_gtm_launch_planner_playbook"
+            ]
+          },
+          {
+            "id": "plan_messaging_generation",
+            "label": "Plan & Messaging Generation",
+            "description": "Generate tailored launch checklist, channel strategy, and messaging framework based on launch tier. Draft launch messaging and coordinate cross-functional dependencies.",
+            "tools": [
+              "lookup_gtm_launch_planner_playbook",
+              "action_asana_generate"
+            ]
+          },
+          {
+            "id": "orchestration_setup",
+            "label": "Orchestration & Setup",
+            "description": "Create project plan in Asana, assign tasks across functions, set up HubSpot campaign, and schedule Slack notifications at key milestones.",
+            "tools": [
+              "query_asana_asana_records",
+              "query_hubspot_contacts",
+              "lookup_gtm_launch_planner_playbook",
+              "action_asana_generate"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Launch plan creation moved from 2-3 weeks toward 1 day",
+          "mustCite": [
+            "asana.asana_records",
+            "google_workspace.accounts"
+          ],
+          "sourceSystemIds": [
+            "asana",
+            "google_workspace"
+          ]
+        },
+        {
+          "claim": "Cross-functional alignment moved from 5+ meetings toward Auto-orchestrated",
+          "mustCite": [
+            "asana.asana_records",
+            "google_workspace.accounts"
+          ],
+          "sourceSystemIds": [
+            "asana",
+            "google_workspace"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Launch plan creation regresses past the 2-3 weeks baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "VP Marketing",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Asana (and other named systems) entities.",
+        "Never bypass VP Marketing approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "gtm-launch-planner-end-to-end",
+          "prompt": "Run the GTM Launch Planner workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_asana_asana_records",
+            "query_google_workspace_accounts",
+            "query_salesforce_crm_accounts",
+            "query_hubspot_contacts",
+            "lookup_gtm_launch_planner_playbook",
+            "action_asana_generate"
+          ],
+          "mustReferenceEntities": [
+            "asana_records",
+            "accounts",
+            "accounts",
+            "contacts"
+          ],
+          "mustCiteDocuments": [
+            "gtm-launch-planner-playbook"
+          ],
+          "expectedActionOutcome": "Action generate executed against Asana, with audit-trail entry and VP Marketing notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/marketing/GTMLaunchPlanner.tsx",
+    "familyId": "gtm-launch-planner",
+    "variant": {
+      "familyId": "gtm-launch-planner",
+      "variantId": "gtm-launch-planner",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

@@ -1,0 +1,1245 @@
+{
+  "id": "ci-cd-pipeline-optimizer",
+  "title": "CI/CD Pipeline Optimizer",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/CICDPipelineOptimizer.tsx",
+  "subtitle": "A-3901 • Software Engineering & DevOps",
+  "persona": "DevOps Lead",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "scheduled",
+  "domainId": "domain-39",
+  "systems": [
+    "Jenkins",
+    "GitHub Actions",
+    "ArgoCD",
+    "Datadog",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Build failure investigation",
+      "before": "45 min/failure",
+      "after": "Auto-diagnosed"
+    },
+    {
+      "label": "Flaky test detection",
+      "before": "Manual tracking",
+      "after": "Auto-quarantined"
+    },
+    {
+      "label": "Pipeline throughput",
+      "before": "Baseline",
+      "after": "+35% improvement"
+    }
+  ],
+  "statusQuo": [
+    "DevOps lead spends mornings reading build logs across 12 repos to find failure root causes.",
+    "Flaky tests block deployments intermittently with no systematic tracking or quarantine process.",
+    "Build time regressions go unnoticed until developers complain about slow feedback loops."
+  ],
+  "agentification": [
+    "Gemini diagnoses pipeline failures with contextual fix recommendations — not generic error messages.",
+    "Flaky tests automatically identified and quarantined, with tickets created for permanent fixes.",
+    "Build time regression detection catches slowdowns within one sprint, not after months of drift."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Jenkins",
+        "description": "Build logs, pipeline stage durations, failure traces"
+      },
+      {
+        "system": "GitHub Actions",
+        "description": "Workflow run telemetry, PR build status, action logs"
+      },
+      {
+        "system": "ArgoCD",
+        "description": "Deployment frequency, sync status, rollback events"
+      },
+      {
+        "system": "Datadog",
+        "description": "APM traces, pipeline performance metrics, error rates"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Historical pipeline analytics, trend models, regression data"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Failure diagnosis, fix recommendation, root cause reasoning"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Telemetry Collection",
+        "description": "Collect pipeline telemetry from Jenkins, GitHub Actions, and ArgoCD — build times, failure rates, deployment frequency, and stage durations across all repositories."
+      },
+      {
+        "label": "Bottleneck & Flaky Test Detection",
+        "description": "Identify pipeline bottlenecks through build time regression analysis. Detect flaky tests via pass/fail pattern analysis. Score parallelization opportunities by measuring stage dependencies."
+      },
+      {
+        "label": "Contextual Fix Recommendations",
+        "description": "Gemini analyzes pipeline failures: 'checkout-service failed 12 times this week — 8 from the same integration test depending on an external API mock. Recommend extracting mock to shared fixture and adding retry logic.'"
+      },
+      {
+        "label": "Action & Reporting",
+        "description": "Pipeline health report generated with prioritized fixes. Auto-generated Jira tickets for recurring issues. Flaky tests auto-quarantined to unblock deployments."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for CI/CD Pipeline Optimizer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "jenkins",
+        "name": "Jenkins",
+        "owns": [
+          "pipeline_runs",
+          "deployments",
+          "test_results"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_jenkins_pipeline_runs",
+          "query_jenkins_deployments",
+          "query_jenkins_test_results"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "github_actions",
+        "name": "GitHub Actions",
+        "owns": [
+          "pull_requests",
+          "commits",
+          "workflow_runs"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_github_actions_pull_requests",
+          "query_github_actions_commits",
+          "query_github_actions_workflow_runs"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "argocd",
+        "name": "ArgoCD",
+        "owns": [
+          "pipeline_runs",
+          "deployments",
+          "test_results"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_argocd_pipeline_runs",
+          "query_argocd_deployments",
+          "query_argocd_test_results"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "datadog",
+        "name": "Datadog",
+        "owns": [
+          "alerts",
+          "monitors",
+          "metrics_snapshots"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_datadog_alerts",
+          "query_datadog_monitors",
+          "query_datadog_metrics_snapshots"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "pipeline_runs",
+        "sourceSystemId": "jenkins",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "rolled_back"
+            ],
+            "required": true
+          },
+          {
+            "name": "duration_seconds",
+            "type": "number",
+            "min": 5,
+            "max": 7200,
+            "required": true
+          },
+          {
+            "name": "started_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "environment",
+            "type": "enum",
+            "values": [
+              "dev",
+              "staging",
+              "prod"
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "deployments",
+        "sourceSystemId": "jenkins",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "rolled_back"
+            ],
+            "required": true
+          },
+          {
+            "name": "duration_seconds",
+            "type": "number",
+            "min": 5,
+            "max": 7200,
+            "required": true
+          },
+          {
+            "name": "started_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "environment",
+            "type": "enum",
+            "values": [
+              "dev",
+              "staging",
+              "prod"
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "test_results",
+        "sourceSystemId": "jenkins",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "pull_requests",
+        "sourceSystemId": "github_actions",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "commits",
+        "sourceSystemId": "github_actions",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "workflow_runs",
+        "sourceSystemId": "github_actions",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "rolled_back"
+            ],
+            "required": true
+          },
+          {
+            "name": "duration_seconds",
+            "type": "number",
+            "min": 5,
+            "max": 7200,
+            "required": true
+          },
+          {
+            "name": "started_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "environment",
+            "type": "enum",
+            "values": [
+              "dev",
+              "staging",
+              "prod"
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "alerts",
+        "sourceSystemId": "datadog",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "monitors",
+        "sourceSystemId": "datadog",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "metrics_snapshots",
+        "sourceSystemId": "datadog",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "ci-cd-pipeline-optimizer-runbook",
+        "sourceSystemId": "datadog",
+        "type": "runbook",
+        "title": "CI/CD Pipeline Optimizer Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "pipeline_runs",
+          "deployments",
+          "test_results"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "jenkins_recommend_api",
+        "sourceSystemId": "jenkins",
+        "method": "POST",
+        "path": "/api/jenkins/recommend",
+        "description": "Synchronous endpoint the agent calls to recommend in Jenkins after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "ci-cd-pipeline-optimizer-baseline-gap",
+        "description": "Seed a realistic gap where Build failure investigation sits between 45 min/failure and Auto-diagnosed, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "pipeline_runs",
+          "deployments"
+        ],
+        "discoveryPath": [
+          "Inspect Jenkins records for the affected entities",
+          "Compare against GitHub Actions historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next DevOps Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "ci_cd_pipeline_optimizer",
+        "schemas": [
+          "jenkins",
+          "github_actions",
+          "argocd"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_ci_cd_pipeline_optimizer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "ci-cd-pipeline-optimizer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "ci-cd-pipeline-optimizer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the CI/CD Pipeline Optimizer workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "DevOps Lead agent for the CI/CD Pipeline Optimizer workflow",
+      "primaryObjective": "Gemini diagnoses pipeline failures with contextual fix recommendations — not generic error messages. Flaky tests automatically identified and quarantined, with tickets created for permanent fixes. so the DevOps Lead can move the Build failure investigation KPI.",
+      "inScope": [
+        "Gemini diagnoses pipeline failures with contextual fix recommendations — not generic error messages",
+        "Flaky tests automatically identified and quarantined, with tickets created for permanent fixes",
+        "Build time regression detection catches slowdowns within one sprint, not after months of drift"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_jenkins_pipeline_runs",
+          "kind": "query",
+          "sourceSystemId": "jenkins",
+          "description": "Retrieve pipeline runs from Jenkins for the CI/CD Pipeline Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "pipeline_runs_records",
+            "pipeline_runs_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_github_actions_pull_requests",
+          "kind": "query",
+          "sourceSystemId": "github_actions",
+          "description": "Retrieve pull requests from GitHub Actions for the CI/CD Pipeline Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "pull_requests_records",
+            "pull_requests_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_argocd_pipeline_runs",
+          "kind": "query",
+          "sourceSystemId": "argocd",
+          "description": "Retrieve pipeline runs from ArgoCD for the CI/CD Pipeline Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "pipeline_runs_records",
+            "pipeline_runs_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_datadog_alerts",
+          "kind": "query",
+          "sourceSystemId": "datadog",
+          "description": "Retrieve alerts from Datadog for the CI/CD Pipeline Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "alerts_records",
+            "alerts_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_ci_cd_pipeline_optimizer_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "datadog",
+          "description": "Look up sections of the CI/CD Pipeline Optimizer Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_jenkins_recommend",
+          "kind": "action",
+          "sourceSystemId": "jenkins",
+          "description": "Execute the recommend step in Jenkins after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "telemetry_collection",
+            "label": "Telemetry Collection",
+            "description": "Collect pipeline telemetry from Jenkins, GitHub Actions, and ArgoCD — build times, failure rates, deployment frequency, and stage durations across all repositories.",
+            "tools": [
+              "query_jenkins_pipeline_runs",
+              "query_github_actions_pull_requests",
+              "query_argocd_pipeline_runs",
+              "lookup_ci_cd_pipeline_optimizer_runbook",
+              "action_jenkins_recommend"
+            ]
+          },
+          {
+            "id": "bottleneck_flaky_test_detection",
+            "label": "Bottleneck & Flaky Test Detection",
+            "description": "Identify pipeline bottlenecks through build time regression analysis. Detect flaky tests via pass/fail pattern analysis. Score parallelization opportunities by measuring stage dependencies.",
+            "tools": [
+              "query_jenkins_pipeline_runs",
+              "query_argocd_pipeline_runs",
+              "lookup_ci_cd_pipeline_optimizer_runbook"
+            ]
+          },
+          {
+            "id": "contextual_fix_recommendations",
+            "label": "Contextual Fix Recommendations",
+            "description": "Gemini analyzes pipeline failures: 'checkout-service failed 12 times this week — 8 from the same integration test depending on an external API mock. Recommend extracting mock to shared fixture and adding retry logic.'",
+            "tools": [
+              "query_jenkins_pipeline_runs",
+              "query_argocd_pipeline_runs",
+              "lookup_ci_cd_pipeline_optimizer_runbook",
+              "action_jenkins_recommend"
+            ]
+          },
+          {
+            "id": "action_reporting",
+            "label": "Action & Reporting",
+            "description": "Pipeline health report generated with prioritized fixes. Auto-generated Jira tickets for recurring issues. Flaky tests auto-quarantined to unblock deployments.",
+            "tools": [
+              "query_jenkins_pipeline_runs",
+              "query_argocd_pipeline_runs",
+              "lookup_ci_cd_pipeline_optimizer_runbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Build failure investigation moved from 45 min/failure toward Auto-diagnosed",
+          "mustCite": [
+            "jenkins.pipeline_runs",
+            "github_actions.pull_requests"
+          ],
+          "sourceSystemIds": [
+            "jenkins",
+            "github_actions"
+          ]
+        },
+        {
+          "claim": "Flaky test detection moved from Manual tracking toward Auto-quarantined",
+          "mustCite": [
+            "jenkins.pipeline_runs",
+            "github_actions.pull_requests"
+          ],
+          "sourceSystemIds": [
+            "jenkins",
+            "github_actions"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Build failure investigation regresses past the 45 min/failure baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "DevOps Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed recommend action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Jenkins (and other named systems) entities.",
+        "Never bypass DevOps Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "ci-cd-pipeline-optimizer-end-to-end",
+          "prompt": "Run the CI/CD Pipeline Optimizer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_jenkins_pipeline_runs",
+            "query_github_actions_pull_requests",
+            "query_argocd_pipeline_runs",
+            "query_datadog_alerts",
+            "lookup_ci_cd_pipeline_optimizer_runbook",
+            "action_jenkins_recommend"
+          ],
+          "mustReferenceEntities": [
+            "pipeline_runs",
+            "pull_requests",
+            "pipeline_runs",
+            "alerts",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "ci-cd-pipeline-optimizer-runbook"
+          ],
+          "expectedActionOutcome": "Action recommend executed against Jenkins, with audit-trail entry and DevOps Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute recommend without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/CICDPipelineOptimizer.tsx",
+    "familyId": "ci-cd-pipeline-optimizer",
+    "variant": {
+      "familyId": "ci-cd-pipeline-optimizer",
+      "variantId": "ci-cd-pipeline-optimizer",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

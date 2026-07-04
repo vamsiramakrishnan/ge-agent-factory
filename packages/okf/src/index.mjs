@@ -178,6 +178,21 @@ export function joinBundle(outDir, ...segments) {
 // https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
 export const GE_OKF_CONCEPT_TYPES = [
   "Agent","Enterprise Agent Contract","Capability","Query Capability","Workflow","Source System","Tool","Agent Tool","Entity","Field","Document","Policy","Claim","Evidence","Eval","Synthetic World","Persona","Risk","Reference","Bench Profile","Proof Obligation","Promotion Gate",
+  // Quality-bearing authoring types compiled into the optional spec extensions
+  // by ./compile (see src/compile/index.mjs for the frontmatter/section
+  // grammar each type must follow to parse deterministically):
+  //   Grounding Contract → behaviorContract.groundingContracts
+  //   Tool Contract      → behaviorContract.toolContracts
+  //   Error Path         → behaviorContract.errorPathBehavior
+  //   SLO                → behaviorContract.slos
+  //   Variant Binding    → generationSpec.bindings (variant resolution input)
+  // Provenance is deliberately NOT a concept type: it is single-valued
+  // bundle-level metadata with no outgoing relationships, so it lives in the
+  // ROOT index.md frontmatter (provenance_origin, provenance_source_ref,
+  // provenance_version, provenance_owner, provenance_status,
+  // provenance_created_at, provenance_lineage) — one provenance per bundle by
+  // construction, readable without loading any concept.
+  "Grounding Contract","Tool Contract","Error Path","SLO","Variant Binding",
 ];
 
 export function conceptIdFromPath(relPath) {
@@ -248,4 +263,21 @@ export function baseConformance(bundle) {
   const blockers = (bundle.warnings || []).filter(w=>w.level === "error");
   return { ok: blockers.length === 0, blockers, warnings: (bundle.warnings || []).filter(w=>w.level !== "error") };
 }
-export function geOkfProfile() { return { conceptTypes: GE_OKF_CONCEPT_TYPES, requiredSectionsByType: {}, recommendedSectionsByType: { Claim:["Claim","Authority","Citations"], Capability:["Capability","Tools","Evals"], Tool:["Tool","Source Systems","Confirmation","Idempotency"], Eval:["Eval","Covered Capabilities"] }, semanticRules: [] }; }
+export function geOkfProfile() { return { conceptTypes: GE_OKF_CONCEPT_TYPES, requiredSectionsByType: {}, recommendedSectionsByType: {
+  Claim:["Claim","Authority","Citations"],
+  Capability:["Capability","Tools","Evals"],
+  Tool:["Tool","Source Systems","Confirmation","Idempotency"],
+  Eval:["Eval","Covered Capabilities"],
+  // Query Capability may additionally carry its system dependencies
+  // (compiled into behaviorContract.capabilityDependencies).
+  "Query Capability":["Tools used","Evidence expected","Requires Systems","Fallback"],
+  // Structured policies (compiled into refusalPolicies/escalationPolicies when
+  // frontmatter carries policy_kind + trigger_kind).
+  Policy:["Rule","Trigger","Response","Rationale"],
+  "Grounding Contract":["Evidence"],
+  "Tool Contract":["Preconditions","Postconditions"],
+  Persona:["Role","Goals","Vocabulary","Simulation Instruction"],
+  "Error Path":["Fallback","Tool Overrides"],
+  SLO:["Task Success","Latency","Containment"],
+  "Variant Binding":["System Bindings","Terminology","Policy Overlays","Workflow Overrides"],
+}, semanticRules: [] }; }

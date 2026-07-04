@@ -1,0 +1,1170 @@
+{
+  "id": "candidate-sourcing-outreach-agent",
+  "title": "Candidate Sourcing & Outreach Agent",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/CandidateSourcing.tsx",
+  "subtitle": "A-203 • Sourcing & Candidate Pipeline",
+  "persona": "Recruiter",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-2",
+  "systems": [
+    "LinkedIn",
+    "Indeed",
+    "ATS",
+    "Gmail"
+  ],
+  "kpis": [
+    {
+      "label": "Sourcing channels",
+      "before": "2-3",
+      "after": "10+"
+    },
+    {
+      "label": "Outreach personalization",
+      "before": "Template",
+      "after": "AI-crafted"
+    },
+    {
+      "label": "Passive pipeline",
+      "before": "Ad-hoc",
+      "after": "Automated"
+    }
+  ],
+  "statusQuo": [
+    "Sourcing limited to job boards and LinkedIn InMail blasts with low response rates on passive candidates.",
+    "Passive candidate nurture is manual, inconsistent, and drops off after initial outreach attempts.",
+    "No unified view of candidate interactions across channels, leading to duplicate outreach and poor candidate experience."
+  ],
+  "agentification": [
+    "Multi-channel intelligent sourcing across internal databases, professional networks, and talent communities.",
+    "Personalized outreach sequences tailored to candidate profiles, career interests, and engagement signals.",
+    "Automated passive candidate nurture campaigns with adaptive timing and content based on response patterns."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "LinkedIn",
+        "description": "Professional profiles, talent pool search, InMail outreach"
+      },
+      {
+        "system": "Indeed",
+        "description": "Resume database search, candidate discovery"
+      },
+      {
+        "system": "Greenhouse",
+        "description": "Requisition details, candidate pipeline, ATS records"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Candidate matching, personalized outreach generation"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Req Analysis & Strategy",
+        "description": "Parse role requirements from Greenhouse. Determine optimal sourcing channels and candidate profiles based on role type, seniority, and market conditions."
+      },
+      {
+        "label": "Multi-Channel Search",
+        "description": "Intelligent candidate identification across LinkedIn, Indeed, and internal databases. Gemini scores candidate-role fit beyond keyword matching."
+      },
+      {
+        "label": "Personalized Outreach",
+        "description": "AI-crafted outreach sequences tailored to candidate backgrounds, career interests, and engagement signals. Adaptive timing and follow-up."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Candidate Sourcing & Outreach Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "linkedin",
+        "name": "LinkedIn",
+        "owns": [
+          "linkedin_records",
+          "linkedin_events",
+          "linkedin_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_linkedin_linkedin_records",
+          "query_linkedin_linkedin_events",
+          "query_linkedin_linkedin_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "indeed",
+        "name": "Indeed",
+        "owns": [
+          "indeed_records",
+          "indeed_events",
+          "indeed_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_indeed_indeed_records",
+          "query_indeed_indeed_events",
+          "query_indeed_indeed_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "ats",
+        "name": "ATS",
+        "owns": [
+          "ats_records",
+          "ats_events",
+          "ats_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_ats_ats_records",
+          "query_ats_ats_events",
+          "query_ats_ats_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "gmail",
+        "name": "Gmail",
+        "owns": [
+          "messages",
+          "threads",
+          "delivery_receipts"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_gmail_messages",
+          "query_gmail_threads",
+          "query_gmail_delivery_receipts"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "linkedin_records",
+        "sourceSystemId": "linkedin",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "linkedin_events",
+        "sourceSystemId": "linkedin",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "linkedin_record_id",
+            "type": "ref",
+            "ref": "linkedin_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "linkedin_audit_trail",
+        "sourceSystemId": "linkedin",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "indeed_records",
+        "sourceSystemId": "indeed",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "indeed_events",
+        "sourceSystemId": "indeed",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "indeed_record_id",
+            "type": "ref",
+            "ref": "indeed_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "indeed_audit_trail",
+        "sourceSystemId": "indeed",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "ats_records",
+        "sourceSystemId": "ats",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "ats_events",
+        "sourceSystemId": "ats",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "ats_record_id",
+            "type": "ref",
+            "ref": "ats_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "ats_audit_trail",
+        "sourceSystemId": "ats",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "gmail",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "threads",
+        "sourceSystemId": "gmail",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "delivery_receipts",
+        "sourceSystemId": "gmail",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "linkedin_events.linkedin_record_id",
+        "to": "linkedin_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "indeed_events.indeed_record_id",
+        "to": "indeed_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "ats_events.ats_record_id",
+        "to": "ats_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "candidate-sourcing-outreach-agent-policy-handbook",
+        "sourceSystemId": "linkedin",
+        "type": "policy",
+        "title": "Candidate Sourcing & Outreach Agent Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "linkedin_records",
+          "linkedin_events",
+          "linkedin_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "linkedin_file_api",
+        "sourceSystemId": "linkedin",
+        "method": "POST",
+        "path": "/api/linkedin/file",
+        "description": "Synchronous endpoint the agent calls to file in LinkedIn after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "candidate-sourcing-outreach-agent-baseline-gap",
+        "description": "Seed a realistic gap where Sourcing channels sits between 2-3 and 10+, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "linkedin_records",
+          "linkedin_events"
+        ],
+        "discoveryPath": [
+          "Inspect LinkedIn records for the affected entities",
+          "Compare against Indeed historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Recruiter action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "candidate_sourcing_outreach_agent",
+        "schemas": [
+          "linkedin",
+          "indeed",
+          "ats",
+          "gmail"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_candidate_sourcing_outreach_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "candidate-sourcing-outreach-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "candidate-sourcing-outreach-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Candidate Sourcing & Outreach Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Recruiter agent for the Candidate Sourcing & Outreach Agent workflow",
+      "primaryObjective": "Multi-channel intelligent sourcing across internal databases, professional networks, and talent communities. Personalized outreach sequences tailored to candidate profiles, career interests, and engagement signals. so the Recruiter can move the Sourcing channels KPI.",
+      "inScope": [
+        "Multi-channel intelligent sourcing across internal databases, professional networks, and talent communities",
+        "Personalized outreach sequences tailored to candidate profiles, career interests, and engagement signals",
+        "Automated passive candidate nurture campaigns with adaptive timing and content based on response patterns"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_linkedin_linkedin_records",
+          "kind": "query",
+          "sourceSystemId": "linkedin",
+          "description": "Retrieve linkedin records from LinkedIn for the Candidate Sourcing & Outreach Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "linkedin_records_records",
+            "linkedin_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_indeed_indeed_records",
+          "kind": "query",
+          "sourceSystemId": "indeed",
+          "description": "Retrieve indeed records from Indeed for the Candidate Sourcing & Outreach Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "indeed_records_records",
+            "indeed_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_ats_ats_records",
+          "kind": "query",
+          "sourceSystemId": "ats",
+          "description": "Retrieve ats records from ATS for the Candidate Sourcing & Outreach Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "ats_records_records",
+            "ats_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_gmail_messages",
+          "kind": "query",
+          "sourceSystemId": "gmail",
+          "description": "Retrieve messages from Gmail for the Candidate Sourcing & Outreach Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_candidate_sourcing_outreach_agent_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "linkedin",
+          "description": "Look up sections of the Candidate Sourcing & Outreach Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_linkedin_file",
+          "kind": "action",
+          "sourceSystemId": "linkedin",
+          "description": "Execute the file step in LinkedIn after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "req_analysis_strategy",
+            "label": "Req Analysis & Strategy",
+            "description": "Parse role requirements from Greenhouse. Determine optimal sourcing channels and candidate profiles based on role type, seniority, and market conditions.",
+            "tools": [
+              "lookup_candidate_sourcing_outreach_agent_policy_handbook",
+              "action_linkedin_file"
+            ]
+          },
+          {
+            "id": "multi_channel_search",
+            "label": "Multi-Channel Search",
+            "description": "Intelligent candidate identification across LinkedIn, Indeed, and internal databases. Gemini scores candidate-role fit beyond keyword matching.",
+            "tools": [
+              "query_linkedin_linkedin_records",
+              "query_indeed_indeed_records",
+              "lookup_candidate_sourcing_outreach_agent_policy_handbook",
+              "action_linkedin_file"
+            ]
+          },
+          {
+            "id": "personalized_outreach",
+            "label": "Personalized Outreach",
+            "description": "AI-crafted outreach sequences tailored to candidate backgrounds, career interests, and engagement signals. Adaptive timing and follow-up.",
+            "tools": [
+              "lookup_candidate_sourcing_outreach_agent_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Sourcing channels moved from 2-3 toward 10+",
+          "mustCite": [
+            "linkedin.linkedin_records",
+            "indeed.indeed_records"
+          ],
+          "sourceSystemIds": [
+            "linkedin",
+            "indeed"
+          ]
+        },
+        {
+          "claim": "Outreach personalization moved from Template toward AI-crafted",
+          "mustCite": [
+            "linkedin.linkedin_records",
+            "indeed.indeed_records"
+          ],
+          "sourceSystemIds": [
+            "linkedin",
+            "indeed"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Sourcing channels regresses past the 2-3 baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Recruiter",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed file action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from LinkedIn (and other named systems) entities.",
+        "Never bypass Recruiter approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "candidate-sourcing-outreach-agent-end-to-end",
+          "prompt": "Run the Candidate Sourcing & Outreach Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_linkedin_linkedin_records",
+            "query_indeed_indeed_records",
+            "query_ats_ats_records",
+            "query_gmail_messages",
+            "lookup_candidate_sourcing_outreach_agent_policy_handbook",
+            "action_linkedin_file"
+          ],
+          "mustReferenceEntities": [
+            "linkedin_records",
+            "indeed_records",
+            "ats_records",
+            "messages"
+          ],
+          "mustCiteDocuments": [
+            "candidate-sourcing-outreach-agent-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action file executed against LinkedIn, with audit-trail entry and Recruiter notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute file without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/CandidateSourcing.tsx",
+    "familyId": "candidate-sourcing-outreach-agent",
+    "variant": {
+      "familyId": "candidate-sourcing-outreach-agent",
+      "variantId": "candidate-sourcing-outreach-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

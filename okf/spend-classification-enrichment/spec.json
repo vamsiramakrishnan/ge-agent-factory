@@ -1,0 +1,1520 @@
+{
+  "id": "spend-classification-enrichment",
+  "title": "Spend Classification & Enrichment",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SpendClassificationEnrichment.tsx",
+  "subtitle": "A-1201 • Strategic Sourcing",
+  "persona": "Procurement Analytics Lead",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-12",
+  "systems": [
+    "SAP S/4HANA FI/MM",
+    "Coupa",
+    "SpendHQ",
+    "Sievo",
+    "BigQuery"
+  ],
+  "kpis": [
+    {
+      "label": "Classification accuracy",
+      "before": "78%",
+      "after": "96%"
+    },
+    {
+      "label": "Unclassified spend",
+      "before": "15-20%",
+      "after": "<2%"
+    },
+    {
+      "label": "Supplier duplicates",
+      "before": "12% of master",
+      "after": "<1%"
+    }
+  ],
+  "statusQuo": [
+    "PO line descriptions like 'per quote #4521' or 'project materials — see attachment' defeat rule-based classifiers.",
+    "Supplier master has 12%+ duplicate records from typos, legal entity variants, and acquisition-driven name changes.",
+    "Category managers spend Monday mornings reconciling spend data across 3 systems before any analysis begins."
+  ],
+  "agentification": [
+    "Gemini reads vendor context, cost center, and purchase history to classify the 20% of transactions that ML cannot confidently handle.",
+    "LLM reasons about entity relationships — 'Acme Corp' vs. 'Acme Holdings GmbH' — using business judgment, not just string matching.",
+    "Overnight enrichment means category managers arrive to a clean, classified spend cube ready for strategic analysis."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "SAP S/4HANA FI/MM",
+        "description": "PO and invoice line items with vendor, material group, cost center"
+      },
+      {
+        "system": "Coupa",
+        "description": "Requisition and PO data from cloud procurement platform"
+      },
+      {
+        "system": "SpendHQ",
+        "description": "Spend analytics platform with UNSPSC taxonomy engine"
+      },
+      {
+        "system": "Sievo",
+        "description": "Supplier entity resolution and spend enrichment"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Enriched dimensional spend cube for downstream analytics"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "LLM disambiguation of ambiguous PO descriptions and entity reasoning"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Data Extraction",
+        "description": "Extract PO and invoice line items from SAP S/4HANA and Coupa. Normalize fields across source systems into a common schema for classification."
+      },
+      {
+        "label": "ML Taxonomy Classification",
+        "description": "UNSPSC/eClass L1-L4 classification on structured fields — vendor name, material group, cost center. Confidence scoring determines which records route to LLM for disambiguation."
+      },
+      {
+        "label": "LLM Disambiguation & Entity Resolution",
+        "description": "Gemini interprets the 20% of transactions that ML cannot confidently classify — descriptions like 'misc. parts per drawing Rev C.' Reads vendor context, cost center, and purchase history. Resolves supplier name variants using business judgment."
+      },
+      {
+        "label": "Spend Cube Load",
+        "description": "Enriched, classified, and entity-resolved spend data loaded into BigQuery dimensional model for downstream analytics and dashboarding."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Spend Classification & Enrichment so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "sap_s_4hana_fi_mm",
+        "name": "SAP S/4HANA FI/MM",
+        "owns": [
+          "gl_entries",
+          "subledger_balances",
+          "open_items"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_fi_mm_gl_entries",
+          "query_sap_s_4hana_fi_mm_subledger_balances",
+          "query_sap_s_4hana_fi_mm_open_items"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "coupa",
+        "name": "Coupa",
+        "owns": [
+          "requisitions",
+          "purchase_orders",
+          "invoices"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_coupa_requisitions",
+          "query_coupa_purchase_orders",
+          "query_coupa_invoices"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "spendhq",
+        "name": "SpendHQ",
+        "owns": [
+          "spendhq_records",
+          "spendhq_events",
+          "spendhq_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_spendhq_spendhq_records",
+          "query_spendhq_spendhq_events",
+          "query_spendhq_spendhq_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "sievo",
+        "name": "Sievo",
+        "owns": [
+          "sievo_records",
+          "sievo_events",
+          "sievo_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sievo_sievo_records",
+          "query_sievo_sievo_events",
+          "query_sievo_sievo_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "gl_entries",
+        "sourceSystemId": "sap_s_4hana_fi_mm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "subledger_balances",
+        "sourceSystemId": "sap_s_4hana_fi_mm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "open_items",
+        "sourceSystemId": "sap_s_4hana_fi_mm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "requisitions",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "purchase_orders",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "invoices",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "spendhq_records",
+        "sourceSystemId": "spendhq",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "spendhq_events",
+        "sourceSystemId": "spendhq",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "spendhq_record_id",
+            "type": "ref",
+            "ref": "spendhq_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "spendhq_audit_trail",
+        "sourceSystemId": "spendhq",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sievo_records",
+        "sourceSystemId": "sievo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sievo_events",
+        "sourceSystemId": "sievo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "sievo_record_id",
+            "type": "ref",
+            "ref": "sievo_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "sievo_audit_trail",
+        "sourceSystemId": "sievo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "spendhq_events.spendhq_record_id",
+        "to": "spendhq_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "sievo_events.sievo_record_id",
+        "to": "sievo_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "spend-classification-enrichment-policy-guide",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Spend Classification & Enrichment Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "gl_entries",
+          "subledger_balances",
+          "open_items"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "sap_s_4hana_fi_mm_enrich_api",
+        "sourceSystemId": "sap_s_4hana_fi_mm",
+        "method": "POST",
+        "path": "/api/sap_s_4hana_fi_mm/enrich",
+        "description": "Synchronous endpoint the agent calls to enrich in SAP S/4HANA FI/MM after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "spend-classification-enrichment-baseline-gap",
+        "description": "Seed a realistic gap where Classification accuracy sits between 78% and 96%, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "gl_entries",
+          "subledger_balances"
+        ],
+        "discoveryPath": [
+          "Inspect SAP S/4HANA FI/MM records for the affected entities",
+          "Compare against Coupa historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Procurement Analytics Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "spend_classification_enrichment",
+        "schemas": [
+          "sap_s_4hana_fi_mm",
+          "coupa",
+          "spendhq",
+          "sievo"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_spend_classification_enrichment",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "spend-classification-enrichment-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "spend-classification-enrichment-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Spend Classification & Enrichment workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Procurement Analytics Lead agent for the Spend Classification & Enrichment workflow",
+      "primaryObjective": "Gemini reads vendor context, cost center, and purchase history to classify the 20% of transactions that ML cannot confidently handle. LLM reasons about entity relationships — 'Acme Corp' vs. 'Acme Holdings GmbH' — using business judgment, not just string matching. so the Procurement Analytics Lead can move the Classification accuracy KPI.",
+      "inScope": [
+        "Gemini reads vendor context, cost center, and purchase history to classify the 20% of transactions that ML cannot confidently handle",
+        "LLM reasons about entity relationships — 'Acme Corp' vs. 'Acme Holdings GmbH' — using business judgment, not just string matching",
+        "Overnight enrichment means category managers arrive to a clean, classified spend cube ready for strategic analysis"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_fi_mm_gl_entries",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_fi_mm",
+          "description": "Retrieve gl entries from SAP S/4HANA FI/MM for the Spend Classification & Enrichment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "gl_entries_records",
+            "gl_entries_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_coupa_requisitions",
+          "kind": "query",
+          "sourceSystemId": "coupa",
+          "description": "Retrieve requisitions from Coupa for the Spend Classification & Enrichment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "requisitions_records",
+            "requisitions_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_spendhq_spendhq_records",
+          "kind": "query",
+          "sourceSystemId": "spendhq",
+          "description": "Retrieve spendhq records from SpendHQ for the Spend Classification & Enrichment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "spendhq_records_records",
+            "spendhq_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_sievo_sievo_records",
+          "kind": "query",
+          "sourceSystemId": "sievo",
+          "description": "Retrieve sievo records from Sievo for the Spend Classification & Enrichment workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sievo_records_records",
+            "sievo_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_spend_classification_enrichment_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Spend Classification & Enrichment Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_s_4hana_fi_mm_enrich",
+          "kind": "action",
+          "sourceSystemId": "sap_s_4hana_fi_mm",
+          "description": "Execute the enrich step in SAP S/4HANA FI/MM after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "data_extraction",
+            "label": "Data Extraction",
+            "description": "Extract PO and invoice line items from SAP S/4HANA and Coupa. Normalize fields across source systems into a common schema for classification.",
+            "tools": [
+              "query_sap_s_4hana_fi_mm_gl_entries",
+              "query_coupa_requisitions",
+              "lookup_spend_classification_enrichment_policy_guide",
+              "action_sap_s_4hana_fi_mm_enrich"
+            ]
+          },
+          {
+            "id": "ml_taxonomy_classification",
+            "label": "ML Taxonomy Classification",
+            "description": "UNSPSC/eClass L1-L4 classification on structured fields — vendor name, material group, cost center. Confidence scoring determines which records route to LLM for disambiguation.",
+            "tools": [
+              "query_spendhq_spendhq_records",
+              "query_sievo_sievo_records",
+              "lookup_spend_classification_enrichment_policy_guide"
+            ]
+          },
+          {
+            "id": "spend_cube_load",
+            "label": "Spend Cube Load",
+            "description": "Enriched, classified, and entity-resolved spend data loaded into BigQuery dimensional model for downstream analytics and dashboarding.",
+            "tools": [
+              "lookup_spend_classification_enrichment_policy_guide",
+              "action_sap_s_4hana_fi_mm_enrich"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Classification accuracy moved from 78% toward 96%",
+          "mustCite": [
+            "sap_s_4hana_fi_mm.gl_entries",
+            "coupa.requisitions"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_fi_mm",
+            "coupa"
+          ]
+        },
+        {
+          "claim": "Unclassified spend moved from 15-20% toward <2%",
+          "mustCite": [
+            "sap_s_4hana_fi_mm.gl_entries",
+            "coupa.requisitions"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_fi_mm",
+            "coupa"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Classification accuracy regresses past the 78% baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Procurement Analytics Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed enrich action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI/MM (and other named systems) entities.",
+        "Never bypass Procurement Analytics Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "spend-classification-enrichment-end-to-end",
+          "prompt": "Run the Spend Classification & Enrichment workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_fi_mm_gl_entries",
+            "query_coupa_requisitions",
+            "query_spendhq_spendhq_records",
+            "query_sievo_sievo_records",
+            "lookup_spend_classification_enrichment_policy_guide",
+            "action_sap_s_4hana_fi_mm_enrich"
+          ],
+          "mustReferenceEntities": [
+            "gl_entries",
+            "requisitions",
+            "spendhq_records",
+            "sievo_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "spend-classification-enrichment-policy-guide"
+          ],
+          "expectedActionOutcome": "Action enrich executed against SAP S/4HANA FI/MM, with audit-trail entry and Procurement Analytics Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute enrich without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SpendClassificationEnrichment.tsx",
+    "familyId": "spend-classification-enrichment",
+    "variant": {
+      "familyId": "spend-classification-enrichment",
+      "variantId": "spend-classification-enrichment",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

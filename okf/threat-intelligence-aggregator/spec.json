@@ -1,0 +1,989 @@
+{
+  "id": "threat-intelligence-aggregator",
+  "title": "Threat Intelligence Aggregator",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/ThreatIntelligenceAggregator.tsx",
+  "subtitle": "IT4-01 • Cybersecurity & Threat Management",
+  "persona": "CISO / Security Analyst",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "scheduled",
+  "domainId": "domain-41",
+  "systems": [
+    "CrowdStrike Falcon",
+    "Chronicle SIEM",
+    "MITRE ATT&CK",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Threat contextualization time",
+      "before": "4-6 hours",
+      "after": "15 minutes"
+    },
+    {
+      "label": "IOC-to-asset correlation",
+      "before": "Manual lookup",
+      "after": "Automated real-time"
+    },
+    {
+      "label": "Actionable threat coverage",
+      "before": "30% of feeds",
+      "after": "95% of feeds"
+    }
+  ],
+  "statusQuo": [
+    "Threat feeds reviewed manually across multiple dashboards with limited correlation to internal assets.",
+    "IOC matching done reactively after incidents rather than proactively against asset inventory.",
+    "Threat briefs written ad-hoc without consistent framework or business context."
+  ],
+  "agentification": [
+    "Gemini correlates threat feeds against asset inventory in real time, surfacing only threats relevant to the organization's stack.",
+    "LLM generates MITRE ATT&CK-mapped threat briefs with specific remediation steps for affected systems.",
+    "Continuous monitoring replaces periodic review, reducing mean-time-to-awareness from days to minutes."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "CrowdStrike Falcon",
+        "description": "Threat intel feeds, IOC signatures, adversary profiles"
+      },
+      {
+        "system": "Chronicle SIEM",
+        "description": "Security event correlation, log aggregation"
+      },
+      {
+        "system": "MITRE ATT&CK",
+        "description": "Adversary tactics, techniques, and procedures framework"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Asset inventory, vulnerability history, network topology"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Threat contextualization, natural language threat briefs"
+      },
+      {
+        "system": "Splunk",
+        "description": "Historical security event search, forensic queries"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Threat Feed Ingestion",
+        "description": "Ingest threat intelligence feeds from CrowdStrike, Chronicle, and MITRE ATT&CK. Normalize IOCs (IPs, domains, hashes, CVEs) into a unified schema."
+      },
+      {
+        "label": "Asset Correlation & Exposure Analysis",
+        "description": "Match IOCs against internal asset inventory, installed software versions, and network telemetry. Score exposure based on internet-facing status and data sensitivity."
+      },
+      {
+        "label": "Threat Contextualization",
+        "description": "Gemini generates actionable threat briefs explaining why a threat matters to this specific organization, mapping to MITRE ATT&CK techniques and recommending countermeasures."
+      },
+      {
+        "label": "Distribution & Tracking",
+        "description": "Threat advisory distributed to relevant teams based on affected assets. Remediation actions tracked through to completion."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Threat Intelligence Aggregator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "crowdstrike_falcon",
+        "name": "CrowdStrike Falcon",
+        "owns": [
+          "scan_findings",
+          "asset_inventory",
+          "remediation_tasks"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_crowdstrike_falcon_scan_findings",
+          "query_crowdstrike_falcon_asset_inventory",
+          "query_crowdstrike_falcon_remediation_tasks"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "chronicle_siem",
+        "name": "Chronicle SIEM",
+        "owns": [
+          "chronicle_siem_records",
+          "chronicle_siem_events",
+          "chronicle_siem_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_chronicle_siem_chronicle_siem_records",
+          "query_chronicle_siem_chronicle_siem_events",
+          "query_chronicle_siem_chronicle_siem_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "mitre_att_ck",
+        "name": "MITRE ATT&CK",
+        "owns": [
+          "mitre_att_ck_records",
+          "mitre_att_ck_events",
+          "mitre_att_ck_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_mitre_att_ck_mitre_att_ck_records",
+          "query_mitre_att_ck_mitre_att_ck_events",
+          "query_mitre_att_ck_mitre_att_ck_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "scan_findings",
+        "sourceSystemId": "crowdstrike_falcon",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "severity",
+            "type": "enum",
+            "values": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "weights": [
+              0.4,
+              0.35,
+              0.2,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "mitigated",
+              "accepted_risk",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "detected_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "asset",
+            "type": "lorem.words",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "asset_inventory",
+        "sourceSystemId": "crowdstrike_falcon",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "remediation_tasks",
+        "sourceSystemId": "crowdstrike_falcon",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "chronicle_siem_records",
+        "sourceSystemId": "chronicle_siem",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "chronicle_siem_events",
+        "sourceSystemId": "chronicle_siem",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "chronicle_siem_record_id",
+            "type": "ref",
+            "ref": "chronicle_siem_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "chronicle_siem_audit_trail",
+        "sourceSystemId": "chronicle_siem",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "mitre_att_ck_records",
+        "sourceSystemId": "mitre_att_ck",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "mitre_att_ck_events",
+        "sourceSystemId": "mitre_att_ck",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "mitre_att_ck_record_id",
+            "type": "ref",
+            "ref": "mitre_att_ck_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "mitre_att_ck_audit_trail",
+        "sourceSystemId": "mitre_att_ck",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "chronicle_siem_events.chronicle_siem_record_id",
+        "to": "chronicle_siem_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "mitre_att_ck_events.mitre_att_ck_record_id",
+        "to": "mitre_att_ck_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "threat-intelligence-aggregator-runbook",
+        "sourceSystemId": "crowdstrike_falcon",
+        "type": "runbook",
+        "title": "Threat Intelligence Aggregator Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "scan_findings",
+          "asset_inventory",
+          "remediation_tasks"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "crowdstrike_falcon_generate_api",
+        "sourceSystemId": "crowdstrike_falcon",
+        "method": "POST",
+        "path": "/api/crowdstrike_falcon/generate",
+        "description": "Synchronous endpoint the agent calls to generate in CrowdStrike Falcon after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "threat-intelligence-aggregator-baseline-gap",
+        "description": "Seed a realistic gap where Threat contextualization time sits between 4-6 hours and 15 minutes, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "scan_findings",
+          "asset_inventory"
+        ],
+        "discoveryPath": [
+          "Inspect CrowdStrike Falcon records for the affected entities",
+          "Compare against Chronicle SIEM historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next CISO / Security Analyst action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "threat_intelligence_aggregator",
+        "schemas": [
+          "crowdstrike_falcon",
+          "chronicle_siem",
+          "mitre_att_ck"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_threat_intelligence_aggregator",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "threat-intelligence-aggregator-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "threat-intelligence-aggregator-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Threat Intelligence Aggregator workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "CISO / Security Analyst agent for the Threat Intelligence Aggregator workflow",
+      "primaryObjective": "Gemini correlates threat feeds against asset inventory in real time, surfacing only threats relevant to the organization's stack. LLM generates MITRE ATT&CK-mapped threat briefs with specific remediation steps for affected systems. so the CISO / Security Analyst can move the Threat contextualization time KPI.",
+      "inScope": [
+        "Gemini correlates threat feeds against asset inventory in real time, surfacing only threats relevant to the organization's stack",
+        "LLM generates MITRE ATT&CK-mapped threat briefs with specific remediation steps for affected systems",
+        "Continuous monitoring replaces periodic review, reducing mean-time-to-awareness from days to minutes"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_crowdstrike_falcon_scan_findings",
+          "kind": "query",
+          "sourceSystemId": "crowdstrike_falcon",
+          "description": "Retrieve scan findings from CrowdStrike Falcon for the Threat Intelligence Aggregator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "scan_findings_records",
+            "scan_findings_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_chronicle_siem_chronicle_siem_records",
+          "kind": "query",
+          "sourceSystemId": "chronicle_siem",
+          "description": "Retrieve chronicle siem records from Chronicle SIEM for the Threat Intelligence Aggregator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "chronicle_siem_records_records",
+            "chronicle_siem_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_mitre_att_ck_mitre_att_ck_records",
+          "kind": "query",
+          "sourceSystemId": "mitre_att_ck",
+          "description": "Retrieve mitre att ck records from MITRE ATT&CK for the Threat Intelligence Aggregator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "mitre_att_ck_records_records",
+            "mitre_att_ck_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_threat_intelligence_aggregator_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "crowdstrike_falcon",
+          "description": "Look up sections of the Threat Intelligence Aggregator Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_crowdstrike_falcon_generate",
+          "kind": "action",
+          "sourceSystemId": "crowdstrike_falcon",
+          "description": "Execute the generate step in CrowdStrike Falcon after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "threat_feed_ingestion",
+            "label": "Threat Feed Ingestion",
+            "description": "Ingest threat intelligence feeds from CrowdStrike, Chronicle, and MITRE ATT&CK. Normalize IOCs (IPs, domains, hashes, CVEs) into a unified schema.",
+            "tools": [
+              "query_crowdstrike_falcon_scan_findings",
+              "query_chronicle_siem_chronicle_siem_records",
+              "query_mitre_att_ck_mitre_att_ck_records",
+              "lookup_threat_intelligence_aggregator_runbook",
+              "action_crowdstrike_falcon_generate"
+            ]
+          },
+          {
+            "id": "threat_contextualization",
+            "label": "Threat Contextualization",
+            "description": "Gemini generates actionable threat briefs explaining why a threat matters to this specific organization, mapping to MITRE ATT&CK techniques and recommending countermeasures.",
+            "tools": [
+              "query_mitre_att_ck_mitre_att_ck_records",
+              "lookup_threat_intelligence_aggregator_runbook",
+              "action_crowdstrike_falcon_generate"
+            ]
+          },
+          {
+            "id": "distribution_tracking",
+            "label": "Distribution & Tracking",
+            "description": "Threat advisory distributed to relevant teams based on affected assets. Remediation actions tracked through to completion.",
+            "tools": [
+              "lookup_threat_intelligence_aggregator_runbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Threat contextualization time moved from 4-6 hours toward 15 minutes",
+          "mustCite": [
+            "crowdstrike_falcon.scan_findings",
+            "chronicle_siem.chronicle_siem_records"
+          ],
+          "sourceSystemIds": [
+            "crowdstrike_falcon",
+            "chronicle_siem"
+          ]
+        },
+        {
+          "claim": "IOC-to-asset correlation moved from Manual lookup toward Automated real-time",
+          "mustCite": [
+            "crowdstrike_falcon.scan_findings",
+            "chronicle_siem.chronicle_siem_records"
+          ],
+          "sourceSystemIds": [
+            "crowdstrike_falcon",
+            "chronicle_siem"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Threat contextualization time regresses past the 4-6 hours baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "CISO / Security Analyst",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from CrowdStrike Falcon (and other named systems) entities.",
+        "Never bypass CISO / Security Analyst approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "threat-intelligence-aggregator-end-to-end",
+          "prompt": "Run the Threat Intelligence Aggregator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_crowdstrike_falcon_scan_findings",
+            "query_chronicle_siem_chronicle_siem_records",
+            "query_mitre_att_ck_mitre_att_ck_records",
+            "lookup_threat_intelligence_aggregator_runbook",
+            "action_crowdstrike_falcon_generate"
+          ],
+          "mustReferenceEntities": [
+            "scan_findings",
+            "chronicle_siem_records",
+            "mitre_att_ck_records"
+          ],
+          "mustCiteDocuments": [
+            "threat-intelligence-aggregator-runbook"
+          ],
+          "expectedActionOutcome": "Action generate executed against CrowdStrike Falcon, with audit-trail entry and CISO / Security Analyst notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/ThreatIntelligenceAggregator.tsx",
+    "familyId": "threat-intelligence-aggregator",
+    "variant": {
+      "familyId": "threat-intelligence-aggregator",
+      "variantId": "threat-intelligence-aggregator",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

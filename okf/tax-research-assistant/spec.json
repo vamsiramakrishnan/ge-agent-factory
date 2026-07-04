@@ -1,0 +1,958 @@
+{
+  "id": "tax-research-assistant",
+  "title": "Tax Research Assistant",
+  "department": "finance",
+  "sourcePath": "../presentation/src/components/slides/use-cases/finance/TaxResearchAssistant.tsx",
+  "subtitle": "A-2505 - Tax & Compliance",
+  "persona": "Tax Director / Tax Analyst",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "chat",
+  "domainId": "domain-25",
+  "systems": [
+    "CCH AnswerConnect",
+    "Bloomberg Tax",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Research time per question",
+      "before": "4-8 hours",
+      "after": "30 min draft + review"
+    },
+    {
+      "label": "Internal precedent reuse",
+      "before": "Tribal knowledge",
+      "after": "Systematic RAG retrieval"
+    },
+    {
+      "label": "External advisor spend",
+      "before": "$800K/year",
+      "after": "$300K/year (complex only)"
+    }
+  ],
+  "statusQuo": [
+    "Tax research takes 4-8 hours per question as analysts manually search CCH and Bloomberg Tax for relevant authorities.",
+    "Internal tax memos and prior positions are stored in personal files, not systematically accessible as precedent.",
+    "Routine questions sent to external advisors at $500-800/hour because internal research capacity is limited."
+  ],
+  "agentification": [
+    "RAG retrieval across tax databases and internal memos delivers cited research in 30 minutes, leaving only review time.",
+    "Internal precedent systematically indexed and retrieved -- the 2023 write-off memo is found and applied automatically.",
+    "External advisor spend reduced 60% as routine research is handled internally, reserving advisors for complex planning."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "CCH AnswerConnect",
+        "description": "Tax code, regulations, IRS guidance, case law, editorial analysis"
+      },
+      {
+        "system": "Bloomberg Tax",
+        "description": "Tax research, portfolios, international tax guidance, transfer pricing"
+      },
+      {
+        "system": "Internal Tax Memos",
+        "description": "Prior research memos, position papers, audit responses, planning documents"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "RAG-powered tax analysis, citation generation, research memo drafting"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Research query indexing, memo repository, precedent tracking"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Query Understanding",
+        "description": "Parse tax research question and identify the key issues: deductibility, treaty application, timing, characterization. Map to relevant IRC sections, regulations, and tax topics."
+      },
+      {
+        "label": "Authority Retrieval",
+        "description": "RAG retrieval across IRC, Treasury Regulations, IRS Revenue Rulings, PLRs, case law, and internal memos. Rank by relevance and recency. Identify both supporting and contrary authority."
+      },
+      {
+        "label": "Analysis & Memo Generation",
+        "description": "Gemini analyzes authorities and drafts research memo: 'Can we deduct the $3M write-off? Under IRC Section 165, loss is deductible if asset permanently retired with no salvage value. Our 2023 memo established precedent -- apply same treatment.' Cites specific sections."
+      },
+      {
+        "label": "Memo Delivery",
+        "description": "Deliver research memo to requesting tax professional and Tax Director for review. Index in knowledge base for future precedent retrieval."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Tax Research Assistant so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "cch_answerconnect",
+        "name": "CCH AnswerConnect",
+        "owns": [
+          "cch_answerconnect_records",
+          "cch_answerconnect_events",
+          "cch_answerconnect_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_cch_answerconnect_cch_answerconnect_records",
+          "query_cch_answerconnect_cch_answerconnect_events",
+          "query_cch_answerconnect_cch_answerconnect_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bloomberg_tax",
+        "name": "Bloomberg Tax",
+        "owns": [
+          "bloomberg_tax_records",
+          "bloomberg_tax_events",
+          "bloomberg_tax_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_bloomberg_tax_bloomberg_tax_records",
+          "query_bloomberg_tax_bloomberg_tax_events",
+          "query_bloomberg_tax_bloomberg_tax_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "cch_answerconnect_records",
+        "sourceSystemId": "cch_answerconnect",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "cch_answerconnect_events",
+        "sourceSystemId": "cch_answerconnect",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "cch_answerconnect_record_id",
+            "type": "ref",
+            "ref": "cch_answerconnect_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cch_answerconnect_audit_trail",
+        "sourceSystemId": "cch_answerconnect",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "bloomberg_tax_records",
+        "sourceSystemId": "bloomberg_tax",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "bloomberg_tax_events",
+        "sourceSystemId": "bloomberg_tax",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "bloomberg_tax_record_id",
+            "type": "ref",
+            "ref": "bloomberg_tax_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "bloomberg_tax_audit_trail",
+        "sourceSystemId": "bloomberg_tax",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "cch_answerconnect_events.cch_answerconnect_record_id",
+        "to": "cch_answerconnect_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "bloomberg_tax_events.bloomberg_tax_record_id",
+        "to": "bloomberg_tax_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "tax-research-assistant-controls-playbook",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Tax Research Assistant Controls Playbook",
+        "requiredSections": [
+          "Workflow scope",
+          "Materiality thresholds",
+          "Escalation triggers",
+          "Audit evidence requirements",
+          "Quarter-end variations"
+        ],
+        "linkedEntities": [
+          "cch_answerconnect_records",
+          "cch_answerconnect_events",
+          "cch_answerconnect_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "scope",
+          "materiality",
+          "escalation",
+          "audit-evidence"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "tax-research-assistant-baseline-gap",
+        "description": "Seed a realistic gap where Research time per question sits between 4-8 hours and 30 min draft + review, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "cch_answerconnect_records",
+          "cch_answerconnect_events"
+        ],
+        "discoveryPath": [
+          "Inspect CCH AnswerConnect records for the affected entities",
+          "Compare against Bloomberg Tax historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Tax Director / Tax Analyst action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "tax_research_assistant",
+        "schemas": [
+          "cch_answerconnect",
+          "bloomberg_tax"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_tax_research_assistant",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "tax-research-assistant-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "tax-research-assistant-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Tax Research Assistant workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Tax Director / Tax Analyst agent for the Tax Research Assistant workflow",
+      "primaryObjective": "RAG retrieval across tax databases and internal memos delivers cited research in 30 minutes, leaving only review time. Internal precedent systematically indexed and retrieved -- the 2023 write-off memo is found and applied automatically. so the Tax Director / Tax Analyst can move the Research time per question KPI.",
+      "inScope": [
+        "RAG retrieval across tax databases and internal memos delivers cited research in 30 minutes, leaving only review time",
+        "Internal precedent systematically indexed and retrieved -- the 2023 write-off memo is found and applied automatically",
+        "External advisor spend reduced 60% as routine research is handled internally, reserving advisors for complex planning"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_cch_answerconnect_cch_answerconnect_records",
+          "kind": "query",
+          "sourceSystemId": "cch_answerconnect",
+          "description": "Retrieve cch answerconnect records from CCH AnswerConnect for the Tax Research Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "cch_answerconnect_records_records",
+            "cch_answerconnect_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bloomberg_tax_bloomberg_tax_records",
+          "kind": "query",
+          "sourceSystemId": "bloomberg_tax",
+          "description": "Retrieve bloomberg tax records from Bloomberg Tax for the Tax Research Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "bloomberg_tax_records_records",
+            "bloomberg_tax_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Tax Research Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_tax_research_assistant_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Tax Research Assistant Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "query_understanding",
+            "label": "Query Understanding",
+            "description": "Parse tax research question and identify the key issues: deductibility, treaty application, timing, characterization. Map to relevant IRC sections, regulations, and tax topics.",
+            "tools": [
+              "query_bloomberg_tax_bloomberg_tax_records",
+              "lookup_tax_research_assistant_controls_playbook"
+            ]
+          },
+          {
+            "id": "analysis_memo_generation",
+            "label": "Analysis & Memo Generation",
+            "description": "Gemini analyzes authorities and drafts research memo: 'Can we deduct the $3M write-off? Under IRC Section 165, loss is deductible if asset permanently retired with no salvage value. Our 2023 memo established precedent -- apply same treatment.' Cites specific sections.",
+            "tools": [
+              "lookup_tax_research_assistant_controls_playbook"
+            ]
+          },
+          {
+            "id": "memo_delivery",
+            "label": "Memo Delivery",
+            "description": "Deliver research memo to requesting tax professional and Tax Director for review. Index in knowledge base for future precedent retrieval.",
+            "tools": [
+              "query_bloomberg_tax_bloomberg_tax_records",
+              "lookup_tax_research_assistant_controls_playbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Research time per question moved from 4-8 hours toward 30 min draft + review",
+          "mustCite": [
+            "cch_answerconnect.cch_answerconnect_records",
+            "bloomberg_tax.bloomberg_tax_records"
+          ],
+          "sourceSystemIds": [
+            "cch_answerconnect",
+            "bloomberg_tax"
+          ]
+        },
+        {
+          "claim": "Internal precedent reuse moved from Tribal knowledge toward Systematic RAG retrieval",
+          "mustCite": [
+            "cch_answerconnect.cch_answerconnect_records",
+            "bloomberg_tax.bloomberg_tax_records"
+          ],
+          "sourceSystemIds": [
+            "cch_answerconnect",
+            "bloomberg_tax"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Research time per question regresses past the 4-8 hours baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Tax Director / Tax Analyst",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from CCH AnswerConnect (and other named systems) entities.",
+        "Never bypass Tax Director / Tax Analyst approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "tax-research-assistant-end-to-end",
+          "prompt": "Run the Tax Research Assistant workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_cch_answerconnect_cch_answerconnect_records",
+            "query_bloomberg_tax_bloomberg_tax_records",
+            "query_bigquery_analytics_events",
+            "lookup_tax_research_assistant_controls_playbook"
+          ],
+          "mustReferenceEntities": [
+            "cch_answerconnect_records",
+            "bloomberg_tax_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "tax-research-assistant-controls-playbook"
+          ],
+          "expectedActionOutcome": "Tax Director / Tax Analyst receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/finance/TaxResearchAssistant.tsx",
+    "familyId": "tax-research-assistant",
+    "variant": {
+      "familyId": "tax-research-assistant",
+      "variantId": "tax-research-assistant",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}
