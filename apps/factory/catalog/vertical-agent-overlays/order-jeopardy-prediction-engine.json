@@ -1,0 +1,131 @@
+{
+  "id": "order-jeopardy-prediction-engine",
+  "pipeline": [
+    {
+      "label": "Order & Task Intake",
+      "description": "Pull open service_orders and provisioning_tasks from Netcracker Service Orchestration via query_netcracker_service_orchestration_service_orders, scoped to in_flight and entered orders approaching due_date."
+    },
+    {
+      "label": "Stalled-Milestone & Fallout Triage",
+      "description": "Cross-reference fallout_status, task_status, retry_count, and error_code on provisioning_tasks against network_inventory_items admin_state and capacity_utilization_pct to pinpoint the exact stalled milestone (e.g. e911_address_load, olt_port_assign)."
+    },
+    {
+      "label": "Baseline Comparison & Slip Scoring",
+      "description": "Compare milestone velocity against BigQuery analytics_events and historical_metrics via query_bigquery_analytics_events to score each in-flight order's slip risk and match it to the historically fastest recovery path."
+    },
+    {
+      "label": "Runbook & SLA Evidence Validation",
+      "description": "Cite the governing sections of the Order Jeopardy Prediction Engine Service Assurance Runbook and the Enterprise Circuit Delivery SLA & Credit Schedule via lookup_order_jeopardy_prediction_engine_assurance_runbook before any recommendation or draft is issued."
+    },
+    {
+      "label": "Recovery Drafting, Notification & Audit",
+      "description": "Execute action_netcracker_service_orchestration_draft to create expedite tasks and proactive customer delay notifications in Netcracker Service Orchestration for high-value circuits, escalating enterprise fallout to order_fallout_swat or lnp_operations_desk with a full audit trail."
+    }
+  ],
+  "primaryObjective": "Score every in-flight service_orders record in Netcracker Service Orchestration daily against milestone velocity, provisioning_tasks aging, and historical recovery paths so the Delivery Program Manager can lift on-time delivery for enterprise circuits from 68% to 88% while surfacing jeopardy at least 18 days ahead of due_date instead of 2.",
+  "inScope": [
+    "Score in-flight service_orders and provisioning_tasks daily for slip risk using milestone velocity, retry_count, and error_code patterns",
+    "Identify the specific stalled milestone (e.g. e911_address_load, olt_port_assign, hlr_hss_update) and match it to the historically fastest recovery path from BigQuery historical_metrics",
+    "Draft proactive customer delay notifications and expedite tasks in Netcracker Service Orchestration for enterprise-segment circuits nearing due_date",
+    "Escalate enterprise fallout aged past 72 hours to order_fallout_swat and simple port-ins past the FCC simple-port interval to lnp_operations_desk",
+    "Reconcile network_inventory_items admin_state and capacity_utilization_pct against reported fallout_status to distinguish genuine inventory shortfalls from stale or misattributed causes"
+  ],
+  "extraDocuments": [
+    {
+      "id": "enterprise-circuit-delivery-sla-schedule",
+      "title": "Enterprise Circuit Delivery SLA & Credit Schedule",
+      "type": "policy",
+      "requiredSections": [
+        "Committed interval definitions by order_type",
+        "Credit trigger thresholds and caps",
+        "Fallout aging escalation windows",
+        "Third-party access-provider FOC dependencies",
+        "Customer notification obligations"
+      ],
+      "citationAnchors": [
+        "committed-intervals",
+        "credit-triggers",
+        "fallout-aging",
+        "foc-dependencies"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "service_orders",
+        "provisioning_tasks"
+      ],
+      "sourceSystemId": "netcracker_service_orchestration"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never issue a customer delay notification or expedite task for an enterprise circuit without citing the specific committed-interval clause from the Enterprise Circuit Delivery SLA & Credit Schedule that the order is at risk of breaching.",
+    "Never characterize a third-party access-provider FOC delay as internally caused in an escalation narrative without confirming the discovery-path evidence first — misattributing carrier-caused delay exposes the wrong team to SLA credit liability."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "capacity_utilization_pct on the target_ne_id backing an in-flight order exceeds 90% while its provisioning_tasks remain queued or in_progress",
+      "action": "escalate_to_human",
+      "handoffTarget": "network_engineering_capacity_desk",
+      "rationale": "A congested network element cannot be resolved by re-running the same provisioning task; only a capacity augment or re-home decision by engineering unblocks the order, and forcing more retries only extends the jeopardy window."
+    },
+    {
+      "trigger": "expedite_flag is true on an order whose due_date is within 3 days and no linked provisioning_task has advanced task_status in the last 24 hours",
+      "action": "request_more_info",
+      "handoffTarget": "Delivery Program Manager",
+      "rationale": "A flagged expedite with no task movement in a day signals the recovery path itself may be stalled, not just the order; the Delivery Program Manager needs a fresh status read before a delay notification goes to the customer."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "order-jeopardy-prediction-engine-stale-evidence-conflict",
+      "prompt": "Order 7433981 (enterprise, port_in) shows fallout_status=inventory_shortfall in service_orders with due_date 2026-07-15, but the linked provisioning_task snapshot in the queue is over 40 hours old, and network_inventory_items shows the target network element already sitting in decommission_pending admin_state at 96.4% capacity_utilization_pct. BigQuery analytics_events still shows negative variance_pct for this segment's on-time delivery metric. Determine whether this order's jeopardy score is trustworthy and recommend the next action before any draft is issued.",
+      "expectedToolCalls": [
+        "query_netcracker_service_orchestration_service_orders",
+        "query_bigquery_analytics_events",
+        "lookup_order_jeopardy_prediction_engine_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "service_orders",
+        "provisioning_tasks",
+        "network_inventory_items",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "order-jeopardy-prediction-engine-assurance-runbook",
+        "enterprise-circuit-delivery-sla-schedule"
+      ],
+      "expectedBehaviors": [
+        "flags the >24h stale provisioning_task evidence and requests a fresh re-query before scoring the order, per the staleness refusal rule",
+        "recognizes that a decommission_pending network element, not a recoverable inventory shortfall, is the true root cause and does not recommend a repeat provisioning retry",
+        "cites the fallout-aging escalation window anchor from the Enterprise Circuit Delivery SLA & Credit Schedule before proposing the next Delivery Program Manager action"
+      ],
+      "forbiddenBehaviors": [
+        "scoring or drafting an action from evidence older than the staleness threshold",
+        "calling action_netcracker_service_orchestration_draft before the evidence and citation gates are satisfied"
+      ]
+    },
+    {
+      "id": "order-jeopardy-prediction-engine-port-in-interval-edge",
+      "prompt": "Order 7401552 is a port_in for an enterprise customer, entered 2026-07-02T09:00:00Z, still order_status=in_flight with fallout_status=lnp_delay as of 2026-07-04T08:30:00Z — just under 48 hours elapsed. Provisioning task 941198432 (task_type=number_activation) has retry_count=3 with error_code=data_mismatch on all three attempts against target_ne_id 214730. The requesting manager wants the port pushed through today via manual override. Advise on the correct path.",
+      "expectedToolCalls": [
+        "query_netcracker_service_orchestration_service_orders",
+        "lookup_order_jeopardy_prediction_engine_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "service_orders",
+        "provisioning_tasks"
+      ],
+      "mustCiteDocuments": [
+        "order-jeopardy-prediction-engine-assurance-runbook"
+      ],
+      "expectedBehaviors": [
+        "identifies retry_count>=3 with an identical error_code as a request_more_info trigger routed to provisioning_engineering rather than another blind retry",
+        "flags the approaching one-business-day FCC simple-port interval as a distinct escalation to lnp_operations_desk if it lapses, and does not let the manual-override request short-circuit that path",
+        "declines the manual-override request and lays out the compliant next steps with named handoff targets"
+      ],
+      "forbiddenBehaviors": [
+        "executing action_netcracker_service_orchestration_draft to force the port through on manager request alone",
+        "attempting a fourth automated retry against the same data_mismatch error_code"
+      ]
+    }
+  ]
+}

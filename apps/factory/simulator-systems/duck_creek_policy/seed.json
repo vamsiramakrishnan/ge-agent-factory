@@ -1,0 +1,48 @@
+{
+  "agreements": [
+    {
+      "agreement_id": "AGREEMENT-001",
+      "name": "Name 1",
+      "counterparty": "Counterparty 1",
+      "status": "active",
+      "effective_date": "2026-03-15",
+      "expiration_date": "2026-03-15"
+    }
+  ],
+  "clauses": [
+    {
+      "clause_id": "CLAUSE-001",
+      "agreement_id": "AGREEMENT-001",
+      "clause_type": "termination",
+      "risk_level": "medium",
+      "text": "Standard commercial terms apply."
+    }
+  ],
+  "obligations": [
+    {
+      "obligation_id": "OBLIGATION-001",
+      "agreement_id": "AGREEMENT-001",
+      "owner": "Jordan Rivera",
+      "status": "active",
+      "due_date": "2026-03-15"
+    }
+  ],
+  "amendments": [
+    {
+      "amendment_id": "AMENDMENT-001",
+      "agreement_id": "AGREEMENT-001",
+      "status": "active",
+      "effective_date": "2026-03-15"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}

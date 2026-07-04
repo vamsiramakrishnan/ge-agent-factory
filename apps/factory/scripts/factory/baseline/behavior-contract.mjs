@@ -57,6 +57,11 @@ export function pickDocument(useCase) {
     it: { id: `${titleSlug}-runbook`, type: "runbook", title: `${useCase.title} Operations Runbook`, sections: ["Detection signals", "Triage procedures", "Remediation actions", "Rollback criteria", "Post-incident review"], anchors: ["detection", "triage", "remediation", "rollback"] },
     marketing: { id: `${titleSlug}-playbook`, type: "playbook", title: `${useCase.title} Playbook`, sections: ["Audience guidelines", "Brand voice rules", "Channel-specific guardrails", "Measurement framework", "Approval thresholds"], anchors: ["audience", "brand-voice", "channels", "approvals"] },
     procurement: { id: `${titleSlug}-policy-guide`, type: "policy", title: `${useCase.title} Procurement Policy Guide`, sections: ["Sourcing principles", "Approval thresholds", "Supplier risk requirements", "Contract and compliance gates", "Exception handling"], anchors: ["sourcing", "approvals", "supplier-risk", "exceptions"] },
+    retail: { id: `${titleSlug}-execution-playbook`, type: "playbook", title: `${useCase.title} Retail Execution Playbook`, sections: ["Assortment and category scope", "Inventory and availability thresholds", "Markdown and promotion guardrails", "Store execution standards", "Escalation and exception handling"], anchors: ["assortment", "inventory", "promotions", "escalation"] },
+    banking: { id: `${titleSlug}-compliance-policy`, type: "policy", title: `${useCase.title} Banking Compliance Policy`, sections: ["Regulatory scope and applicability", "Customer due diligence requirements", "Credit and transaction thresholds", "Escalation and reporting obligations", "Model governance and audit evidence"], anchors: ["regulatory-scope", "due-diligence", "thresholds", "escalation"] },
+    insurance: { id: `${titleSlug}-authority-guide`, type: "policy", title: `${useCase.title} Authority & Referral Guide`, sections: ["Authority levels and referral triggers", "Coverage interpretation rules", "Reserving and payment thresholds", "Fraud indicators and SIU referral criteria", "Regulatory and compliance obligations"], anchors: ["authority", "coverage", "thresholds", "siu-referral"] },
+    telco: { id: `${titleSlug}-assurance-runbook`, type: "runbook", title: `${useCase.title} Service Assurance Runbook`, sections: ["Service impact classification", "Diagnostic and triage procedures", "Remediation and rollback actions", "Customer communication rules", "Escalation matrix"], anchors: ["service-impact", "triage", "remediation", "escalation"] },
+    manufacturing: { id: `${titleSlug}-sop`, type: "runbook", title: `${useCase.title} Standard Operating Procedure`, sections: ["Process scope and safety prerequisites", "Operating parameters and control limits", "Deviation and escalation response", "Quality and compliance evidence", "Shift handover requirements"], anchors: ["safety", "control-limits", "deviation", "quality-evidence"] },
   };
   return map[dept] || map.it;
 }
@@ -97,6 +102,31 @@ function deriveScope(useCase) {
       "Contract execution without legal review",
       "Supplier disqualification decisions (category lead retains authority)",
       "Single-source justification overrides above policy threshold",
+    ],
+    retail: [
+      "Final markdown or price changes above the governance threshold (merchandising leadership retains authority)",
+      "Vendor contract or trade-terms renegotiation",
+      "Store labor decisions that conflict with local labor law or union agreements",
+    ],
+    banking: [
+      "Final credit decisions above delegated authority (credit committee retains approval)",
+      "Filing regulatory reports without compliance officer sign-off",
+      "Releasing payments or accounts held by sanctions screening",
+    ],
+    insurance: [
+      "Coverage denial decisions (licensed adjuster or underwriter retains authority)",
+      "Settlement offers above the delegated payment authority",
+      "Legal coverage-position statements without counsel review",
+    ],
+    telco: [
+      "Network configuration changes outside an approved change window",
+      "Customer credits above the care governance threshold",
+      "Regulatory outage notifications without compliance review",
+    ],
+    manufacturing: [
+      "Overriding safety interlocks or permit-to-work controls",
+      "Releasing quality-held product without quality engineer disposition",
+      "Production schedule changes that violate customer contractual commitments",
     ],
   };
   const outOfScope = outOfScopeBase[dept] || outOfScopeBase.it;

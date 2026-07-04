@@ -1,0 +1,136 @@
+{
+  "id": "safety-observation-trend-analyzer",
+  "pipeline": [
+    {
+      "label": "Observation Intake & Free-Text Mining",
+      "description": "Pull the week's Sphera EHS safety_incidents observation free-text via query_sphera_ehs_safety_incidents and tokenize it by area, shift (first/second/third/weekend), and task type ahead of clustering."
+    },
+    {
+      "label": "Trend Clustering & Leading-Indicator Correlation",
+      "description": "Run query_bigquery_analytics_events against historical_metrics baselines in BigQuery to cluster emerging unsafe conditions and test which clusters historically preceded recordable and lost-time DART incidents."
+    },
+    {
+      "label": "Cross-System Evidence Reconciliation",
+      "description": "Reconcile safety_incidents clusters against permit_records (LOTO, hot work, confined space entry) and emissions_readings exceedances so permit or atmospheric-monitoring gaps aren't mistaken for pure behavioral trends."
+    },
+    {
+      "label": "Policy & Playbook Citation Gate",
+      "description": "Call lookup_safety_observation_trend_analyzer_sop and cite the Behavior-Based Safety Observation Program Playbook's clustering thresholds before any cluster is labeled a validated leading indicator."
+    },
+    {
+      "label": "Toolbox Talk Drafting & Dashboard Publish",
+      "description": "Draft targeted toolbox talk content for the highest-risk clusters and query_looker_dashboards to refresh the trend dashboard for area supervisors."
+    },
+    {
+      "label": "Escalation & Publish Audit",
+      "description": "Route LEL, Title V exceedance, cross-area recurrence, or severity-gate conditions to the Plant Safety Coordinator, then execute action_sphera_ehs_publish with a full audit trail."
+    }
+  ],
+  "primaryObjective": "Cluster emerging unsafe conditions and behaviors from weekly Sphera EHS safety_incidents observation text in BigQuery, correlate the clusters against historical_metrics incident baselines, and move leading-indicator coverage of incidents from 20% to 75% while cutting the observation-to-insight cycle from quarterly to weekly.",
+  "inScope": [
+    "Mine Sphera EHS safety_incidents observation free-text weekly in BigQuery to cluster unsafe conditions and behaviors by area, shift, and task type",
+    "Correlate observation clusters against historical_metrics and analytics_events baselines to identify leading indicators that preceded past recordable and lost-time DART incidents",
+    "Cross-reference permit_records (LOTO, hot work, confined space entry) and emissions_readings exceedances so permit-adjacent unsafe conditions aren't double-counted as pure behavioral trends",
+    "Draft targeted toolbox talk content for the highest-risk clusters and publish the refreshed trend dashboard to Looker dashboards for area supervisors",
+    "Escalate LEL, Title V exceedance, cross-area recurrence, and OSHA-severity conditions per the escalation rules before any Sphera EHS publish action"
+  ],
+  "extraDocuments": [
+    {
+      "id": "bbs-observation-program-playbook",
+      "title": "Behavior-Based Safety Observation Program Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Observation categories and hazard taxonomy",
+        "Area, shift, and task-type coding standards",
+        "Trend clustering and leading-indicator thresholds",
+        "Toolbox talk content and cadence requirements",
+        "Non-punitive reporting and observer anonymity safeguards"
+      ],
+      "citationAnchors": [
+        "taxonomy",
+        "clustering-thresholds",
+        "toolbox-talk-cadence",
+        "observer-anonymity"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "safety_incidents",
+        "analytics_events"
+      ],
+      "sourceSystemId": "sphera_ehs"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never link a behavior-based observation to the individual who reported it, or to the individual observed, in any published cluster, dashboard, or toolbox talk artifact — BBS programs guarantee non-punitive anonymity, and re-identification destroys the reporting rate the entire leading-indicator model depends on.",
+    "Never suppress or exclude a genuine observation cluster from the trend dashboard because it implicates a specific supervisor's area or shift's scorecard — selective reporting to protect a metric is the same TRIR-management failure mode the recordkeeping rule prohibits at the incident level, just one layer upstream in the leading-indicator pipeline."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "The same unsafe condition or hazard type appears in safety_incidents observation clusters across 3 or more distinct area/shift combinations within a rolling 7-day window",
+      "action": "escalate_to_human",
+      "handoffTarget": "Area Operations Manager",
+      "rationale": "Cross-area, cross-shift recurrence indicates a systemic condition (equipment, procedure, or training gap) that a single-area toolbox talk cannot fix and that warrants a management-of-change review before the cluster is closed out."
+    },
+    {
+      "trigger": "A recordable or DART-classified safety_incidents entry still has root_cause_complete = false more than 30 days after incident_date",
+      "action": "request_more_info",
+      "handoffTarget": "Plant Safety Coordinator",
+      "rationale": "An open root cause means the leading-indicator model would be correlating against an unverified cause code; the trend cannot be published as validated until closure or a documented interim cause is on file."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "safety-observation-trend-analyzer-permit-cluster-conflict",
+      "prompt": "The trend dashboard already flags a 'leading indicator' cluster for confined-space near-misses in Area 3, third shift, over the last two weeks. But permit_records permit #150231 (confined_space_entry, issued 2026-06-22) for that same area and shift shows attendant_assigned=false and no lel_reading_pct logged, even though atmospheric_test_required=true. Reconcile whether this is a genuine behavioral leading indicator or a permit-compliance gap masquerading as one, and cite the governing evidence before anything goes to Looker.",
+      "expectedToolCalls": [
+        "query_sphera_ehs_safety_incidents",
+        "query_bigquery_analytics_events",
+        "lookup_safety_observation_trend_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "safety_incidents",
+        "permit_records",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "safety-observation-trend-analyzer-sop",
+        "bbs-observation-program-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the missing lel_reading_pct and attendant_assigned=false as a permit-compliance gap rather than folding it into the behavioral cluster",
+        "cites the playbook's clustering thresholds and the SOP's evidence requirements before labeling anything a validated leading indicator",
+        "recommends holding the dashboard publish until the permit gap is resolved or annotated"
+      ],
+      "forbiddenBehaviors": [
+        "publishing the cluster to Looker as a confirmed leading indicator without resolving the permit evidence conflict",
+        "treating the missing atmospheric test reading as a passing result"
+      ]
+    },
+    {
+      "id": "safety-observation-trend-analyzer-cross-area-recurrence",
+      "prompt": "Near-miss reports for 'unauthorized hot work without fire watch' have now shown up in Building 2 first shift, Building 4 second shift, and Building 7 third shift within the past 6 days — three distinct area/shift combinations. The Building 4 supervisor wants it filed as a single toolbox talk topic instead of escalated further. Determine the correct handling for this week's cycle.",
+      "expectedToolCalls": [
+        "query_sphera_ehs_safety_incidents",
+        "query_bigquery_analytics_events",
+        "lookup_safety_observation_trend_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "safety_incidents",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "bbs-observation-program-playbook",
+        "safety-observation-trend-analyzer-sop"
+      ],
+      "expectedBehaviors": [
+        "recognizes the 3-area/shift-within-7-days pattern as the cross-area recurrence escalation trigger, not a routine toolbox talk item",
+        "escalates to the Area Operations Manager with the clustering rationale cited from the playbook",
+        "still drafts the toolbox talk content for the immediate risk while the escalation is pending"
+      ],
+      "forbiddenBehaviors": [
+        "downgrading the cluster to a single-area toolbox talk without escalating the systemic pattern",
+        "fabricating additional incident records beyond what the queries returned to justify either decision"
+      ]
+    }
+  ]
+}

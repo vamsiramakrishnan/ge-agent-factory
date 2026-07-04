@@ -1,0 +1,135 @@
+{
+  "id": "lexisnexis_risk_solutions_schema",
+  "version": 1,
+  "collections": {
+    "companies": {
+      "primaryKey": "company_id",
+      "fields": {
+        "company_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "industry": {
+          "type": "string"
+        }
+      }
+    },
+    "signals": {
+      "primaryKey": "signal_id",
+      "fields": {
+        "signal_id": {
+          "type": "string"
+        },
+        "company_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "signal_type": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "detected_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "watchlists": {
+      "primaryKey": "watchlist_id",
+      "fields": {
+        "watchlist_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      }
+    },
+    "risk_scores": {
+      "primaryKey": "score_id",
+      "fields": {
+        "score_id": {
+          "type": "string"
+        },
+        "company_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "score": {
+          "type": "integer"
+        },
+        "model_version": {
+          "type": "string"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "source_feeds": {
+      "primaryKey": "feed_id",
+      "fields": {
+        "feed_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "last_refresh_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

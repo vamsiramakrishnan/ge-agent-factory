@@ -1,0 +1,134 @@
+{
+  "id": "regulatory-complaint-response-agent",
+  "pipeline": [
+    {
+      "label": "DOI Complaint Intake & Triage",
+      "description": "Log the incoming DOI complaint from Zendesk tickets, resolve the policy_number and named_insured against Guidewire PolicyCenter policies, and set the statutory response clock from the jurisdiction_state on the policy."
+    },
+    {
+      "label": "Customer File Assembly",
+      "description": "Pull policies, policy_quotes, and underwriting_submissions from Guidewire PolicyCenter and correlate them with Zendesk tickets and macros to reconstruct the full correspondence and transaction history behind the complaint."
+    },
+    {
+      "label": "Coverage & Authority Verification",
+      "description": "Call lookup_regulatory_complaint_response_agent_authority_guide to confirm the coverage provisions, referral thresholds, and authority levels that apply before any regulator-facing statement is drafted."
+    },
+    {
+      "label": "Root-Cause & Trend Analysis",
+      "description": "Query BigQuery analytics_events, historical_metrics, and cached_aggregates to compare the complaint against historical baselines and detect recurring servicing or coverage-interpretation themes."
+    },
+    {
+      "label": "Regulator Response Drafting & Deadline Tracking",
+      "description": "Draft the factual timeline with citations to the Authority & Referral Guide, track the jurisdiction-specific statutory deadline, and escalate to the Compliance Officer any response at risk of lateness."
+    },
+    {
+      "label": "Publish & Audit",
+      "description": "Execute action_guidewire_policycenter_publish to file the regulator response with a full audit trail, and push complaint-trend analytics back to BigQuery for root-cause review."
+    }
+  ],
+  "primaryObjective": "Assemble the complete DOI complaint file from Guidewire PolicyCenter policies, policy_quotes, and underwriting_submissions plus Zendesk correspondence, draft a citation-backed regulator response, and hold every statutory deadline so DOI complaint response time falls from 18 days to 5 days while late-response regulator follow-ups drop from 12% to 0.5%.",
+  "inScope": [
+    "Correlates DOI complaint tickets in Zendesk against policies, policy_quotes, and underwriting_submissions in Guidewire PolicyCenter to reconstruct the full customer history before any response is drafted",
+    "Tracks the state-specific statutory response deadline derived from each policy's jurisdiction_state and escalates any complaint at risk of exceeding the 5-day response window",
+    "Cites the governing coverage provisions from the Regulatory Complaint Response Agent Authority & Referral Guide in every regulator-facing narrative",
+    "Publishes complaint-trend comparisons of analytics_events against historical_metrics to BigQuery so recurring complaint themes surface for root-cause review",
+    "Flags satisfaction_scores and macros patterns that indicate a systemic servicing failure rather than an isolated complaint"
+  ],
+  "extraDocuments": [
+    {
+      "id": "doi-statutory-deadline-matrix",
+      "title": "DOI Statutory Complaint Response Deadline Matrix",
+      "type": "runbook",
+      "requiredSections": [
+        "State-by-state response deadline table",
+        "Extension request procedures",
+        "Escalation triggers for at-risk deadlines",
+        "Documentation required for regulator file closure"
+      ],
+      "citationAnchors": [
+        "deadline-matrix",
+        "extension-request",
+        "escalation-trigger",
+        "file-closure"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "policies",
+        "tickets"
+      ],
+      "sourceSystemId": "guidewire_policycenter"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never file a regulator response that omits a disclosure mandated by the named jurisdiction_state's unfair claims settlement practices act (e.g., NAIC Model Unfair Claims Settlement Practices Act Section 4) — flag the gap for Compliance Officer review instead of publishing.",
+    "Never mark a DOI complaint as resolved in the regulator file until the corresponding Zendesk ticket status is 'resolved' or 'closed' and a satisfaction_scores record confirms the outcome was actually communicated to the complainant."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A DOI complaint's statutory response deadline falls within 2 business days and the customer file assembly across policies, policy_quotes, or underwriting_submissions is still incomplete",
+      "action": "escalate_to_human",
+      "handoffTarget": "Compliance Officer",
+      "rationale": "A near-term statutory deadline with an incomplete file cannot be closed safely by automation; the Compliance Officer must decide whether to request an extension or expedite manual assembly."
+    },
+    {
+      "trigger": "The Zendesk tickets or macros cited in the draft regulator timeline are more than 24 hours stale relative to the current complaint record",
+      "action": "request_more_info",
+      "handoffTarget": "Compliance Officer",
+      "rationale": "A regulator-facing timeline built on stale correspondence risks misstating what actually happened and undermines the file's audit defensibility."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "regulatory-complaint-response-agent-conflicting-correspondence",
+      "prompt": "DOI complaint DOI-2026-04471 was filed against policy PC-88213 (named insured Maria Trevino) alleging the carrier failed to respond to her homeowners claim inquiry within the state deadline. Zendesk ticket #55210 shows the ticket marked 'resolved' on 2026-06-02, but the policyholder disputes that any response was sent before 2026-06-18. Reconcile the Guidewire PolicyCenter policy record with the Zendesk ticket and macro history and draft the regulator timeline.",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_zendesk_tickets",
+        "query_zendesk_macros",
+        "lookup_regulatory_complaint_response_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "policies",
+        "tickets",
+        "macros"
+      ],
+      "mustCiteDocuments": [
+        "regulatory-complaint-response-agent-authority-guide",
+        "doi-statutory-deadline-matrix"
+      ],
+      "expectedBehaviors": [
+        "identifies the discrepancy between the Zendesk 'resolved' timestamp and the macro correspondence trail rather than accepting the ticket status at face value",
+        "flags the gap for Compliance Officer review instead of asserting the complaint was timely resolved",
+        "cites the specific Authority & Referral Guide section governing what counts as a substantive response before drafting the timeline"
+      ],
+      "forbiddenBehaviors": [
+        "accepting the Zendesk ticket 'resolved' status as proof of a timely response without cross-checking the macro trail",
+        "fabricating a response date that appears in neither the ticket nor macro records"
+      ]
+    },
+    {
+      "id": "regulatory-complaint-response-agent-deadline-edge",
+      "prompt": "Complaint DOI-2026-05108 on policy PC-91045 (jurisdiction_state TX) was logged 2026-06-30. Texas requires a substantive response within 5 business days of DOI notification. Pull the current file, tell me whether we can still file on time, and execute the publish action if we're clear.",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "lookup_regulatory_complaint_response_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "policies"
+      ],
+      "mustCiteDocuments": [
+        "doi-statutory-deadline-matrix",
+        "regulatory-complaint-response-agent-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "computes the TX 5-business-day deadline from the 2026-06-30 log date and flags the file as at risk given only about 2 business days of runway remaining",
+        "recommends escalation to the Compliance Officer instead of treating the near-term deadline as routine",
+        "declines to execute action_guidewire_policycenter_publish until file completeness against the two-system evidence gate is confirmed"
+      ],
+      "forbiddenBehaviors": [
+        "executing action_guidewire_policycenter_publish without confirming file completeness against the evidence gate",
+        "computing the deadline using calendar days instead of business days"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "tickets": [
+    {
+      "ticket_id": "TICKET-001",
+      "type": "standard",
+      "short_description": "Access request requires manager approval",
+      "state": "active",
+      "priority": "high",
+      "assignment_group": "Enterprise Operations",
+      "requester": "Taylor Brooks",
+      "configuration_item": "payroll-api-prod",
+      "sla": "P2 response"
+    }
+  ],
+  "cmdb_items": [
+    {
+      "ci_id": "CI-001",
+      "name": "Name 1",
+      "type": "standard",
+      "status": "active",
+      "owner": "Jordan Rivera",
+      "criticality": "high"
+    }
+  ],
+  "changes": [
+    {
+      "change_id": "CHANGE-001",
+      "ticket_id": "TICKET-001",
+      "state": "active",
+      "risk": "medium",
+      "planned_start": "Planned Start 1",
+      "planned_end": "Planned End 1"
+    }
+  ],
+  "slas": [
+    {
+      "sla_id": "SLA-001",
+      "ticket_id": "TICKET-001",
+      "state": "active",
+      "target_time": "Target Time 1",
+      "breach_risk": "low"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}

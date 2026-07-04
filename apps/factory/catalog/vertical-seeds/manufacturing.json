@@ -1,0 +1,1220 @@
+{
+  "industry": "manufacturing",
+  "department": "manufacturing",
+  "code": "M",
+  "valueStreams": [
+    {
+      "code": "M-51",
+      "name": "Production & Shop Floor",
+      "useCases": [
+        {
+          "id": "unplanned-downtime-root-cause-agent",
+          "title": "Unplanned Downtime Root-Cause Agent",
+          "persona": "Plant Manager",
+          "triggerType": "event-driven",
+          "systems": [
+            "Siemens Opcenter MES",
+            "OSIsoft PI System",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Unplanned downtime hours per month",
+              "before": "62 hrs",
+              "after": "38 hrs"
+            },
+            {
+              "label": "Mean time to root cause",
+              "before": "3.5 days",
+              "after": "4 hours"
+            },
+            {
+              "label": "OEE",
+              "before": "68%",
+              "after": "76%"
+            }
+          ],
+          "statusQuo": [
+            "Downtime events are logged in the MES with generic reason codes that operators pick under time pressure, so the top loss category is 'Other'.",
+            "Engineers manually export historian trends and MES logs into spreadsheets days after an event to reconstruct what happened.",
+            "Recurring failure patterns across shifts and lines go unnoticed because nobody correlates events across data silos."
+          ],
+          "agentification": [
+            "Listens for downtime events from Opcenter MES and automatically pulls the surrounding sensor window from the PI historian into BigQuery.",
+            "Correlates the event against historical failure signatures and drafts a ranked root-cause hypothesis with supporting trend charts.",
+            "Escalates repeat offenders to the plant manager and creates a follow-up action item with the evidence package attached."
+          ]
+        },
+        {
+          "id": "production-schedule-adherence-monitor",
+          "title": "Production Schedule Adherence Monitor",
+          "persona": "Production Scheduler",
+          "triggerType": "scheduled",
+          "systems": [
+            "SAP S/4HANA PP",
+            "Siemens Opcenter MES",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Schedule adherence",
+              "before": "78%",
+              "after": "93%"
+            },
+            {
+              "label": "Late order detection lead time",
+              "before": "0 days (found at due date)",
+              "after": "3 days early"
+            },
+            {
+              "label": "Expedite freight spend per quarter",
+              "before": "$410K",
+              "after": "$180K"
+            }
+          ],
+          "statusQuo": [
+            "The scheduler reconciles SAP planned orders against MES confirmations in a spreadsheet every morning, an exercise that takes two hours.",
+            "Orders slipping behind plan are only discovered when a customer service rep calls asking where the shipment is.",
+            "Re-sequencing decisions are made from gut feel because the true capacity impact of a slip is never quantified."
+          ],
+          "agentification": [
+            "Runs every shift to compare SAP S/4HANA PP planned orders against actual MES confirmations landed in BigQuery.",
+            "Flags orders trending late, quantifies the downstream capacity and customer impact, and recommends a re-sequencing option.",
+            "Publishes a shift-start adherence dashboard in Looker and notifies the scheduler of the top three at-risk orders."
+          ]
+        },
+        {
+          "id": "oee-loss-pareto-analyzer",
+          "title": "OEE Loss Pareto Analyzer",
+          "persona": "Continuous Improvement Lead",
+          "triggerType": "on-demand",
+          "systems": [
+            "Siemens Opcenter MES",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "OEE",
+              "before": "71%",
+              "after": "79%"
+            },
+            {
+              "label": "Time to build a loss Pareto",
+              "before": "2 days",
+              "after": "5 minutes"
+            },
+            {
+              "label": "Kaizen events backed by data",
+              "before": "40%",
+              "after": "95%"
+            }
+          ],
+          "statusQuo": [
+            "OEE is reported as a single monthly number with no drill-down, so availability, performance, and quality losses are argued about in meetings.",
+            "Building a loss Pareto for one line requires a week of manual MES data extraction and cleansing.",
+            "Improvement projects are chosen by whoever argues loudest rather than by quantified loss buckets."
+          ],
+          "agentification": [
+            "Decomposes OEE into availability, performance, and quality losses per line, shift, and SKU from MES data in BigQuery on request.",
+            "Generates a ranked loss Pareto with dollarized impact and highlights the single biggest addressable loss bucket.",
+            "Recommends candidate kaizen targets and publishes the analysis to Looker for the improvement team."
+          ]
+        },
+        {
+          "id": "changeover-time-optimization-agent",
+          "title": "Changeover Time Optimization Agent",
+          "persona": "Production Supervisor",
+          "triggerType": "scheduled",
+          "systems": [
+            "SAP S/4HANA PP",
+            "Siemens Opcenter MES",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Average changeover time",
+              "before": "47 min",
+              "after": "28 min"
+            },
+            {
+              "label": "Changeovers exceeding standard",
+              "before": "35%",
+              "after": "9%"
+            },
+            {
+              "label": "Weekly capacity recovered",
+              "before": "0 hrs",
+              "after": "11 hrs"
+            }
+          ],
+          "statusQuo": [
+            "Changeover durations vary wildly between crews and nobody knows which sequence tricks the fastest crew uses.",
+            "The production sequence from SAP ignores changeover families, so the line runs light-to-dark-to-light color swaps back to back.",
+            "Supervisors find out a changeover blew past standard only when the whole shift output number comes in short."
+          ],
+          "agentification": [
+            "Analyzes every changeover recorded in Opcenter MES weekly and benchmarks duration by crew, product family, and sequence.",
+            "Recommends changeover-family-aware sequencing adjustments to the SAP S/4HANA PP planned order sequence.",
+            "Notifies the supervisor in real time when a live changeover exceeds 120% of standard so help can be routed to the line."
+          ]
+        },
+        {
+          "id": "scrap-and-rework-analytics-engine",
+          "title": "Scrap and Rework Analytics Engine",
+          "persona": "Plant Controller",
+          "triggerType": "scheduled",
+          "systems": [
+            "Siemens Opcenter MES",
+            "SAP S/4HANA PP",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Scrap rate",
+              "before": "3.8%",
+              "after": "2.1%"
+            },
+            {
+              "label": "Monthly scrap cost",
+              "before": "$290K",
+              "after": "$155K"
+            },
+            {
+              "label": "Scrap variance investigation cycle",
+              "before": "10 days",
+              "after": "1 day"
+            }
+          ],
+          "statusQuo": [
+            "Scrap is booked in SAP at month-end as a lump cost variance with no link back to the machine, shift, or lot that produced it.",
+            "The controller chases production leads by email for scrap explanations, and answers arrive after the close.",
+            "Rework loops are invisible because reworked units re-enter the line under the same order number."
+          ],
+          "agentification": [
+            "Joins MES defect confirmations with SAP S/4HANA PP order costs in BigQuery nightly to attribute scrap dollars to machine, shift, material lot, and operator.",
+            "Detects scrap spikes against a rolling baseline and drafts a variance explanation with the top contributing factors.",
+            "Publishes a daily scrap cost dashboard in Looker and escalates any single-day spike above threshold to the plant controller and production supervisor."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "M-52",
+      "name": "Quality Management",
+      "useCases": [
+        {
+          "id": "spc-drift-detection-monitor",
+          "title": "SPC Drift Detection Monitor",
+          "persona": "Quality Engineer",
+          "triggerType": "event-driven",
+          "systems": [
+            "SAP S/4HANA QM",
+            "Siemens Opcenter MES",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "First-pass yield",
+              "before": "91.2%",
+              "after": "96.5%"
+            },
+            {
+              "label": "Out-of-control conditions caught before defects ship",
+              "before": "55%",
+              "after": "94%"
+            },
+            {
+              "label": "Manual control chart reviews per week",
+              "before": "120",
+              "after": "8"
+            }
+          ],
+          "statusQuo": [
+            "Quality engineers eyeball dozens of control charts once a day, so a process that drifts at 2 a.m. runs out of spec for hours.",
+            "Western Electric rule violations are detected inconsistently because each engineer applies the rules by memory.",
+            "By the time an inspection lot fails in SAP QM, an entire batch has already been produced against a drifting process."
+          ],
+          "agentification": [
+            "Streams inspection results from SAP QM and in-line measurements from MES into BigQuery and evaluates every point against SPC run rules in near real time.",
+            "Distinguishes true process drift from measurement noise using historical process capability baselines per characteristic.",
+            "Notifies the quality engineer and line lead the moment a drift signature emerges and recommends whether to hold the affected lots."
+          ]
+        },
+        {
+          "id": "capa-orchestration-agent",
+          "title": "CAPA Orchestration Agent",
+          "persona": "Quality Manager",
+          "triggerType": "event-driven",
+          "systems": [
+            "SAP S/4HANA QM",
+            "ServiceNow",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Average CAPA cycle time",
+              "before": "84 days",
+              "after": "31 days"
+            },
+            {
+              "label": "Overdue CAPA actions",
+              "before": "38%",
+              "after": "6%"
+            },
+            {
+              "label": "Repeat nonconformances on closed CAPAs",
+              "before": "22%",
+              "after": "8%"
+            }
+          ],
+          "statusQuo": [
+            "CAPA tasks live in email threads and a shared spreadsheet, so owners forget actions until the audit two weeks before.",
+            "Root-cause sections are written from scratch every time even when a nearly identical CAPA was closed last year.",
+            "Effectiveness checks are a checkbox exercise because nobody re-queries defect data after closure."
+          ],
+          "agentification": [
+            "Opens a structured CAPA workspace when a qualifying notification is raised in SAP QM, drafts the problem statement, and proposes similar historical CAPAs from BigQuery.",
+            "Creates and routes containment, root-cause, and corrective-action tasks in ServiceNow with due dates, and escalates stalled tasks to the quality manager.",
+            "Runs post-closure effectiveness checks by monitoring defect rates for the affected characteristic and reopens the CAPA if the failure mode recurs."
+          ]
+        },
+        {
+          "id": "supplier-quality-scorecard-engine",
+          "title": "Supplier Quality Scorecard Engine",
+          "persona": "Supplier Quality Engineer",
+          "triggerType": "scheduled",
+          "systems": [
+            "SAP S/4HANA QM",
+            "SAP S/4HANA MM",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Incoming inspection PPM",
+              "before": "4,200",
+              "after": "1,600"
+            },
+            {
+              "label": "Scorecard preparation effort per quarter",
+              "before": "3 weeks",
+              "after": "2 hours"
+            },
+            {
+              "label": "Suppliers on data-backed improvement plans",
+              "before": "5",
+              "after": "24"
+            }
+          ],
+          "statusQuo": [
+            "Quarterly supplier scorecards are assembled by hand from SAP QM inspection lots and MM receipts, and half the quarter is over before they ship.",
+            "PPM, on-time delivery, and 8D responsiveness live in different reports, so no one sees a supplier's full risk picture.",
+            "Supplier review meetings run on anecdotes because the data is six weeks stale."
+          ],
+          "agentification": [
+            "Refreshes supplier PPM, lot rejection rate, deviation history, and 8D closure speed weekly from SAP QM and SAP S/4HANA MM data in BigQuery.",
+            "Generates a ranked risk scorecard per supplier and drafts the quarterly business review pack automatically.",
+            "Recommends which suppliers need a formal improvement plan and publishes trend dashboards to Looker for the sourcing team."
+          ]
+        },
+        {
+          "id": "nonconformance-triage-agent",
+          "title": "Nonconformance Triage Agent",
+          "persona": "Shift Quality Lead",
+          "triggerType": "event-driven",
+          "systems": [
+            "SAP S/4HANA QM",
+            "Siemens Opcenter MES",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "NC disposition cycle time",
+              "before": "26 hours",
+              "after": "4 hours"
+            },
+            {
+              "label": "Material held in MRB area",
+              "before": "$1.2M",
+              "after": "$380K"
+            },
+            {
+              "label": "Misrouted NC notifications",
+              "before": "18%",
+              "after": "3%"
+            }
+          ],
+          "statusQuo": [
+            "Every nonconformance notification lands in one queue and the shift quality lead reads each one to decide who should handle it.",
+            "Material sits in the MRB cage for days awaiting disposition while planners scramble to cover the shortage it created.",
+            "Similar defects get different dispositions depending on which engineer picks up the ticket."
+          ],
+          "agentification": [
+            "Classifies each new SAP QM nonconformance by defect type, severity, and affected order using the notification text and linked MES genealogy.",
+            "Routes the notification to the correct disposition owner and suggests a disposition based on how materially identical cases were resolved.",
+            "Flags NCs blocking shippable orders and escalates them to the shift quality lead ahead of the queue."
+          ]
+        },
+        {
+          "id": "batch-record-review-analyzer",
+          "title": "Batch Record Review Analyzer",
+          "persona": "Quality Systems Lead",
+          "triggerType": "on-demand",
+          "systems": [
+            "SAP S/4HANA QM",
+            "Siemens Opcenter MES",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Batch record review time",
+              "before": "6 hours per batch",
+              "after": "45 minutes per batch"
+            },
+            {
+              "label": "Release cycle time",
+              "before": "5 days",
+              "after": "1.5 days"
+            },
+            {
+              "label": "Review findings missed until audit",
+              "before": "12 per year",
+              "after": "2 per year"
+            }
+          ],
+          "statusQuo": [
+            "Reviewers page through hundreds of electronic batch record entries checking each value against limits by eye.",
+            "Ninety-five percent of review time is spent confirming records that have no exceptions at all.",
+            "Deviations discovered late in review restart the correction loop and push the release date out by days."
+          ],
+          "agentification": [
+            "Screens the full batch record against specifications, procedure limits, and e-signature completeness the moment production closes the order in MES.",
+            "Generates a review-by-exception summary listing only the entries that deviate, with links to the source records in SAP QM.",
+            "Drafts the release recommendation for clean batches so the quality systems lead reviews exceptions instead of paperwork."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "M-53",
+      "name": "Maintenance & Reliability",
+      "useCases": [
+        {
+          "id": "predictive-asset-failure-monitor",
+          "title": "Predictive Asset Failure Monitor",
+          "persona": "Reliability Engineer",
+          "triggerType": "event-driven",
+          "systems": [
+            "OSIsoft PI System",
+            "IBM Maximo",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Unplanned downtime hours",
+              "before": "540 hrs/yr",
+              "after": "210 hrs/yr"
+            },
+            {
+              "label": "Failures predicted before functional loss",
+              "before": "12%",
+              "after": "68%"
+            },
+            {
+              "label": "Emergency work orders",
+              "before": "31% of total",
+              "after": "11% of total"
+            }
+          ],
+          "statusQuo": [
+            "Vibration and temperature trends sit in the PI historian, but nobody looks at them until a bearing has already seized.",
+            "Condition monitoring rounds happen monthly on a clipboard, so a fault that develops in week one runs three more weeks.",
+            "The same pump fails the same way every year and the pattern lives only in one technician's memory."
+          ],
+          "agentification": [
+            "Continuously scores critical-asset sensor streams from the PI System in BigQuery against learned degradation signatures.",
+            "Raises an early-warning alert with estimated remaining useful life when an asset's signature departs from its healthy baseline.",
+            "Creates a prioritized condition-based work order in IBM Maximo with the suspect component, evidence trends, and recommended repair window."
+          ]
+        },
+        {
+          "id": "pm-schedule-optimization-engine",
+          "title": "PM Schedule Optimization Engine",
+          "persona": "Maintenance Planner",
+          "triggerType": "scheduled",
+          "systems": [
+            "IBM Maximo",
+            "OSIsoft PI System",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "PM labor hours with no findings",
+              "before": "44%",
+              "after": "18%"
+            },
+            {
+              "label": "Failures occurring between PMs",
+              "before": "9 per month",
+              "after": "3 per month"
+            },
+            {
+              "label": "Wrench time",
+              "before": "32%",
+              "after": "48%"
+            }
+          ],
+          "statusQuo": [
+            "PM intervals were set from OEM manuals a decade ago and have never been revisited against actual failure history.",
+            "Technicians grease and inspect healthy equipment while assets that actually fail sit on the same calendar cadence.",
+            "The planner has no way to see which PM tasks have never once produced a finding."
+          ],
+          "agentification": [
+            "Cross-references every PM task in IBM Maximo against failure history and runtime data from the PI System in BigQuery quarterly.",
+            "Recommends interval extensions for zero-finding PMs and tightened or condition-based triggers for failure-prone assets, with the evidence attached.",
+            "Drafts the updated PM route packages for the planner's approval and tracks failure rates after each change to validate it."
+          ]
+        },
+        {
+          "id": "spare-parts-stockout-prediction-agent",
+          "title": "Spare Parts Stockout Prediction Agent",
+          "persona": "MRO Storeroom Manager",
+          "triggerType": "scheduled",
+          "systems": [
+            "IBM Maximo",
+            "SAP S/4HANA MM",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Stockout-driven downtime hours",
+              "before": "95 hrs/yr",
+              "after": "20 hrs/yr"
+            },
+            {
+              "label": "Spare parts inventory value",
+              "before": "$6.4M",
+              "after": "$5.1M"
+            },
+            {
+              "label": "Critical spares service level",
+              "before": "88%",
+              "after": "99%"
+            }
+          ],
+          "statusQuo": [
+            "Min/max levels were set once at commissioning and never adjusted, so fast movers stock out while obsolete parts gather dust.",
+            "A critical repair stalls for two weeks because the one bearing on the shelf turned out to be reserved against another work order.",
+            "The storeroom manager discovers a lead-time change only when the expedite quote comes back at triple the price."
+          ],
+          "agentification": [
+            "Forecasts part-level demand from IBM Maximo work order history, upcoming PM schedules, and asset criticality in BigQuery.",
+            "Predicts stockout risk against on-hand and on-order quantities in SAP S/4HANA MM, accounting for current supplier lead times.",
+            "Recommends reorder point changes and drafts purchase requisitions for at-risk critical spares before the shelf goes empty."
+          ]
+        },
+        {
+          "id": "work-order-backlog-triage-orchestrator",
+          "title": "Work Order Backlog Triage Orchestrator",
+          "persona": "Maintenance Supervisor",
+          "triggerType": "scheduled",
+          "systems": [
+            "IBM Maximo",
+            "ServiceNow",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Maintenance backlog",
+              "before": "11 crew-weeks",
+              "after": "4 crew-weeks"
+            },
+            {
+              "label": "Schedule compliance",
+              "before": "61%",
+              "after": "85%"
+            },
+            {
+              "label": "Weekly planning meeting duration",
+              "before": "3 hours",
+              "after": "45 minutes"
+            }
+          ],
+          "statusQuo": [
+            "The backlog holds 800 open work orders and the supervisor triages them by scrolling and instinct every Monday.",
+            "Duplicate requests for the same failing asset are dispatched to different technicians on different days.",
+            "High-criticality safety work sits behind cosmetic requests because every ticket enters the queue at the same priority."
+          ],
+          "agentification": [
+            "Scores the entire IBM Maximo backlog weekly on asset criticality, safety impact, age, and parts availability from BigQuery.",
+            "Merges duplicate requests, bundles work orders on the same asset into single visits, and drafts the weekly schedule proposal.",
+            "Escalates safety-critical orders aging past threshold to the supervisor through ServiceNow and tracks them to closure."
+          ]
+        },
+        {
+          "id": "bad-actor-asset-analyzer",
+          "title": "Bad Actor Asset Analyzer",
+          "persona": "Reliability Engineer",
+          "triggerType": "on-demand",
+          "systems": [
+            "IBM Maximo",
+            "OSIsoft PI System",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Maintenance cost on top-10 bad actors",
+              "before": "$1.8M/yr",
+              "after": "$0.9M/yr"
+            },
+            {
+              "label": "MTBF on targeted assets",
+              "before": "42 days",
+              "after": "115 days"
+            },
+            {
+              "label": "Bad-actor study preparation time",
+              "before": "2 weeks",
+              "after": "30 minutes"
+            }
+          ],
+          "statusQuo": [
+            "Identifying the worst-performing assets means exporting a year of Maximo history and pivoting it in a spreadsheet for two weeks.",
+            "Cost, downtime, and failure-count rankings disagree with each other, so every reliability review reopens the same debate.",
+            "Defect-elimination projects launch without failure-mode data and end up treating symptoms."
+          ],
+          "agentification": [
+            "Ranks assets on a combined index of repair cost, downtime contribution, and failure frequency from IBM Maximo and PI System data in BigQuery on request.",
+            "Clusters each bad actor's work order text into dominant failure modes and summarizes the recurring mechanism.",
+            "Generates a defect-elimination candidate briefing with projected savings and publishes the ranking dashboard to Looker."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "M-54",
+      "name": "Supply Chain & Materials",
+      "useCases": [
+        {
+          "id": "material-shortage-early-warning-monitor",
+          "title": "Material Shortage Early Warning Monitor",
+          "persona": "Supply Planner",
+          "triggerType": "scheduled",
+          "systems": [
+            "Kinaxis RapidResponse",
+            "SAP S/4HANA MM",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Line stoppages from material shortages",
+              "before": "7 per month",
+              "after": "1 per month"
+            },
+            {
+              "label": "Shortage detection horizon",
+              "before": "2 days",
+              "after": "15 days"
+            },
+            {
+              "label": "Premium freight spend",
+              "before": "$95K/month",
+              "after": "$30K/month"
+            }
+          ],
+          "statusQuo": [
+            "Shortages surface when a picker reports an empty bin, hours before the line needs the part.",
+            "The planner manually walks MRP exception messages in SAP every morning and triages a few hundred by instinct.",
+            "Supplier delay notifications arrive by email and rarely make it into the plan before the impact hits."
+          ],
+          "agentification": [
+            "Projects material coverage daily by netting Kinaxis RapidResponse supply plans against SAP S/4HANA MM inventory, open POs, and confirmed supplier dates in BigQuery.",
+            "Ranks emerging shortages by production impact and identifies which specific orders and lines each one will stop.",
+            "Notifies the supply planner with a resolution option per shortage \u2014 expedite, substitute, or reschedule \u2014 and drafts the expedite request when chosen."
+          ]
+        },
+        {
+          "id": "supplier-delivery-risk-analyzer",
+          "title": "Supplier Delivery Risk Analyzer",
+          "persona": "Materials Manager",
+          "triggerType": "scheduled",
+          "systems": [
+            "Kinaxis RapidResponse",
+            "SAP S/4HANA MM",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Supplier on-time delivery",
+              "before": "84%",
+              "after": "95%"
+            },
+            {
+              "label": "POs flagged at risk before due date",
+              "before": "10%",
+              "after": "72%"
+            },
+            {
+              "label": "Safety stock held against unreliable suppliers",
+              "before": "$3.1M",
+              "after": "$1.9M"
+            }
+          ],
+          "statusQuo": [
+            "On-time delivery is reported monthly in arrears, so a supplier's slide shows up in the metrics six weeks after it started hurting the plant.",
+            "Buyers chase overdue POs one by one with no view of which supplier's slippage actually threatens production.",
+            "Safety stocks are padded uniformly because nobody quantifies delivery risk per supplier."
+          ],
+          "agentification": [
+            "Scores every open purchase order's late-delivery probability from the supplier's rolling performance, order size, and lead-time trend in BigQuery.",
+            "Simulates the production impact of predicted slips through Kinaxis RapidResponse and highlights the POs worth chasing this week.",
+            "Publishes supplier reliability trend dashboards in Looker and recommends differentiated safety stock levels to the materials manager."
+          ]
+        },
+        {
+          "id": "inventory-rebalancing-orchestrator",
+          "title": "Inventory Rebalancing Orchestrator",
+          "persona": "Inventory Analyst",
+          "triggerType": "scheduled",
+          "systems": [
+            "Kinaxis RapidResponse",
+            "SAP S/4HANA MM",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Excess and obsolete inventory",
+              "before": "$4.8M",
+              "after": "$2.6M"
+            },
+            {
+              "label": "Inter-site transfer cycle time",
+              "before": "12 days",
+              "after": "4 days"
+            },
+            {
+              "label": "Inventory turns",
+              "before": "5.2",
+              "after": "7.4"
+            }
+          ],
+          "statusQuo": [
+            "One plant expedites a component at premium cost while a sister plant sits on eight months of the same part.",
+            "Rebalancing opportunities are found once a quarter through a manual multi-site spreadsheet reconciliation.",
+            "Transfer orders take days to arrange because each one requires an email negotiation between site planners."
+          ],
+          "agentification": [
+            "Scans multi-site stock positions and projected demand in Kinaxis RapidResponse and SAP S/4HANA MM data in BigQuery every night for surplus-deficit pairs.",
+            "Recommends specific inter-site transfers with freight cost versus expedite cost trade-offs quantified.",
+            "Drafts the stock transport orders in SAP for approval and tracks each transfer through receipt."
+          ]
+        },
+        {
+          "id": "expedite-request-triage-agent",
+          "title": "Expedite Request Triage Agent",
+          "persona": "Procurement Buyer",
+          "triggerType": "event-driven",
+          "systems": [
+            "Kinaxis RapidResponse",
+            "SAP S/4HANA MM",
+            "ServiceNow",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Expedite requests per month",
+              "before": "310",
+              "after": "140"
+            },
+            {
+              "label": "Expedite response time",
+              "before": "1.5 days",
+              "after": "2 hours"
+            },
+            {
+              "label": "Expedite cost per quarter",
+              "before": "$520K",
+              "after": "$260K"
+            }
+          ],
+          "statusQuo": [
+            "Expedite requests arrive as emails and hallway conversations, and buyers process them first-come-first-served.",
+            "Half the expedites turn out to be unnecessary because the need date moved or stock existed at another location.",
+            "Nobody can report what expediting actually costs the business each quarter."
+          ],
+          "agentification": [
+            "Intakes every expedite request through ServiceNow, validates the true requirement date against the Kinaxis RapidResponse plan, and checks alternate stock in SAP S/4HANA MM.",
+            "Rejects unnecessary requests with the evidence attached and ranks genuine ones by production impact and cost.",
+            "Drafts the supplier expedite communication for approved requests and logs cost and outcome to BigQuery for quarterly reporting."
+          ]
+        },
+        {
+          "id": "demand-supply-gap-scenario-engine",
+          "title": "Demand-Supply Gap Scenario Engine",
+          "persona": "S&OP Manager",
+          "triggerType": "on-demand",
+          "systems": [
+            "Kinaxis RapidResponse",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "S&OP scenario turnaround",
+              "before": "4 days",
+              "after": "20 minutes"
+            },
+            {
+              "label": "Forecast bias",
+              "before": "+9%",
+              "after": "+2%"
+            },
+            {
+              "label": "Revenue at risk identified pre-quarter",
+              "before": "$2M of $8M",
+              "after": "$7M of $8M"
+            }
+          ],
+          "statusQuo": [
+            "Each what-if question from the executive S&OP meeting takes the planning team most of a week to model.",
+            "Demand-supply gaps are presented as aggregate units, hiding which customers and SKUs actually absorb the shortfall.",
+            "Scenario assumptions live in personal spreadsheets that disagree with the system of record."
+          ],
+          "agentification": [
+            "Runs demand-shift, capacity-loss, and supplier-disruption scenarios through Kinaxis RapidResponse on request and lands results in BigQuery for comparison.",
+            "Translates each gap into affected customers, SKUs, revenue, and margin rather than aggregate units.",
+            "Generates the executive S&OP briefing with side-by-side scenario trade-offs and publishes it to Looker before the meeting."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "M-55",
+      "name": "Engineering & PLM",
+      "useCases": [
+        {
+          "id": "eco-impact-analysis-agent",
+          "title": "ECO Impact Analysis Agent",
+          "persona": "Manufacturing Engineer",
+          "triggerType": "event-driven",
+          "systems": [
+            "PTC Windchill PLM",
+            "SAP S/4HANA PP",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "ECO cycle time",
+              "before": "34 days",
+              "after": "12 days"
+            },
+            {
+              "label": "Obsolete inventory written off per change",
+              "before": "$45K avg",
+              "after": "$12K avg"
+            },
+            {
+              "label": "Changes released with missed impacts",
+              "before": "15%",
+              "after": "3%"
+            }
+          ],
+          "statusQuo": [
+            "Assessing a change means manually tracing where-used across Windchill BOMs, then separately checking SAP for open orders and on-hand stock.",
+            "Effectivity dates are picked without knowing how much inventory the change will strand.",
+            "Downstream teams learn about a released change when a part stops fitting on the line."
+          ],
+          "agentification": [
+            "Traces full where-used impact across PTC Windchill PLM product structures the moment an ECO enters review, joined with open orders, WIP, and inventory from SAP S/4HANA PP in BigQuery.",
+            "Recommends the effectivity date that minimizes stranded inventory and open-order disruption, with the cost trade-off quantified.",
+            "Drafts the impact summary for the change board and notifies affected planners, buyers, and line engineers on release."
+          ]
+        },
+        {
+          "id": "bom-plm-erp-sync-monitor",
+          "title": "BOM PLM-ERP Sync Monitor",
+          "persona": "PLM Administrator",
+          "triggerType": "scheduled",
+          "systems": [
+            "PTC Windchill PLM",
+            "SAP S/4HANA PP",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "BOM discrepancies between PLM and ERP",
+              "before": "260 active",
+              "after": "15 active"
+            },
+            {
+              "label": "Builds executed against stale BOMs",
+              "before": "6 per quarter",
+              "after": "0 per quarter"
+            },
+            {
+              "label": "Discrepancy detection lag",
+              "before": "3 weeks",
+              "after": "1 day"
+            }
+          ],
+          "statusQuo": [
+            "Windchill and SAP BOMs drift apart through failed interface transfers and manual ERP edits that nobody reconciles.",
+            "Discrepancies are found by periodic manual audits that sample a fraction of the part universe.",
+            "A stale ERP BOM triggers wrong-part picks that surface as assembly-line stoppages weeks later."
+          ],
+          "agentification": [
+            "Compares released PTC Windchill PLM structures against SAP S/4HANA PP production BOMs in BigQuery every night, item by item.",
+            "Classifies each mismatch by cause \u2014 failed transfer, manual override, or pending change \u2014 and routes it to the right owner with fix instructions.",
+            "Escalates discrepancies on parts with imminent planned orders so they are corrected before a build starts."
+          ]
+        },
+        {
+          "id": "npi-launch-readiness-orchestrator",
+          "title": "NPI Launch Readiness Orchestrator",
+          "persona": "NPI Program Manager",
+          "triggerType": "scheduled",
+          "systems": [
+            "PTC Windchill PLM",
+            "Jira",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "On-time production launches",
+              "before": "58%",
+              "after": "88%"
+            },
+            {
+              "label": "Readiness status compilation effort",
+              "before": "2 days per gate",
+              "after": "0 (continuous)"
+            },
+            {
+              "label": "Deliverables discovered missing at gate review",
+              "before": "14 per launch",
+              "after": "2 per launch"
+            }
+          ],
+          "statusQuo": [
+            "Launch readiness is tracked in a 400-row spreadsheet that is out of date the day after each program review.",
+            "Missing PPAP documents, unreleased drawings, and open tooling tasks surface at the gate review instead of weeks before.",
+            "The program manager spends two days per gate chasing status from twelve functions by email."
+          ],
+          "agentification": [
+            "Continuously reconciles gate deliverables against actual state \u2014 released drawings and documents in PTC Windchill PLM, task completion in Jira, and tooling and qualification records in BigQuery.",
+            "Predicts gate readiness from current burn-down trends and flags deliverables that will miss the date while there is still time to recover.",
+            "Generates the gate review readiness pack automatically and escalates critical-path blockers to the accountable function lead."
+          ]
+        },
+        {
+          "id": "engineering-change-backlog-analyzer",
+          "title": "Engineering Change Backlog Analyzer",
+          "persona": "Design Engineer",
+          "triggerType": "on-demand",
+          "systems": [
+            "PTC Windchill PLM",
+            "Jira",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Open change requests older than 90 days",
+              "before": "170",
+              "after": "35"
+            },
+            {
+              "label": "Change board meeting throughput",
+              "before": "8 CRs per session",
+              "after": "20 CRs per session"
+            },
+            {
+              "label": "Duplicate change requests",
+              "before": "11%",
+              "after": "2%"
+            }
+          ],
+          "statusQuo": [
+            "Hundreds of open change requests sit in Windchill with no ranking, so the change board reviews them in submission order.",
+            "Duplicate and overlapping requests against the same part consume separate review cycles.",
+            "Cost-reduction changes worth six figures wait behind typo-level drawing corrections."
+          ],
+          "agentification": [
+            "Clusters the open change request backlog in PTC Windchill PLM by affected part and problem description, merging duplicates and linking related Jira issues.",
+            "Scores each request on cost impact, quality risk, and affected production volume from BigQuery data.",
+            "Drafts a prioritized change board agenda with a one-paragraph summary per request so the board decides instead of deciphering."
+          ]
+        },
+        {
+          "id": "component-obsolescence-risk-monitor",
+          "title": "Component Obsolescence Risk Monitor",
+          "persona": "Component Engineer",
+          "triggerType": "scheduled",
+          "systems": [
+            "PTC Windchill PLM",
+            "SAP S/4HANA MM",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Line-down events from obsolete components",
+              "before": "4 per year",
+              "after": "0 per year"
+            },
+            {
+              "label": "Last-time-buy decisions made proactively",
+              "before": "30%",
+              "after": "92%"
+            },
+            {
+              "label": "Redesign projects started reactively",
+              "before": "9 per year",
+              "after": "2 per year"
+            }
+          ],
+          "statusQuo": [
+            "End-of-life notices arrive in a shared inbox and are matched to product BOMs by hand, weeks later, if at all.",
+            "Last-time-buy windows close before anyone calculates how many units of remaining demand the part covers.",
+            "A discontinued component is often discovered when a purchase order bounces back unfulfilled."
+          ],
+          "agentification": [
+            "Cross-references supplier end-of-life and lifecycle-risk signals against active PTC Windchill PLM BOM usage and remaining demand from SAP S/4HANA MM in BigQuery weekly.",
+            "Quantifies exposure per affected product \u2014 remaining demand, current stock, and last-time-buy quantity required.",
+            "Notifies the component engineer with a recommended action per part \u2014 last-time buy, qualify an alternate, or launch a redesign \u2014 and creates the tracking task for the chosen path."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "M-56",
+      "name": "EHS & Sustainability",
+      "useCases": [
+        {
+          "id": "permit-to-work-compliance-monitor",
+          "title": "Permit-to-Work Compliance Monitor",
+          "persona": "EHS Manager",
+          "triggerType": "event-driven",
+          "systems": [
+            "Sphera EHS",
+            "ServiceNow",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "High-risk work performed without valid permit",
+              "before": "6 events per quarter",
+              "after": "0 events per quarter"
+            },
+            {
+              "label": "Permit audit preparation time",
+              "before": "4 days",
+              "after": "2 hours"
+            },
+            {
+              "label": "Expired permits caught before work continues",
+              "before": "40%",
+              "after": "98%"
+            }
+          ],
+          "statusQuo": [
+            "Hot work and confined-space permits are checked against actual work activity only during spot walkdowns.",
+            "Permits expire mid-job and crews keep working because nobody tracks the clock across dozens of active permits.",
+            "Contractor permits are filed on paper, making audit preparation a multi-day scavenger hunt."
+          ],
+          "agentification": [
+            "Cross-checks every active high-risk work order against valid permits in Sphera EHS in real time, including isolation and gas-test prerequisites.",
+            "Notifies the area supervisor and EHS manager the moment work is detected against a missing, expired, or mismatched permit.",
+            "Generates the complete permit compliance evidence pack on demand and logs every exception to BigQuery for trend review."
+          ]
+        },
+        {
+          "id": "incident-near-miss-triage-agent",
+          "title": "Incident and Near-Miss Triage Agent",
+          "persona": "Site Safety Officer",
+          "triggerType": "event-driven",
+          "systems": [
+            "Sphera EHS",
+            "ServiceNow",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Recordable incident rate (TRIR)",
+              "before": "2.4",
+              "after": "1.1"
+            },
+            {
+              "label": "Near-miss investigation start time",
+              "before": "5 days",
+              "after": "4 hours"
+            },
+            {
+              "label": "Corrective actions closed on time",
+              "before": "52%",
+              "after": "90%"
+            }
+          ],
+          "statusQuo": [
+            "Near-miss reports pile up unread for a week because the safety officer triages them between audits and training sessions.",
+            "Serious-injury-potential events get the same cursory handling as a paper cut because severity screening is inconsistent.",
+            "Corrective actions from investigations drift past due dates with no systematic follow-up."
+          ],
+          "agentification": [
+            "Classifies every new Sphera EHS report by severity potential and regulatory reportability within minutes of submission.",
+            "Routes serious-injury-potential events to immediate investigation, drafts the initial investigation record, and proposes similar historical events from BigQuery.",
+            "Creates corrective-action tasks in ServiceNow and escalates any action aging past its due date to the responsible manager."
+          ]
+        },
+        {
+          "id": "energy-intensity-monitoring-engine",
+          "title": "Energy Intensity Monitoring Engine",
+          "persona": "Sustainability Lead",
+          "triggerType": "scheduled",
+          "systems": [
+            "Sphera EHS",
+            "OSIsoft PI System",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Energy intensity (kWh per unit produced)",
+              "before": "14.2",
+              "after": "11.6"
+            },
+            {
+              "label": "Energy anomaly detection lag",
+              "before": "30 days (at the bill)",
+              "after": "1 day"
+            },
+            {
+              "label": "Annual energy spend",
+              "before": "$5.8M",
+              "after": "$4.9M"
+            }
+          ],
+          "statusQuo": [
+            "Energy performance is reviewed monthly from utility bills, long after a stuck valve or idling compressor has burned weeks of waste.",
+            "Consumption is not normalized per unit produced, so efficiency losses hide inside volume swings.",
+            "Weekend and idle-hour baseload creep goes unchallenged because nobody compares shifts against a baseline."
+          ],
+          "agentification": [
+            "Computes energy intensity per line and product daily by joining PI System meter data with production output in BigQuery.",
+            "Detects consumption anomalies against weather- and volume-normalized baselines and identifies the likely equipment source.",
+            "Publishes intensity trend dashboards in Looker and recommends the top three conservation actions with quantified savings to the sustainability lead."
+          ]
+        },
+        {
+          "id": "regulatory-emissions-reporting-agent",
+          "title": "Regulatory Emissions Reporting Agent",
+          "persona": "Environmental Compliance Specialist",
+          "triggerType": "scheduled",
+          "systems": [
+            "Sphera EHS",
+            "OSIsoft PI System",
+            "BigQuery",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Emissions report preparation time",
+              "before": "3 weeks per cycle",
+              "after": "2 days per cycle"
+            },
+            {
+              "label": "Permit exceedances caught before violation",
+              "before": "50%",
+              "after": "96%"
+            },
+            {
+              "label": "Reporting data corrections after submission",
+              "before": "8 per year",
+              "after": "1 per year"
+            }
+          ],
+          "statusQuo": [
+            "Quarterly emissions reports are compiled by hand from CEMS exports, fuel logs, and production records across a dozen spreadsheets.",
+            "A permit limit exceedance is often discovered during report preparation, weeks after it happened.",
+            "Each report cycle rediscovers the same data gaps and unit-conversion errors under deadline pressure."
+          ],
+          "agentification": [
+            "Aggregates continuous emissions data from the PI System with fuel and production records in BigQuery, validated daily against permit limits in Sphera EHS.",
+            "Notifies the compliance specialist immediately when any rolling-average parameter trends toward a permit threshold.",
+            "Drafts the complete regulatory submission with calculation lineage attached, ready for review and sign-off."
+          ]
+        },
+        {
+          "id": "safety-observation-trend-analyzer",
+          "title": "Safety Observation Trend Analyzer",
+          "persona": "Plant Safety Coordinator",
+          "triggerType": "scheduled",
+          "systems": [
+            "Sphera EHS",
+            "BigQuery",
+            "Looker",
+            "Vertex AI"
+          ],
+          "kpis": [
+            {
+              "label": "Leading-indicator coverage of incidents",
+              "before": "20% preceded by flagged trend",
+              "after": "75% preceded by flagged trend"
+            },
+            {
+              "label": "Observation-to-insight cycle",
+              "before": "quarterly review",
+              "after": "weekly"
+            },
+            {
+              "label": "Recordable incident rate (TRIR)",
+              "before": "1.9",
+              "after": "1.2"
+            }
+          ],
+          "statusQuo": [
+            "Thousands of behavior-based safety observations are collected each year and read by no one beyond a raw count on a slide.",
+            "Emerging risk patterns \u2014 the same unsafe condition reported in three departments \u2014 are invisible in the quarterly rollup.",
+            "Toolbox talk topics are recycled from a stale list instead of reflecting what observers are actually reporting."
+          ],
+          "agentification": [
+            "Mines Sphera EHS observation free-text weekly in BigQuery to cluster emerging unsafe conditions and behaviors by area, shift, and task type.",
+            "Correlates observation clusters with incident history to surface the leading indicators that historically precede recordables.",
+            "Drafts targeted toolbox talk content for the highest-risk clusters and publishes the trend dashboard to Looker for area supervisors."
+          ]
+        }
+      ]
+    }
+  ]
+}

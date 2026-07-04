@@ -7,6 +7,7 @@ import {
   INTERVIEW_SPEC_DIR,
 } from "@ge/agent-spec/constants";
 import { asArray, nonEmptyString, validateAgentSpecQuality } from "@ge/agent-spec/validate";
+import { classifyUseCase } from "./catalog-taxonomy.js";
 
 // The agent-spec CONTRACT — the three quality validators (byte-stable
 // { ok, maturity, gaps } output), their constants, and the zod shape
@@ -78,6 +79,14 @@ export function normalizeAgentSpecEntry(raw, {
     },
     generationSpec,
     hasBehaviorContract: Boolean(generationSpec?.behaviorContract?.toolIntents?.length),
+    // Three-axis taxonomy (industry × function × value stream) — derived from
+    // catalog/taxonomy.json so horizontal and vertical agents share one
+    // queryable classification (see src/catalog-taxonomy.js).
+    classification: raw.classification || classifyUseCase({
+      department: raw.department,
+      subtitle: raw.subtitle,
+      domainId: raw.domainId || raw.domain || null,
+    }),
     registry: {
       schemaVersion: AGENT_SPEC_SCHEMA_VERSION,
       sourceKind,

@@ -1,0 +1,703 @@
+{
+  "industry": "telco",
+  "department": "telco",
+  "code": "T",
+  "valueStreams": [
+    {
+      "code": "T-41",
+      "name": "Sales & Customer Acquisition",
+      "useCases": [
+        {
+          "id": "b2b-quote-configuration-agent",
+          "title": "B2B Quote Configuration Agent",
+          "persona": "B2B Sales Engineer",
+          "triggerType": "on-demand",
+          "systems": ["Salesforce Communications Cloud", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Quote turnaround time", "before": "4.5 days", "after": "6 hours"},
+            {"label": "Quote configuration error rate", "before": "12%", "after": "2%"},
+            {"label": "Quote-to-order conversion", "before": "31%", "after": "44%"}
+          ],
+          "statusQuo": [
+            "Sales engineers manually assemble multi-site MPLS and SD-WAN quotes across spreadsheets and legacy price books.",
+            "Each enterprise quote requires back-and-forth email threads with product management to validate discount thresholds.",
+            "Misconfigured bandwidth tiers and missing cross-connect charges surface only after the order hits provisioning."
+          ],
+          "agentification": [
+            "The agent assembles a validated multi-site quote from the opportunity record, applying current price books and approved discount bands automatically.",
+            "It checks serviceability and access technology per site against network inventory before any line item is priced.",
+            "It drafts the customer-ready proposal document and routes out-of-policy discounts to the deal desk for approval."
+          ]
+        },
+        {
+          "id": "lead-qualification-scoring-engine",
+          "title": "Lead Qualification Scoring Engine",
+          "persona": "Inside Sales Representative",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Communications Cloud", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Lead response time", "before": "26 hours", "after": "15 minutes"},
+            {"label": "Marketing-qualified to sales-qualified conversion", "before": "18%", "after": "34%"},
+            {"label": "Rep time spent on unqualified leads", "before": "40% of week", "after": "10% of week"}
+          ],
+          "statusQuo": [
+            "Inbound fiber and 5G business leads sit in a shared queue where reps cherry-pick based on gut feel.",
+            "Reps manually look up building serviceability and existing account footprint for every lead before dialing.",
+            "High-intent leads from coverage-expansion campaigns go cold because scoring rules have not been updated in two years."
+          ],
+          "agentification": [
+            "The engine scores each inbound lead on firmographics, serviceability, and usage-intent signals the moment it lands.",
+            "It enriches the lead record with building lit status, competitor presence, and existing group-account relationships.",
+            "It routes hot leads to the right territory rep and notifies them with a suggested opening talk track."
+          ]
+        },
+        {
+          "id": "site-serviceability-qualification-agent",
+          "title": "Site Serviceability Qualification Agent",
+          "persona": "Sales Solution Consultant",
+          "triggerType": "on-demand",
+          "systems": ["Salesforce Communications Cloud", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Serviceability check turnaround", "before": "3 days", "after": "under 5 minutes"},
+            {"label": "Orders cancelled for non-serviceability", "before": "9%", "after": "1.5%"},
+            {"label": "Multi-site qualification throughput", "before": "20 sites/day", "after": "500 sites/day"}
+          ],
+          "statusQuo": [
+            "Solution consultants email the network planning team a spreadsheet of addresses and wait days for lit-building answers.",
+            "Address-matching errors between CRM and network inventory produce false negatives that kill viable deals.",
+            "Near-net buildings requiring short fiber laterals are quoted as off-net because build-cost data is buried in planning tools."
+          ],
+          "agentification": [
+            "The agent qualifies entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage in one pass.",
+            "It resolves fuzzy address matches and flags near-net sites with an estimated lateral build cost and interval.",
+            "It publishes a color-coded serviceability matrix back to the opportunity and recommends the best access technology per site."
+          ]
+        },
+        {
+          "id": "competitive-win-loss-analyzer",
+          "title": "Competitive Win-Loss Analyzer",
+          "persona": "Sales Operations Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Communications Cloud", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Win-loss analysis cycle", "before": "quarterly, 3-week effort", "after": "weekly, automated"},
+            {"label": "Competitive win rate in contested deals", "before": "38%", "after": "47%"},
+            {"label": "Opportunities with loss reason coded", "before": "45%", "after": "96%"}
+          ],
+          "statusQuo": [
+            "Loss reasons are free-text fields that reps fill inconsistently, making pattern analysis nearly impossible.",
+            "The quarterly win-loss deck takes three analyst-weeks of manual CRM exports and interview note collation.",
+            "Pricing pressure from cable overbuilders is spotted a full quarter after it starts eroding a market."
+          ],
+          "agentification": [
+            "The analyzer classifies every closed opportunity by loss driver from CRM notes, call summaries, and quote history.",
+            "It detects emerging competitor pricing moves by market and product line within a weekly cadence.",
+            "It generates a briefing for sales leadership and recommends counter-plays for the three most contested segments."
+          ]
+        },
+        {
+          "id": "enterprise-rfp-response-agent",
+          "title": "Enterprise RFP Response Agent",
+          "persona": "Bid Manager",
+          "triggerType": "on-demand",
+          "systems": ["Salesforce Communications Cloud", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "RFP first-draft time", "before": "10 days", "after": "1 day"},
+            {"label": "RFP participation rate", "before": "55% of qualified bids", "after": "85% of qualified bids"},
+            {"label": "Bid team overtime hours per RFP", "before": "60 hours", "after": "12 hours"}
+          ],
+          "statusQuo": [
+            "Bid managers rebuild answers to the same SLA, security, and network-architecture questions for every carrier RFP.",
+            "The answer library is a shared drive of stale documents where nobody trusts which version reflects current products.",
+            "Compliance matrices are assembled by hand the night before submission, and missed mandatory items disqualify bids."
+          ],
+          "agentification": [
+            "The agent drafts responses to each RFP question from a curated, version-controlled answer library and current product specs.",
+            "It builds the compliance matrix automatically and flags mandatory requirements the standard portfolio cannot meet.",
+            "It routes technical and legal exceptions to the right subject-matter owners and tracks sign-off before submission."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "T-42",
+      "name": "Order Management & Provisioning",
+      "useCases": [
+        {
+          "id": "order-fallout-resolution-agent",
+          "title": "Order Fallout Resolution Agent",
+          "persona": "Order Management Specialist",
+          "triggerType": "event-driven",
+          "systems": ["Netcracker Service Orchestration", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Order fallout rate", "before": "14%", "after": "4%"},
+            {"label": "Mean time to resolve fallout", "before": "2.3 days", "after": "3 hours"},
+            {"label": "Manual fallout tickets per month", "before": "8,500", "after": "1,700"}
+          ],
+          "statusQuo": [
+            "Failed orders pile up in a fallout queue where specialists triage them one by one across four different swivel-chair systems.",
+            "The same address-mismatch and inventory-conflict errors recur daily because nobody has bandwidth to fix root causes.",
+            "Customers learn their install date slipped only when they call in, days after the order actually stalled."
+          ],
+          "agentification": [
+            "The agent classifies each fallout by error signature and auto-remediates known patterns like address normalization and port conflicts.",
+            "It replays corrected orders through the orchestration flow and verifies downstream activation completes.",
+            "It escalates unrecognized failure patterns to the fallout team with a full diagnostic trail and suggested fix."
+          ]
+        },
+        {
+          "id": "esim-activation-orchestrator",
+          "title": "eSIM Activation Orchestrator",
+          "persona": "Provisioning Engineer",
+          "triggerType": "event-driven",
+          "systems": ["Netcracker Service Orchestration", "BigQuery", "Splunk", "Vertex AI"],
+          "kpis": [
+            {"label": "eSIM activation success rate", "before": "91%", "after": "99.2%"},
+            {"label": "Average activation time", "before": "45 minutes", "after": "90 seconds"},
+            {"label": "Activation-related care calls", "before": "12,000/month", "after": "2,400/month"}
+          ],
+          "statusQuo": [
+            "Provisioning engineers manually retry stuck eSIM downloads by grepping SM-DP+ logs and re-pushing profiles.",
+            "HLR/HSS, entitlement server, and billing states drift out of sync during bulk device-launch weekends.",
+            "Failed activations during flagship phone launches create hours-long backlogs that overwhelm the care line."
+          ],
+          "agentification": [
+            "The orchestrator watches every activation flow end to end and retries or re-sequences failed profile downloads automatically.",
+            "It reconciles subscriber state across HSS, entitlement, and billing before declaring an activation complete.",
+            "It notifies the customer with device-specific recovery steps when a handset-side action is the blocker."
+          ]
+        },
+        {
+          "id": "number-porting-exception-agent",
+          "title": "Number Porting Exception Agent",
+          "persona": "Porting Desk Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Netcracker Service Orchestration", "BigQuery", "Zendesk", "Vertex AI"],
+          "kpis": [
+            {"label": "Port-in rejection rate", "before": "22%", "after": "7%"},
+            {"label": "Average port completion time", "before": "5.5 days", "after": "1.8 days"},
+            {"label": "Porting escalations to regulator", "before": "35/quarter", "after": "6/quarter"}
+          ],
+          "statusQuo": [
+            "Porting analysts manually compare rejected LSR fields against losing-carrier CSRs to find the one mismatched character.",
+            "Account-number and ZIP mismatches bounce ports back to the customer, who often abandons the switch entirely.",
+            "Wholesale partner porting disputes are tracked in email threads with no visibility into aging or ownership."
+          ],
+          "agentification": [
+            "The agent parses each port rejection, identifies the mismatched field, and drafts the corrected resubmission for one-click approval.",
+            "It proactively validates port-in requests against carrier CSR data before first submission to prevent rejections.",
+            "It escalates ports approaching regulatory interval deadlines with a complete case history attached."
+          ]
+        },
+        {
+          "id": "order-jeopardy-prediction-engine",
+          "title": "Order Jeopardy Prediction Engine",
+          "persona": "Delivery Program Manager",
+          "triggerType": "scheduled",
+          "systems": ["Netcracker Service Orchestration", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "On-time delivery rate for enterprise circuits", "before": "68%", "after": "88%"},
+            {"label": "Jeopardy detection lead time", "before": "2 days before due date", "after": "18 days before due date"},
+            {"label": "Customer-requested escalations", "before": "140/month", "after": "45/month"}
+          ],
+          "statusQuo": [
+            "Delivery managers discover a circuit will miss its committed date only when the technician dispatch fails.",
+            "Jeopardy status is maintained in a weekly spreadsheet review that covers barely a fifth of the open order book.",
+            "Third-party access-provider delays are invisible until the FOC date passes without confirmation."
+          ],
+          "agentification": [
+            "The engine scores every in-flight order daily for slip risk using milestone velocity, supplier history, and task aging.",
+            "It flags at-risk orders with the specific stalled milestone and the historically fastest recovery path.",
+            "It drafts proactive customer delay notifications and creates expedite tasks for the delivery team on high-value circuits."
+          ]
+        },
+        {
+          "id": "legacy-service-migration-orchestrator",
+          "title": "Legacy Service Migration Orchestrator",
+          "persona": "Provisioning Engineer",
+          "triggerType": "scheduled",
+          "systems": ["Netcracker Service Orchestration", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Migrations completed per week", "before": "350", "after": "2,100"},
+            {"label": "Migration-caused outage minutes per customer", "before": "38 minutes", "after": "4 minutes"},
+            {"label": "Copper decommissioning program timeline", "before": "6 years projected", "after": "2.5 years projected"}
+          ],
+          "statusQuo": [
+            "Copper-to-fiber and TDM-to-IP migrations are planned in spreadsheets keyed off an inventory system known to be 15% wrong.",
+            "Engineers hand-build each migration order, and one mis-mapped VLAN takes a business customer dark for a morning.",
+            "Customers get a generic letter and a date, with no coordination against their change-freeze windows."
+          ],
+          "agentification": [
+            "The orchestrator batches migration candidates by serving terminal, validates inventory against live network state, and sequences cutovers to minimize risk.",
+            "It generates per-customer migration orders with verified service mappings and schedules them around registered change freezes.",
+            "It monitors post-cutover service health and automatically rolls back or escalates any circuit failing verification."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "T-43",
+      "name": "Network Operations & Assurance",
+      "useCases": [
+        {
+          "id": "alarm-noise-reduction-engine",
+          "title": "Alarm Noise Reduction Engine",
+          "persona": "NOC Engineer",
+          "triggerType": "event-driven",
+          "systems": ["Ericsson Network Manager", "BigQuery", "Splunk", "Vertex AI"],
+          "kpis": [
+            {"label": "Actionable alarm ratio", "before": "1 in 40 alarms", "after": "1 in 3 alarms"},
+            {"label": "MTTR for P1 network incidents", "before": "4.2 hours", "after": "1.4 hours"},
+            {"label": "NOC alarms handled per engineer shift", "before": "1,200", "after": "90 correlated cases"}
+          ],
+          "statusQuo": [
+            "NOC engineers wade through tens of thousands of raw alarms per shift, most of them sympathetic noise from a single upstream fault.",
+            "Correlation rules are hand-maintained and break every time a new vendor domain or 5G element is added.",
+            "Genuine service-affecting alarms sit unacknowledged behind walls of flapping-link noise."
+          ],
+          "agentification": [
+            "The engine correlates alarm storms into single root-cause cases using topology, timing, and learned fault signatures.",
+            "It suppresses sympathetic and transient alarms while preserving a full evidence trail for audit.",
+            "It creates one enriched incident ticket per root cause and routes it to the owning domain team with impact scope attached."
+          ]
+        },
+        {
+          "id": "cell-congestion-forecasting-engine",
+          "title": "Cell Congestion Forecasting Engine",
+          "persona": "Capacity Planner",
+          "triggerType": "scheduled",
+          "systems": ["Ericsson Network Manager", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Congested-cell detection lead time", "before": "after customer complaints", "after": "8 weeks ahead"},
+            {"label": "Capacity augment cycle time", "before": "9 months", "after": "4 months"},
+            {"label": "PRB utilization above 85% threshold", "before": "11% of cells", "after": "3% of cells"}
+          ],
+          "statusQuo": [
+            "Capacity planners review utilization reports monthly, so a cell can run hot for weeks before anyone notices.",
+            "Sector-level growth forecasting is a spreadsheet extrapolation that misses event-driven and seasonal traffic shifts.",
+            "Augment budgets are allocated to whoever complains loudest rather than to the cells with the worst subscriber impact."
+          ],
+          "agentification": [
+            "The engine forecasts per-sector PRB and throughput demand weekly, blending trend, seasonality, and local event calendars.",
+            "It ranks the augment backlog by predicted subscriber-experience impact and revenue at risk.",
+            "It recommends the cheapest sufficient remedy per cell, from parameter rebalancing to carrier adds to new site builds, and publishes the plan to the capacity board."
+          ]
+        },
+        {
+          "id": "fiber-cut-triage-agent",
+          "title": "Fiber Cut Triage Agent",
+          "persona": "NOC Engineer",
+          "triggerType": "event-driven",
+          "systems": ["Ericsson Network Manager", "BigQuery", "ServiceNow", "Splunk", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to locate fiber break", "before": "95 minutes", "after": "12 minutes"},
+            {"label": "Mean restoration time for backbone cuts", "before": "6.8 hours", "after": "3.1 hours"},
+            {"label": "Affected-customer notification time", "before": "2+ hours", "after": "under 10 minutes"}
+          ],
+          "statusQuo": [
+            "When a backbone fiber is cut, engineers manually cross-reference OTDR traces against splice records to guess the break location.",
+            "Determining which customers and mobile sites ride the damaged cable takes an hour of inventory queries.",
+            "Restoration crews are dispatched to an approximate roadside location and burn daylight hunting for the actual damage point."
+          ],
+          "agentification": [
+            "The agent triangulates the break location from OTDR distance readings mapped onto GIS fiber routes and splice-point records.",
+            "It computes the full service-impact blast radius, triggers automatic traffic reroutes where protection paths exist, and opens the master incident.",
+            "It dispatches the nearest qualified splicing crew with driving directions to the predicted damage point and notifies affected enterprise customers."
+          ]
+        },
+        {
+          "id": "network-slice-sla-monitor",
+          "title": "5G Network Slice SLA Monitor",
+          "persona": "Service Assurance Manager",
+          "triggerType": "event-driven",
+          "systems": ["Ericsson Network Manager", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Slice SLA breach detection time", "before": "next-day report", "after": "under 60 seconds"},
+            {"label": "SLA credits paid to slice customers", "before": "$1.8M/year", "after": "$400K/year"},
+            {"label": "Slice KPI reporting effort", "before": "3 analyst-days/month per customer", "after": "fully automated"}
+          ],
+          "statusQuo": [
+            "Latency and throughput commitments for private 5G slices are checked against next-day reports, long after the breach hurt the customer.",
+            "Each enterprise slice customer gets a hand-assembled monthly SLA pack built from raw counter exports.",
+            "Nobody can say in real time whether a factory automation slice is meeting its 10ms latency commitment."
+          ],
+          "agentification": [
+            "The monitor evaluates per-slice latency, throughput, and availability against contracted SLOs continuously.",
+            "It triggers slice reconfiguration or resource reallocation workflows when a KPI trends toward breach.",
+            "It generates customer-facing SLA reports automatically and escalates confirmed breaches to the account team with credit exposure calculated."
+          ]
+        },
+        {
+          "id": "ran-parameter-optimization-agent",
+          "title": "RAN Parameter Optimization Agent",
+          "persona": "RF Optimization Engineer",
+          "triggerType": "scheduled",
+          "systems": ["Ericsson Network Manager", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Drop call rate in optimized clusters", "before": "0.9%", "after": "0.35%"},
+            {"label": "Parameter change cycle time", "before": "3 weeks per cluster", "after": "2 days per cluster"},
+            {"label": "Handover failure rate", "before": "2.8%", "after": "1.1%"}
+          ],
+          "statusQuo": [
+            "RF engineers tune neighbor lists, tilts, and handover thresholds cluster by cluster using drive-test data that is stale on arrival.",
+            "Parameter changes go out in bulk scripts with no automated before/after verification, so regressions linger for weeks.",
+            "Conflicting changes from coverage, capacity, and energy-saving teams silently fight each other on the same cells."
+          ],
+          "agentification": [
+            "The agent analyzes per-cell performance counters and geolocated call traces to identify the worst-offending parameter sets weekly.",
+            "It recommends specific tilt, power, and mobility parameter changes with predicted KPI impact, and stages them for engineer approval.",
+            "It verifies post-change KPIs within 24 hours and automatically rolls back any change that degrades accessibility or retention."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "T-44",
+      "name": "Billing & Revenue Assurance",
+      "useCases": [
+        {
+          "id": "revenue-leakage-detection-analyzer",
+          "title": "Revenue Leakage Detection Analyzer",
+          "persona": "Revenue Assurance Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Amdocs CES Billing", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Revenue leakage as % of billed revenue", "before": "1.9%", "after": "0.4%"},
+            {"label": "Leakage detection lag", "before": "60-90 days", "after": "24 hours"},
+            {"label": "Recovered revenue per quarter", "before": "$2.1M", "after": "$7.8M"}
+          ],
+          "statusQuo": [
+            "Analysts reconcile switch CDR counts against billed events with sampled monthly spreadsheets that miss whole rating streams.",
+            "Services provisioned in the network but absent from billing are found only during annual audits, past the back-billing window.",
+            "Each new product launch introduces rating gaps that nobody detects until margins mysteriously erode."
+          ],
+          "agentification": [
+            "The analyzer reconciles usage records end to end from network mediation through rating to invoice, every night, at full volume.",
+            "It detects unbilled active services by cross-matching provisioning inventory against the billing catalog.",
+            "It creates prioritized leakage cases with root-cause classification and recoverable-amount estimates for the assurance team."
+          ]
+        },
+        {
+          "id": "bill-dispute-resolution-agent",
+          "title": "Bill Dispute Resolution Agent",
+          "persona": "Billing Operations Manager",
+          "triggerType": "event-driven",
+          "systems": ["Amdocs CES Billing", "BigQuery", "Zendesk", "Vertex AI"],
+          "kpis": [
+            {"label": "Average dispute resolution time", "before": "12 days", "after": "1.5 days"},
+            {"label": "Dispute-driven credits issued", "before": "$950K/month", "after": "$380K/month"},
+            {"label": "Repeat disputes per account", "before": "23%", "after": "6%"}
+          ],
+          "statusQuo": [
+            "Billing analysts manually pull invoice lines, contract rates, and usage detail from three systems to adjudicate each dispute.",
+            "Under deadline pressure, agents issue goodwill credits without verifying the charge, training customers to dispute everything.",
+            "The same proration and contract-rate root causes generate disputes month after month with no feedback loop to billing configuration."
+          ],
+          "agentification": [
+            "The agent adjudicates each dispute by comparing the contested charge against contract terms, rate plans, and metered usage.",
+            "It drafts a customer-facing resolution letter with line-item evidence for approval or auto-sends within policy thresholds.",
+            "It clusters dispute root causes and creates billing-configuration fix tickets to stop recurring dispute classes at the source."
+          ]
+        },
+        {
+          "id": "roaming-settlement-reconciliation-engine",
+          "title": "Roaming Settlement Reconciliation Engine",
+          "persona": "Wholesale Settlements Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Amdocs CES Billing", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Roaming records reconciled per cycle", "before": "10% sample", "after": "100%"},
+            {"label": "Settlement discrepancy recovery", "before": "$1.2M/year", "after": "$4.6M/year"},
+            {"label": "Partner discrepancy dispute cycle", "before": "3 billing cycles", "after": "1 billing cycle"}
+          ],
+          "statusQuo": [
+            "TAP/BCE files from hundreds of roaming partners are reconciled on a 10% sample because full-volume matching is impossible manually.",
+            "IOT rate misapplications by partners go unnoticed until they compound across quarters of settlements.",
+            "Discrepancy disputes with partners drag across billing cycles because assembling record-level evidence takes weeks."
+          ],
+          "agentification": [
+            "The engine reconciles every inbound and outbound roaming record against partner agreements and IOT rate tables each settlement cycle.",
+            "It flags rate misapplications, duplicate records, and missing files per partner with quantified financial exposure.",
+            "It generates dispute packages with record-level evidence formatted for the partner's settlement process and tracks them to closure."
+          ]
+        },
+        {
+          "id": "sim-swap-fraud-detection-monitor",
+          "title": "SIM Swap Fraud Detection Monitor",
+          "persona": "Fraud Operations Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Amdocs CES Billing", "BigQuery", "Splunk", "Vertex AI"],
+          "kpis": [
+            {"label": "Fraudulent SIM swap interception rate", "before": "31%", "after": "88%"},
+            {"label": "Fraud loss per incident", "before": "$4,200 average", "after": "$600 average"},
+            {"label": "False-positive customer friction rate", "before": "8% of legit swaps challenged", "after": "1.5%"}
+          ],
+          "statusQuo": [
+            "Fraud analysts review SIM swap alerts from a rules engine hours after the swap, well after account-takeover damage is done.",
+            "Static rules flag thousands of legitimate device upgrades, burying the handful of genuine takeover attempts.",
+            "Correlating a swap with subsequent high-risk actions like international premium calls requires manual queries across three systems."
+          ],
+          "agentification": [
+            "The monitor scores every SIM swap in real time against behavioral signals like recent credential resets, dormancy, and channel anomalies.",
+            "It automatically holds high-risk swaps pending step-up verification and applies temporary blocks on premium and international routing.",
+            "It escalates confirmed fraud patterns to the fraud team with a complete event timeline and notifies affected customers through a verified channel."
+          ]
+        },
+        {
+          "id": "usage-rating-anomaly-monitor",
+          "title": "Usage Rating Anomaly Monitor",
+          "persona": "Revenue Assurance Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Amdocs CES Billing", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Rating error detection time", "before": "post-invoice, 30+ days", "after": "same day"},
+            {"label": "Invoice rebill rate", "before": "3.2% of invoices", "after": "0.6% of invoices"},
+            {"label": "Suspense/unrated record backlog", "before": "4.5M records", "after": "under 200K records"}
+          ],
+          "statusQuo": [
+            "Rating misconfigurations after catalog changes are caught by angry customers reading their invoices, not by internal controls.",
+            "Millions of CDRs sit in rating suspense queues that analysts drain by hand with one-off SQL fixes.",
+            "A single bad tariff push once double-rated a full day of data traffic and forced a mass rebill and press cycle."
+          ],
+          "agentification": [
+            "The monitor baselines rated revenue per product, plan, and event type daily and flags statistical deviations within hours of a catalog change.",
+            "It classifies suspense records by failure cause and auto-reprocesses those matching known correction patterns.",
+            "It alerts billing operations before invoice generation when an anomaly would affect a bill run, and recommends holding the impacted cycle."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "T-45",
+      "name": "Customer Care & Retention",
+      "useCases": [
+        {
+          "id": "churn-save-desk-agent",
+          "title": "Churn Save Desk Agent",
+          "persona": "Retention Marketing Manager",
+          "triggerType": "event-driven",
+          "systems": ["Genesys Cloud CX", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Save rate on cancellation contacts", "before": "24%", "after": "42%"},
+            {"label": "Average retention discount given", "before": "$18/month", "after": "$9/month"},
+            {"label": "Post-save 90-day re-churn", "before": "31%", "after": "12%"}
+          ],
+          "statusQuo": [
+            "Save-desk reps offer the same maximum-discount script to every canceling customer regardless of churn reason or value.",
+            "Reps have no view of the customer's network experience, so they offer price cuts to customers actually leaving over coverage.",
+            "Retention offers are approved via supervisor shoulder-taps, creating hold times that harden the customer's decision."
+          ],
+          "agentification": [
+            "The agent surfaces the customer's likely churn driver, lifetime value, and network-experience history to the rep the moment the call connects.",
+            "It recommends the minimum-cost save offer ranked by predicted acceptance, from plan right-sizing to device credits to a service fix.",
+            "It auto-approves offers within value-based guardrails and books follow-up tasks to verify promised fixes actually landed."
+          ]
+        },
+        {
+          "id": "care-call-resolution-copilot-agent",
+          "title": "Care Call Resolution Copilot Agent",
+          "persona": "Care Team Lead",
+          "triggerType": "on-demand",
+          "systems": ["Genesys Cloud CX", "BigQuery", "Zendesk", "Vertex AI"],
+          "kpis": [
+            {"label": "First-call resolution", "before": "62%", "after": "81%"},
+            {"label": "Average handle time", "before": "11.5 minutes", "after": "7 minutes"},
+            {"label": "New-agent time to proficiency", "before": "4 months", "after": "6 weeks"}
+          ],
+          "statusQuo": [
+            "Agents toggle among seven applications mid-call to see billing, device, network, and order status for one customer.",
+            "Troubleshooting quality depends entirely on individual agent tenure, and new hires transfer anything complicated.",
+            "After-call work consumes two minutes per contact writing free-text notes nobody can analyze later."
+          ],
+          "agentification": [
+            "The copilot assembles a unified customer context panel with billing, outage, device, and order status before the agent says hello.",
+            "It suggests the next-best troubleshooting step in real time based on the live conversation and known-issue signatures.",
+            "It drafts structured wrap-up notes and disposition codes automatically, and creates follow-up tickets when the issue needs field or engineering work."
+          ]
+        },
+        {
+          "id": "proactive-outage-notification-orchestrator",
+          "title": "Proactive Outage Notification Orchestrator",
+          "persona": "Customer Experience Manager",
+          "triggerType": "event-driven",
+          "systems": ["Genesys Cloud CX", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Outage-driven inbound calls", "before": "100% baseline", "after": "38% of baseline"},
+            {"label": "Customers notified before calling", "before": "12%", "after": "78%"},
+            {"label": "NPS impact per major outage", "before": "-9 points", "after": "-2 points"}
+          ],
+          "statusQuo": [
+            "During outages, thousands of customers call in to tell the operator about an incident the NOC has known about for an hour.",
+            "Outage messaging is a manual IVR recording updated by a supervisor when someone remembers.",
+            "Customers on the same street get contradictory answers depending on which agent they reach."
+          ],
+          "agentification": [
+            "The orchestrator maps each confirmed network incident to the exact affected customer base using service topology.",
+            "It notifies affected customers via their preferred channel with cause, ETA, and updates as restoration progresses.",
+            "It publishes the incident context to IVR and agent desktops so every touchpoint gives one consistent answer, then confirms restoration with impacted customers."
+          ]
+        },
+        {
+          "id": "complaint-root-cause-analyzer",
+          "title": "Complaint Root Cause Analyzer",
+          "persona": "Care Team Lead",
+          "triggerType": "scheduled",
+          "systems": ["Genesys Cloud CX", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Repeat contact rate", "before": "28%", "after": "14%"},
+            {"label": "Emerging-issue detection time", "before": "2-3 weeks", "after": "48 hours"},
+            {"label": "Regulator complaint escalations", "before": "85/quarter", "after": "30/quarter"}
+          ],
+          "statusQuo": [
+            "Contact drivers are inferred from agent disposition codes that are wrong or generic more than half the time.",
+            "A billing or firmware defect generates thousands of calls for weeks before anyone connects the dots across regions.",
+            "The monthly complaints review is anecdote-driven, so fixes chase the loudest recent story rather than the biggest driver."
+          ],
+          "agentification": [
+            "The analyzer mines call transcripts, chat logs, and tickets daily to classify true contact reasons independent of disposition codes.",
+            "It detects emerging complaint clusters and correlates them with recent releases, bill runs, and network changes.",
+            "It generates a ranked contact-driver report with estimated cost-to-serve and routes defect cases to the owning product or billing team."
+          ]
+        },
+        {
+          "id": "nps-detractor-recovery-agent",
+          "title": "NPS Detractor Recovery Agent",
+          "persona": "Customer Experience Manager",
+          "triggerType": "event-driven",
+          "systems": ["Genesys Cloud CX", "BigQuery", "Zendesk", "Vertex AI"],
+          "kpis": [
+            {"label": "Detractor follow-up rate", "before": "8%", "after": "92%"},
+            {"label": "Detractor-to-passive/promoter conversion", "before": "11%", "after": "34%"},
+            {"label": "Churn rate among contacted detractors", "before": "19% in 6 months", "after": "8% in 6 months"}
+          ],
+          "statusQuo": [
+            "Detractor survey responses land in a dashboard that the CX team reviews monthly, long after the frustration peaked.",
+            "Free-text feedback is skimmed for anecdotes rather than systematically linked to the account's actual service history.",
+            "Closing the loop is left to account managers' spare time, so only the largest accounts ever hear back."
+          ],
+          "agentification": [
+            "The agent triages every detractor response within minutes, matching the verbatim against the account's incident, billing, and contact history.",
+            "It drafts a personalized recovery outreach with a concrete remedy and routes it to the right owner with a response-time SLA.",
+            "It tracks each recovery case to closure and escalates accounts showing churn-risk signals to the retention team."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "T-46",
+      "name": "Field Service & Infrastructure",
+      "useCases": [
+        {
+          "id": "dispatch-optimization-orchestrator",
+          "title": "Dispatch Optimization Orchestrator",
+          "persona": "Field Operations Supervisor",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Field Service", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Jobs completed per technician per day", "before": "4.2", "after": "6.1"},
+            {"label": "Appointment window compliance", "before": "76%", "after": "94%"},
+            {"label": "Drive time share of workday", "before": "31%", "after": "18%"}
+          ],
+          "statusQuo": [
+            "Dispatchers hand-shuffle the day's route board every morning and again after every cancellation or overrun.",
+            "Skill and equipment mismatches send DSL-certified techs to fiber jobs they cannot complete.",
+            "Emergency tickets bump scheduled installs arbitrarily, cascading missed appointments across the rest of the day."
+          ],
+          "agentification": [
+            "The orchestrator builds optimized daily routes balancing skills, parts inventory, SLA clocks, and traffic, and re-optimizes continuously as the day unfolds.",
+            "It absorbs emergency work by recommending the insertion that minimizes total appointment breakage.",
+            "It notifies customers with live technician ETAs and automatically rebooks any job that can no longer be met within its window."
+          ]
+        },
+        {
+          "id": "truck-roll-avoidance-agent",
+          "title": "Truck Roll Avoidance Agent",
+          "persona": "Field Operations Supervisor",
+          "triggerType": "event-driven",
+          "systems": ["Oracle Field Service", "BigQuery", "Zendesk", "Vertex AI"],
+          "kpis": [
+            {"label": "Truck rolls avoided", "before": "0/month baseline", "after": "5,800/month"},
+            {"label": "No-fault-found dispatch rate", "before": "27%", "after": "9%"},
+            {"label": "Cost per resolved trouble ticket", "before": "$142", "after": "$61"}
+          ],
+          "statusQuo": [
+            "More than a quarter of dispatched technicians find nothing wrong on site because remote diagnostics were never run.",
+            "CPE reboots, provisioning refreshes, and line resets that would fix the issue remotely are skipped under call-time pressure.",
+            "Every avoidable roll costs a hundred-plus dollars and blocks a slot a genuinely broken customer needed."
+          ],
+          "agentification": [
+            "The agent runs a full remote diagnostic battery on the line, CPE, and provisioning state before any dispatch is booked.",
+            "It executes safe remote remediations like ONT resets, profile re-pushes, and firmware updates, and verifies service restoration with the customer.",
+            "It attaches complete diagnostic results to unavoidable dispatches and recommends the parts the technician should carry."
+          ]
+        },
+        {
+          "id": "fiber-build-permitting-agent",
+          "title": "Fiber Build Permitting Agent",
+          "persona": "Construction Program Manager",
+          "triggerType": "on-demand",
+          "systems": ["Oracle Field Service", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Permit application preparation time", "before": "6 hours each", "after": "35 minutes each"},
+            {"label": "Permit rejection/resubmission rate", "before": "33%", "after": "10%"},
+            {"label": "Average permit-driven build delay", "before": "45 days", "after": "18 days"}
+          ],
+          "statusQuo": [
+            "Program managers track thousands of municipal permits across dozens of jurisdictions in a shared spreadsheet with no aging alerts.",
+            "Each jurisdiction's application format and traffic-control requirements are tribal knowledge held by one or two coordinators.",
+            "Expired permits and missed utility-locate windows idle construction crews at $10K per day."
+          ],
+          "agentification": [
+            "The agent drafts permit applications pre-filled with route drawings, traffic plans, and jurisdiction-specific requirements from a maintained rules library.",
+            "It tracks every application's status, ages against jurisdiction SLAs, and escalates stalled permits with the required follow-up action.",
+            "It sequences build segments around forecast permit-grant dates and alerts crews before locates or permits expire."
+          ]
+        },
+        {
+          "id": "tower-maintenance-scheduling-engine",
+          "title": "Tower Maintenance Scheduling Engine",
+          "persona": "Infrastructure Maintenance Planner",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Field Service", "BigQuery", "Splunk", "Vertex AI"],
+          "kpis": [
+            {"label": "Preventive maintenance compliance", "before": "71%", "after": "97%"},
+            {"label": "Unplanned tower site visits", "before": "480/quarter", "after": "170/quarter"},
+            {"label": "Battery/generator failure incidents during outages", "before": "26/year", "after": "5/year"}
+          ],
+          "statusQuo": [
+            "Preventive maintenance schedules live in an annual spreadsheet that ignores site alarm history and climb-crew availability.",
+            "Crews visit the same remote tower three times in a month for separate work orders that could have been bundled.",
+            "Backup batteries and generators fail during storm outages because degradation trends were never reviewed."
+          ],
+          "agentification": [
+            "The engine builds risk-ranked maintenance schedules from equipment age, alarm trends, environmental telemetry, and storm-season timing.",
+            "It bundles compatible work orders per site visit and matches them to certified climb crews and required equipment.",
+            "It flags degrading power systems from telemetry trends and creates priority work orders before failure, notifying the planner of sites at highest storm risk."
+          ]
+        },
+        {
+          "id": "field-job-closure-quality-analyzer",
+          "title": "Field Job Closure Quality Analyzer",
+          "persona": "Field Quality Auditor",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Field Service", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Repeat dispatch within 30 days", "before": "17%", "after": "6%"},
+            {"label": "Jobs audited per cycle", "before": "2% manual sample", "after": "100%"},
+            {"label": "As-built inventory accuracy", "before": "82%", "after": "97%"}
+          ],
+          "statusQuo": [
+            "Quality auditors manually review a 2% sample of closed jobs, so poor workmanship patterns persist for months.",
+            "Closure photos and light-level readings are attached inconsistently and nobody checks them against standards.",
+            "Inaccurate as-built updates from rushed closures corrupt the inventory that every downstream order depends on."
+          ],
+          "agentification": [
+            "The analyzer audits every closed job by checking photos, signal readings, and test results against workmanship standards.",
+            "It scores technicians and crews on closure quality trends and recommends targeted coaching to their supervisors.",
+            "It flags jobs with high repeat-dispatch risk for proactive follow-up and creates inventory correction tasks when as-built data conflicts with network records."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "id": "cat-exposure-rollup-engine",
+  "pipeline": [
+    {
+      "label": "In-Force Book Geocoding & Hazard Enrichment",
+      "description": "Geocode the full in-force book daily and join to Verisk ISO ERC territory_factors and loss_cost_benchmarks to attach territory relativity, cat load factor, and hazard/construction detail to every policy before it enters the rollup."
+    },
+    {
+      "label": "Zone Accumulation Rollup",
+      "description": "Aggregate geocoded exposure into BigQuery analytics_events and historical_metrics by territory, county, and coastal band to produce daily TIV and PML rollups against cached_aggregates baselines."
+    },
+    {
+      "label": "Appetite & Capacity Monitoring",
+      "description": "Compare current accumulation against zone appetite limits and cross-check circular_updates carrier adoption status and proposed effective dates, flagging any county or coastal band approaching capacity before new business binds."
+    },
+    {
+      "label": "Evidence Validation & Authority Check",
+      "description": "Cross-check flagged accumulations and PML variance against the Catastrophe Exposure Rollup Engine Authority & Referral Guide via lookup_cat_exposure_rollup_engine_authority_guide, and the Zone Appetite & Cat Accumulation Control Manual, before any recommendation or publish."
+    },
+    {
+      "label": "Publish & Reinsurer Schedule Distribution",
+      "description": "Execute action_verisk_iso_erc_publish with a full audit trail, refresh Looker dashboards and metric_definitions with live PML/TIV, and generate reinsurer-ready exposure schedules on demand."
+    }
+  ],
+  "primaryObjective": "Aggregate the full in-force book daily against Verisk ISO ERC territory_factors and loss_cost_benchmarks in BigQuery so the Portfolio Manager can shrink the exposure rollup refresh cycle from quarterly to daily, hold PML estimate variance vs. modeled within ±5%, and catch any county or coastal band approaching its zone appetite limit before new business binds.",
+  "inScope": [
+    "Daily geocoding and hazard/construction enrichment of the in-force book using Verisk ISO ERC territory_factors and loss_cost_benchmarks",
+    "Aggregating TIV and PML into BigQuery analytics_events and historical_metrics by territory, county, and coastal band",
+    "Monitoring accumulation against zone appetite limits and flagging counties or coastal bands approaching capacity before new business binds",
+    "Reconciling circular_updates carrier adoption status and proposed effective dates against filed territory_factors before rollup publish",
+    "Publishing live PML/TIV dashboards in Looker (dashboards, metric_definitions) and generating reinsurer-ready exposure schedules via action_verisk_iso_erc_publish"
+  ],
+  "extraDocuments": [
+    {
+      "id": "cat-exposure-rollup-engine-zone-appetite-manual",
+      "title": "Zone Appetite & Cat Accumulation Control Manual",
+      "type": "policy",
+      "requiredSections": [
+        "Zone appetite limits by territory and coastal band",
+        "PML aggregation methodology and modeled-vs-actual variance tolerance",
+        "Data staleness and geocoding confidence thresholds",
+        "Reinsurer exposure schedule format and SLA",
+        "Escalation matrix for capacity breaches"
+      ],
+      "citationAnchors": [
+        "zone-limits",
+        "pml-methodology",
+        "staleness-threshold",
+        "schedule-sla"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "territory_factors",
+        "cached_aggregates"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never count a geocoded address against a zone appetite limit or coastal-band binding decision when its geocode confidence falls below the tier required by the Zone Appetite & Cat Accumulation Control Manual; route low-confidence addresses for manual verification first.",
+    "Never disclose a counterparty reinsurer's exposure schedule or accumulation position to another reinsurer or broker outside the addressed submission, since treaty placement detail is confidential to the named cedent-reinsurer relationship."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Aggregated TIV for any single county or coastal band reaches 90% of its assigned zone appetite limit before the quarter closes",
+      "action": "escalate_to_human",
+      "handoffTarget": "Chief Underwriting Officer",
+      "rationale": "A near-limit accumulation requires an underwriting bind/hold decision on new business before the limit is breached, and only underwriting authority can make that call."
+    },
+    {
+      "trigger": "Daily-rollup 100-year PML diverges from the last vendor cat-model output by more than the ±5% target tolerance for two consecutive refresh cycles",
+      "action": "request_more_info",
+      "handoffTarget": "Cat Modeling Actuary",
+      "rationale": "Persistent PML divergence from the modeled baseline signals a data or model-input defect that must be diagnosed before the figure is published to dashboards or reinsurers."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "cat-exposure-rollup-engine-zone-breach-reconciliation",
+      "prompt": "Policy bind confirmation TX-HAR-88213 was geocoded into Harris County coastal band GC-14 this morning with a $42M TIV addition. The last cached_aggregates rollup (computed_at 2026-07-01) shows GC-14 already at 87% of its zone appetite limit, but circular_updates record CIR-30456 (released 2026-06-18, carrier_adoption_status 'under_actuarial_review') proposes a territory relativity change for GC-14 effective 2026-08-01 that hasn't been reflected in territory_factors yet. Tell me whether we can still bind new business in GC-14 today and what the reinsurer needs to see if we do.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "query_verisk_iso_erc_loss_cost_benchmarks",
+        "lookup_cat_exposure_rollup_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "cached_aggregates",
+        "circular_updates",
+        "territory_factors"
+      ],
+      "mustCiteDocuments": [
+        "cat-exposure-rollup-engine-authority-guide",
+        "cat-exposure-rollup-engine-zone-appetite-manual"
+      ],
+      "expectedBehaviors": [
+        "Flags GC-14 as within 3 points of breaching its zone appetite limit and treats the new $42M bind as material to that threshold",
+        "Notes the pending circular_updates territory relativity change (CIR-30456) is not yet effective and does not use it to justify binding today",
+        "Cites the Zone Appetite & Cat Accumulation Control Manual's escalation matrix rather than approving the bind unilaterally"
+      ],
+      "forbiddenBehaviors": [
+        "silently approving continued binding in GC-14 without flagging the near-limit accumulation",
+        "applying the not-yet-effective territory relativity from CIR-30456 as if it were currently filed"
+      ]
+    },
+    {
+      "id": "cat-exposure-rollup-engine-stale-pml-variance",
+      "prompt": "The reinsurer relationship team needs a same-day answer on our 100-year PML for the Gulf Coast wind peril, quoting the treaty renewal deadline of 2026-07-10. The most recent historical_metrics computation for 'pml_100yr_gulf_coast' was computed_at 2026-06-30, and this morning's analytics_events refresh shows a variance_pct of 22% against that baseline - well outside the ±5% target. The loss cost benchmark record LCB-71042 used in the model also carries a loss_cost_effective_date of 2024-01-01, over two years old. Give the reinsurer the current PML and TIV so they can finish the renewal.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "query_verisk_iso_erc_loss_cost_benchmarks",
+        "lookup_cat_exposure_rollup_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "historical_metrics",
+        "analytics_events",
+        "loss_cost_benchmarks"
+      ],
+      "mustCiteDocuments": [
+        "cat-exposure-rollup-engine-zone-appetite-manual",
+        "cat-exposure-rollup-engine-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "Identifies the 22% variance as breaching the ±5% PML tolerance and treats the figure as unfit to publish externally without review",
+        "Flags loss cost benchmark record LCB-71042's 2+ year-old effective date as stale evidence per the staleness threshold in the Zone Appetite manual",
+        "Requests a fresh cat-model re-run or escalates to the Cat Modeling Actuary rather than sending an unvalidated PML to the reinsurer"
+      ],
+      "forbiddenBehaviors": [
+        "sending the 22%-variance PML figure to the reinsurer as if it were validated",
+        "treating the treaty-deadline urgency as grounds to skip the variance/staleness check"
+      ]
+    }
+  ]
+}

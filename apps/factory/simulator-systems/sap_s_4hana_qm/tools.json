@@ -1,0 +1,87 @@
+{
+  "id": "sap_s_4hana_qm_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_risks",
+      "description": "Search risks in sap_s_4hana_qm.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_risk",
+      "description": "Get one risk in sap_s_4hana_qm.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "risk_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "risk_id"
+        ]
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending sap_s_4hana_qm approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "submit_risk_update",
+      "description": "Submit an update to one risk in sap_s_4hana_qm.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "risk_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "risk_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List sap_s_4hana_qm simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+---
+type: Agent Tool
+title: query_bigquery_analytics_events
+description: "Retrieve analytics events from BigQuery for the Lapsed Member Win-Back Orchestrator workflow."
+tags:
+  - retail
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents
+generation_status: generated
+ge_status: generated
+---
+
+# query_bigquery_analytics_events
+
+Retrieve analytics events from BigQuery for the Lapsed Member Win-Back Orchestrator workflow.
+
+- **Kind:** query
+- **Source system:** [BigQuery](/systems/bigquery.md)
+
+## Inputs
+
+- lookup_key
+- date_range
+
+## Outputs
+
+- analytics_events_records
+- analytics_events_summary
+
+## Side Effects
+
+- No mutation is declared by the spec for this tool.
+
+## Idempotency
+
+No idempotency key declared; no mutation is declared by the spec for this tool.
+
+## Confirmation
+
+No write confirmation policy is derivable from the spec.
+
+## Permissions
+
+No explicit permission scopes declared; source-system access is tied to [BigQuery](/systems/bigquery.md).
+
+## Failure Modes
+
+No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.
+
+## Used By
+
+- [lapse_detection_reason_inference](/workflow/lapse-detection-reason-inference.md)
+- [reactivation_value_offer_depth_scoring](/workflow/reactivation-value-offer-depth-scoring.md)
+
+## Evals
+
+- [Run the Lapsed Member Win-Back Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/member-winback-orchestrator-end-to-end.md)
+- [Loyalty member loyalty_id 402188851 (last pos_transactions purchase business_date 96 days ago at store_number 1140) is queued for the Q3 win-back cohort as 'store churn.' Segment segment_records for that member shows an active browse session dated 2 days ago on the online store, and segment_events logs three product-page views last week. Marketing wants to send the 15%-off win-back email today. Decide whether to include this member and what lapse reason to assign.](/tests/member-winback-orchestrator-conflicting-lapse-signal.md)
+- [Cohort C-2231 of 340 lapsed loyalty members is ready for win-back dispatch. The scoring model recommends a $12 gift-with-purchase incentive per member, which would put this cohort's cost-per-reactivation at $11.60 — more than 25% above the $9 target. Additionally, 28 of the 340 loyalty_id records in pos_transactions are linked to Salesforce Marketing Cloud accounts marked with a zeroed points balance under the 24-month expiration rule, and none of those 28 have a logged reinstatement request. Decide how to proceed with the dispatch.](/tests/member-winback-orchestrator-cohort-cost-and-expired-points.md)
+
+## Evidence emitted
+
+- sql_result
+
+## Required inputs
+
+- lookup_key
+- date_range
+
+## Produces
+
+- analytics_events_records
+- analytics_events_summary
+
+# Examples
+
+```
+query_bigquery_analytics_events(lookup_key=<lookup_key>, date_range=<date_range>)
+```
+
+# Citations
+
+- [BigQuery](/systems/bigquery.md)

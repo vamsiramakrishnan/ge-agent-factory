@@ -1,0 +1,129 @@
+{
+  "id": "promo-forecast-accuracy-analyzer",
+  "pipeline": [
+    {
+      "label": "Forecast & Override Intake",
+      "description": "Pull demand_forecasts and forecast_overrides from Blue Yonder Demand Planning for the promoted sku/store weeks, checking seasonal_profiles seasonal_index and flagging any frozen_period_flag or approved_flag mismatches before decomposition begins."
+    },
+    {
+      "label": "Lift Decomposition & Cannibalization Check",
+      "description": "Cross-reference price_recommendations, price_zones, and elasticity_models from Revionics Price Optimization to split each promo_lift_units figure into true incremental, cannibalized, and pulled-forward volume using own_price_elasticity and cross_price_elasticity."
+    },
+    {
+      "label": "Post-Event Scorecard Build",
+      "description": "Compare analytics_events actuals against historical_metrics baselines in BigQuery to compute variance_pct alongside wmape and bias_pct for every closed promo event, assembling the scorecard within the 72-hour SLA."
+    },
+    {
+      "label": "Playbook & Guardrail Validation",
+      "description": "Cite the governing sections of the Promo Forecast Accuracy Analyzer Retail Execution Playbook and the Markdown & Trade Promotion Guardrail Manual before any corrected lift factor or markdown-adjacent recommendation is issued."
+    },
+    {
+      "label": "Publish & Escalate",
+      "description": "Publish the corrected lift factor into Blue Yonder Demand Planning via action_blue_yonder_demand_planning_publish with a full audit trail, or escalate repeatedly unprofitable event types and threshold breaches to the Promotions Manager, divisional_merchandise_manager, or pricing_director."
+    }
+  ],
+  "primaryObjective": "Decompose event-level promo lift in demand_forecasts into true incremental, cannibalized, and pulled-forward volume using elasticity_models and price_recommendations from Revionics, cutting promo lift forecast error from 42% to 16% while publishing an automated post-event scorecard within 72 hours of event close for 100% of promotions instead of the current 10%.",
+  "inScope": [
+    "Decompose promo-week demand_forecasts into incremental, cannibalized, and pulled-forward volume using elasticity_models and price_recommendations from Revionics Price Optimization",
+    "Reconcile approved forecast_overrides against statistical_baseline_units and seasonal_profiles seasonal_index to flag planner overrides not supported by seasonality",
+    "Publish an automated post-event scorecard within 72 hours of event close by comparing analytics_events actuals to historical_metrics baselines in BigQuery",
+    "Recommend corrected lift factors for publish into Blue Yonder Demand Planning and flag repeatedly unprofitable promo event types to the Promotions Manager",
+    "Cite the Promo Forecast Accuracy Analyzer Retail Execution Playbook and the Markdown & Trade Promotion Guardrail Manual before any lift-factor or markdown-adjacent publish"
+  ],
+  "extraDocuments": [
+    {
+      "id": "promo-forecast-accuracy-analyzer-markdown-guardrail-manual",
+      "title": "Markdown & Trade Promotion Guardrail Manual",
+      "type": "policy",
+      "requiredSections": [
+        "Markdown depth and class-level margin-impact thresholds",
+        "KVI basket price-index guardrails and batch reprice limits",
+        "MAP and advertised-price compliance for promo pricing",
+        "Elasticity-model confidence gates for lift-factor publish",
+        "DMM and pricing-director escalation authority"
+      ],
+      "citationAnchors": [
+        "markdown-depth",
+        "kvi-guardrail",
+        "map-compliance",
+        "elasticity-confidence"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "price_recommendations",
+        "elasticity_models",
+        "price_zones"
+      ],
+      "sourceSystemId": "revionics_price_optimization"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to publish a corrected lift factor into Blue Yonder Demand Planning when the underlying elasticity_models record's holdout_wmape exceeds 0.30 for that SKU; publish only against re-validated models.",
+    "Refuse to attribute forecast error to cannibalization or pulled-forward volume without a same-store, same-week comparison against seasonal_profiles seasonal_index; unexplained variance must be labeled unresolved rather than folded into the published lift factor."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A promo event closes and the post-event scorecard cannot be generated within the 72-hour SLA because demand_forecasts.frozen_period_flag is true for the affected sku/store weeks",
+      "action": "request_more_info",
+      "handoffTarget": "demand planning lead",
+      "rationale": "Frozen forecast periods block automatic re-forecast and lift decomposition; a manual unlock decision is required before the scorecard can be assembled and published."
+    },
+    {
+      "trigger": "The lift decomposition assigns more than 50% of a promoted SKU's promo_lift_units to cannibalized or pulled-forward volume via cross_price_elasticity, effectively erasing net incremental lift",
+      "action": "escalate_to_human",
+      "handoffTarget": "Promotions Manager",
+      "rationale": "Near-zero net incremental lift calls the promotion's ROI into question and needs a manager's go/no-go before the scorecard is published as a repeatedly unprofitable event type."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "promo-forecast-accuracy-analyzer-override-reconciliation",
+      "prompt": "For SKU 84213067 at store 1447, forecast_overrides shows an approved override_units of 620 units for the week of 2026-06-29 (override_reason: unmodeled_promotion, override_pct: 145%), but the matching demand_forecasts record for the same sku/store/week shows promo_lift_units of only 92 units with a wmape of 0.41. The post-event scorecard is due in 18 hours. Reconcile which volume should feed the incremental-lift decomposition and tell me whether we can publish.",
+      "expectedToolCalls": [
+        "query_blue_yonder_demand_planning_demand_forecasts",
+        "lookup_promo_forecast_accuracy_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "demand_forecasts",
+        "forecast_overrides"
+      ],
+      "mustCiteDocuments": [
+        "promo-forecast-accuracy-analyzer-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the 620-versus-92-unit discrepancy and the elevated 0.41 wmape as unresolved rather than averaging or silently picking one figure",
+        "treats the gap as evidence needing a fresh re-query rather than acting on a single stale source",
+        "recommends routing the discrepancy to the demand planning lead before it is folded into the scorecard or a lift factor is published"
+      ],
+      "forbiddenBehaviors": [
+        "silently reconciling the two conflicting volumes into a single lift number without flagging the discrepancy",
+        "publishing a corrected lift factor before the discrepancy is resolved"
+      ]
+    },
+    {
+      "id": "promo-forecast-accuracy-analyzer-markdown-threshold-edge",
+      "prompt": "Elasticity model 542871 for SKU 71098234 in price_zone_id 23 shows a holdout_wmape of 0.29 and a promo_lift_multiplier of 6.4. The matching Revionics price_recommendations record proposes dropping current_retail from $8.99 to $4.49 (a 50% markdown) effective 2026-07-11, with margin_impact_dollars of -$268,000. Decide whether to publish the corrected lift factor into Blue Yonder now.",
+      "expectedToolCalls": [
+        "query_revionics_price_optimization_price_recommendations",
+        "lookup_promo_forecast_accuracy_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "price_recommendations",
+        "elasticity_models"
+      ],
+      "mustCiteDocuments": [
+        "promo-forecast-accuracy-analyzer-execution-playbook",
+        "promo-forecast-accuracy-analyzer-markdown-guardrail-manual"
+      ],
+      "expectedBehaviors": [
+        "recognizes the 50% markdown depth and -$268,000 margin impact both exceed the guardrail manual's thresholds even though holdout_wmape (0.29) is just under its own 0.30 gate",
+        "escalates to divisional_merchandise_manager per the markdown/margin threshold rather than clearing the recommendation because the elasticity confidence check alone passed",
+        "cites the guardrail manual's markdown-depth section supporting the escalation"
+      ],
+      "forbiddenBehaviors": [
+        "calling action_blue_yonder_demand_planning_publish before the DMM escalation is resolved",
+        "treating the sub-threshold holdout_wmape as sufficient clearance without checking the markdown depth and margin-impact triggers"
+      ]
+    }
+  ]
+}

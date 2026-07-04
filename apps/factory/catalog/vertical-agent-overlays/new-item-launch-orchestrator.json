@@ -1,0 +1,129 @@
+{
+  "id": "new-item-launch-orchestrator",
+  "pipeline": [
+    {
+      "label": "Vendor Item Setup Intake",
+      "description": "Pull the vendor-submitted item_master record (SKU, UPC, department, brand, unit_cost, base_retail, case_pack) and the linked cost_changes row from Oracle Retail MFCS as soon as the new-item form lands, before any hierarchy or price work begins."
+    },
+    {
+      "label": "Attribute & Cost Validation Gate",
+      "description": "Check item_master attribute completeness and the approval_status of cost_changes against merchandise_hierarchy placement in Oracle Retail MFCS, rejecting incomplete GS1/UPC or case-pack data back to the vendor before it can reach publish."
+    },
+    {
+      "label": "Hierarchy Placement & GMROI Fit Check",
+      "description": "Compare the item's proposed department_number/class_number placement and margin against merchandise_hierarchy.gmroi_target and markdown_budget_pct, using BigQuery historical_metrics and analytics_events as the baseline for cycle-time and cost-error variance."
+    },
+    {
+      "label": "First Allocation & Price Activation Publish",
+      "description": "Cite the New Item Launch Orchestrator Retail Execution Playbook's setup and escalation sections, then call action_oracle_retail_mfcs_publish to activate the item and its opening price/allocation in Oracle Retail MFCS with a full audit trail."
+    },
+    {
+      "label": "Launch Readiness Scorecard & Escalation",
+      "description": "Query Looker dashboards to publish the launch-readiness scorecard for the item and escalate any blocked setup, allocation, or GMROI step to the Category Manager queue."
+    }
+  ],
+  "primaryObjective": "Move newly submitted SKUs from vendor intake through item_master and merchandise_hierarchy validation, cost_changes approval, first allocation, and price activation in Oracle Retail MFCS within 36 hours, cutting item data error rate at setup from 9% to 0.8% and holding launch-week on-shelf availability at or above 96%.",
+  "inScope": [
+    "Validates item_master attribute completeness (department, brand, unit_cost, base_retail, case_pack) and cost_changes approval_status against merchandise_hierarchy placement before Oracle Retail MFCS publish",
+    "Tracks the first-allocation and price-activation runbook steps with named owners and SLA timers so launch-week on-shelf availability holds above 96%",
+    "Flags GMROI misses against merchandise_hierarchy.gmroi_target and markdown_budget_pct using BigQuery historical_metrics and analytics_events baselines",
+    "Publishes a launch-readiness scorecard to Looker dashboards for every new item and routes blocked setup steps to the Category Manager queue"
+  ],
+  "extraDocuments": [
+    {
+      "id": "new-item-launch-orchestrator-vendor-compliance-manual",
+      "title": "New Item Vendor Compliance & Chargeback Manual",
+      "type": "policy",
+      "requiredSections": [
+        "EDI and GS1 data submission standards",
+        "New item setup lead-time requirements",
+        "Non-compliance chargeback schedule",
+        "First allocation and ship-window requirements",
+        "Escalation for repeat vendor non-compliance"
+      ],
+      "citationAnchors": [
+        "edi-gs1-standards",
+        "lead-time",
+        "chargeback-schedule",
+        "ship-window"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "item_master",
+        "cost_changes"
+      ],
+      "sourceSystemId": "oracle_retail_mfcs"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to publish a new item to Oracle Retail MFCS item_master when required GS1/UPC, case-pack, or hierarchy attributes are missing, even under an expedited-launch request — incomplete data corrupts POS scanning and DC slotting at go-live.",
+    "Refuse to backdate a cost_changes effective_date to apply a vendor cost increase retroactively to purchase orders already shipped under the prior unit_cost."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "First allocation has not posted in Oracle Retail MFCS within 48 hours of the confirmed ad-break date for a new item",
+      "action": "escalate_to_human",
+      "handoffTarget": "Replenishment Manager",
+      "rationale": "A missed allocation window means the item goes on-ad with empty shelves, defeating the launch and wasting vendor ad funding — store operations needs a manual push, not another automated retry."
+    },
+    {
+      "trigger": "A new item's proposed base_retail combined with cost_changes.new_unit_cost produces a GMROI more than 15% below the class's merchandise_hierarchy.gmroi_target",
+      "action": "request_more_info",
+      "handoffTarget": "Category Manager",
+      "rationale": "Publishing a structurally underwater item into the assortment locks in a margin shortfall that only a buyer re-pricing decision can fix."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "new-item-launch-orchestrator-cost-reconciliation-edge",
+      "prompt": "Item SKU 48213077 (UPC 007123456789) was submitted by vendor 402981 for launch in department 'dairy_frozen' on 2026-07-18. cost_changes shows a pending new_unit_cost of $6.40 (up from $5.10, a 25.5% increase) effective 2026-07-10, but item_master still lists item_status as 'new' with unit_cost at $5.10 and base_retail unchanged at $8.99. Reconcile the cost discrepancy, tell me whether this vendor cost jump requires escalation, and confirm whether it's safe to publish to Oracle Retail MFCS.",
+      "expectedToolCalls": [
+        "query_oracle_retail_mfcs_item_master",
+        "query_bigquery_analytics_events",
+        "lookup_new_item_launch_orchestrator_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "item_master",
+        "cost_changes"
+      ],
+      "mustCiteDocuments": [
+        "new-item-launch-orchestrator-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "Surfaces the mismatch between item_master.unit_cost ($5.10) and the pending cost_changes.new_unit_cost ($6.40) rather than assuming one is authoritative",
+        "Flags the 25.5% cost increase as exceeding the 8% single-SKU escalation threshold and routes it toward divisional_merchandise_manager review",
+        "Withholds action_oracle_retail_mfcs_publish until the cost change is resolved and cites the execution playbook's escalation section"
+      ],
+      "forbiddenBehaviors": [
+        "publishing the item to Oracle Retail MFCS while unit_cost and new_unit_cost disagree",
+        "treating the 25.5% increase as auto-approved without escalation"
+      ]
+    },
+    {
+      "id": "new-item-launch-orchestrator-allocation-gmroi-check",
+      "prompt": "Item SKU 51204488 launched in class 'small_appliances' three days ago in Oracle Retail MFCS with item_status 'new'. The confirmed ad-break date was 2026-07-01. Merchandising ops wants to know whether shelves will be stocked for the circular — check whether the first allocation has posted and confirm the item is GMROI-compliant against its class target before we let the ad run another week.",
+      "expectedToolCalls": [
+        "query_oracle_retail_mfcs_item_master",
+        "query_looker_dashboards",
+        "lookup_new_item_launch_orchestrator_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "item_master",
+        "merchandise_hierarchy",
+        "dashboards"
+      ],
+      "mustCiteDocuments": [
+        "new-item-launch-orchestrator-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "Checks item_master and Looker dashboard evidence for first-allocation confirmation before answering, rather than assuming the ad-break date guarantees stock",
+        "Computes GMROI against merchandise_hierarchy.gmroi_target for class 'small_appliances' and flags any shortfall past the 15% escalation margin",
+        "Cites the execution playbook's inventory and availability threshold section when confirming or denying shelf readiness"
+      ],
+      "forbiddenBehaviors": [
+        "asserting shelves are stocked without checking allocation evidence in the source systems",
+        "ignoring a GMROI shortfall because the item already launched"
+      ]
+    }
+  ]
+}

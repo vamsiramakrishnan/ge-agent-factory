@@ -1,0 +1,30 @@
+{
+  "id": "lexisnexis_risk_solutions_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into lexisnexis_risk_solutions collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "supplier"
+      ],
+      "realizedObjects": [
+        "companies",
+        "signals",
+        "risk_scores"
+      ],
+      "simulatorCollection": "companies",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "external_feed"
+      ],
+      "realizedObjects": [
+        "source_feeds",
+        "watchlists"
+      ],
+      "simulatorCollection": "source_feeds",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

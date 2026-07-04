@@ -1,0 +1,16 @@
+---
+type: Index
+title: Agent Tools
+timestamp: "2026-07-04T00:00:00.000Z"
+---
+
+# Agent Tools
+
+- [query_salesforce_communications_cloud_subscriber_accounts](/tools/query-salesforce-communications-cloud-subscriber-accounts.md)
+- [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [query_looker_dashboards](/tools/query-looker-dashboards.md)
+- [lookup_lead_qualification_scoring_engine_assurance_runbook](/tools/lookup-lead-qualification-scoring-engine-assurance-runbook.md)
+- [action_salesforce_communications_cloud_route](/tools/action-salesforce-communications-cloud-route.md)
+- [query_salesforce_communications_cloud_service_quotes](/tools/query-salesforce-communications-cloud-service-quotes.md)
+- [query_salesforce_communications_cloud_order_captures](/tools/query-salesforce-communications-cloud-order-captures.md)
+- [lookup_lead_qualification_scoring_engine_rate_card_doa_matrix](/tools/lookup-lead-qualification-scoring-engine-rate-card-doa-matrix.md)

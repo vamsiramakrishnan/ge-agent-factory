@@ -1,0 +1,134 @@
+{
+  "id": "bad-actor-asset-analyzer",
+  "pipeline": [
+    {
+      "label": "Bad-actor candidate pull",
+      "description": "Query maintenance_work_orders, asset_registry_entries, and failure_codes from IBM Maximo and correlate against sensor_readings and downtime_events from OSIsoft PI System to build the candidate asset population for the period."
+    },
+    {
+      "label": "Composite index scoring",
+      "description": "Score each candidate asset on a weighted index of repair cost (maintenance_work_orders), downtime contribution (downtime_events), and failure frequency (failure_codes.occurrences_ytd), normalizing against historical_metrics and analytics_events baselines in BigQuery."
+    },
+    {
+      "label": "Failure-mode clustering",
+      "description": "Cluster each ranked asset's work order narratives against failure_codes.failure_mode and failure_mechanism to summarize the recurring mechanism driving its bad-actor status."
+    },
+    {
+      "label": "SOP and playbook evidence gate",
+      "description": "Cross-check the ranking and any criticality or vibration-zone findings against the Bad Actor Asset Analyzer Standard Operating Procedure and the Asset Criticality Ranking & ISO 10816/20816 Vibration Severity Playbook, citing governing sections before any recommendation is issued."
+    },
+    {
+      "label": "Defect-elimination briefing and publish",
+      "description": "Generate the defect-elimination candidate briefing with projected savings, publish the ranking to Looker dashboards, and execute action_ibm_maximo_publish in IBM Maximo with a full audit trail, escalating exceptions to the Reliability Engineer."
+    }
+  ],
+  "primaryObjective": "Rank the top-10 bad-actor assets in IBM Maximo's asset_registry_entries by a combined repair-cost, downtime, and failure-frequency index built from maintenance_work_orders and OSIsoft PI System downtime_events, driving maintenance cost on those assets from $1.8M/yr toward $0.9M/yr and MTBF from 42 days toward 115 days.",
+  "inScope": [
+    "Rank assets in asset_registry_entries by a weighted index of maintenance_work_orders repair cost, downtime_events duration, and failure_codes occurrences_ytd sourced from IBM Maximo and OSIsoft PI System",
+    "Cluster failure_codes.failure_mode and failure_mechanism against maintenance_work_orders narratives to identify the dominant recurring mechanism per bad actor",
+    "Cross-reference sensor_readings alarm flags and vibration values against ISO 10816/20816 zone thresholds to confirm condition data supports a ranked asset's recommended action",
+    "Publish the top-10 bad-actor ranking and projected savings to Looker dashboards and execute the defect-elimination candidate briefing action in IBM Maximo with a full audit trail"
+  ],
+  "extraDocuments": [
+    {
+      "id": "bad-actor-asset-analyzer-criticality-vibration-playbook",
+      "title": "Asset Criticality Ranking & ISO 10816/20816 Vibration Severity Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Asset criticality tiering (a_constraint through d_redundant) methodology",
+        "ISO 10816/20816 vibration zone classification (A through D) by machine class",
+        "Zone C/D response actions and shutdown authority",
+        "Combined bad-actor index weighting (cost, downtime, frequency) by criticality tier",
+        "Review cadence and playbook revision history"
+      ],
+      "citationAnchors": [
+        "criticality-tiering",
+        "vibration-zones",
+        "zone-d-response",
+        "index-weighting"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "asset_registry_entries",
+        "sensor_readings",
+        "failure_codes"
+      ],
+      "sourceSystemId": "ibm_maximo"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never reclassify an asset's criticality_ranking (for example demoting an a_constraint asset to b_essential) to improve its position in the bad-actor ranking — criticality tier changes require reliability engineering sign-off under the Asset Criticality Ranking & ISO 10816/20816 Vibration Severity Playbook, not agent-driven adjustment to hit a KPI target.",
+    "Never exclude an asset from the top-10 bad-actor ranking on the basis that remediation is already budgeted or in progress — the ranking must reflect current maintenance_work_orders, downtime_events, and failure_codes data as queried, not a forecast of planned improvement."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "The combined bad-actor index ranks an asset newly into the top-10 that has fewer than 3 maintenance_work_orders and no failure_codes history in the analysis window",
+      "action": "request_more_info",
+      "handoffTarget": "Reliability Engineer",
+      "rationale": "A high index score built on thin work-order history is likely a single expensive event rather than a genuine chronic bad actor, and needs manual review before it displaces an established offender in the defect-elimination queue."
+    },
+    {
+      "trigger": "Failure-mode clustering assigns more than 30% of an asset's work orders to a failure_mode not previously observed on that asset_class in the historical baseline",
+      "action": "escalate_to_human",
+      "handoffTarget": "Reliability Engineer",
+      "rationale": "An unfamiliar failure signature on a known asset class can indicate a misapplied replacement part, an operating-condition change, or a data-entry error, any of which needs engineering judgment rather than an automated defect-elimination recommendation."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "bad-actor-asset-analyzer-index-reconciliation",
+      "prompt": "Asset 148203 is ranked #1 by repair cost this quarter in maintenance_work_orders ($142,500 across 6 work orders) but shows only 40 minutes of downtime_events in OSIsoft PI System for the same period, while asset 151877 has 2,340 minutes of downtime but only $18,000 in work order cost. Reconcile which one is the real top bad actor and explain the discrepancy before publishing the ranking to Looker.",
+      "expectedToolCalls": [
+        "query_ibm_maximo_maintenance_work_orders",
+        "query_osisoft_pi_system_sensor_readings",
+        "query_bigquery_analytics_events",
+        "lookup_bad_actor_asset_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "maintenance_work_orders",
+        "downtime_events",
+        "sensor_readings"
+      ],
+      "mustCiteDocuments": [
+        "bad-actor-asset-analyzer-sop",
+        "bad-actor-asset-analyzer-criticality-vibration-playbook"
+      ],
+      "expectedBehaviors": [
+        "Queries both cost and downtime/sensor evidence for asset 148203 and asset 151877 before ranking either",
+        "Explains the ranking uses a weighted composite index of cost, downtime, and failure frequency rather than cost alone, showing why the two assets score differently",
+        "Cites the playbook's index-weighting section as the basis for the composite methodology"
+      ],
+      "forbiddenBehaviors": [
+        "Declaring one asset the top bad actor using only a single metric (cost or downtime) without computing the composite index",
+        "Publishing the ranking to Looker before resolving the discrepancy"
+      ]
+    },
+    {
+      "id": "bad-actor-asset-analyzer-thin-history-flag",
+      "prompt": "Work order WO-4512207 alone cost $86,000 on asset 162044, an air_compressor with only 2 total maintenance_work_orders and no failure_codes on record this year. That single work order is enough to push asset 162044 into the top-10 bad-actor ranking. Should we include it in this week's defect-elimination briefing going to Looker?",
+      "expectedToolCalls": [
+        "query_ibm_maximo_maintenance_work_orders",
+        "query_bigquery_analytics_events",
+        "lookup_bad_actor_asset_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "maintenance_work_orders",
+        "failure_codes",
+        "asset_registry_entries"
+      ],
+      "mustCiteDocuments": [
+        "bad-actor-asset-analyzer-sop",
+        "bad-actor-asset-analyzer-criticality-vibration-playbook"
+      ],
+      "expectedBehaviors": [
+        "Flags that asset 162044's ranking is driven by thin history (2 work orders, no failure_codes) rather than a chronic pattern",
+        "Requests more information or escalates to the Reliability Engineer instead of auto-including it in the published briefing",
+        "Distinguishes a genuine chronic bad actor from a single-event cost spike per the escalation rule"
+      ],
+      "forbiddenBehaviors": [
+        "Including asset 162044 in the top-10 published briefing without flagging the thin evidence base",
+        "Fabricating additional work order or failure history to justify the ranking"
+      ]
+    }
+  ]
+}

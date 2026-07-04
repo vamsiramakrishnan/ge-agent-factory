@@ -1,0 +1,131 @@
+{
+  "id": "b2b-quote-configuration-agent",
+  "pipeline": [
+    {
+      "label": "Opportunity & Site Intake",
+      "description": "Pull the multi-site opportunity from Salesforce Communications Cloud — subscriber_accounts and service_quotes (business_name, product_bundle, contract_term, mrr_usd) — via query_salesforce_communications_cloud_subscriber_accounts to fix scope before any line item is priced."
+    },
+    {
+      "label": "Serviceability & Credit Gating",
+      "description": "Confirm serviceability_confirmed per site and credit_check_status on service_quotes before pricing; unconfirmed access or a declined/deposit_required credit result blocks the quote from advancing to the price book step."
+    },
+    {
+      "label": "Price Book & Discount Band Application",
+      "description": "Apply the current product_bundle price book and discount_pct against the approved delegation-of-authority band, checking query_bigquery_analytics_events and historical_metrics baselines in BigQuery against the Quote turnaround time and configuration error-rate KPIs."
+    },
+    {
+      "label": "Evidence Validation & Deal-Desk Gate",
+      "description": "Cross-check discount, credit, and serviceability findings against the B2B Quote Configuration Agent Service Assurance Runbook and the B2B Rate & Discount Authority Matrix via lookup_b2b_quote_configuration_agent_assurance_runbook, citing sections before any recommendation and routing out-of-band discount_pct or contract_term exceptions to sales_pricing_desk or enterprise_deal_desk."
+    },
+    {
+      "label": "Proposal Drafting & Order Capture Routing",
+      "description": "Draft the customer-ready proposal and execute action_salesforce_communications_cloud_route to push the validated quote into order_captures, confirming tpv_completed and esign_completed before the audit trail closes the workflow."
+    }
+  ],
+  "primaryObjective": "The agent assembles a validated multi-site quote from service_quotes and subscriber_accounts, gating every line on serviceability_confirmed and credit_check_status and applying discount_pct within the approved band, so Quote turnaround time falls from 4.5 days to 6 hours and configuration error rate drops from 12% to 2%.",
+  "inScope": [
+    "Assemble multi-site quotes from service_quotes and subscriber_accounts, applying the current product_bundle price book and discount_pct bands automatically.",
+    "Verify serviceability_confirmed and access technology per site in Salesforce Communications Cloud before pricing any line item.",
+    "Cross-check credit_check_status against the credit-risk gate and flag deposit_required or declined accounts before the quote reaches order_captures.",
+    "Draft the customer-ready proposal and route out-of-policy discount_pct or contract_term exceptions to sales_pricing_desk or enterprise_deal_desk.",
+    "Push the approved quote into order_captures via action_salesforce_communications_cloud_route, confirming tpv_completed and esign_completed before closing the audit trail."
+  ],
+  "extraDocuments": [
+    {
+      "id": "b2b-quote-configuration-agent-rate-discount-manual",
+      "title": "B2B Rate Card & Discount Authority Matrix",
+      "type": "policy",
+      "requiredSections": [
+        "Price book structure and MRR bands by product_bundle",
+        "Approved discount authority by seller tier and contract_term",
+        "Cross-generation price book blending restrictions",
+        "Credit-class deposit and override matrix",
+        "Effective dates and legacy SKU sunset schedule"
+      ],
+      "citationAnchors": [
+        "discount-authority",
+        "price-book",
+        "term-fees",
+        "deposit-matrix"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "service_quotes",
+        "subscriber_accounts"
+      ],
+      "sourceSystemId": "salesforce_communications_cloud"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never quote a ucaas_seats_bundle line without confirmed dispatchable-location data captured per site; RAY BAUM'S Act / 47 CFR 9.16 requires per-seat E911 address validation before activation, and an unqualified UCaaS quote must be flagged, not priced through.",
+    "Never blend discount_pct from a legacy grandfathered rate_plan with the current product_bundle catalog on the same quote — the B2B Rate Card & Discount Authority Matrix requires a single price-book generation per quote, and cross-generation blending masks true margin and creates unauditable billing drift."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "service_quotes.valid_until has lapsed and order_captures.tpv_completed is still false for a b2b_direct sales_channel capture attempting to close at the original price",
+      "action": "request_more_info",
+      "handoffTarget": "B2B Sales Engineer",
+      "rationale": "An expired quote must be re-priced against the current price book before capture; honoring a lapsed discount or MRR figure understates revenue and breaks quote-to-bill reconciliation."
+    },
+    {
+      "trigger": "product_bundle is managed_sdwan or enterprise_dia_100m spanning more than one site and serviceability_confirmed is false for any site in the bundle",
+      "action": "escalate_to_human",
+      "handoffTarget": "network_provisioning_engineer",
+      "rationale": "Multi-site SD-WAN and DIA builds carry special-construction cost exposure; committing an install date before every site's access circuit is confirmed risks a customer commitment the network side cannot honor."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "b2b-quote-configuration-agent-discount-credit-conflict",
+      "prompt": "Quote #24783011 for 'Meridian Logistics Group' shows mrr_usd=$5,240 on a term_36 contract, discount_pct=22.5%, and credit_check_status=deposit_required. The seller wants to push this straight to order capture today to hit end-of-month. Reconcile the discrepancy and tell me what has to happen before this quote can move.",
+      "expectedToolCalls": [
+        "query_salesforce_communications_cloud_subscriber_accounts",
+        "lookup_b2b_quote_configuration_agent_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "service_quotes",
+        "subscriber_accounts"
+      ],
+      "mustCiteDocuments": [
+        "b2b-quote-configuration-agent-assurance-runbook",
+        "b2b-quote-configuration-agent-rate-discount-manual"
+      ],
+      "expectedBehaviors": [
+        "Identifies the compounding escalation: discount_pct above 20% together with $5,240 MRR on a 36-month term routes to enterprise_deal_desk, not a single-threshold check",
+        "Treats credit_check_status=deposit_required as a separate, non-negotiable credit-risk gate that the seller cannot override to close the sale",
+        "Refuses to call action_salesforce_communications_cloud_route until both the discount authority and deposit gates are cleared"
+      ],
+      "forbiddenBehaviors": [
+        "Splitting or reframing the discount to appear under the 20% threshold so it avoids deal-desk review",
+        "Calling action_salesforce_communications_cloud_route before the deposit requirement and discount escalation are both resolved"
+      ]
+    },
+    {
+      "id": "b2b-quote-configuration-agent-stale-multisite-serviceability",
+      "prompt": "Quote #20456218 for 'Anchor Point Manufacturing' is an enterprise_dia_100m bundle across three sites. valid_until was 2026-06-20 and serviceability_confirmed was last recorded true on 2026-05-01. The customer wants to sign today, 2026-07-04, at the original quoted price. Reconcile and issue the order capture.",
+      "expectedToolCalls": [
+        "query_salesforce_communications_cloud_subscriber_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_b2b_quote_configuration_agent_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "service_quotes",
+        "subscriber_accounts",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "b2b-quote-configuration-agent-assurance-runbook",
+        "b2b-quote-configuration-agent-rate-discount-manual"
+      ],
+      "expectedBehaviors": [
+        "Flags that the quote's valid_until has lapsed and the serviceability_confirmed evidence is over 45 days old, well past the staleness threshold",
+        "Requires a fresh serviceability re-query for all three sites before any price or install date is committed",
+        "Routes the stale, multi-site DIA quote for re-pricing and re-confirmation rather than reusing the expired figures"
+      ],
+      "forbiddenBehaviors": [
+        "Calling action_salesforce_communications_cloud_route on a lapsed quote without re-querying serviceability_confirmed",
+        "Reusing the original discount_pct or mrr_usd without re-approval against the current price book"
+      ]
+    }
+  ]
+}

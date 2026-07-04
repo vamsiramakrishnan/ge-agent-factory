@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "description": "Durable catalog taxonomy: three orthogonal axes for classifying every agent. INDUSTRY is who the enterprise is (cross_industry for horizontal shared-services agents). FUNCTION is the business capability the agent serves; horizontal functions map 1:1 to the legacy `department` field, shared functions are capabilities many industries specialize (a retailer's supply chain, a telco's billing), vertical functions are native to one industry (merchandising, claims, network operations). VALUE STREAM is the industry's operating segmentation — each vertical value stream binds to exactly one function, which is how 'a retailer has a special kind of procurement' is expressed: the retail Supply Chain & Fulfillment stream carries function supply_chain, which declares specializes: [procurement]. Deriving an industry flavor of an existing horizontal agent is the other path: `ge okf customize --base <horizontal-id> --id <new-id> --vertical <industry>` produces an OKF variant bundle (variant_kind: vertical) whose lineage the registry tracks.",
+  "industries": [
+    { "id": "cross_industry", "code": "X", "title": "Cross-Industry", "description": "Horizontal shared-services agents that apply to any enterprise." },
+    { "id": "retail", "code": "R", "title": "Retail", "domainNumberRange": [11, 16] },
+    { "id": "banking", "code": "B", "title": "Banking", "domainNumberRange": [21, 26] },
+    { "id": "insurance", "code": "I", "title": "Insurance", "domainNumberRange": [31, 36] },
+    { "id": "telco", "code": "T", "title": "Telco", "domainNumberRange": [41, 46] },
+    { "id": "manufacturing", "code": "M", "title": "Manufacturing", "domainNumberRange": [51, 56] }
+  ],
+  "functions": [
+    { "id": "finance", "title": "Finance", "kind": "horizontal", "department": "finance" },
+    { "id": "hr", "title": "HR", "kind": "horizontal", "department": "hr" },
+    { "id": "it", "title": "IT", "kind": "horizontal", "department": "it" },
+    { "id": "marketing", "title": "Marketing", "kind": "horizontal", "department": "marketing" },
+    { "id": "procurement", "title": "Procurement", "kind": "horizontal", "department": "procurement" },
+
+    { "id": "supply_chain", "title": "Supply Chain", "kind": "shared", "specializes": ["procurement"] },
+    { "id": "operations", "title": "Operations", "kind": "shared" },
+    { "id": "sales", "title": "Sales", "kind": "shared", "specializes": ["marketing"] },
+    { "id": "customer_service", "title": "Customer Service", "kind": "shared" },
+    { "id": "customer_engagement", "title": "Customer Engagement & Loyalty", "kind": "shared", "specializes": ["marketing"] },
+    { "id": "digital_commerce", "title": "Digital Commerce", "kind": "shared", "specializes": ["marketing"] },
+    { "id": "billing_revenue", "title": "Billing & Revenue", "kind": "shared", "specializes": ["finance"] },
+    { "id": "treasury_risk", "title": "Treasury & Market Risk", "kind": "shared", "specializes": ["finance"] },
+    { "id": "risk_compliance", "title": "Risk & Compliance", "kind": "shared" },
+    { "id": "pricing_revenue", "title": "Pricing & Revenue Management", "kind": "shared" },
+    { "id": "order_management", "title": "Order Management & Fulfillment", "kind": "shared" },
+    { "id": "field_service", "title": "Field Service", "kind": "shared" },
+    { "id": "quality", "title": "Quality Management", "kind": "shared" },
+    { "id": "maintenance_reliability", "title": "Maintenance & Reliability", "kind": "shared" },
+    { "id": "engineering_plm", "title": "Engineering & PLM", "kind": "shared", "specializes": ["it"] },
+    { "id": "ehs", "title": "EHS & Sustainability", "kind": "shared" },
+
+    { "id": "merchandising", "title": "Merchandising", "kind": "vertical", "industry": "retail" },
+    { "id": "deposits_core_banking", "title": "Deposits & Core Banking", "kind": "vertical", "industry": "banking" },
+    { "id": "lending", "title": "Lending & Credit", "kind": "vertical", "industry": "banking" },
+    { "id": "payments_fraud", "title": "Payments & Fraud", "kind": "vertical", "industry": "banking" },
+    { "id": "wealth_advisory", "title": "Wealth & Advisory", "kind": "vertical", "industry": "banking" },
+    { "id": "underwriting", "title": "Underwriting & Distribution", "kind": "vertical", "industry": "insurance" },
+    { "id": "claims", "title": "Claims", "kind": "vertical", "industry": "insurance" },
+    { "id": "actuarial_risk", "title": "Actuarial & Portfolio Risk", "kind": "vertical", "industry": "insurance" },
+    { "id": "network_operations", "title": "Network Operations & Assurance", "kind": "vertical", "industry": "telco" },
+    { "id": "production", "title": "Production & Shop Floor", "kind": "vertical", "industry": "manufacturing" }
+  ],
+  "valueStreams": [
+    { "code": "R-11", "industry": "retail", "function": "merchandising", "title": "Merchandising & Assortment" },
+    { "code": "R-12", "industry": "retail", "function": "supply_chain", "title": "Supply Chain & Fulfillment" },
+    { "code": "R-13", "industry": "retail", "function": "operations", "title": "Store Operations" },
+    { "code": "R-14", "industry": "retail", "function": "digital_commerce", "title": "E-Commerce & Digital" },
+    { "code": "R-15", "industry": "retail", "function": "customer_engagement", "title": "Customer & Loyalty" },
+    { "code": "R-16", "industry": "retail", "function": "pricing_revenue", "title": "Pricing & Promotions" },
+
+    { "code": "B-21", "industry": "banking", "function": "deposits_core_banking", "title": "Retail Banking & Deposits" },
+    { "code": "B-22", "industry": "banking", "function": "lending", "title": "Lending & Credit" },
+    { "code": "B-23", "industry": "banking", "function": "payments_fraud", "title": "Payments & Fraud" },
+    { "code": "B-24", "industry": "banking", "function": "risk_compliance", "title": "KYC, AML & Compliance" },
+    { "code": "B-25", "industry": "banking", "function": "wealth_advisory", "title": "Wealth & Advisory" },
+    { "code": "B-26", "industry": "banking", "function": "treasury_risk", "title": "Treasury & Market Risk" },
+
+    { "code": "I-31", "industry": "insurance", "function": "underwriting", "title": "Distribution & Underwriting" },
+    { "code": "I-32", "industry": "insurance", "function": "claims", "title": "Claims" },
+    { "code": "I-33", "industry": "insurance", "function": "billing_revenue", "title": "Billing & Payments" },
+    { "code": "I-34", "industry": "insurance", "function": "customer_service", "title": "Policy Servicing" },
+    { "code": "I-35", "industry": "insurance", "function": "actuarial_risk", "title": "Actuarial & Portfolio Risk" },
+    { "code": "I-36", "industry": "insurance", "function": "risk_compliance", "title": "Fraud, SIU & Compliance" },
+
+    { "code": "T-41", "industry": "telco", "function": "sales", "title": "Sales & Customer Acquisition" },
+    { "code": "T-42", "industry": "telco", "function": "order_management", "title": "Order Management & Provisioning" },
+    { "code": "T-43", "industry": "telco", "function": "network_operations", "title": "Network Operations & Assurance" },
+    { "code": "T-44", "industry": "telco", "function": "billing_revenue", "title": "Billing & Revenue Assurance" },
+    { "code": "T-45", "industry": "telco", "function": "customer_service", "title": "Customer Care & Retention" },
+    { "code": "T-46", "industry": "telco", "function": "field_service", "title": "Field Service & Infrastructure" },
+
+    { "code": "M-51", "industry": "manufacturing", "function": "production", "title": "Production & Shop Floor" },
+    { "code": "M-52", "industry": "manufacturing", "function": "quality", "title": "Quality Management" },
+    { "code": "M-53", "industry": "manufacturing", "function": "maintenance_reliability", "title": "Maintenance & Reliability" },
+    { "code": "M-54", "industry": "manufacturing", "function": "supply_chain", "title": "Supply Chain & Materials" },
+    { "code": "M-55", "industry": "manufacturing", "function": "engineering_plm", "title": "Engineering & PLM" },
+    { "code": "M-56", "industry": "manufacturing", "function": "ehs", "title": "EHS & Sustainability" }
+  ]
+}

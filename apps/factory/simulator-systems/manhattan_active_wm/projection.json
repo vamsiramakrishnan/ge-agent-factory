@@ -1,0 +1,40 @@
+{
+  "id": "manhattan_active_wm_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into manhattan_active_wm collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "supplier"
+      ],
+      "realizedObjects": [
+        "suppliers",
+        "risk_events"
+      ],
+      "simulatorCollection": "suppliers",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "material"
+      ],
+      "realizedObjects": [
+        "materials",
+        "inventory_positions"
+      ],
+      "simulatorCollection": "materials",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "purchase_order"
+      ],
+      "realizedObjects": [
+        "purchase_orders",
+        "shipments"
+      ],
+      "simulatorCollection": "purchase_orders",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

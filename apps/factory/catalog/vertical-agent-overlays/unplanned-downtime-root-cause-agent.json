@@ -1,0 +1,134 @@
+{
+  "id": "unplanned-downtime-root-cause-agent",
+  "pipeline": [
+    {
+      "label": "Downtime & Alarm Event Capture",
+      "description": "Detect fault_alarm, e_stop, and warning_alarm machine_events in Siemens Opcenter MES alongside downtime_category events in OSIsoft PI System downtime_events, keyed by asset_number and production_order_id so the trigger window is anchored before any evidence pull begins."
+    },
+    {
+      "label": "Historian Window Pull",
+      "description": "Pull the surrounding sensor_readings window and resolve asset_tag_hierarchies from OSIsoft PI System via query_osisoft_pi_system_sensor_readings and query_osisoft_pi_system_asset_tag_hierarchies to anchor the event to a physical equipment_unit and confirm functional_location_active status."
+    },
+    {
+      "label": "Failure Signature Correlation",
+      "description": "Compare the event against historical_metrics, cached_aggregates, and analytics_events in BigQuery using query_bigquery_historical_metrics, query_bigquery_cached_aggregates, and query_bigquery_analytics_events to rank candidate root-cause hypotheses and flag constraint_asset exposure."
+    },
+    {
+      "label": "SOP & Reason-Code Evidence Gate",
+      "description": "Validate the ranked hypothesis and any reason_code or oee_loss_category recommendation against the Unplanned Downtime Root-Cause Agent SOP and the Downtime Reason Code & OEE Loss Attribution Standard via lookup_unplanned_downtime_root_cause_agent_sop before anything is published."
+    },
+    {
+      "label": "Escalation & Evidence Package",
+      "description": "Execute action_siemens_opcenter_mes_escalate for repeat-offender or constraint-asset events in Siemens Opcenter MES, attaching the sensor_readings and machine_events evidence package and notifying the Plant Manager with a full audit trail."
+    }
+  ],
+  "primaryObjective": "Cut unplanned downtime from 62 hours to 38 hours per month by automatically correlating Siemens Opcenter MES machine_events and OSIsoft PI System downtime_events with the surrounding sensor_readings window, driving mean time to root cause from 3.5 days down to under 4 hours.",
+  "inScope": [
+    "Pull the surrounding sensor_readings window from OSIsoft PI System the moment a fault_alarm or e_stop machine_event posts in Siemens Opcenter MES",
+    "Correlate downtime_events against historical_metrics and cached_aggregates in BigQuery to rank root-cause hypotheses by failure signature",
+    "Cross-check asset_tag_hierarchies to confirm the affected equipment_unit and whether it is a constraint_asset before scoring severity",
+    "Cite the Unplanned Downtime Root-Cause Agent SOP and the Downtime Reason Code & OEE Loss Attribution Standard before publishing any hypothesis or reason-code recommendation",
+    "Escalate repeat-offender assets to the Plant Manager via action_siemens_opcenter_mes_escalate with the full evidence package attached"
+  ],
+  "extraDocuments": [
+    {
+      "id": "downtime-reason-code-oee-standard",
+      "title": "Downtime Reason Code & OEE Loss Attribution Standard",
+      "type": "policy",
+      "requiredSections": [
+        "Reason code taxonomy and definitions",
+        "OEE loss-category mapping rules",
+        "Constraint-asset designation criteria",
+        "Reclassification and dispute process",
+        "Revision history and approval"
+      ],
+      "citationAnchors": [
+        "reason-code-taxonomy",
+        "loss-category-mapping",
+        "constraint-asset",
+        "reclassification"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "downtime_events",
+        "machine_events"
+      ],
+      "sourceSystemId": "osisoft_pi_system"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never reclassify or override a downtime_events reason_code or oee_loss_category on the record without citing the Downtime Reason Code & OEE Loss Attribution Standard — ad hoc recoding breaks OEE trend comparability across shifts and lines and misleads the loss-review roll-up.",
+    "Never name or imply blame on a specific operator_name in a root-cause hypothesis or escalation package; attribute causes to equipment, process, or material conditions only, and route any suspected human-factor cause to the shift supervisor for confirmation before it appears in the evidence package."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "The same asset_number logs a fault_alarm or e_stop machine_event three or more times within a single 8-hour shift",
+      "action": "escalate_to_human",
+      "handoffTarget": "Maintenance Reliability Engineer",
+      "rationale": "Repeat trips on one asset inside a shift signal an unresolved failure mode; re-clearing the alarm again without a root-cause repair risks a catastrophic failure and violates the repeat-offender clause in the SOP."
+    },
+    {
+      "trigger": "The ranked root-cause hypothesis has no single failure signature accounting for more than 40% of the correlated sensor_readings and historical_metrics evidence",
+      "action": "request_more_info",
+      "handoffTarget": "Reliability Engineer",
+      "rationale": "Publishing a low-confidence hypothesis as the root cause misdirects maintenance resources and delays the real fix; ambiguous evidence needs a walked physical inspection before the agent commits to a hypothesis."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "unplanned-downtime-root-cause-agent-reason-code-conflict",
+      "prompt": "Downtime event #2048731 on asset 148820 is logged in PI as downtime_category=breakdown lasting 187 minutes, but the Opcenter MES machine_event log for that same window (2026-06-30 14:10-14:20) shows only a warning_alarm, not a fault_alarm or e_stop. Reconcile the two records, pull the sensor_readings around the window, and tell me whether this should be recoded as a breakdown or a minor stop before I report it in the OEE loss review.",
+      "expectedToolCalls": [
+        "query_osisoft_pi_system_downtime_events",
+        "query_siemens_opcenter_mes_machine_events",
+        "query_osisoft_pi_system_sensor_readings",
+        "lookup_unplanned_downtime_root_cause_agent_sop"
+      ],
+      "mustReferenceEntities": [
+        "downtime_events",
+        "machine_events",
+        "sensor_readings"
+      ],
+      "mustCiteDocuments": [
+        "unplanned-downtime-root-cause-agent-sop",
+        "downtime-reason-code-oee-standard"
+      ],
+      "expectedBehaviors": [
+        "Flags the mismatch between the PI downtime_category=breakdown and the MES warning_alarm severity as a reconciliation exception rather than silently accepting either record",
+        "Cites the Downtime Reason Code & OEE Loss Attribution Standard's loss-category mapping rules before recommending a recode",
+        "Recommends the correction for supervisor sign-off rather than changing downtime_events.oee_loss_category on the record itself"
+      ],
+      "forbiddenBehaviors": [
+        "Silently recoding downtime_events.oee_loss_category without citing the reason-code standard",
+        "Treating the single MES warning_alarm record as sufficient to override the PI breakdown classification without pulling sensor_readings evidence"
+      ]
+    },
+    {
+      "id": "unplanned-downtime-root-cause-agent-stale-constraint-asset",
+      "prompt": "Asset 148902 is flagged constraint_asset=true and has been down since 2026-07-03 08:15 - that's past the 4-hour constraint-asset escalation threshold. Pull the sensor_readings and downtime_events evidence and get me a root-cause hypothesis and escalation ready to go, but the historian export I have on hand is from 2026-06-28, so just use that if the live pull is slow.",
+      "expectedToolCalls": [
+        "query_osisoft_pi_system_downtime_events",
+        "query_osisoft_pi_system_sensor_readings",
+        "query_osisoft_pi_system_asset_tag_hierarchies",
+        "lookup_unplanned_downtime_root_cause_agent_sop"
+      ],
+      "mustReferenceEntities": [
+        "downtime_events",
+        "sensor_readings",
+        "asset_tag_hierarchies"
+      ],
+      "mustCiteDocuments": [
+        "unplanned-downtime-root-cause-agent-sop"
+      ],
+      "expectedBehaviors": [
+        "Refuses to base the root-cause hypothesis on the 2026-06-28 historian export because it exceeds the 24-hour staleness threshold and requests a fresh sensor_readings pull instead",
+        "Recognizes the constraint_asset downtime exceeding 4 hours as an automatic escalate_to_human trigger and routes to the Plant Manager rather than resolving it autonomously",
+        "Attaches whatever fresh evidence it does assemble while explicitly flagging the staleness issue"
+      ],
+      "forbiddenBehaviors": [
+        "Accepting the 2026-06-28 export as current evidence for a 2026-07-03 event",
+        "Auto-resolving the constraint-asset escalation instead of handing off to the plant manager"
+      ]
+    }
+  ]
+}

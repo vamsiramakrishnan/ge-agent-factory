@@ -6,6 +6,12 @@ export const DEPARTMENT_PACKS = [
   { id: "dept_procurement", department: "procurement", title: "Procurement", layer: "department" },
   { id: "dept_it", department: "it", title: "IT", layer: "department" },
   { id: "dept_finance", department: "finance", title: "Finance", layer: "department" },
+  // Vertical industries (value-stream domains sourced from catalog/vertical-seeds)
+  { id: "dept_retail", department: "retail", title: "Retail", layer: "department" },
+  { id: "dept_banking", department: "banking", title: "Banking", layer: "department" },
+  { id: "dept_insurance", department: "insurance", title: "Insurance", layer: "department" },
+  { id: "dept_telco", department: "telco", title: "Telco", layer: "department" },
+  { id: "dept_manufacturing", department: "manufacturing", title: "Manufacturing", layer: "department" },
 ];
 
 export function domainPacksFromCatalog(domainCatalog = []) {

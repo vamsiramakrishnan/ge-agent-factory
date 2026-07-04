@@ -1,0 +1,87 @@
+{
+  "id": "ukg_dimensions_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_workers",
+      "description": "Search workers in ukg_dimensions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_worker",
+      "description": "Get one worker in ukg_dimensions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "worker_id"
+        ]
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending ukg_dimensions approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "submit_worker_update",
+      "description": "Submit an update to one worker in ukg_dimensions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "worker_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List ukg_dimensions simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "suppliers": [
+    {
+      "supplier_id": "SUPPLIER-001",
+      "name": "Name 1",
+      "status": "active",
+      "risk_tier": "tier_2",
+      "country": "US",
+      "category": "Indirect Materials"
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "MATERIAL-001",
+      "name": "Name 1",
+      "status": "active",
+      "commodity": "precision components",
+      "plant": "PLANT-102",
+      "criticality": "high"
+    }
+  ],
+  "shipments": [
+    {
+      "shipment_id": "SHIPMENT-001",
+      "supplier_id": "SUPPLIER-001",
+      "material_id": "MATERIAL-001",
+      "status": "active",
+      "eta": "Eta 1",
+      "quantity": 125,
+      "carrier": "Aetna"
+    }
+  ],
+  "purchase_orders": [
+    {
+      "po_id": "PO-001",
+      "supplier_id": "SUPPLIER-001",
+      "material_id": "MATERIAL-001",
+      "status": "active",
+      "quantity": 125,
+      "need_by_date": "2026-03-15"
+    }
+  ],
+  "inventory_positions": [
+    {
+      "inventory_id": "INVENTORY-001",
+      "material_id": "MATERIAL-001",
+      "plant": "PLANT-102",
+      "status": "active",
+      "on_hand_qty": 125,
+      "safety_stock_qty": 125
+    }
+  ],
+  "risk_events": [
+    {
+      "risk_event_id": "RISK-EVENT-001",
+      "supplier_id": "SUPPLIER-001",
+      "event_type": "life_event",
+      "status": "active",
+      "severity": "medium",
+      "detected_at": "2026-03-15T14:30:00Z"
+    }
+  ],
+  "audit_events": []
+}

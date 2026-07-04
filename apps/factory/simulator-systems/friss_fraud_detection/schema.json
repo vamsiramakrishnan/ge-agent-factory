@@ -1,0 +1,157 @@
+{
+  "id": "friss_fraud_detection_schema",
+  "version": 1,
+  "collections": {
+    "risks": {
+      "primaryKey": "risk_id",
+      "fields": {
+        "risk_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      }
+    },
+    "controls": {
+      "primaryKey": "control_id",
+      "fields": {
+        "control_id": {
+          "type": "string"
+        },
+        "risk_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "framework": {
+          "type": "string"
+        }
+      }
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "fields": {
+        "issue_id": {
+          "type": "string"
+        },
+        "control_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "remediation_owner": {
+          "type": "string"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "policies": {
+      "primaryKey": "policy_id",
+      "fields": {
+        "policy_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "assessments": {
+      "primaryKey": "assessment_id",
+      "fields": {
+        "assessment_id": {
+          "type": "string"
+        },
+        "risk_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "assessor": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        }
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": {
+          "type": "string"
+        },
+        "source_record_id": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

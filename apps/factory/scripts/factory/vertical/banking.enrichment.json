@@ -1,0 +1,515 @@
+{
+  "industry": "banking",
+  "entities": {
+    "core_accounts": {
+      "lookupKeys": ["account_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "account_number", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "product_type", "type": "enum", "required": true, "values": ["checking", "savings", "money_market", "cd", "hsa", "iolta"], "weights": [40, 28, 14, 12, 4, 2] },
+        { "name": "account_status", "type": "enum", "required": true, "values": ["open", "dormant", "restricted", "closed", "charged_off"], "weights": [78, 8, 6, 7, 1] },
+        { "name": "current_balance", "type": "float", "required": true, "min": -2500, "max": 850000, "decimals": 2 },
+        { "name": "available_balance", "type": "float", "required": true, "min": -2500, "max": 850000, "decimals": 2 },
+        { "name": "hold_amount", "type": "float", "required": false, "min": 0, "max": 50000, "decimals": 2 },
+        { "name": "open_date", "type": "date", "required": true },
+        { "name": "reg_dd_disclosure_acknowledged", "type": "boolean", "required": true, "trueRate": 0.97 },
+        { "name": "primary_holder_name", "type": "person.fullName", "required": true }
+      ]
+    },
+    "account_transactions": {
+      "lookupKeys": ["transaction_id", "account_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "transaction_id", "type": "number", "required": true, "min": 100000000000, "max": 999999999999 },
+        { "name": "account_number", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "transaction_type", "type": "enum", "required": true, "values": ["ach_credit", "ach_debit", "wire_in", "wire_out", "check_deposit", "card_purchase", "atm_withdrawal", "teller_cash_deposit"], "weights": [16, 18, 3, 3, 9, 34, 10, 7] },
+        { "name": "amount", "type": "float", "required": true, "min": 0.01, "max": 250000, "decimals": 2 },
+        { "name": "post_date", "type": "date", "required": true },
+        { "name": "channel", "type": "enum", "required": true, "values": ["branch", "atm", "online", "mobile", "batch_ach", "wire_room"], "weights": [10, 12, 24, 36, 14, 4] },
+        { "name": "reg_e_dispute_flag", "type": "boolean", "required": true, "trueRate": 0.012 },
+        { "name": "memo_text", "type": "lorem.sentence", "required": false }
+      ]
+    },
+    "standing_orders": {
+      "lookupKeys": ["order_reference", "account_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "order_reference", "type": "number", "required": true, "min": 5000000, "max": 5999999 },
+        { "name": "account_number", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "frequency", "type": "enum", "required": true, "values": ["weekly", "biweekly", "semimonthly", "monthly", "quarterly"], "weights": [8, 22, 10, 52, 8] },
+        { "name": "amount", "type": "float", "required": true, "min": 25, "max": 15000, "decimals": 2 },
+        { "name": "next_execution_date", "type": "date", "required": true },
+        { "name": "beneficiary_name", "type": "person.fullName", "required": true },
+        { "name": "order_status", "type": "enum", "required": true, "values": ["active", "suspended", "expired", "cancelled"], "weights": [72, 9, 11, 8] },
+        { "name": "retry_on_insufficient_funds", "type": "boolean", "required": true, "trueRate": 0.4 }
+      ]
+    },
+    "payment_instructions": {
+      "lookupKeys": ["instruction_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "instruction_id", "type": "number", "required": true, "min": 700000000, "max": 799999999 },
+        { "name": "message_type", "type": "enum", "required": true, "values": ["pacs_008", "pain_001", "pacs_009", "pain_008", "camt_056"], "weights": [38, 30, 12, 14, 6] },
+        { "name": "payment_rail", "type": "enum", "required": true, "values": ["fedwire", "ach_same_day", "ach_standard", "rtp", "fednow", "chips", "swift_cross_border"], "weights": [14, 16, 34, 12, 8, 6, 10] },
+        { "name": "amount", "type": "float", "required": true, "min": 1, "max": 5000000, "decimals": 2 },
+        { "name": "currency", "type": "enum", "required": true, "values": ["USD", "EUR", "GBP", "MXN", "JPY", "CAD"], "weights": [80, 7, 4, 4, 2, 3] },
+        { "name": "value_date", "type": "date", "required": true },
+        { "name": "ofac_screening_status", "type": "enum", "required": true, "values": ["clear", "pending", "potential_match", "blocked"], "weights": [91, 5, 3, 1] },
+        { "name": "originator_name", "type": "company.name", "required": true },
+        { "name": "beneficiary_aba_routing", "type": "number", "required": true, "min": 10000000, "max": 129999999 }
+      ]
+    },
+    "clearing_batches": {
+      "lookupKeys": ["batch_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "batch_number", "type": "number", "required": true, "min": 200000, "max": 299999 },
+        { "name": "clearing_network", "type": "enum", "required": true, "values": ["fedach", "epn", "check_image_x9_37", "fedwire_funds", "rtp_network"], "weights": [34, 22, 20, 14, 10] },
+        { "name": "batch_status", "type": "enum", "required": true, "values": ["open", "balanced", "transmitted", "settled", "rejected"], "weights": [8, 12, 18, 58, 4] },
+        { "name": "item_count", "type": "number", "required": true, "min": 1, "max": 45000 },
+        { "name": "total_debits", "type": "float", "required": true, "min": 0, "max": 90000000, "decimals": 2 },
+        { "name": "total_credits", "type": "float", "required": true, "min": 0, "max": 90000000, "decimals": 2 },
+        { "name": "cutoff_date", "type": "date", "required": true },
+        { "name": "settlement_window", "type": "enum", "required": true, "values": ["same_day_window_1", "same_day_window_2", "same_day_window_3", "next_day"], "weights": [18, 22, 14, 46] },
+        { "name": "rejected_item_count", "type": "number", "required": false, "min": 0, "max": 250 }
+      ]
+    },
+    "settlement_records": {
+      "lookupKeys": ["settlement_id", "batch_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "settlement_id", "type": "number", "required": true, "min": 40000000, "max": 49999999 },
+        { "name": "batch_number", "type": "number", "required": true, "min": 200000, "max": 299999 },
+        { "name": "settlement_system", "type": "enum", "required": true, "values": ["fed_master_account", "chips_prefunded_balance", "national_settlement_service", "dtc_money_settlement"], "weights": [48, 16, 26, 10] },
+        { "name": "net_settlement_amount", "type": "float", "required": true, "min": -50000000, "max": 50000000, "decimals": 2 },
+        { "name": "settlement_date", "type": "date", "required": true },
+        { "name": "finality_status", "type": "enum", "required": true, "values": ["provisional", "final", "unwound"], "weights": [12, 87, 1] },
+        { "name": "fed_reference_number", "type": "number", "required": true, "min": 100000000000, "max": 999999999999 },
+        { "name": "gl_reconciled", "type": "boolean", "required": true, "trueRate": 0.94 }
+      ]
+    },
+    "loan_applications": {
+      "lookupKeys": ["application_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "application_number", "type": "number", "required": true, "min": 30000000, "max": 39999999 },
+        { "name": "product_type", "type": "enum", "required": true, "values": ["term_loan", "revolver", "cre_mortgage", "sba_7a", "equipment_finance"], "weights": [30, 24, 22, 12, 12] },
+        { "name": "requested_amount", "type": "float", "required": true, "min": 50000, "max": 25000000, "decimals": 2 },
+        { "name": "dscr", "type": "float", "required": true, "min": 0.55, "max": 2.6, "decimals": 2 },
+        { "name": "ltv", "type": "float", "required": true, "min": 0.2, "max": 0.95, "decimals": 2 },
+        { "name": "risk_rating", "type": "enum", "required": true, "values": ["1", "2", "3", "4", "5", "6", "7", "8"], "weights": [2, 8, 22, 30, 22, 10, 4, 2] },
+        { "name": "decision_status", "type": "enum", "required": true, "values": ["submitted", "underwriting", "conditional_approval", "approved", "declined", "withdrawn"], "weights": [14, 24, 12, 32, 12, 6] },
+        { "name": "adverse_action_sent", "type": "boolean", "required": true, "trueRate": 0.11 },
+        { "name": "relationship_manager", "type": "person.fullName", "required": true }
+      ]
+    },
+    "credit_memos": {
+      "lookupKeys": ["memo_number", "application_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "memo_number", "type": "number", "required": true, "min": 800000, "max": 899999 },
+        { "name": "application_number", "type": "number", "required": true, "min": 30000000, "max": 39999999 },
+        { "name": "borrower_name", "type": "company.name", "required": true },
+        { "name": "global_cash_flow", "type": "float", "required": true, "min": -500000, "max": 12000000, "decimals": 2 },
+        { "name": "policy_exception_count", "type": "number", "required": true, "min": 0, "max": 5 },
+        { "name": "guarantor_strength", "type": "enum", "required": true, "values": ["strong", "adequate", "marginal", "unsupported"], "weights": [28, 42, 22, 8] },
+        { "name": "approval_authority", "type": "enum", "required": true, "values": ["rm_delegated", "senior_credit_officer", "credit_committee", "board_dirloans"], "weights": [24, 40, 32, 4] },
+        { "name": "memo_date", "type": "date", "required": true },
+        { "name": "annual_review_required", "type": "boolean", "required": true, "trueRate": 0.72 }
+      ]
+    },
+    "covenant_records": {
+      "lookupKeys": ["covenant_id", "application_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "covenant_id", "type": "number", "required": true, "min": 600000, "max": 699999 },
+        { "name": "application_number", "type": "number", "required": true, "min": 30000000, "max": 39999999 },
+        { "name": "covenant_type", "type": "enum", "required": true, "values": ["minimum_dscr", "maximum_leverage", "minimum_liquidity", "maximum_capex", "borrowing_base_compliance", "minimum_tangible_net_worth"], "weights": [26, 22, 16, 8, 14, 14] },
+        { "name": "test_frequency", "type": "enum", "required": true, "values": ["monthly", "quarterly", "semiannual", "annual"], "weights": [14, 52, 12, 22] },
+        { "name": "threshold_value", "type": "float", "required": true, "min": 0.5, "max": 6, "decimals": 2 },
+        { "name": "most_recent_test_value", "type": "float", "required": true, "min": 0.2, "max": 7, "decimals": 2 },
+        { "name": "compliance_status", "type": "enum", "required": true, "values": ["in_compliance", "waived", "breached", "cured"], "weights": [76, 8, 9, 7] },
+        { "name": "next_test_date", "type": "date", "required": true },
+        { "name": "waiver_fee_assessed", "type": "boolean", "required": false, "trueRate": 0.06 }
+      ]
+    },
+    "kyc_cases": {
+      "lookupKeys": ["case_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "case_id", "type": "number", "required": true, "min": 9000000, "max": 9999999 },
+        { "name": "customer_name", "type": "company.name", "required": true },
+        { "name": "case_type", "type": "enum", "required": true, "values": ["onboarding_cdd", "periodic_review", "event_driven_refresh", "remediation_lookback"], "weights": [38, 34, 18, 10] },
+        { "name": "cdd_risk_rating", "type": "enum", "required": true, "values": ["low", "medium", "high", "prohibited"], "weights": [52, 32, 15, 1] },
+        { "name": "edd_required", "type": "boolean", "required": true, "trueRate": 0.16 },
+        { "name": "beneficial_owner_count", "type": "number", "required": true, "min": 0, "max": 6 },
+        { "name": "pep_exposure", "type": "boolean", "required": true, "trueRate": 0.03 },
+        { "name": "next_review_date", "type": "date", "required": true },
+        { "name": "case_status", "type": "enum", "required": true, "values": ["open", "pending_documents", "qc_review", "approved", "relationship_exited"], "weights": [22, 18, 14, 42, 4] }
+      ]
+    },
+    "entity_profiles": {
+      "lookupKeys": ["profile_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "profile_id", "type": "number", "required": true, "min": 1000000, "max": 1999999 },
+        { "name": "legal_name", "type": "company.name", "required": true },
+        { "name": "entity_type", "type": "enum", "required": true, "values": ["individual", "llc", "c_corp", "general_partnership", "revocable_trust", "money_services_business", "nonprofit_501c3"], "weights": [36, 24, 14, 6, 10, 3, 7] },
+        { "name": "naics_risk_tier", "type": "enum", "required": true, "values": ["standard", "elevated_monitoring", "high_risk_program"], "weights": [74, 18, 8] },
+        { "name": "country_of_domicile", "type": "enum", "required": true, "values": ["US", "CA", "GB", "MX", "KY", "CH", "AE"], "weights": [84, 4, 3, 4, 2, 2, 1] },
+        { "name": "fincen_boi_verified", "type": "boolean", "required": true, "trueRate": 0.88 },
+        { "name": "expected_monthly_volume", "type": "float", "required": true, "min": 500, "max": 8000000, "decimals": 2 },
+        { "name": "cash_intensive_business", "type": "boolean", "required": true, "trueRate": 0.09 },
+        { "name": "profile_last_refreshed", "type": "date", "required": true }
+      ]
+    },
+    "screening_results": {
+      "lookupKeys": ["screening_id", "case_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "screening_id", "type": "number", "required": true, "min": 50000000, "max": 59999999 },
+        { "name": "case_id", "type": "number", "required": true, "min": 9000000, "max": 9999999 },
+        { "name": "list_source", "type": "enum", "required": true, "values": ["ofac_sdn", "ofac_ns_cmic", "eu_consolidated", "un_1267_committee", "hmt_uk_sanctions", "pep_database", "adverse_media"], "weights": [26, 6, 10, 8, 6, 22, 22] },
+        { "name": "fuzzy_match_score", "type": "number", "required": true, "min": 60, "max": 100 },
+        { "name": "hit_type", "type": "enum", "required": true, "values": ["true_match", "false_positive", "pending_analyst_review"], "weights": [4, 82, 14] },
+        { "name": "screened_party_name", "type": "person.fullName", "required": true },
+        { "name": "disposition", "type": "enum", "required": true, "values": ["cleared", "blocked_property", "payment_rejected", "pending"], "weights": [83, 2, 3, 12] },
+        { "name": "fincen_314a_match", "type": "boolean", "required": true, "trueRate": 0.015 },
+        { "name": "disposition_date", "type": "date", "required": false }
+      ]
+    },
+    "fraud_alerts": {
+      "lookupKeys": ["alert_id", "account_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "alert_id", "type": "number", "required": true, "min": 70000000, "max": 79999999 },
+        { "name": "account_number", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "alert_type", "type": "enum", "required": true, "values": ["card_not_present", "check_kiting", "counterfeit_check", "account_takeover", "elder_financial_exploitation", "p2p_payment_scam", "business_email_compromise_wire"], "weights": [30, 6, 12, 16, 8, 18, 10] },
+        { "name": "fraud_risk_score", "type": "number", "required": true, "min": 1, "max": 99 },
+        { "name": "alert_status", "type": "enum", "required": true, "values": ["new", "in_review", "confirmed_fraud", "false_positive", "closed_no_action"], "weights": [18, 24, 14, 32, 12] },
+        { "name": "amount_at_risk", "type": "float", "required": true, "min": 1, "max": 500000, "decimals": 2 },
+        { "name": "reg_e_claim_filed", "type": "boolean", "required": true, "trueRate": 0.22 },
+        { "name": "alert_date", "type": "date", "required": true },
+        { "name": "assigned_analyst", "type": "person.fullName", "required": true }
+      ]
+    },
+    "transaction_risk_scores": {
+      "lookupKeys": ["transaction_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "transaction_id", "type": "number", "required": true, "min": 100000000000, "max": 999999999999 },
+        { "name": "model_version", "type": "enum", "required": true, "values": ["trs_champion_v3_1", "trs_champion_v3_2", "trs_challenger_v4_0"], "weights": [30, 58, 12] },
+        { "name": "risk_score", "type": "number", "required": true, "min": 0, "max": 999 },
+        { "name": "score_band", "type": "enum", "required": true, "values": ["low", "medium", "high", "critical"], "weights": [70, 20, 8, 2] },
+        { "name": "velocity_rule_triggered", "type": "boolean", "required": true, "trueRate": 0.07 },
+        { "name": "geolocation_anomaly", "type": "boolean", "required": true, "trueRate": 0.05 },
+        { "name": "mule_account_indicator", "type": "boolean", "required": true, "trueRate": 0.02 },
+        { "name": "scored_date", "type": "date", "required": true }
+      ]
+    },
+    "investigation_cases": {
+      "lookupKeys": ["case_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "case_number", "type": "number", "required": true, "min": 2000000, "max": 2999999 },
+        { "name": "subject_name", "type": "person.fullName", "required": true },
+        { "name": "typology", "type": "enum", "required": true, "values": ["structuring", "funnel_account", "trade_based_laundering", "human_trafficking_indicators", "fraud_referral", "terrorist_financing", "elder_exploitation_referral"], "weights": [28, 14, 8, 5, 26, 3, 16] },
+        { "name": "sar_decision", "type": "enum", "required": true, "values": ["sar_filed", "no_sar_warranted", "pending_review", "continuing_activity_supplemental"], "weights": [24, 42, 26, 8] },
+        { "name": "ctr_related", "type": "boolean", "required": true, "trueRate": 0.31 },
+        { "name": "case_opened_date", "type": "date", "required": true },
+        { "name": "filing_deadline_date", "type": "date", "required": true },
+        { "name": "aggregate_suspicious_amount", "type": "float", "required": true, "min": 1000, "max": 4000000, "decimals": 2 },
+        { "name": "investigator_email", "type": "internet.email", "required": true }
+      ]
+    },
+    "trades": {
+      "lookupKeys": ["trade_id", "cusip"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "trade_id", "type": "number", "required": true, "min": 400000000, "max": 499999999 },
+        { "name": "cusip", "type": "number", "required": true, "min": 100000000, "max": 999999999 },
+        { "name": "instrument_type", "type": "enum", "required": true, "values": ["ust_note", "agency_mbs_pool", "ig_corporate_bond", "municipal_go", "interest_rate_swap", "fx_forward"], "weights": [28, 22, 18, 12, 12, 8] },
+        { "name": "side", "type": "enum", "required": true, "values": ["buy", "sell"], "weights": [52, 48] },
+        { "name": "notional_amount", "type": "float", "required": true, "min": 100000, "max": 100000000, "decimals": 2 },
+        { "name": "trade_date", "type": "date", "required": true },
+        { "name": "settlement_status", "type": "enum", "required": true, "values": ["pending_match", "matched", "settled", "failed_delivery"], "weights": [10, 14, 73, 3] },
+        { "name": "counterparty_name", "type": "company.name", "required": true },
+        { "name": "executing_trader", "type": "person.fullName", "required": true }
+      ]
+    },
+    "positions": {
+      "lookupKeys": ["position_id", "cusip"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "position_id", "type": "number", "required": true, "min": 3000000, "max": 3999999 },
+        { "name": "cusip", "type": "number", "required": true, "min": 100000000, "max": 999999999 },
+        { "name": "book_designation", "type": "enum", "required": true, "values": ["trading_book", "afs_portfolio", "htm_portfolio", "hedge_accounting_book"], "weights": [22, 42, 30, 6] },
+        { "name": "market_value", "type": "float", "required": true, "min": 10000, "max": 250000000, "decimals": 2 },
+        { "name": "notional_amount", "type": "float", "required": true, "min": 10000, "max": 250000000, "decimals": 2 },
+        { "name": "unrealized_gain_loss", "type": "float", "required": true, "min": -20000000, "max": 20000000, "decimals": 2 },
+        { "name": "effective_duration", "type": "float", "required": true, "min": 0.1, "max": 18, "decimals": 2 },
+        { "name": "aoci_designated", "type": "boolean", "required": true, "trueRate": 0.42 },
+        { "name": "as_of_date", "type": "date", "required": true }
+      ]
+    },
+    "risk_measures": {
+      "lookupKeys": ["measure_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "measure_id", "type": "number", "required": true, "min": 500000, "max": 599999 },
+        { "name": "desk", "type": "enum", "required": true, "values": ["rates", "credit", "fx", "mortgage", "municipal", "treasury_alm"], "weights": [22, 18, 14, 16, 8, 22] },
+        { "name": "measure_type", "type": "enum", "required": true, "values": ["var_99_1day", "stressed_var", "dv01", "cs01", "irrbb_eve_shock_200bp", "lcr_ratio", "nsfr_ratio"], "weights": [22, 10, 20, 12, 14, 12, 10] },
+        { "name": "measure_value", "type": "float", "required": true, "min": 0, "max": 25000000, "decimals": 2 },
+        { "name": "approved_limit_value", "type": "float", "required": true, "min": 100000, "max": 50000000, "decimals": 2 },
+        { "name": "limit_utilization_pct", "type": "float", "required": true, "min": 1, "max": 128, "decimals": 1 },
+        { "name": "limit_breach_flag", "type": "boolean", "required": true, "trueRate": 0.05 },
+        { "name": "backtest_exceptions_250d", "type": "number", "required": true, "min": 0, "max": 8 },
+        { "name": "as_of_date", "type": "date", "required": true }
+      ]
+    },
+    "client_households": {
+      "lookupKeys": ["household_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "household_id", "type": "number", "required": true, "min": 6000000, "max": 6999999 },
+        { "name": "primary_client_name", "type": "person.fullName", "required": true },
+        { "name": "total_aum", "type": "float", "required": true, "min": 25000, "max": 45000000, "decimals": 2 },
+        { "name": "risk_tolerance", "type": "enum", "required": true, "values": ["conservative", "moderately_conservative", "moderate", "moderately_aggressive", "aggressive"], "weights": [14, 20, 38, 20, 8] },
+        { "name": "investment_objective", "type": "enum", "required": true, "values": ["capital_preservation", "income", "growth_and_income", "growth", "speculation"], "weights": [12, 18, 34, 30, 6] },
+        { "name": "accredited_investor", "type": "boolean", "required": true, "trueRate": 0.18 },
+        { "name": "reg_bi_crs_delivered", "type": "boolean", "required": true, "trueRate": 0.96 },
+        { "name": "primary_advisor", "type": "person.fullName", "required": true },
+        { "name": "last_annual_review_date", "type": "date", "required": true }
+      ]
+    },
+    "financial_accounts": {
+      "lookupKeys": ["account_number", "household_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "account_number", "type": "number", "required": true, "min": 80000000, "max": 89999999 },
+        { "name": "household_id", "type": "number", "required": true, "min": 6000000, "max": 6999999 },
+        { "name": "registration_type", "type": "enum", "required": true, "values": ["individual_brokerage", "joint_tenants_wros", "ira_traditional", "ira_roth", "rollover_401k", "ugma_utma", "revocable_trust"], "weights": [26, 18, 20, 14, 10, 4, 8] },
+        { "name": "market_value", "type": "float", "required": true, "min": 1000, "max": 12000000, "decimals": 2 },
+        { "name": "cash_balance", "type": "float", "required": true, "min": 0, "max": 900000, "decimals": 2 },
+        { "name": "margin_enabled", "type": "boolean", "required": true, "trueRate": 0.13 },
+        { "name": "discretionary_managed", "type": "boolean", "required": true, "trueRate": 0.44 },
+        { "name": "opened_date", "type": "date", "required": true }
+      ]
+    },
+    "advisory_referrals": {
+      "lookupKeys": ["referral_id", "household_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "referral_id", "type": "number", "required": true, "min": 900000, "max": 999999 },
+        { "name": "household_id", "type": "number", "required": true, "min": 6000000, "max": 6999999 },
+        { "name": "referring_banker", "type": "person.fullName", "required": true },
+        { "name": "product_interest", "type": "enum", "required": true, "values": ["managed_portfolio", "fixed_indexed_annuity", "structured_note", "education_529_plan", "life_insurance", "alternative_investments"], "weights": [36, 14, 8, 12, 18, 12] },
+        { "name": "suitability_status", "type": "enum", "required": true, "values": ["not_started", "profile_complete", "kyc_pending", "principal_approved", "determined_unsuitable"], "weights": [22, 28, 18, 26, 6] },
+        { "name": "investment_time_horizon", "type": "enum", "required": true, "values": ["under_3_years", "3_to_10_years", "over_10_years"], "weights": [16, 44, 40] },
+        { "name": "liquidity_needs", "type": "enum", "required": true, "values": ["low", "moderate", "high"], "weights": [42, 40, 18] },
+        { "name": "estimated_investable_assets", "type": "float", "required": true, "min": 10000, "max": 20000000, "decimals": 2 },
+        { "name": "referral_date", "type": "date", "required": true }
+      ]
+    }
+  },
+  "valueStreams": {
+    "B-21": {
+      "refusalRules": [
+        "Do not commit to, deny, or predict the outcome of a Regulation E error-resolution claim; provisional credit timing (10 business days, 20 for accounts open under 30 days) and final determinations belong to the dispute resolution unit, not this agent.",
+        "Never promise funds availability earlier than the Regulation CC schedule or place an exception hold (large deposit, redeposited check, reasonable doubt of collectibility) without citing the specific 229.13 reason code and issuing the required hold notice.",
+        "Never enroll a customer in overdraft coverage for ATM and one-time debit transactions without documented affirmative opt-in consent under Regulation E 1005.17; do not describe overdraft coverage as a feature that is on by default.",
+        "Do not disclose account balances, transaction history, or account existence to any third party who has not passed identity verification; GLBA privacy and 1033 data-sharing requests route through the authorized consent workflow only."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Customer requests release of a deposit hold exceeding $25,000 or has had two or more case-by-case holds released early in the trailing 90 days",
+          "action": "escalate_to_human",
+          "handoffTarget": "branch_operations_manager",
+          "rationale": "Repeated early hold releases are a known check-kiting grooming pattern; Reg CC exception holds above this size require an officer-level override with documented collectibility reasoning."
+        },
+        {
+          "trigger": "Dormant account (no customer-initiated activity for 12+ months) is reactivated and an outbound transfer or new payee is requested in the same session",
+          "action": "escalate_to_human",
+          "handoffTarget": "fraud_operations_elder_abuse_desk",
+          "rationale": "Dormancy-plus-immediate-disbursement is a leading indicator of account takeover and elder financial exploitation; many states and FINRA-parallel bank policies require a disbursement pause and welfare check."
+        },
+        {
+          "trigger": "Customer files a third Regulation E dispute within 60 days or a single disputed EFT amount exceeds $5,000",
+          "action": "request_more_info",
+          "handoffTarget": "electronic_disputes_unit",
+          "rationale": "Serial or high-value disputes require a written statement of error and abuse-pattern review before provisional credit; the agent should collect the transaction details but not adjudicate."
+        }
+      ],
+      "outOfScope": [
+        "Quoting or negotiating mortgage or HELOC pricing (licensed MLO activity under the SAFE Act)",
+        "Providing tax advice on HSA contribution limits, CD interest reporting, or IRS levies against deposit accounts",
+        "Processing escheatment or unclaimed-property determinations, which follow state-specific dormancy statutes"
+      ]
+    },
+    "B-22": {
+      "refusalRules": [
+        "Never state, imply, or invent a reason for a credit decline beyond the specific principal reasons documented in the adverse action notice; ECOA/Regulation B requires notice within 30 days of a completed application and the stated reasons must match the underwriting record exactly.",
+        "Never factor, discuss, or record a prohibited basis (race, color, religion, national origin, sex, marital status, age, public assistance income) in any credit evaluation, pricing exception, or collateral discussion; steering an applicant toward a different product on such a basis is a fair-lending violation even if the application is approved.",
+        "Never modify DSCR, LTV, risk-rating inputs, appraised values, or borrower financials to move an application across an approval threshold; falsifying bank credit records is a federal offense under 18 USC 1005 and a safety-and-soundness finding.",
+        "Do not process or commit to any extension of credit to an affiliate of the bank without Section 23A/23B (Regulation W) review of the quantitative limits and market-terms requirement; affiliate transactions are never delegable to this agent."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Aggregate committed exposure to the borrower and its obligor group would exceed the house limit of $10,000,000 or any single advance exceeds 15% of unimpaired capital (legal lending limit)",
+          "action": "escalate_to_human",
+          "handoffTarget": "credit_committee_secretary",
+          "rationale": "House and legal lending limits are board-approved concentrations; only credit committee can approve exposure above them, and legal lending limit breaches are reportable to examiners."
+        },
+        {
+          "trigger": "Application carries 3 or more policy exceptions, or a CRE mortgage exceeds 80% LTV without an approved mitigant (additional collateral, guaranty, or amortization step-down)",
+          "action": "escalate_to_human",
+          "handoffTarget": "senior_credit_officer",
+          "rationale": "Interagency CRE guidance ties supervisory LTV limits to board-level exception tracking; stacked exceptions must be individually approved and reported in aggregate to the board."
+        },
+        {
+          "trigger": "Financial covenant reported as breached and not cured or formally waived within 30 days of the test date",
+          "action": "escalate_to_human",
+          "handoffTarget": "special_assets_group",
+          "rationale": "An uncured covenant breach triggers risk-rating migration review and possible nonaccrual/TDR-successor (loan modification) accounting treatment; workout strategy is outside origination authority."
+        }
+      ],
+      "outOfScope": [
+        "Ordering or influencing appraisals (appraiser independence requirements under Reg Z 1026.42 and FIRREA)",
+        "Preparing or submitting HMDA LAR or CRA performance data to regulators",
+        "Negotiating forbearance, deed-in-lieu, or bankruptcy treatment on defaulted credits (special assets and legal counsel only)"
+      ]
+    },
+    "B-23": {
+      "refusalRules": [
+        "Never release, return, reroute, or net OFAC-blocked funds; blocked property must be moved to a segregated interest-bearing blocked account and reported to OFAC within 10 business days, and unblocking requires a specific or general license, not operational discretion.",
+        "Never execute a payment while its sanctions screening status is pending or potential_match; a fuzzy-match hit cannot be self-cleared by the payments desk regardless of customer urgency or cutoff pressure.",
+        "Never promise that a completed Fedwire or RTP payment can be recalled; under UCC Article 4A and rail rules these are final upon acceptance, and any recovery attempt is a best-efforts beneficiary-bank request, not a guarantee.",
+        "Never disclose fraud-model score thresholds, velocity rule parameters, or the specific reason a transaction was flagged to a customer or external party; doing so provides a testing oracle for fraudsters and undermines model integrity."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Outbound wire of $250,000 or more to a first-time beneficiary, or any wire where payment instructions were changed via email or inbound phone call (business email compromise indicators)",
+          "action": "escalate_to_human",
+          "handoffTarget": "payment_operations_supervisor",
+          "rationale": "BEC losses concentrate in exactly this pattern; policy requires out-of-band callback verification to a previously documented phone number before release."
+        },
+        {
+          "trigger": "Sanctions screening returns a fuzzy-match score of 85 or higher against OFAC SDN or NS-CMIC lists",
+          "action": "refuse",
+          "handoffTarget": "sanctions_compliance_officer",
+          "rationale": "High-confidence potential matches must be held and dispositioned by the sanctions officer; processing before disposition risks a strict-liability OFAC violation with per-transaction penalties."
+        },
+        {
+          "trigger": "Confirmed account takeover on the originating account, or a P2P/wire scam claim where the customer was manipulated into authorizing the payment",
+          "action": "escalate_to_human",
+          "handoffTarget": "fraud_investigations_unit",
+          "rationale": "Authorized-push-payment scams sit in a contested Reg E liability zone; classification as authorized vs unauthorized drives reimbursement and must be made by investigators, not the servicing layer."
+        }
+      ],
+      "outOfScope": [
+        "Card network chargeback arbitration and representment strategy (network-rules specialists)",
+        "Responding to law enforcement subpoenas, 314(a) requests, or grand jury inquiries about payment records",
+        "Approving new correspondent banking or third-party payment processor relationships (payments risk committee)"
+      ]
+    },
+    "B-24": {
+      "refusalRules": [
+        "Never confirm, deny, or hint at the existence of a SAR or an active suspicious-activity investigation to the subject, the customer, or any unauthorized party, in any channel including account notes visible to front-line staff; SAR confidentiality under 31 CFR 1020.320 has no customer-service exception and unauthorized disclosure is a federal crime.",
+        "Never provide guidance that helps a customer keep cash transactions below the $10,000 CTR threshold, split deposits across days or branches, or otherwise evade reporting; assisting structuring violates 31 USC 5324 and the request itself is reportable.",
+        "Never share customer information under Section 314(b) with an institution whose current-year registration has not been verified, and never share outside the money-laundering/terrorist-financing safe harbor purpose.",
+        "Never backdate, extend, or mark complete a periodic KYC review without the underlying refresh evidence, and never delay a CTR past the 15-day filing window to accommodate operational backlogs."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Cash deposit pattern of three or more transactions between $8,000 and $9,999 across any combination of branches or days within a 7-day window on one relationship",
+          "action": "escalate_to_human",
+          "handoffTarget": "bsa_officer",
+          "rationale": "Sub-threshold clustering just under the $10,000 CTR trigger is the canonical structuring typology; SAR decisioning authority rests solely with the BSA officer and the 30-day filing clock may already be running."
+        },
+        {
+          "trigger": "Onboarding or refresh surfaces a PEP association, a beneficial owner in a FATF high-risk jurisdiction, or an undisclosed MSB operating through a commercial account",
+          "action": "request_more_info",
+          "handoffTarget": "edd_team",
+          "rationale": "These profiles require enhanced due diligence (source of wealth, expected activity corroboration) before the relationship can be risk-rated; the agent gathers documents but cannot approve high-risk relationships."
+        },
+        {
+          "trigger": "High-risk-rated customer's periodic review is more than 30 days past its due date and the customer requests new products or limit increases",
+          "action": "refuse",
+          "handoffTarget": "kyc_quality_control",
+          "rationale": "Expanding a relationship with stale high-risk due diligence contradicts the risk-based CDD program the examiners test against; the review must be completed or the relationship restricted first."
+        }
+      ],
+      "outOfScope": [
+        "Drafting or filing the SAR narrative itself (BSA officer and financial intelligence unit authority)",
+        "Applying to OFAC for specific licenses or interpreting sanctions license scope (sanctions counsel)",
+        "Making relationship-exit (de-risking) decisions, which require the customer risk committee and fair-access review"
+      ]
+    },
+    "B-25": {
+      "refusalRules": [
+        "Never pass information across the information barrier between the commercial/lending side and the advisory side; borrower financials, covenant status, or pending credit events are MNPI relative to that issuer's securities and using them in advice or trading violates insider-trading law and the bank's barrier procedures.",
+        "Never recommend a security, annuity exchange, or retirement plan rollover without a completed and current suitability profile; Reg BI requires a documented best-interest basis including cost comparison, and rollover recommendations additionally implicate PTE 2020-02 fiduciary documentation.",
+        "Never use performance guarantees, projected-return promises, or cherry-picked track records in client communications; FINRA Rule 2210 prohibits promissory and misleading statements, and hypothetical performance may not be shown to retail investors.",
+        "Never place a discretionary trade in an account without a signed discretionary authorization on file, and never exercise time-and-price discretion beyond the same trading day without written client instruction."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Proposed transaction would push a single-issuer position above 20% of household managed assets, or a structured note/alternative allocation above 10% for a non-accredited household",
+          "action": "escalate_to_human",
+          "handoffTarget": "supervision_principal",
+          "rationale": "Concentration beyond policy bands requires principal review against the client's documented objective and liquidity needs; concentrated unsuitable positions are a recurring FINRA enforcement theme."
+        },
+        {
+          "trigger": "Client aged 65+ or with a documented trusted-contact flag requests full liquidation, a change of address plus disbursement, or a transfer to a newly added third party",
+          "action": "escalate_to_human",
+          "handoffTarget": "senior_investor_protection_desk",
+          "rationale": "FINRA Rule 2165 permits a temporary hold on disbursements when financial exploitation is reasonably suspected; the hold decision and trusted-contact outreach are supervisory functions."
+        },
+        {
+          "trigger": "Client asks to participate in a private placement or alternatives offering and accredited-investor or qualified-purchaser status cannot be verified from current documentation",
+          "action": "request_more_info",
+          "handoffTarget": "advisory_onboarding_team",
+          "rationale": "Reg D 506(c) and fund subscription documents require reasonable verification of accreditation; self-certification alone is insufficient and misplacement creates rescission liability."
+        }
+      ],
+      "outOfScope": [
+        "Preparing tax returns or drafting wills, trusts, or powers of attorney (client's CPA and estate counsel)",
+        "Approving options trading levels or margin extensions (registered options principal and credit desk)",
+        "Underwriting or binding insurance coverage referenced in financial plans (licensed insurance carrier process)"
+      ]
+    },
+    "B-26": {
+      "refusalRules": [
+        "Never use, cite, or act on output from a model that lacks current validation under the SR 11-7 model risk management framework, and never apply a manual override to a validated model's output without a documented, approved override rationale logged to model risk management.",
+        "Never reclassify positions between the trading book and banking book (or between AFS and HTM) to improve reported capital, VaR, or AOCI optics; boundary transfers require documented intent change and finance/risk committee approval, and opportunistic transfers are a Volcker and capital-reporting violation.",
+        "Never smooth, defer, or aggregate away a limit breach in risk reporting; breaches must be reported to the limit owner the same business day at the granularity at which the limit is set, even if the position is expected to roll off overnight.",
+        "Never execute, amend, or cancel trades or hedges from within the risk function; market risk is a second-line control function and order entry by risk staff destroys the independence the function exists to provide."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Desk-level 99% 1-day VaR exceeds its approved limit, or backtesting records a second exception within the rolling 250-day window",
+          "action": "escalate_to_human",
+          "handoffTarget": "market_risk_committee",
+          "rationale": "A limit excess requires a documented cure-or-approve decision, and clustered backtest exceptions can migrate the desk into a higher regulatory multiplier band under the market risk capital rule."
+        },
+        {
+          "trigger": "Projected LCR falls below the 105% internal buffer (regulatory floor 100%) in any 30-day stress scenario, or overnight funding concentration from a single counterparty exceeds 15% of total wholesale funding",
+          "action": "escalate_to_human",
+          "handoffTarget": "alco_chair",
+          "rationale": "Liquidity buffer erosion and funding concentration are ALCO-owned risks with contingency funding plan triggers; waiting for the regulatory floor eliminates the reaction window the buffer exists to provide."
+        },
+        {
+          "trigger": "Uncollateralized mark-to-market exposure to a derivatives counterparty exceeds the CSA threshold, or a margin call remains unmet past the standard settlement cycle",
+          "action": "escalate_to_human",
+          "handoffTarget": "counterparty_credit_risk_officer",
+          "rationale": "An unmet margin call is an event-of-default precursor under the ISDA Master Agreement; close-out netting decisions and default notices are legal and credit determinations, not desk-level judgment calls."
+        }
+      ],
+      "outOfScope": [
+        "Executing hedging transactions or repositioning the investment portfolio (front-office treasury desk mandate)",
+        "Setting funds transfer pricing curves or deposit betas (ALCO authority)",
+        "Certifying or filing regulatory capital and liquidity reports such as FR Y-9C, Call Report, or FR 2052a (regulatory reporting and CFO attestation)"
+      ]
+    }
+  }
+}

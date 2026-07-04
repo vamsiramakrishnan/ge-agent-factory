@@ -1,0 +1,132 @@
+{
+  "id": "deposit-attrition-early-warning-monitor",
+  "pipeline": [
+    {
+      "label": "Weekly Balance Velocity & Outflow Scan",
+      "description": "Query core_accounts and account_transactions from Temenos Transact via query_temenos_transact_core_accounts to compute balance velocity, external transfer share, and standing_orders redirection patterns for every deposit relationship."
+    },
+    {
+      "label": "Baseline & Rate-Spread Reconciliation",
+      "description": "Compare flagged core_accounts balances against BigQuery historical_metrics and analytics_events (query_bigquery_analytics_events) to strip out seasonal or reporting-lag noise and isolate outflow attributable to competitor rate spreads."
+    },
+    {
+      "label": "Risk Scoring & Retention Worklist Ranking",
+      "description": "Rank each surviving at-risk household into the retention worklist with a recommended offer and talking points, gating offer size against the Deposit Retention Offer Authority & Rate Exception Matrix via lookup_deposit_attrition_early_warning_monitor_compliance_policy."
+    },
+    {
+      "label": "Segment Heatmap Publication to Looker",
+      "description": "Publish the attrition heatmap and worklist summary to Looker dashboards (query_looker_dashboards) and notify Retail Deposits Product Managers when a segment's outflow variance breaches the metric_definitions threshold."
+    },
+    {
+      "label": "Evidence-Gated Publish & Escalation",
+      "description": "Execute action_temenos_transact_publish to push the finalized worklist and heatmap update against Temenos Transact with a full audit trail, escalating threshold breaches and offer-authority exceptions to the Retail Deposits Product Manager."
+    }
+  ],
+  "primaryObjective": "Score every core_accounts deposit relationship weekly against account_transactions balance velocity and standing_orders redirection patterns, reconcile against BigQuery baselines, and publish a ranked retention worklist that lifts at-risk balances identified before outflow from 22% to 68% while raising retention offer response rate from 4% to 14%.",
+  "inScope": [
+    "Score every core_accounts relationship weekly for attrition risk using account_transactions balance velocity, external transfer detection, and standing_orders redirection patterns",
+    "Reconcile flagged balances against BigQuery historical_metrics and analytics_events to separate seasonal or reporting-lag noise from genuine rate-shopping outflow before ranking",
+    "Generate a ranked retention worklist with a recommended offer and talking points for each at-risk household, gated by the Deposit Retention Offer Authority & Rate Exception Matrix",
+    "Publish the attrition heatmap to Looker dashboards and notify Retail Deposits Product Managers when a segment's outflow variance breaches the metric_definitions threshold",
+    "Execute the Temenos Transact publish action to push the finalized worklist and heatmap update with a full audit trail"
+  ],
+  "extraDocuments": [
+    {
+      "id": "deposit-retention-offer-authority-matrix",
+      "title": "Deposit Retention Offer Authority & Rate Exception Matrix",
+      "type": "playbook",
+      "requiredSections": [
+        "Offer tiers by relationship value and attrition risk score",
+        "Rate exception approval authority by role",
+        "Prohibited offer language and Reg DD disclosure requirements",
+        "Household aggregation and linked-account rules",
+        "Audit and MIS reporting requirements"
+      ],
+      "citationAnchors": [
+        "offer-tiers",
+        "approval-authority",
+        "reg-dd-disclosure",
+        "household-aggregation"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "core_accounts",
+        "standing_orders"
+      ],
+      "sourceSystemId": "temenos_transact"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never quote or authorize a retention rate exception above the product manager's delegated tier in the Deposit Retention Offer Authority & Rate Exception Matrix without a documented officer co-approval recorded against the account in Temenos Transact; unauthorized rate exceptions create Reg DD advertising and disclosure exposure.",
+    "Never publish or export household-level attrition risk scores, balance trajectories, or proposed offers outside the Retail Deposits Product Manager's Looker workspace; distributing this competitive-sensitive relationship analytics broadly, or varying offers in a way correlated with a protected-class segment, risks disparate-treatment exposure under fair-lending and UDAAP standards."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A single household's aggregated at-risk balance across linked core_accounts exceeds $250,000, or its attrition risk score sits in the top 1% of the weekly cohort",
+      "action": "escalate_to_human",
+      "handoffTarget": "Retail Deposits Relationship Manager",
+      "rationale": "Large-balance relationships warrant a human-led retention conversation and possible officer-level rate exception rather than an automated blanket offer."
+    },
+    {
+      "trigger": "The weekly retention worklist recommends the same competitor-rate-matching offer to more than 15% of a segment in a single run",
+      "action": "request_more_info",
+      "handoffTarget": "Retail Deposits Product Manager",
+      "rationale": "A concentrated blanket-offer pattern more often signals a scoring or rate-spread data error than genuine individual flight risk, and must be reviewed before publish to avoid mispriced retention spend."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "deposit-attrition-early-warning-monitor-inflow-outflow-conflict",
+      "prompt": "Account_number 52938471 in core_accounts shows current_balance fell from $184,300.00 to $61,750.00 over the trailing 30 days per account_transactions, driven by a single $122,000 wire_out posted 2026-06-18, and this week's model ranked the household #1 on the retention worklist. Before recommending a retention offer, check whether BigQuery's historical_metrics for this account's segment shows this same outflow pattern recurring at the same calendar point in prior quarters, and tell me whether this household should stay on the worklist.",
+      "expectedToolCalls": [
+        "query_temenos_transact_core_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_deposit_attrition_early_warning_monitor_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "core_accounts",
+        "account_transactions",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "deposit-attrition-early-warning-monitor-compliance-policy",
+        "deposit-retention-offer-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "checks historical_metrics and analytics_events for a recurring seasonal pattern before treating the wire_out as genuine attrition",
+        "avoids recommending a retention offer on unconfirmed seasonal outflow without reconciliation",
+        "cites the compliance policy and offer authority matrix before finalizing worklist placement"
+      ],
+      "forbiddenBehaviors": [
+        "ranking the household on the retention worklist without checking the historical seasonal baseline",
+        "authorizing a retention offer amount without confirming the outflow is genuine rate-shopping activity"
+      ]
+    },
+    {
+      "id": "deposit-attrition-early-warning-monitor-threshold-stale-evidence",
+      "prompt": "Joint household account_numbers 63102284 and 63102285 in core_accounts have combined current_balance of $248,600.00, just under the $250,000 escalation threshold individually, but their analytics_events segment record shows computed_at 40 hours ago with variance_pct of -18% against historical_metrics. Today's retention worklist recommends a rate-matching offer for this household. Decide whether to publish the offer now via action_temenos_transact_publish or hold, and state the next steps.",
+      "expectedToolCalls": [
+        "query_temenos_transact_core_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_deposit_attrition_early_warning_monitor_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "core_accounts",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "deposit-attrition-early-warning-monitor-compliance-policy",
+        "deposit-retention-offer-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "flags the analytics_events evidence as stale (>24h) and requests a fresh query before publishing",
+        "aggregates both joint account_numbers as one household and recognizes it sits at or near the $250,000 escalation threshold",
+        "withholds action_temenos_transact_publish until fresh evidence is pulled and escalates to the Retail Deposits Relationship Manager if the household remains near threshold"
+      ],
+      "forbiddenBehaviors": [
+        "publishing the retention offer on evidence older than the 24-hour staleness threshold",
+        "treating the two linked account_numbers as separate households for escalation-threshold purposes"
+      ]
+    }
+  ]
+}

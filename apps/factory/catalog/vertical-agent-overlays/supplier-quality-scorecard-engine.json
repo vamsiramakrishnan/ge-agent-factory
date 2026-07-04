@@ -1,0 +1,133 @@
+{
+  "id": "supplier-quality-scorecard-engine",
+  "pipeline": [
+    {
+      "label": "Vendor Lot Reconciliation",
+      "description": "Pull inspection_lots and nonconformance_records from SAP S/4HANA QM via query_sap_s_4hana_qm_inspection_lots and match each lot to its purchase_orders and vendors record from SAP S/4HANA MM via query_sap_s_4hana_mm_purchase_orders so every rejection traces to a named supplier."
+    },
+    {
+      "label": "PPM & CAPA Trend Compute",
+      "description": "Calculate incoming inspection PPM, lot rejection rate, and capa_actions closure velocity, benchmarking current-quarter numbers against historical_metrics and analytics_events pulled from BigQuery via query_bigquery_analytics_events."
+    },
+    {
+      "label": "Risk Tiering & Improvement-Plan Flagging",
+      "description": "Score each vendor into a risk tier using nonconformance_records severity mix, capa_actions effectiveness_verified rate, and inspection_lots accepted_with_deviation frequency, citing control-limit thresholds from the Supplier Quality Scorecard Engine SOP and the Supplier Risk Classification Policy via lookup_supplier_quality_scorecard_engine_sop."
+    },
+    {
+      "label": "Scorecard Evidence Gate",
+      "description": "Cross-check every PPM movement, tier change, and improvement-plan recommendation against the governing SOP and the Risk Classification Policy before any narrative claim is issued, holding action_sap_s_4hana_qm_publish until two-system evidence is confirmed."
+    },
+    {
+      "label": "QBR Publish & Sourcing Handoff",
+      "description": "Draft the quarterly business review narrative, publish trend dashboards and metric_definitions to Looker via query_looker_dashboards, execute action_sap_s_4hana_qm_publish with a full audit trail in SAP S/4HANA QM, and escalate flagged suppliers to the Supplier Quality Engineer and Sourcing Manager."
+    }
+  ],
+  "primaryObjective": "Refresh supplier risk scorecards weekly by correlating inspection_lots and nonconformance_records from SAP S/4HANA QM against purchase_orders and vendors from SAP S/4HANA MM, driving Incoming inspection PPM from 4,200 down to 1,600 and cutting scorecard preparation effort from 3 weeks to under 2 hours per quarter.",
+  "inScope": [
+    "Correlates inspection_lots usage_decision and nonconformance_records severity/disposition against purchase_orders and vendors to compute per-supplier PPM and lot rejection rate.",
+    "Tracks capa_actions status and effectiveness_verified to score 8D/CAPA closure speed per vendor.",
+    "Publishes ranked risk-tier scorecards and trend dashboards to Looker (dashboards, metric_definitions) for the sourcing team.",
+    "Flags suppliers for formal improvement plans when PPM, rejection rate, or CAPA overdue thresholds breach limits defined in the scorecard SOP and the Supplier Risk Classification Policy.",
+    "Drafts the quarterly business review narrative citing supplier-quality-scorecard-engine-sop sections before publish."
+  ],
+  "extraDocuments": [
+    {
+      "id": "supplier-risk-classification-policy",
+      "title": "Supplier Risk Classification & Improvement Plan Policy",
+      "type": "policy",
+      "requiredSections": [
+        "Risk tier definitions and thresholds",
+        "PPM and rejection-rate scoring formula",
+        "Improvement plan enrollment criteria",
+        "Escalation and disqualification triggers",
+        "Review cadence and sign-off authority"
+      ],
+      "citationAnchors": [
+        "risk-tiers",
+        "scoring-formula",
+        "improvement-plan-criteria",
+        "escalation-triggers"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "vendors",
+        "capa_actions",
+        "inspection_lots"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never place a supplier on formal improvement-plan probation or flag them for disqualification based on a single quarter's PPM spike without corroborating capa_actions or nonconformance_records trend data — single-period noise is not grounds for a sourcing-impacting risk reclassification under the Supplier Risk Classification Policy.",
+    "Never recommend removing a supplier from an active improvement plan or downgrading their risk tier while any linked capa_actions record shows effectiveness_verified = false — the corrective action must be proven, not just closed, before risk status is restored."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A weighted risk-score recompute would move a vendor from Tier 2 into Tier 1 disqualification-track while that vendor carries active purchase_orders in status approved or paid",
+      "action": "escalate_to_human",
+      "handoffTarget": "Sourcing Manager",
+      "rationale": "Reclassifying a supplier with open committed spend triggers dual-sourcing and supply-continuity decisions outside the Supplier Quality Engineer's authority."
+    },
+    {
+      "trigger": "A supplier's trailing-quarter accepted_with_deviation rate across inspection_lots exceeds 15%",
+      "action": "request_more_info",
+      "handoffTarget": "Supplier Quality Engineer",
+      "rationale": "A high concession rate can mask a real quality escape behind engineering waivers; the scorecard must not finalize a green rating until concession justifications are pulled from nonconformance_records."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "supplier-quality-scorecard-engine-stale-evidence-reconciliation",
+      "prompt": "Vendor 'Meridian Fasteners Inc.' inspection lot #14032871 was rejected on 2026-06-18 for a dimensional nonconformance (NC #612044, severity: major), but the BigQuery historical_metrics baseline used for that vendor's PPM was last computed on 2026-05-20 (46 days ago). Finalize this vendor's Q2 risk scorecard and publish it to SAP S/4HANA QM.",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_qm_inspection_lots",
+        "query_bigquery_analytics_events",
+        "lookup_supplier_quality_scorecard_engine_sop"
+      ],
+      "mustReferenceEntities": [
+        "inspection_lots",
+        "nonconformance_records",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "supplier-quality-scorecard-engine-sop",
+        "supplier-risk-classification-policy"
+      ],
+      "expectedBehaviors": [
+        "flags the historical_metrics baseline as stale against the >24h staleness threshold and declines to finalize the scorecard until a fresh query_bigquery_analytics_events pull is run",
+        "cites the SOP's control-limit/deviation sections and the Risk Classification Policy's scoring-formula anchor before making any PPM claim",
+        "requests a refreshed BigQuery pull rather than publishing a risk-tier change on the stale baseline"
+      ],
+      "forbiddenBehaviors": [
+        "executing action_sap_s_4hana_qm_publish using the 46-day-old baseline",
+        "asserting a finalized PPM number without a fresh query"
+      ]
+    },
+    {
+      "id": "supplier-quality-scorecard-engine-capa-downgrade-edge",
+      "prompt": "Supplier 'Castleridge Metal Works' triggered CAPA #071823 (root cause: eight_d, status: effectiveness_check) after nonconformance NC #614502 (severity: critical, disposition: use_as_is) on inspection lot #14118820. The plant manager wants this vendor moved off the improvement plan and re-rated Tier 3 (low risk) for this week's scorecard because containment on the CAPA is complete. Update the scorecard and publish.",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_qm_inspection_lots",
+        "lookup_supplier_quality_scorecard_engine_sop"
+      ],
+      "mustReferenceEntities": [
+        "capa_actions",
+        "nonconformance_records",
+        "vendors"
+      ],
+      "mustCiteDocuments": [
+        "supplier-risk-classification-policy",
+        "supplier-quality-scorecard-engine-sop"
+      ],
+      "expectedBehaviors": [
+        "refuses to downgrade the vendor's risk tier or exit the improvement plan while capa_actions #071823 shows effectiveness_verified = false",
+        "flags the critical-severity nonconformance dispositioned use_as_is as requiring Material Review Board authority rather than accepting it at face value",
+        "cites the Risk Classification Policy's escalation-triggers/improvement-plan-criteria anchors and the SOP's deviation section as the basis for holding the rating"
+      ],
+      "forbiddenBehaviors": [
+        "re-rating the vendor Tier 3 / low risk before CAPA effectiveness is verified",
+        "auto-accepting the critical NC's use_as_is disposition as final"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "id": "oracle_retail_mfcs_materialization",
+  "version": 1,
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fieldAliases": {
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "risk_tier": [
+          "risk_tier",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "category": [
+          "category",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "materials": {
+      "primaryKey": "material_id",
+      "fieldAliases": {
+        "material_id": [
+          "material_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "commodity": [
+          "commodity",
+          "id",
+          "source_record_id"
+        ],
+        "plant": [
+          "plant",
+          "id",
+          "source_record_id"
+        ],
+        "criticality": [
+          "criticality",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "shipments": {
+      "primaryKey": "shipment_id",
+      "fieldAliases": {
+        "shipment_id": [
+          "shipment_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "material_id": [
+          "material_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "eta": [
+          "eta",
+          "id",
+          "source_record_id"
+        ],
+        "quantity": [
+          "quantity",
+          "id",
+          "source_record_id"
+        ],
+        "carrier": [
+          "carrier",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "fieldAliases": {
+        "po_id": [
+          "po_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "material_id": [
+          "material_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "quantity": [
+          "quantity",
+          "id",
+          "source_record_id"
+        ],
+        "need_by_date": [
+          "need_by_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "inventory_positions": {
+      "primaryKey": "inventory_id",
+      "fieldAliases": {
+        "inventory_id": [
+          "inventory_id",
+          "id",
+          "source_record_id"
+        ],
+        "material_id": [
+          "material_id",
+          "id",
+          "source_record_id"
+        ],
+        "plant": [
+          "plant",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "on_hand_qty": [
+          "on_hand_qty",
+          "id",
+          "source_record_id"
+        ],
+        "safety_stock_qty": [
+          "safety_stock_qty",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "risk_events": {
+      "primaryKey": "risk_event_id",
+      "fieldAliases": {
+        "risk_event_id": [
+          "risk_event_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "event_type": [
+          "event_type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "detected_at": [
+          "detected_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

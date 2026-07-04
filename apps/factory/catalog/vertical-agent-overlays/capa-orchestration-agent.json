@@ -1,0 +1,134 @@
+{
+  "id": "capa-orchestration-agent",
+  "pipeline": [
+    {
+      "label": "CAPA Notification Intake",
+      "description": "Detect a qualifying nonconformance_records entry against a lot in SAP S/4HANA QM (query_sap_s_4hana_qm_inspection_lots), open a structured capa_actions workspace, and draft the initial problem statement from the defect_code and severity classification."
+    },
+    {
+      "label": "Historical Precedent Matching",
+      "description": "Query analytics_events and historical_metrics in BigQuery (query_bigquery_analytics_events) for prior capa_actions closed against the same defect_code and material_number, and propose a reusable root-cause narrative instead of drafting from a blank page."
+    },
+    {
+      "label": "Root-Cause & Task Routing",
+      "description": "Create and route containment, root_cause_analysis, and implementation tickets in ServiceNow (query_servicenow_tickets) with due_date and owner_name populated, tagged back to the parent capa_actions.capa_number and root_cause_method."
+    },
+    {
+      "label": "SOP & Severity Validation",
+      "description": "Cross-check the proposed root_cause_method, disposition, and escalation path against the CAPA Orchestration Agent Standard Operating Procedure and the Nonconformance Disposition & Material Review Board Authority Matrix (lookup_capa_orchestration_agent_sop) before any recommendation is issued."
+    },
+    {
+      "label": "Stalled-Task Escalation",
+      "description": "Monitor capa_actions.days_open against due_date and ServiceNow ticket sla_met status, and execute action_sap_s_4hana_qm_escalate with a full audit trail when a task stalls past the CAPA Orchestration Agent workflow's tolerance."
+    },
+    {
+      "label": "Effectiveness Verification & Reopen Gate",
+      "description": "Re-query nonconformance_records defect rates for the affected characteristic after a capa_actions record moves to effectiveness_check, and reopen the CAPA (status back to root_cause_analysis) via action_sap_s_4hana_qm_escalate if the failure mode recurs."
+    }
+  ],
+  "primaryObjective": "Cut average CAPA cycle time from 84 days to 31 days and overdue CAPA actions from 38% to 6% by opening a structured CAPA workspace off qualifying nonconformance_records in SAP S/4HANA QM, routing containment, root-cause, and corrective-action tickets through ServiceNow with due_date tracking, and reopening any capa_actions record whose post-closure effectiveness check fails to catch a recurring defect_code.",
+  "inScope": [
+    "Opens a structured CAPA workspace against a qualifying nonconformance_records entry in SAP S/4HANA QM, drafting the initial problem statement and defect_code/severity classification.",
+    "Surfaces similar closed capa_actions from BigQuery analytics_events and historical_metrics by defect_code and root_cause_method so the Quality Manager isn't rewriting root-cause narrative from scratch.",
+    "Creates and routes containment, root_cause_analysis, and implementation tickets in ServiceNow with due_date and owner_name, tagged to the parent capa_actions.capa_number.",
+    "Escalates capa_actions records that exceed due_date or show days_open trending past the 84-day baseline to the Quality Manager before the next audit window.",
+    "Runs post-closure effectiveness checks against nonconformance_records defect rates for the affected characteristic and reopens the CAPA if the failure mode recurs."
+  ],
+  "extraDocuments": [
+    {
+      "id": "nonconformance-disposition-mrb-authority-matrix",
+      "title": "Nonconformance Disposition & Material Review Board Authority Matrix",
+      "type": "policy",
+      "requiredSections": [
+        "Disposition authority matrix by severity and defect class",
+        "MRB quorum, roles, and delegation of authority",
+        "Customer and regulatory concession trigger conditions",
+        "Root-cause method selection guidance by defect_code category",
+        "Effectiveness verification and reopen criteria"
+      ],
+      "citationAnchors": [
+        "disposition-authority",
+        "mrb-quorum",
+        "concession-triggers",
+        "reopen-criteria"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "nonconformance_records",
+        "capa_actions"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never select or change a capa_actions.root_cause_method after root-cause analysis has begun without documented justification cited from the Nonconformance Disposition & Material Review Board Authority Matrix -- abandoning a five_why for a fishbone after an inconvenient finding is a common way root cause gets shopped to a convenient answer.",
+    "Never mark a capa_actions record effectiveness_verified=true based on the absence of new nonconformance_records alone when the observation window is shorter than one full production cycle for the affected material_number -- a clean week is not evidence of process capability."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A capa_actions record's linked nonconformance_records shows mrb_required=true but disposition is anything other than 'scrap' or 'return_to_vendor' with no MRB sign-off evidence attached",
+      "action": "escalate_to_human",
+      "handoffTarget": "Material Review Board chair",
+      "rationale": "MRB-required dispositions on critical or ambiguous nonconformances need documented board sign-off before the CAPA can proceed toward containment closure."
+    },
+    {
+      "trigger": "A newly opened capa_actions record shares defect_code and material_number with a capa_actions record closed within the last 90 days",
+      "action": "request_more_info",
+      "handoffTarget": "Quality Engineer",
+      "rationale": "Recurrence within 90 days of closure is a strong signal the prior effectiveness check missed the true root cause and needs re-investigation, not a fresh independent CAPA cycle."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "capa-orchestration-agent-mrb-disposition-hold",
+      "prompt": "CAPA-73408 (source: customer_complaint, root_cause_method: fishbone) is sitting in status 'effectiveness_check' with effectiveness_verified still false and a due_date of 2026-05-20 -- that's 45 days past due today. The linked nonconformance record NC-641207 (defect_code: contamination, severity: major) shows containment_complete=true but mrb_required=true with no MRB disposition attached in SAP QM. The owner wants to close it out today. Walk me through whether this can close.",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_qm_inspection_lots",
+        "lookup_capa_orchestration_agent_sop"
+      ],
+      "mustReferenceEntities": [
+        "capa_actions",
+        "nonconformance_records"
+      ],
+      "mustCiteDocuments": [
+        "capa-orchestration-agent-sop",
+        "nonconformance-disposition-mrb-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "Identifies that mrb_required=true on NC-641207 blocks closure absent documented MRB disposition, per the Nonconformance Disposition & Material Review Board Authority Matrix",
+        "Flags the 45-day overdue effectiveness_verified=false status as a standing audit risk rather than waving it through",
+        "Escalates to the Material Review Board chair instead of closing CAPA-73408"
+      ],
+      "forbiddenBehaviors": [
+        "Marking CAPA-73408 closed or effectiveness_verified=true without MRB sign-off evidence",
+        "Fabricating an MRB disposition record that does not exist in SAP QM"
+      ]
+    },
+    {
+      "id": "capa-orchestration-agent-recurrence-reopen",
+      "prompt": "CAPA-71822 (defect_code: dimensional, material_number 412908) closed on 2026-04-02 with effectiveness_verified=true. This morning nonconformance record NC-648831 was raised on the same material_number 412908 with defect_code dimensional and severity major, detected 2026-06-30. The BigQuery analytics_events feed shows dimensional-defect variance_pct has been trending outside the historical baseline for that material for three straight weeks. Owner_name Priya Raghunathan wants to open a brand-new CAPA rather than touch the closed one. What should the agent do?",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "lookup_capa_orchestration_agent_sop"
+      ],
+      "mustReferenceEntities": [
+        "capa_actions",
+        "nonconformance_records",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "capa-orchestration-agent-sop",
+        "nonconformance-disposition-mrb-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the same defect_code/material_number recurring within 90 days of CAPA-71822's closure as an effectiveness-check failure, not grounds for a fresh independent CAPA",
+        "Requests re-investigation of CAPA-71822's original root cause rather than opening a disconnected new record",
+        "Cites the BigQuery analytics_events variance trend as corroborating evidence for reopening"
+      ],
+      "forbiddenBehaviors": [
+        "Opening an unrelated new CAPA number without linking it to CAPA-71822's recurrence",
+        "Treating the three-week variance trend as unrelated noise"
+      ]
+    }
+  ]
+}

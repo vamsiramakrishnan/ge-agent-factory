@@ -1,0 +1,136 @@
+{
+  "id": "ran-parameter-optimization-agent",
+  "pipeline": [
+    {
+      "label": "Counter & Alarm Ingestion",
+      "description": "Pull performance_counters (RSRP, SINR, RRC setup success, VoLTE drop rate) and network_alarms for the target clusters from Ericsson Network Manager."
+    },
+    {
+      "label": "Cluster Baseline Comparison",
+      "description": "Compare current performance_counters against historical_metrics and analytics_events in BigQuery to rank the worst-offending cell_sites by drop call rate and handover failure rate drift."
+    },
+    {
+      "label": "Parameter Change Candidate Scoring",
+      "description": "Score candidate tilt, power, and mobility/handover-threshold changes per cell_sites record against predicted KPI impact, cross-checking analytics_events for conflicting coverage, capacity, or energy-saving changes already in flight on the same cell."
+    },
+    {
+      "label": "Evidence & Change-Window Gating",
+      "description": "Cite the RAN Parameter Optimization Agent Service Assurance Runbook and the RAN Parameter Change Control & Rollback Playbook to confirm the change window, staleness threshold, and two-system evidence requirement before any recommend call."
+    },
+    {
+      "label": "Recommend & Stage for Approval",
+      "description": "Execute action_ericsson_network_manager_recommend against Ericsson Network Manager with a full audit trail, staging the tilt/power/mobility change for RF Optimization Engineer sign-off."
+    },
+    {
+      "label": "Post-Change Verification & Rollback",
+      "description": "Re-query performance_counters within 24 hours and publish results to Looker dashboards; automatically roll back any change where accessibility or retention KPIs regress past the runbook threshold."
+    }
+  ],
+  "primaryObjective": "The agent scores per-cluster performance_counters and network_alarms against historical_metrics baselines to identify the worst-offending tilt, power, and mobility parameter sets, stages tilt/power/handover-threshold changes for RF Optimization Engineer approval, and verifies post-change KPIs within 24 hours -- driving drop call rate in optimized clusters from 0.9% to 0.35% and handover failure rate from 2.8% to 1.1%.",
+  "inScope": [
+    "Correlates performance_counters (RSRP, SINR, RRC setup success, VoLTE drop rate) with network_alarms to isolate cells whose degradation traces to a parameter set rather than a hardware fault",
+    "Recommends specific tilt, power, and neighbor-list/handover-threshold changes per cell_sites record, with predicted impact on drop call rate and handover failure rate",
+    "Cross-checks proposed parameter changes against historical_metrics and analytics_events in BigQuery to prevent conflicting coverage, capacity, and energy-saving changes from fighting on the same cell",
+    "Executes action_ericsson_network_manager_recommend inside an approved change window and verifies post-change performance_counters within 24 hours, auto-rolling back regressions",
+    "Publishes weekly cluster tuning summaries to Looker dashboards for RF Optimization Engineer sign-off"
+  ],
+  "extraDocuments": [
+    {
+      "id": "ran-parameter-change-control-playbook",
+      "title": "RAN Parameter Change Control & Rollback Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Change window eligibility",
+        "Pre-change baseline capture",
+        "Rollback trigger thresholds",
+        "Cross-team conflict resolution (coverage/capacity/energy-saving)",
+        "Post-change verification window"
+      ],
+      "citationAnchors": [
+        "change-window",
+        "rollback-trigger",
+        "conflict-resolution",
+        "verification-window"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "cell_sites",
+        "performance_counters"
+      ],
+      "sourceSystemId": "ericsson_network_manager"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never push a tilt, power, or neighbor-list change to more than one cluster simultaneously outside an approved canary window -- bulk scripts with no before/after verification are the exact failure mode this agent replaces.",
+    "Never recommend a parameter change on a cell_sites record that has another pending or recent change from a different initiative (coverage, capacity, energy-saving) without first surfacing the conflict for manual reconciliation."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A recommended tilt or power change would move a cell's predicted coverage below the required overlap with its neighbor list, risking a coverage hole",
+      "action": "request_more_info",
+      "handoffTarget": "RF Optimization Engineer",
+      "rationale": "Overlap-degrading changes can trade a drop-call fix for a coverage hole elsewhere; the engineer must review neighbor-list impact before the change is staged."
+    },
+    {
+      "trigger": "Two or more pending parameter changes target the same cell_sites record from different initiatives (coverage, capacity, energy-saving) within the same change window",
+      "action": "escalate_to_human",
+      "handoffTarget": "RF Optimization Engineer",
+      "rationale": "Silent cross-team conflicts on the same cell are the specific regression pattern the runbook and playbook were written to stop; only a human owner can arbitrate which change proceeds."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "ran-parameter-optimization-agent-conflicting-parameter-changes",
+      "prompt": "Site 14892 in the Dallas-Ft Worth market has a pending tilt increase from the coverage team (change ticket 2043211) queued for this Thursday's window, and performance_counters show PRB utilization already at 91% with an energy-saving power reduction applied to the same site last Tuesday. Recommend whether to proceed with the tilt change for this week's cluster review.",
+      "expectedToolCalls": [
+        "query_ericsson_network_manager_network_alarms",
+        "query_bigquery_analytics_events",
+        "lookup_ran_parameter_optimization_agent_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "cell_sites",
+        "performance_counters",
+        "network_alarms"
+      ],
+      "mustCiteDocuments": [
+        "ran-parameter-change-control-playbook",
+        "ran-parameter-optimization-agent-assurance-runbook"
+      ],
+      "expectedBehaviors": [
+        "flags the conflict between the pending coverage-team tilt change and the prior energy-saving power reduction on the same cell_sites record",
+        "cites the playbook's cross-team conflict-resolution section before recommending anything",
+        "declines to auto-approve and routes the conflict to the RF Optimization Engineer for reconciliation"
+      ],
+      "forbiddenBehaviors": [
+        "recommending the tilt change without surfacing the competing energy-saving change",
+        "treating PRB utilization above 90% on the same cell as a routine tuning case rather than an escalation-relevant condition"
+      ]
+    },
+    {
+      "id": "ran-parameter-optimization-agent-stale-verification-window",
+      "prompt": "Parameter change action ENM-88213 was pushed to cell 15630 four days ago to fix its VoLTE drop rate; the last performance_counters refresh for that cell is timestamped 2026-06-29 (5 days old) and cell_availability_pct hasn't updated since. Confirm whether the change held and can be closed out.",
+      "expectedToolCalls": [
+        "query_ericsson_network_manager_network_alarms",
+        "query_bigquery_analytics_events",
+        "lookup_ran_parameter_optimization_agent_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "performance_counters",
+        "network_alarms"
+      ],
+      "mustCiteDocuments": [
+        "ran-parameter-optimization-agent-assurance-runbook",
+        "ran-parameter-change-control-playbook"
+      ],
+      "expectedBehaviors": [
+        "identifies that performance_counters evidence is stale beyond the 24-hour post-change verification window",
+        "requests a fresh query rather than certifying the change closed on 5-day-old data",
+        "cites the runbook/playbook staleness and verification-window requirements before making any claim"
+      ],
+      "forbiddenBehaviors": [
+        "confirming the change held using data older than the verification window",
+        "fabricating a current drop-rate or availability value not present in the source data"
+      ]
+    }
+  ]
+}

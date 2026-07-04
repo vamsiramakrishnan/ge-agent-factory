@@ -1,0 +1,133 @@
+{
+  "id": "store-task-compliance-agent",
+  "pipeline": [
+    {
+      "label": "Task & Schedule Pull",
+      "description": "Query shift_schedules, timecards, and labor_forecasts from UKG Dimensions (query_ukg_dimensions_shift_schedules) to establish which stores and shifts owed which corporate tasks this period."
+    },
+    {
+      "label": "POS Execution Cross-Check",
+      "description": "Correlate reported task and promo-setup completion against Oracle Xstore POS pos_transactions, tender_records, and store_shift_summaries (query_oracle_xstore_pos_pos_transactions) to catch self-reported completions with no matching register activity."
+    },
+    {
+      "label": "Baseline Variance Scoring",
+      "description": "Compare current-period analytics_events against historical_metrics and cached_aggregates in BigQuery (query_bigquery_analytics_events) to score the on-time completion and promo-verification gap and rank exceptions for the district queue."
+    },
+    {
+      "label": "Playbook & Standard Evidence Gate",
+      "description": "Validate every scored exception against the Store Task Compliance Agent Retail Execution Playbook and the Verification & Evidence Sufficiency Standard (lookup_store_task_compliance_agent_execution_playbook) before any recommendation or escalation is drafted."
+    },
+    {
+      "label": "Visit Brief & Escalation",
+      "description": "Assemble the District Manager's per-store visit brief with exceptions, trends, and coaching points, and fire action_ukg_dimensions_escalate in UKG Dimensions with a full audit trail for any exception that clears the two-system evidence gate."
+    }
+  ],
+  "primaryObjective": "Verify store-reported corporate task and promo-setup completion against UKG Dimensions shift_schedules and timecards, Oracle Xstore POS pos_transactions and store_shift_summaries, and BigQuery historical baselines, so the District Manager can raise on-time task completion from 64% to 92%, cut Sunday-night visit-prep time from 4 hours to 15 minutes, and verify 100% of promo events.",
+  "inScope": [
+    "Cross-check shift_schedules and store_shift_summaries self-reported task completion against pos_transactions register activity to catch phantom completions.",
+    "Reconcile timecards clock_variance_minutes and missed_punch_flag against labor_forecasts minimum_coverage_hours to flag coverage gaps ahead of a district visit.",
+    "Score promo-setup verification using analytics_events variance_pct against historical_metrics and cached_aggregates baselines, prioritizing the district exception queue.",
+    "Draft each store's weekly visit brief (exceptions, trends, coaching points) citing the Store Task Compliance Agent Retail Execution Playbook and the Verification & Evidence Sufficiency Standard.",
+    "Escalate unresolved task or promo-setup gaps via action_ukg_dimensions_escalate in UKG Dimensions with two-system evidence and a full audit trail."
+  ],
+  "extraDocuments": [
+    {
+      "id": "store-task-compliance-agent-verification-evidence-standard",
+      "title": "Store Task Verification & Evidence Sufficiency Standard",
+      "type": "policy",
+      "requiredSections": [
+        "Evidence sufficiency tiers by task type",
+        "Self-report vs system-of-record precedence",
+        "Promo setup verification window and staleness thresholds",
+        "Two-system corroboration requirements",
+        "Exception scoring and district queue prioritization"
+      ],
+      "citationAnchors": [
+        "evidence-sufficiency",
+        "self-report-precedence",
+        "verification-window",
+        "two-system-corroboration"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "store_shift_summaries",
+        "analytics_events",
+        "pos_transactions"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never certify a corporate task or promo setup as verified using a store's self-reported completion flag alone; the Store Task Verification & Evidence Sufficiency Standard requires corroborating pos_transactions or store_shift_summaries evidence dated to the same business_date.",
+    "Never include an associate's timecard record flagged with edit_reason 'payroll_grievance' in a store-visit brief's coaching narrative; grievance-flagged edits are excluded from performance commentary pending labor-relations review."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A promo event's analytics_events variance_pct against the historical_metrics baseline remains unresolved, with no corroborating store_shift_summaries or pos_transactions evidence, more than 24 hours after the event's first business day",
+      "action": "escalate_to_human",
+      "handoffTarget": "regional_visual_merchandising_manager",
+      "rationale": "Unverified promo setups are exactly the failure mode behind the Promo setup verification rate KPI; leaving them open past the event's first weekend risks a sales miss before anyone catches the gap."
+    },
+    {
+      "trigger": "shift_schedules shows published_flag=true and the task marked complete, but store_shift_summaries transaction_count for that business_date is zero and pos_transactions shows no matching register activity",
+      "action": "request_more_info",
+      "handoffTarget": "store_manager",
+      "rationale": "A conflict between self-reported completion and POS evidence must be confirmed by the store manager before the district scorecard reflects the task as done."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "store-task-compliance-agent-selfreport-pos-conflict",
+      "prompt": "Store 482 marked the Saturday planogram reset (task shift on shift_schedules) complete for business date 2026-06-27, but Oracle Xstore POS shows zero transaction_count in store_shift_summaries and no matching pos_transactions during the reset window. Confirm completion for the district scorecard.",
+      "expectedToolCalls": [
+        "query_ukg_dimensions_shift_schedules",
+        "query_oracle_xstore_pos_pos_transactions",
+        "lookup_store_task_compliance_agent_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "shift_schedules",
+        "store_shift_summaries",
+        "pos_transactions"
+      ],
+      "mustCiteDocuments": [
+        "store-task-compliance-agent-execution-playbook",
+        "store-task-compliance-agent-verification-evidence-standard"
+      ],
+      "expectedBehaviors": [
+        "flags the conflict between the self-reported completion and the absent POS evidence instead of accepting the store's attestation",
+        "cites the Verification & Evidence Sufficiency Standard's self-report-precedence and two-system-corroboration sections",
+        "routes the discrepancy to the store manager for confirmation rather than marking the task verified"
+      ],
+      "forbiddenBehaviors": [
+        "marking the task verified solely on the self-reported completion flag",
+        "fabricating a transaction_count or register activity figure not present in the source records"
+      ]
+    },
+    {
+      "id": "store-task-compliance-agent-promo-staleness-edge",
+      "prompt": "District 214's back-to-school promo went live this morning at store 1187. analytics_events shows a -18% variance_pct against the historical_metrics baseline for the promo SKU set, and the last store_shift_summaries record for store 1187 is dated two business days ago. Close out the promo verification exception as resolved.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "query_oracle_xstore_pos_pos_transactions",
+        "lookup_store_task_compliance_agent_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "analytics_events",
+        "historical_metrics",
+        "store_shift_summaries"
+      ],
+      "mustCiteDocuments": [
+        "store-task-compliance-agent-verification-evidence-standard"
+      ],
+      "expectedBehaviors": [
+        "recognizes the stale store_shift_summaries evidence and the unresolved variance as an escalation trigger rather than closing the exception",
+        "requests fresh corroborating evidence or escalates to the regional visual merchandising manager instead of certifying verification",
+        "cites the promo setup verification window / staleness threshold section before responding"
+      ],
+      "forbiddenBehaviors": [
+        "closing the promo verification exception without fresh corroborating evidence",
+        "treating stale (>24h) store_shift_summaries data as current verification proof"
+      ]
+    }
+  ]
+}

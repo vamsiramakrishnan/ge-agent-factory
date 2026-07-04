@@ -1,6 +1,6 @@
-// Auto-generated from slide domain catalogs. Do not edit manually.
+// Auto-generated from slide domain catalogs and vertical value-stream seeds. Do not edit manually.
 // Run: node scripts/sync-domains-from-slides.mjs
-// 46 domains, 363 use cases across 5 departments.
+// 76 domains, 513 use cases across 10 departments.
 
 export const DOMAIN_CATALOG = [
   {
@@ -2461,6 +2461,1176 @@ export const DOMAIN_CATALOG = [
     ],
     "useCaseCount": 10,
     "sourceFile": "src/components/slides/domains/procurement/SpendAnalyticsCatalog.tsx"
+  },
+  {
+    "id": "banking-retail-banking-deposits",
+    "slug": "retail-banking-deposits",
+    "department": "banking",
+    "title": "Retail Banking & Deposits",
+    "subtitle": "B-21 • Banking Value Stream",
+    "description": "Retail Banking & Deposits value stream for the banking vertical — 5 agentified workflows.",
+    "color": "#10b981",
+    "domainNumber": 21,
+    "useCases": [
+      {
+        "id": "dormant-account-remediation-agent",
+        "title": "Dormant Account Remediation Agent",
+        "description": "Scans Temenos Transact and BigQuery nightly to classify accounts by dormancy stage and applicable state escheatment rules."
+      },
+      {
+        "id": "account-opening-doc-followup-agent",
+        "title": "Account Opening Document Follow-Up Agent",
+        "description": "Detects new-account document exceptions in Temenos Transact the moment an account is booked and matches them against required-document checklists."
+      },
+      {
+        "id": "overdraft-fee-dispute-triage-agent",
+        "title": "Overdraft Fee Dispute Triage Agent",
+        "description": "Reconstructs the posting sequence and fee history from Temenos Transact and BigQuery for each incoming dispute ticket."
+      },
+      {
+        "id": "deposit-attrition-early-warning-monitor",
+        "title": "Deposit Attrition Early Warning Monitor",
+        "description": "Scores every deposit relationship weekly for attrition risk using balance velocity, external transfer patterns, and competitor rate spreads."
+      },
+      {
+        "id": "branch-cash-position-forecast-engine",
+        "title": "Branch Cash Position Forecast Engine",
+        "description": "Forecasts daily cash demand per branch and ATM from Temenos Transact transaction history, seasonality, and local payroll calendars."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/banking.json"
+  },
+  {
+    "id": "banking-lending-credit",
+    "slug": "lending-credit",
+    "department": "banking",
+    "title": "Lending & Credit",
+    "subtitle": "B-22 • Banking Value Stream",
+    "description": "Lending & Credit value stream for the banking vertical — 5 agentified workflows.",
+    "color": "#10b981",
+    "domainNumber": 22,
+    "useCases": [
+      {
+        "id": "loan-covenant-monitoring-agent",
+        "title": "Loan Covenant Monitoring Agent",
+        "description": "Extracts covenant terms from executed loan agreements in nCino and builds a per-facility testing calendar automatically."
+      },
+      {
+        "id": "commercial-credit-memo-drafting-agent",
+        "title": "Commercial Credit Memo Drafting Agent",
+        "description": "Assembles borrower financial spreads, global exposure, and collateral positions from nCino and BigQuery into the bank's memo template."
+      },
+      {
+        "id": "loan-doc-exception-clearing-agent",
+        "title": "Loan Documentation Exception Clearing Agent",
+        "description": "Classifies every new nCino exception by risk severity and cure path the moment it is created."
+      },
+      {
+        "id": "early-delinquency-outreach-orchestrator",
+        "title": "Early Delinquency Outreach Orchestrator",
+        "description": "Segments early-stage delinquencies nightly by cure probability and recommends the contact channel and time most likely to reach each borrower."
+      },
+      {
+        "id": "credit-portfolio-concentration-monitor",
+        "title": "Credit Portfolio Concentration Monitor",
+        "description": "Recomputes exposure against every board concentration limit daily as commitments and outstandings change in nCino."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/banking.json"
+  },
+  {
+    "id": "banking-payments-fraud",
+    "slug": "payments-fraud",
+    "department": "banking",
+    "title": "Payments & Fraud",
+    "subtitle": "B-23 • Banking Value Stream",
+    "description": "Payments & Fraud value stream for the banking vertical — 5 agentified workflows.",
+    "color": "#10b981",
+    "domainNumber": 23,
+    "useCases": [
+      {
+        "id": "fraud-alert-triage-agent",
+        "title": "Fraud Alert Triage Agent",
+        "description": "Enriches each Actimize alert with device, transaction, and customer-history context from BigQuery and drafts a disposition summary."
+      },
+      {
+        "id": "wire-exception-repair-agent",
+        "title": "Wire Exception Repair Agent",
+        "description": "Diagnoses each repair-queue wire in the FIS Payments Hub and proposes corrected beneficiary fields from payment history and bank directories."
+      },
+      {
+        "id": "card-dispute-chargeback-orchestrator",
+        "title": "Card Dispute Chargeback Orchestrator",
+        "description": "Classifies incoming disputes to the correct network reason code and computes Reg E/Reg Z provisional-credit deadlines automatically."
+      },
+      {
+        "id": "ach-return-root-cause-analyzer",
+        "title": "ACH Return Root Cause Analyzer",
+        "description": "Analyzes daily ACH return files from the FIS Payments Hub, clustering returns by originator, SEC code, and root cause."
+      },
+      {
+        "id": "fraud-rule-tuning-analyzer",
+        "title": "Fraud Rule Tuning Analyzer",
+        "description": "Evaluates every Actimize rule weekly against confirmed-fraud outcomes in BigQuery, scoring precision, recall, and dollar coverage."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/banking.json"
+  },
+  {
+    "id": "banking-kyc-aml-compliance",
+    "slug": "kyc-aml-compliance",
+    "department": "banking",
+    "title": "KYC, AML & Compliance",
+    "subtitle": "B-24 • Banking Value Stream",
+    "description": "KYC, AML & Compliance value stream for the banking vertical — 5 agentified workflows.",
+    "color": "#10b981",
+    "domainNumber": 24,
+    "useCases": [
+      {
+        "id": "beneficial-ownership-refresh-agent",
+        "title": "Beneficial Ownership Refresh Agent",
+        "description": "Pre-screens each due refresh by comparing Fenergo records against corporate registries and flags entities with actual ownership changes."
+      },
+      {
+        "id": "aml-alert-investigation-agent",
+        "title": "AML Alert Investigation Agent",
+        "description": "Assembles a complete investigation file for each Actimize alert, including transaction flows, counterparty graphs, and screening history from BigQuery."
+      },
+      {
+        "id": "sar-filing-preparation-agent",
+        "title": "SAR Filing Preparation Agent",
+        "description": "Drafts the SAR narrative in FinCEN's expected structure directly from the escalated Actimize case file and transaction data."
+      },
+      {
+        "id": "periodic-kyc-review-orchestrator",
+        "title": "Periodic KYC Review Orchestrator",
+        "description": "Orchestrates the review pipeline by risk tier and due date, pre-building each case file with activity-versus-profile comparisons from BigQuery."
+      },
+      {
+        "id": "sanctions-screening-hit-analyzer",
+        "title": "Sanctions Screening Hit Analyzer",
+        "description": "Compares each hit's identifiers against Fenergo customer data and list-entry details, scoring true-match likelihood with cited evidence."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/banking.json"
+  },
+  {
+    "id": "banking-wealth-advisory",
+    "slug": "wealth-advisory",
+    "department": "banking",
+    "title": "Wealth & Advisory",
+    "subtitle": "B-25 • Banking Value Stream",
+    "description": "Wealth & Advisory value stream for the banking vertical — 5 agentified workflows.",
+    "color": "#10b981",
+    "domainNumber": 25,
+    "useCases": [
+      {
+        "id": "portfolio-review-prep-agent",
+        "title": "Portfolio Review Preparation Agent",
+        "description": "Generates a complete review packet with performance versus benchmark, allocation drift, fee summary, and cash-flow analysis for each upcoming meeting."
+      },
+      {
+        "id": "suitability-drift-review-monitor",
+        "title": "Suitability Drift Review Monitor",
+        "description": "Scores every account monthly for drift between documented risk tolerance, investment objectives, and actual portfolio composition."
+      },
+      {
+        "id": "advisor-next-best-action-engine",
+        "title": "Advisor Next Best Action Engine",
+        "description": "Detects money-in-motion signals such as large deposits, maturing instruments, and rollover-eligible balances from BigQuery in near real time."
+      },
+      {
+        "id": "wealth-client-onboarding-orchestrator",
+        "title": "Wealth Client Onboarding Orchestrator",
+        "description": "Validates account applications against custodian requirements before submission and routes corrected forms through DocuSign."
+      },
+      {
+        "id": "advisory-fee-billing-anomaly-analyzer",
+        "title": "Advisory Fee Billing Anomaly Analyzer",
+        "description": "Recomputes every account's expected fee from the contracted schedule, householding rules, and billable-asset data in BigQuery."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/banking.json"
+  },
+  {
+    "id": "banking-treasury-market-risk",
+    "slug": "treasury-market-risk",
+    "department": "banking",
+    "title": "Treasury & Market Risk",
+    "subtitle": "B-26 • Banking Value Stream",
+    "description": "Treasury & Market Risk value stream for the banking vertical — 5 agentified workflows.",
+    "color": "#10b981",
+    "domainNumber": 26,
+    "useCases": [
+      {
+        "id": "intraday-liquidity-forecasting-engine",
+        "title": "Intraday Liquidity Forecasting Engine",
+        "description": "Forecasts intraday cash positions per currency by combining Murex MX.3 settlement ladders, historical payment flows, and scheduled client activity."
+      },
+      {
+        "id": "var-limit-breach-triage-monitor",
+        "title": "VaR Limit Breach Triage Monitor",
+        "description": "Decomposes each Murex MX.3 limit breach to the contributing trades, risk factors, and market moves within minutes of the risk run."
+      },
+      {
+        "id": "eod-pnl-attribution-analyzer",
+        "title": "End-of-Day P&L Attribution Analyzer",
+        "description": "Runs risk-based P&L attribution per desk each night, decomposing moves into market factors, new trades, and amendments from Murex MX.3 data."
+      },
+      {
+        "id": "counterparty-credit-exposure-monitor",
+        "title": "Counterparty Credit Exposure Monitor",
+        "description": "Aggregates potential future exposure, collateral balances, and netting-set details from Murex MX.3 into an intraday counterparty view."
+      },
+      {
+        "id": "trade-confirmation-break-resolution-agent",
+        "title": "Trade Confirmation Break Resolution Agent",
+        "description": "Compares each unmatched confirmation against the Murex MX.3 booking and pinpoints the exact mismatched economic fields."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/banking.json"
+  },
+  {
+    "id": "insurance-distribution-underwriting",
+    "slug": "distribution-underwriting",
+    "department": "insurance",
+    "title": "Distribution & Underwriting",
+    "subtitle": "I-31 • Insurance Value Stream",
+    "description": "Distribution & Underwriting value stream for the insurance vertical — 5 agentified workflows.",
+    "color": "#6366f1",
+    "domainNumber": 31,
+    "useCases": [
+      {
+        "id": "submission-appetite-screening-agent",
+        "title": "Submission Appetite Screening Agent",
+        "description": "Extracts risk attributes from inbound submissions and scores them against the current appetite matrix within minutes of receipt."
+      },
+      {
+        "id": "broker-submission-intake-orchestrator",
+        "title": "Broker Submission Intake Orchestrator",
+        "description": "Parses ACORD forms, loss runs, and SOV spreadsheets and creates structured submission records in Duck Creek Policy automatically."
+      },
+      {
+        "id": "small-commercial-quote-bind-stp-engine",
+        "title": "Small Commercial Quote-Bind STP Engine",
+        "description": "Evaluates small commercial quotes against underwriting guidelines and historical loss data in BigQuery to clear routine risks for automatic bind."
+      },
+      {
+        "id": "agency-production-performance-monitor",
+        "title": "Agency Production Performance Monitor",
+        "description": "Runs weekly production scans across the Duck Creek book in BigQuery and detects agencies with falling quote volume, hit ratio, or retention."
+      },
+      {
+        "id": "renewal-risk-requalification-agent",
+        "title": "Renewal Risk Requalification Agent",
+        "description": "Requalifies every renewal 90 days out by comparing current exposures, claims activity, and LexisNexis risk signals against the expiring terms."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/insurance.json"
+  },
+  {
+    "id": "insurance-claims",
+    "slug": "claims",
+    "department": "insurance",
+    "title": "Claims",
+    "subtitle": "I-32 • Insurance Value Stream",
+    "description": "Claims value stream for the insurance vertical — 5 agentified workflows.",
+    "color": "#6366f1",
+    "domainNumber": 32,
+    "useCases": [
+      {
+        "id": "fnol-triage-routing-agent",
+        "title": "FNOL Triage & Routing Agent",
+        "description": "Reads every inbound FNOL, extracts loss facts, and scores severity and complexity at the moment of receipt."
+      },
+      {
+        "id": "subrogation-opportunity-analyzer",
+        "title": "Subrogation Opportunity Analyzer",
+        "description": "Scans open and recently closed claims nightly, reading adjuster notes, police reports, and loss descriptions for third-party liability signals."
+      },
+      {
+        "id": "reserve-development-early-warning-monitor",
+        "title": "Reserve Development Early Warning Monitor",
+        "description": "Monitors new documents, medical bills, and attorney correspondence on every open claim for facts that change expected ultimate cost."
+      },
+      {
+        "id": "medical-bill-review-engine",
+        "title": "Medical Bill Review Engine",
+        "description": "Extracts line items from incoming medical bills and validates codes against fee schedules, treatment guidelines, and the claim's injury profile."
+      },
+      {
+        "id": "total-loss-settlement-orchestrator",
+        "title": "Total Loss Settlement Orchestrator",
+        "description": "Assembles the complete total loss package — valuation, lien payoff, salvage assignment, and owner-retained options — as soon as a vehicle is declared a total."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/insurance.json"
+  },
+  {
+    "id": "insurance-billing-payments",
+    "slug": "billing-payments",
+    "department": "insurance",
+    "title": "Billing & Payments",
+    "subtitle": "I-33 • Insurance Value Stream",
+    "description": "Billing & Payments value stream for the insurance vertical — 5 agentified workflows.",
+    "color": "#6366f1",
+    "domainNumber": 33,
+    "useCases": [
+      {
+        "id": "premium-delinquency-outreach-agent",
+        "title": "Premium Delinquency Outreach Agent",
+        "description": "Scores every past-due account nightly on cure likelihood using payment history and policy tenure in BigQuery."
+      },
+      {
+        "id": "agent-commission-reconciliation-engine",
+        "title": "Agent Commission Reconciliation Engine",
+        "description": "Reconciles every commission line against the governing agency agreement, policy transactions, and premium collections in BigQuery."
+      },
+      {
+        "id": "cancellation-notice-compliance-agent",
+        "title": "Cancellation Notice Compliance Agent",
+        "description": "Validates every pending cancellation against the current state-specific notice period, format, and lienholder-copy requirements before release."
+      },
+      {
+        "id": "payment-plan-recommendation-agent",
+        "title": "Payment Plan Recommendation Agent",
+        "description": "Presents the rep a ranked set of viable payment plans in real time, priced from BillingCenter and fitted to the customer's payment history in BigQuery."
+      },
+      {
+        "id": "unapplied-cash-resolution-agent",
+        "title": "Unapplied Cash Resolution Agent",
+        "description": "Matches suspense payments to open receivables using fuzzy matching across payer name, amount, bank data, and agency remittance files in BigQuery."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/insurance.json"
+  },
+  {
+    "id": "insurance-policy-servicing",
+    "slug": "policy-servicing",
+    "department": "insurance",
+    "title": "Policy Servicing",
+    "subtitle": "I-34 • Insurance Value Stream",
+    "description": "Policy Servicing value stream for the insurance vertical — 5 agentified workflows.",
+    "color": "#6366f1",
+    "domainNumber": 34,
+    "useCases": [
+      {
+        "id": "endorsement-processing-agent",
+        "title": "Endorsement Processing Agent",
+        "description": "Interprets change requests from email, portal, and call summaries and maps them to the correct endorsement transactions in PolicyCenter."
+      },
+      {
+        "id": "certificate-of-insurance-issuance-agent",
+        "title": "Certificate of Insurance Issuance Agent",
+        "description": "Generates ACORD certificates directly from live Duck Creek policy data the moment a request arrives, eliminating transcription."
+      },
+      {
+        "id": "nonrenewal-notice-compliance-monitor",
+        "title": "Non-Renewal Notice Compliance Monitor",
+        "description": "Audits every planned non-renewal daily against state-specific deadline, delivery-method, and permissible-reason rules."
+      },
+      {
+        "id": "policyholder-correspondence-drafting-agent",
+        "title": "Policyholder Correspondence Drafting Agent",
+        "description": "Drafts personalized correspondence grounded in the customer's actual Duck Creek policy forms, endorsements, and Zendesk interaction history."
+      },
+      {
+        "id": "midterm-cancellation-retention-agent",
+        "title": "Mid-Term Cancellation Retention Agent",
+        "description": "Detects cancellation intent the moment a request or competitor-comparison inquiry hits PolicyCenter and scores the account's retention value."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/insurance.json"
+  },
+  {
+    "id": "insurance-actuarial-portfolio-risk",
+    "slug": "actuarial-portfolio-risk",
+    "department": "insurance",
+    "title": "Actuarial & Portfolio Risk",
+    "subtitle": "I-35 • Insurance Value Stream",
+    "description": "Actuarial & Portfolio Risk value stream for the insurance vertical — 5 agentified workflows.",
+    "color": "#6366f1",
+    "domainNumber": 35,
+    "useCases": [
+      {
+        "id": "cat-exposure-rollup-engine",
+        "title": "Catastrophe Exposure Rollup Engine",
+        "description": "Geocodes and aggregates the full in-force book daily in BigQuery, enriched with Verisk hazard and construction data."
+      },
+      {
+        "id": "reserve-adequacy-analyzer",
+        "title": "Reserve Adequacy Analyzer",
+        "description": "Builds clean, reconciled loss triangles from ClaimCenter transactional data in BigQuery continuously rather than quarterly."
+      },
+      {
+        "id": "loss-ratio-trend-monitor",
+        "title": "Loss Ratio Trend Monitor",
+        "description": "Continuously scans loss ratios across hundreds of state, class, tier, and cohort combinations in BigQuery, benchmarked against Verisk industry trends."
+      },
+      {
+        "id": "rate-indication-preparation-engine",
+        "title": "Rate Indication Preparation Engine",
+        "description": "Assembles the full indication data set — earned premium at current rate level, developed and trended losses, expense provisions — from BigQuery on request."
+      },
+      {
+        "id": "premium-leakage-detection-analyzer",
+        "title": "Premium Leakage Detection Analyzer",
+        "description": "Cross-references declared exposures against LexisNexis business intelligence, public filings, and telematics-derived signals in BigQuery."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/insurance.json"
+  },
+  {
+    "id": "insurance-fraud-siu-compliance",
+    "slug": "fraud-siu-compliance",
+    "department": "insurance",
+    "title": "Fraud, SIU & Compliance",
+    "subtitle": "I-36 • Insurance Value Stream",
+    "description": "Fraud, SIU & Compliance value stream for the insurance vertical — 5 agentified workflows.",
+    "color": "#6366f1",
+    "domainNumber": 36,
+    "useCases": [
+      {
+        "id": "siu-referral-scoring-engine",
+        "title": "SIU Referral Scoring Engine",
+        "description": "Rescored every open claim on each new document or transaction, combining FRISS indicators with text signals mined from ClaimCenter notes."
+      },
+      {
+        "id": "fraud-ring-network-analyzer",
+        "title": "Fraud Ring Network Analyzer",
+        "description": "Builds entity-resolution graphs across claims, providers, and participants nightly in BigQuery, enriched with LexisNexis identity data."
+      },
+      {
+        "id": "application-fraud-screening-agent",
+        "title": "Application Fraud Screening Agent",
+        "description": "Screens every application at quote and bind against FRISS device, identity, and behavior signals plus LexisNexis household and vehicle data."
+      },
+      {
+        "id": "regulatory-complaint-response-agent",
+        "title": "Regulatory Complaint Response Agent",
+        "description": "Assembles the complete customer file — policy transactions from PolicyCenter, correspondence, Zendesk interactions — the moment a DOI complaint is logged."
+      },
+      {
+        "id": "market-conduct-exam-prep-orchestrator",
+        "title": "Market Conduct Exam Prep Orchestrator",
+        "description": "Maintains exam-ready data marts in BigQuery mapped to NAIC market conduct standards, refreshed from PolicyCenter continuously."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/insurance.json"
+  },
+  {
+    "id": "manufacturing-production-shop-floor",
+    "slug": "production-shop-floor",
+    "department": "manufacturing",
+    "title": "Production & Shop Floor",
+    "subtitle": "M-51 • Manufacturing Value Stream",
+    "description": "Production & Shop Floor value stream for the manufacturing vertical — 5 agentified workflows.",
+    "color": "#ef4444",
+    "domainNumber": 51,
+    "useCases": [
+      {
+        "id": "unplanned-downtime-root-cause-agent",
+        "title": "Unplanned Downtime Root-Cause Agent",
+        "description": "Listens for downtime events from Opcenter MES and automatically pulls the surrounding sensor window from the PI historian into BigQuery."
+      },
+      {
+        "id": "production-schedule-adherence-monitor",
+        "title": "Production Schedule Adherence Monitor",
+        "description": "Runs every shift to compare SAP S/4HANA PP planned orders against actual MES confirmations landed in BigQuery."
+      },
+      {
+        "id": "oee-loss-pareto-analyzer",
+        "title": "OEE Loss Pareto Analyzer",
+        "description": "Decomposes OEE into availability, performance, and quality losses per line, shift, and SKU from MES data in BigQuery on request."
+      },
+      {
+        "id": "changeover-time-optimization-agent",
+        "title": "Changeover Time Optimization Agent",
+        "description": "Analyzes every changeover recorded in Opcenter MES weekly and benchmarks duration by crew, product family, and sequence."
+      },
+      {
+        "id": "scrap-and-rework-analytics-engine",
+        "title": "Scrap and Rework Analytics Engine",
+        "description": "Joins MES defect confirmations with SAP S/4HANA PP order costs in BigQuery nightly to attribute scrap dollars to machine, shift, material lot, and operator."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/manufacturing.json"
+  },
+  {
+    "id": "manufacturing-quality-management",
+    "slug": "quality-management",
+    "department": "manufacturing",
+    "title": "Quality Management",
+    "subtitle": "M-52 • Manufacturing Value Stream",
+    "description": "Quality Management value stream for the manufacturing vertical — 5 agentified workflows.",
+    "color": "#ef4444",
+    "domainNumber": 52,
+    "useCases": [
+      {
+        "id": "spc-drift-detection-monitor",
+        "title": "SPC Drift Detection Monitor",
+        "description": "Streams inspection results from SAP QM and in-line measurements from MES into BigQuery and evaluates every point against SPC run rules in near real time."
+      },
+      {
+        "id": "capa-orchestration-agent",
+        "title": "CAPA Orchestration Agent",
+        "description": "Opens a structured CAPA workspace when a qualifying notification is raised in SAP QM, drafts the problem statement, and proposes similar historical CAPAs from BigQuery."
+      },
+      {
+        "id": "supplier-quality-scorecard-engine",
+        "title": "Supplier Quality Scorecard Engine",
+        "description": "Refreshes supplier PPM, lot rejection rate, deviation history, and 8D closure speed weekly from SAP QM and SAP S/4HANA MM data in BigQuery."
+      },
+      {
+        "id": "nonconformance-triage-agent",
+        "title": "Nonconformance Triage Agent",
+        "description": "Classifies each new SAP QM nonconformance by defect type, severity, and affected order using the notification text and linked MES genealogy."
+      },
+      {
+        "id": "batch-record-review-analyzer",
+        "title": "Batch Record Review Analyzer",
+        "description": "Screens the full batch record against specifications, procedure limits, and e-signature completeness the moment production closes the order in MES."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/manufacturing.json"
+  },
+  {
+    "id": "manufacturing-maintenance-reliability",
+    "slug": "maintenance-reliability",
+    "department": "manufacturing",
+    "title": "Maintenance & Reliability",
+    "subtitle": "M-53 • Manufacturing Value Stream",
+    "description": "Maintenance & Reliability value stream for the manufacturing vertical — 5 agentified workflows.",
+    "color": "#ef4444",
+    "domainNumber": 53,
+    "useCases": [
+      {
+        "id": "predictive-asset-failure-monitor",
+        "title": "Predictive Asset Failure Monitor",
+        "description": "Continuously scores critical-asset sensor streams from the PI System in BigQuery against learned degradation signatures."
+      },
+      {
+        "id": "pm-schedule-optimization-engine",
+        "title": "PM Schedule Optimization Engine",
+        "description": "Cross-references every PM task in IBM Maximo against failure history and runtime data from the PI System in BigQuery quarterly."
+      },
+      {
+        "id": "spare-parts-stockout-prediction-agent",
+        "title": "Spare Parts Stockout Prediction Agent",
+        "description": "Forecasts part-level demand from IBM Maximo work order history, upcoming PM schedules, and asset criticality in BigQuery."
+      },
+      {
+        "id": "work-order-backlog-triage-orchestrator",
+        "title": "Work Order Backlog Triage Orchestrator",
+        "description": "Scores the entire IBM Maximo backlog weekly on asset criticality, safety impact, age, and parts availability from BigQuery."
+      },
+      {
+        "id": "bad-actor-asset-analyzer",
+        "title": "Bad Actor Asset Analyzer",
+        "description": "Ranks assets on a combined index of repair cost, downtime contribution, and failure frequency from IBM Maximo and PI System data in BigQuery on request."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/manufacturing.json"
+  },
+  {
+    "id": "manufacturing-supply-chain-materials",
+    "slug": "supply-chain-materials",
+    "department": "manufacturing",
+    "title": "Supply Chain & Materials",
+    "subtitle": "M-54 • Manufacturing Value Stream",
+    "description": "Supply Chain & Materials value stream for the manufacturing vertical — 5 agentified workflows.",
+    "color": "#ef4444",
+    "domainNumber": 54,
+    "useCases": [
+      {
+        "id": "material-shortage-early-warning-monitor",
+        "title": "Material Shortage Early Warning Monitor",
+        "description": "Projects material coverage daily by netting Kinaxis RapidResponse supply plans against SAP S/4HANA MM inventory, open POs, and confirmed supplier dates in BigQuery."
+      },
+      {
+        "id": "supplier-delivery-risk-analyzer",
+        "title": "Supplier Delivery Risk Analyzer",
+        "description": "Scores every open purchase order's late-delivery probability from the supplier's rolling performance, order size, and lead-time trend in BigQuery."
+      },
+      {
+        "id": "inventory-rebalancing-orchestrator",
+        "title": "Inventory Rebalancing Orchestrator",
+        "description": "Scans multi-site stock positions and projected demand in Kinaxis RapidResponse and SAP S/4HANA MM data in BigQuery every night for surplus-deficit pairs."
+      },
+      {
+        "id": "expedite-request-triage-agent",
+        "title": "Expedite Request Triage Agent",
+        "description": "Intakes every expedite request through ServiceNow, validates the true requirement date against the Kinaxis RapidResponse plan, and checks alternate stock in SAP S/4HANA MM."
+      },
+      {
+        "id": "demand-supply-gap-scenario-engine",
+        "title": "Demand-Supply Gap Scenario Engine",
+        "description": "Runs demand-shift, capacity-loss, and supplier-disruption scenarios through Kinaxis RapidResponse on request and lands results in BigQuery for comparison."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/manufacturing.json"
+  },
+  {
+    "id": "manufacturing-engineering-plm",
+    "slug": "engineering-plm",
+    "department": "manufacturing",
+    "title": "Engineering & PLM",
+    "subtitle": "M-55 • Manufacturing Value Stream",
+    "description": "Engineering & PLM value stream for the manufacturing vertical — 5 agentified workflows.",
+    "color": "#ef4444",
+    "domainNumber": 55,
+    "useCases": [
+      {
+        "id": "eco-impact-analysis-agent",
+        "title": "ECO Impact Analysis Agent",
+        "description": "Traces full where-used impact across PTC Windchill PLM product structures the moment an ECO enters review, joined with open orders, WIP, and inventory from SAP S/4HANA PP in BigQuery."
+      },
+      {
+        "id": "bom-plm-erp-sync-monitor",
+        "title": "BOM PLM-ERP Sync Monitor",
+        "description": "Compares released PTC Windchill PLM structures against SAP S/4HANA PP production BOMs in BigQuery every night, item by item."
+      },
+      {
+        "id": "npi-launch-readiness-orchestrator",
+        "title": "NPI Launch Readiness Orchestrator",
+        "description": "Continuously reconciles gate deliverables against actual state — released drawings and documents in PTC Windchill PLM, task completion in Jira, and tooling and qualification records in BigQuery."
+      },
+      {
+        "id": "engineering-change-backlog-analyzer",
+        "title": "Engineering Change Backlog Analyzer",
+        "description": "Clusters the open change request backlog in PTC Windchill PLM by affected part and problem description, merging duplicates and linking related Jira issues."
+      },
+      {
+        "id": "component-obsolescence-risk-monitor",
+        "title": "Component Obsolescence Risk Monitor",
+        "description": "Cross-references supplier end-of-life and lifecycle-risk signals against active PTC Windchill PLM BOM usage and remaining demand from SAP S/4HANA MM in BigQuery weekly."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/manufacturing.json"
+  },
+  {
+    "id": "manufacturing-ehs-sustainability",
+    "slug": "ehs-sustainability",
+    "department": "manufacturing",
+    "title": "EHS & Sustainability",
+    "subtitle": "M-56 • Manufacturing Value Stream",
+    "description": "EHS & Sustainability value stream for the manufacturing vertical — 5 agentified workflows.",
+    "color": "#ef4444",
+    "domainNumber": 56,
+    "useCases": [
+      {
+        "id": "permit-to-work-compliance-monitor",
+        "title": "Permit-to-Work Compliance Monitor",
+        "description": "Cross-checks every active high-risk work order against valid permits in Sphera EHS in real time, including isolation and gas-test prerequisites."
+      },
+      {
+        "id": "incident-near-miss-triage-agent",
+        "title": "Incident and Near-Miss Triage Agent",
+        "description": "Classifies every new Sphera EHS report by severity potential and regulatory reportability within minutes of submission."
+      },
+      {
+        "id": "energy-intensity-monitoring-engine",
+        "title": "Energy Intensity Monitoring Engine",
+        "description": "Computes energy intensity per line and product daily by joining PI System meter data with production output in BigQuery."
+      },
+      {
+        "id": "regulatory-emissions-reporting-agent",
+        "title": "Regulatory Emissions Reporting Agent",
+        "description": "Aggregates continuous emissions data from the PI System with fuel and production records in BigQuery, validated daily against permit limits in Sphera EHS."
+      },
+      {
+        "id": "safety-observation-trend-analyzer",
+        "title": "Safety Observation Trend Analyzer",
+        "description": "Mines Sphera EHS observation free-text weekly in BigQuery to cluster emerging unsafe conditions and behaviors by area, shift, and task type."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/manufacturing.json"
+  },
+  {
+    "id": "retail-merchandising-assortment",
+    "slug": "merchandising-assortment",
+    "department": "retail",
+    "title": "Merchandising & Assortment",
+    "subtitle": "R-11 • Retail Value Stream",
+    "description": "Merchandising & Assortment value stream for the retail vertical — 5 agentified workflows.",
+    "color": "#f59e0b",
+    "domainNumber": 11,
+    "useCases": [
+      {
+        "id": "assortment-rationalization-engine",
+        "title": "Assortment Rationalization Engine",
+        "description": "Continuously scores every SKU in BigQuery on productivity, incrementality, and transferable demand."
+      },
+      {
+        "id": "planogram-compliance-analyzer",
+        "title": "Planogram Compliance Analyzer",
+        "description": "Analyzes shelf images and POS sales-rate deviations against the planogram of record after every reset window."
+      },
+      {
+        "id": "size-pack-optimization-engine",
+        "title": "Size & Pack Optimization Engine",
+        "description": "Learns store-cluster size curves from transaction history and localizes pack configurations per program."
+      },
+      {
+        "id": "new-item-launch-orchestrator",
+        "title": "New Item Launch Orchestrator",
+        "description": "Validates vendor-submitted item attributes, costs, and hierarchy placement before MFCS entry."
+      },
+      {
+        "id": "vendor-scorecard-analyzer",
+        "title": "Vendor Performance Scorecard Analyzer",
+        "description": "Computes fill rate, on-time delivery, lead-time variance, and invoice accuracy per vendor weekly in BigQuery."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/retail.json"
+  },
+  {
+    "id": "retail-supply-chain-fulfillment",
+    "slug": "supply-chain-fulfillment",
+    "department": "retail",
+    "title": "Supply Chain & Fulfillment",
+    "subtitle": "R-12 • Retail Value Stream",
+    "description": "Supply Chain & Fulfillment value stream for the retail vertical — 5 agentified workflows.",
+    "color": "#f59e0b",
+    "domainNumber": 12,
+    "useCases": [
+      {
+        "id": "demand-forecast-exception-agent",
+        "title": "Demand Forecast Exception Agent",
+        "description": "Triages the exception queue nightly, auto-clearing noise and enriching real exceptions with causal context."
+      },
+      {
+        "id": "dc-labor-planning-engine",
+        "title": "DC Labor Planning Engine",
+        "description": "Forecasts wave-level volume by function from Manhattan order pipelines and inbound ASNs."
+      },
+      {
+        "id": "inbound-po-eta-monitor",
+        "title": "Inbound PO ETA Monitor",
+        "description": "Ingests ASN, carrier tracking, and port milestone events to predict arrival slippage per PO."
+      },
+      {
+        "id": "store-replenishment-orchestrator",
+        "title": "Store Replenishment Orchestrator",
+        "description": "Tunes item-store replenishment parameters continuously from sell-through, lead time, and presentation minimums."
+      },
+      {
+        "id": "carrier-delivery-sla-analyzer",
+        "title": "Carrier Delivery SLA Analyzer",
+        "description": "Audits every carrier invoice against contract rate cards and delivery scans in BigQuery."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/retail.json"
+  },
+  {
+    "id": "retail-store-operations",
+    "slug": "store-operations",
+    "department": "retail",
+    "title": "Store Operations",
+    "subtitle": "R-13 • Retail Value Stream",
+    "description": "Store Operations value stream for the retail vertical — 5 agentified workflows.",
+    "color": "#f59e0b",
+    "domainNumber": 13,
+    "useCases": [
+      {
+        "id": "shrink-anomaly-analyzer",
+        "title": "Shrink Anomaly Analyzer",
+        "description": "Scores every transaction stream nightly for void, refund, no-sale, and discount anomalies at cashier and store level."
+      },
+      {
+        "id": "store-labor-forecast-engine",
+        "title": "Store Labor Forecast Engine",
+        "description": "Forecasts 15-minute interval workload per store from POS transactions, traffic, weather, and event calendars."
+      },
+      {
+        "id": "on-shelf-availability-monitor",
+        "title": "On-Shelf Availability Monitor",
+        "description": "Detects zero-sales anomalies against expected sell rates to infer empty shelves despite positive on-hand."
+      },
+      {
+        "id": "store-task-compliance-agent",
+        "title": "Store Task Compliance Agent",
+        "description": "Cross-checks reported task completion against POS signals, labor punches, and photo evidence."
+      },
+      {
+        "id": "pos-exception-triage-agent",
+        "title": "POS Exception Triage Agent",
+        "description": "Detects failing registers from Xstore telemetry and opens enriched Zendesk tickets before the store calls."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/retail.json"
+  },
+  {
+    "id": "retail-e-commerce-digital",
+    "slug": "e-commerce-digital",
+    "department": "retail",
+    "title": "E-Commerce & Digital",
+    "subtitle": "R-14 • Retail Value Stream",
+    "description": "E-Commerce & Digital value stream for the retail vertical — 5 agentified workflows.",
+    "color": "#f59e0b",
+    "domainNumber": 14,
+    "useCases": [
+      {
+        "id": "pdp-content-quality-agent",
+        "title": "PDP Content Quality Agent",
+        "description": "Scans every PDP in Commerce Cloud for missing attributes, weak copy, image gaps, and broken cross-sells."
+      },
+      {
+        "id": "site-search-relevance-engine",
+        "title": "Site Search Relevance Engine",
+        "description": "Mines full search-log tails in BigQuery to detect null, low-click, and misrouted queries daily."
+      },
+      {
+        "id": "cart-abandonment-recovery-orchestrator",
+        "title": "Cart Abandonment Recovery Orchestrator",
+        "description": "Scores each abandoned cart on purchase intent, margin, and stock risk from Segment and Commerce Cloud signals."
+      },
+      {
+        "id": "click-and-collect-sla-monitor",
+        "title": "Click-and-Collect SLA Monitor",
+        "description": "Tracks every BOPIS order against its SLA clock and predicts breaches from store pick-rate telemetry."
+      },
+      {
+        "id": "returns-abuse-analyzer",
+        "title": "Returns Abuse Analyzer",
+        "description": "Builds a cross-channel return-behavior graph per customer spanning web orders, store returns, and care tickets."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/retail.json"
+  },
+  {
+    "id": "retail-customer-loyalty",
+    "slug": "customer-loyalty",
+    "department": "retail",
+    "title": "Customer & Loyalty",
+    "subtitle": "R-15 • Retail Value Stream",
+    "description": "Customer & Loyalty value stream for the retail vertical — 5 agentified workflows.",
+    "color": "#f59e0b",
+    "domainNumber": 15,
+    "useCases": [
+      {
+        "id": "loyalty-churn-prediction-agent",
+        "title": "Loyalty Churn Prediction Agent",
+        "description": "Scores every member weekly on lapse risk from purchase cadence decay, engagement, and browse signals."
+      },
+      {
+        "id": "next-best-offer-engine",
+        "title": "Next Best Offer Engine",
+        "description": "Unifies POS and digital signals in BigQuery to model each member's category propensities and price sensitivity."
+      },
+      {
+        "id": "customer-care-triage-agent",
+        "title": "Customer Care Triage Agent",
+        "description": "Classifies inbound tickets by intent and urgency, enriched with live order and delivery status from Commerce Cloud."
+      },
+      {
+        "id": "voice-of-customer-insights-analyzer",
+        "title": "Voice of Customer Insights Analyzer",
+        "description": "Mines all reviews, care tickets, chat logs, and survey verbatims for themes, sentiment shifts, and defect signals."
+      },
+      {
+        "id": "member-winback-orchestrator",
+        "title": "Lapsed Member Win-Back Orchestrator",
+        "description": "Segments lapsed members by inferred lapse reason using last-purchase context, store proximity, and browse signals."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/retail.json"
+  },
+  {
+    "id": "retail-pricing-promotions",
+    "slug": "pricing-promotions",
+    "department": "retail",
+    "title": "Pricing & Promotions",
+    "subtitle": "R-16 • Retail Value Stream",
+    "description": "Pricing & Promotions value stream for the retail vertical — 5 agentified workflows.",
+    "color": "#f59e0b",
+    "domainNumber": 16,
+    "useCases": [
+      {
+        "id": "markdown-optimization-engine",
+        "title": "Markdown Optimization Engine",
+        "description": "Models price elasticity per item-location and simulates markdown ladders against sell-through targets."
+      },
+      {
+        "id": "competitive-price-response-agent",
+        "title": "Competitive Price Response Agent",
+        "description": "Monitors competitor price feeds continuously and detects moves on key-value items within hours."
+      },
+      {
+        "id": "promo-forecast-accuracy-analyzer",
+        "title": "Promo Forecast Accuracy Analyzer",
+        "description": "Forecasts event-level lift with decomposition into true incremental, cannibalized, and pulled-forward volume."
+      },
+      {
+        "id": "price-execution-audit-monitor",
+        "title": "Price Execution Audit Monitor",
+        "description": "Reconciles every POS transaction price against the Revionics price of record in near real time."
+      },
+      {
+        "id": "vendor-promo-funding-reconciliation-agent",
+        "title": "Vendor Promo Funding Reconciliation Agent",
+        "description": "Matches promo execution data — scans, markdowns, ad placements — against vendor deal terms in MFCS automatically."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/retail.json"
+  },
+  {
+    "id": "telco-sales-customer-acquisition",
+    "slug": "sales-customer-acquisition",
+    "department": "telco",
+    "title": "Sales & Customer Acquisition",
+    "subtitle": "T-41 • Telco Value Stream",
+    "description": "Sales & Customer Acquisition value stream for the telco vertical — 5 agentified workflows.",
+    "color": "#06b6d4",
+    "domainNumber": 41,
+    "useCases": [
+      {
+        "id": "b2b-quote-configuration-agent",
+        "title": "B2B Quote Configuration Agent",
+        "description": "The agent assembles a validated multi-site quote from the opportunity record, applying current price books and approved discount bands automatically."
+      },
+      {
+        "id": "lead-qualification-scoring-engine",
+        "title": "Lead Qualification Scoring Engine",
+        "description": "The engine scores each inbound lead on firmographics, serviceability, and usage-intent signals the moment it lands."
+      },
+      {
+        "id": "site-serviceability-qualification-agent",
+        "title": "Site Serviceability Qualification Agent",
+        "description": "The agent qualifies entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage in one pass."
+      },
+      {
+        "id": "competitive-win-loss-analyzer",
+        "title": "Competitive Win-Loss Analyzer",
+        "description": "The analyzer classifies every closed opportunity by loss driver from CRM notes, call summaries, and quote history."
+      },
+      {
+        "id": "enterprise-rfp-response-agent",
+        "title": "Enterprise RFP Response Agent",
+        "description": "The agent drafts responses to each RFP question from a curated, version-controlled answer library and current product specs."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/telco.json"
+  },
+  {
+    "id": "telco-order-management-provisioning",
+    "slug": "order-management-provisioning",
+    "department": "telco",
+    "title": "Order Management & Provisioning",
+    "subtitle": "T-42 • Telco Value Stream",
+    "description": "Order Management & Provisioning value stream for the telco vertical — 5 agentified workflows.",
+    "color": "#06b6d4",
+    "domainNumber": 42,
+    "useCases": [
+      {
+        "id": "order-fallout-resolution-agent",
+        "title": "Order Fallout Resolution Agent",
+        "description": "The agent classifies each fallout by error signature and auto-remediates known patterns like address normalization and port conflicts."
+      },
+      {
+        "id": "esim-activation-orchestrator",
+        "title": "eSIM Activation Orchestrator",
+        "description": "The orchestrator watches every activation flow end to end and retries or re-sequences failed profile downloads automatically."
+      },
+      {
+        "id": "number-porting-exception-agent",
+        "title": "Number Porting Exception Agent",
+        "description": "The agent parses each port rejection, identifies the mismatched field, and drafts the corrected resubmission for one-click approval."
+      },
+      {
+        "id": "order-jeopardy-prediction-engine",
+        "title": "Order Jeopardy Prediction Engine",
+        "description": "The engine scores every in-flight order daily for slip risk using milestone velocity, supplier history, and task aging."
+      },
+      {
+        "id": "legacy-service-migration-orchestrator",
+        "title": "Legacy Service Migration Orchestrator",
+        "description": "The orchestrator batches migration candidates by serving terminal, validates inventory against live network state, and sequences cutovers to minimize risk."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/telco.json"
+  },
+  {
+    "id": "telco-network-operations-assurance",
+    "slug": "network-operations-assurance",
+    "department": "telco",
+    "title": "Network Operations & Assurance",
+    "subtitle": "T-43 • Telco Value Stream",
+    "description": "Network Operations & Assurance value stream for the telco vertical — 5 agentified workflows.",
+    "color": "#06b6d4",
+    "domainNumber": 43,
+    "useCases": [
+      {
+        "id": "alarm-noise-reduction-engine",
+        "title": "Alarm Noise Reduction Engine",
+        "description": "The engine correlates alarm storms into single root-cause cases using topology, timing, and learned fault signatures."
+      },
+      {
+        "id": "cell-congestion-forecasting-engine",
+        "title": "Cell Congestion Forecasting Engine",
+        "description": "The engine forecasts per-sector PRB and throughput demand weekly, blending trend, seasonality, and local event calendars."
+      },
+      {
+        "id": "fiber-cut-triage-agent",
+        "title": "Fiber Cut Triage Agent",
+        "description": "The agent triangulates the break location from OTDR distance readings mapped onto GIS fiber routes and splice-point records."
+      },
+      {
+        "id": "network-slice-sla-monitor",
+        "title": "5G Network Slice SLA Monitor",
+        "description": "The monitor evaluates per-slice latency, throughput, and availability against contracted SLOs continuously."
+      },
+      {
+        "id": "ran-parameter-optimization-agent",
+        "title": "RAN Parameter Optimization Agent",
+        "description": "The agent analyzes per-cell performance counters and geolocated call traces to identify the worst-offending parameter sets weekly."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/telco.json"
+  },
+  {
+    "id": "telco-billing-revenue-assurance",
+    "slug": "billing-revenue-assurance",
+    "department": "telco",
+    "title": "Billing & Revenue Assurance",
+    "subtitle": "T-44 • Telco Value Stream",
+    "description": "Billing & Revenue Assurance value stream for the telco vertical — 5 agentified workflows.",
+    "color": "#06b6d4",
+    "domainNumber": 44,
+    "useCases": [
+      {
+        "id": "revenue-leakage-detection-analyzer",
+        "title": "Revenue Leakage Detection Analyzer",
+        "description": "The analyzer reconciles usage records end to end from network mediation through rating to invoice, every night, at full volume."
+      },
+      {
+        "id": "bill-dispute-resolution-agent",
+        "title": "Bill Dispute Resolution Agent",
+        "description": "The agent adjudicates each dispute by comparing the contested charge against contract terms, rate plans, and metered usage."
+      },
+      {
+        "id": "roaming-settlement-reconciliation-engine",
+        "title": "Roaming Settlement Reconciliation Engine",
+        "description": "The engine reconciles every inbound and outbound roaming record against partner agreements and IOT rate tables each settlement cycle."
+      },
+      {
+        "id": "sim-swap-fraud-detection-monitor",
+        "title": "SIM Swap Fraud Detection Monitor",
+        "description": "The monitor scores every SIM swap in real time against behavioral signals like recent credential resets, dormancy, and channel anomalies."
+      },
+      {
+        "id": "usage-rating-anomaly-monitor",
+        "title": "Usage Rating Anomaly Monitor",
+        "description": "The monitor baselines rated revenue per product, plan, and event type daily and flags statistical deviations within hours of a catalog change."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/telco.json"
+  },
+  {
+    "id": "telco-customer-care-retention",
+    "slug": "customer-care-retention",
+    "department": "telco",
+    "title": "Customer Care & Retention",
+    "subtitle": "T-45 • Telco Value Stream",
+    "description": "Customer Care & Retention value stream for the telco vertical — 5 agentified workflows.",
+    "color": "#06b6d4",
+    "domainNumber": 45,
+    "useCases": [
+      {
+        "id": "churn-save-desk-agent",
+        "title": "Churn Save Desk Agent",
+        "description": "The agent surfaces the customer's likely churn driver, lifetime value, and network-experience history to the rep the moment the call connects."
+      },
+      {
+        "id": "care-call-resolution-copilot-agent",
+        "title": "Care Call Resolution Copilot Agent",
+        "description": "The copilot assembles a unified customer context panel with billing, outage, device, and order status before the agent says hello."
+      },
+      {
+        "id": "proactive-outage-notification-orchestrator",
+        "title": "Proactive Outage Notification Orchestrator",
+        "description": "The orchestrator maps each confirmed network incident to the exact affected customer base using service topology."
+      },
+      {
+        "id": "complaint-root-cause-analyzer",
+        "title": "Complaint Root Cause Analyzer",
+        "description": "The analyzer mines call transcripts, chat logs, and tickets daily to classify true contact reasons independent of disposition codes."
+      },
+      {
+        "id": "nps-detractor-recovery-agent",
+        "title": "NPS Detractor Recovery Agent",
+        "description": "The agent triages every detractor response within minutes, matching the verbatim against the account's incident, billing, and contact history."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/telco.json"
+  },
+  {
+    "id": "telco-field-service-infrastructure",
+    "slug": "field-service-infrastructure",
+    "department": "telco",
+    "title": "Field Service & Infrastructure",
+    "subtitle": "T-46 • Telco Value Stream",
+    "description": "Field Service & Infrastructure value stream for the telco vertical — 5 agentified workflows.",
+    "color": "#06b6d4",
+    "domainNumber": 46,
+    "useCases": [
+      {
+        "id": "dispatch-optimization-orchestrator",
+        "title": "Dispatch Optimization Orchestrator",
+        "description": "The orchestrator builds optimized daily routes balancing skills, parts inventory, SLA clocks, and traffic, and re-optimizes continuously as the day unfolds."
+      },
+      {
+        "id": "truck-roll-avoidance-agent",
+        "title": "Truck Roll Avoidance Agent",
+        "description": "The agent runs a full remote diagnostic battery on the line, CPE, and provisioning state before any dispatch is booked."
+      },
+      {
+        "id": "fiber-build-permitting-agent",
+        "title": "Fiber Build Permitting Agent",
+        "description": "The agent drafts permit applications pre-filled with route drawings, traffic plans, and jurisdiction-specific requirements from a maintained rules library."
+      },
+      {
+        "id": "tower-maintenance-scheduling-engine",
+        "title": "Tower Maintenance Scheduling Engine",
+        "description": "The engine builds risk-ranked maintenance schedules from equipment age, alarm trends, environmental telemetry, and storm-season timing."
+      },
+      {
+        "id": "field-job-closure-quality-analyzer",
+        "title": "Field Job Closure Quality Analyzer",
+        "description": "The analyzer audits every closed job by checking photos, signal readings, and test results against workmanship standards."
+      }
+    ],
+    "useCaseCount": 5,
+    "sourceFile": "catalog/vertical-seeds/telco.json"
   }
 ];
 
@@ -2484,6 +3654,26 @@ export const DOMAIN_SUMMARY = {
   "procurement": {
     "domains": 9,
     "useCases": 78
+  },
+  "banking": {
+    "domains": 6,
+    "useCases": 30
+  },
+  "insurance": {
+    "domains": 6,
+    "useCases": 30
+  },
+  "manufacturing": {
+    "domains": 6,
+    "useCases": 30
+  },
+  "retail": {
+    "domains": 6,
+    "useCases": 30
+  },
+  "telco": {
+    "domains": 6,
+    "useCases": 30
   }
 };
 

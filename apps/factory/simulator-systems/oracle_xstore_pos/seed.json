@@ -1,0 +1,49 @@
+{
+  "vendors": [
+    {
+      "vendor_id": "VENDOR-001",
+      "name": "Name 1",
+      "status": "active",
+      "country": "US",
+      "payment_terms": "Net 45"
+    }
+  ],
+  "invoices": [
+    {
+      "invoice_id": "INVOICE-001",
+      "vendor_id": "VENDOR-001",
+      "status": "active",
+      "amount": 125000,
+      "currency": "USD",
+      "due_date": "2026-03-15"
+    }
+  ],
+  "journal_entries": [
+    {
+      "journal_id": "JOURNAL-001",
+      "status": "active",
+      "ledger": "US-GAAP",
+      "period": "2026-Q1",
+      "amount": 125000
+    }
+  ],
+  "payments": [
+    {
+      "payment_id": "PAYMENT-001",
+      "invoice_id": "INVOICE-001",
+      "status": "active",
+      "payment_date": "2026-03-15",
+      "amount": 125000
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}

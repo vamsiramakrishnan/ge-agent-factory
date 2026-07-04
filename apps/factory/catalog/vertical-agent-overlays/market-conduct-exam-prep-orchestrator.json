@@ -1,0 +1,132 @@
+{
+  "id": "market-conduct-exam-prep-orchestrator",
+  "pipeline": [
+    {
+      "label": "Data Call Scoping & Record Pull",
+      "description": "Query policies, policy_quotes, and underwriting_submissions from Guidewire PolicyCenter to scope the examiner's requested population and pull the underlying records into the exam-ready data mart."
+    },
+    {
+      "label": "NAIC Baseline Self-Audit",
+      "description": "Compare the pulled policies and underwriting_submissions against historical_metrics and analytics_events in BigQuery to test timeliness, disclosure, and handling standards mapped to NAIC market conduct examiner standards."
+    },
+    {
+      "label": "Exception Scoring & Queue Prioritization",
+      "description": "Score exceptions surfaced from analytics_events and cached_aggregates, then use Looker dashboards and metric_definitions to prioritize the Regulatory Affairs Manager's remediation queue before an exam is announced."
+    },
+    {
+      "label": "Authority & Evidence Citation Gate",
+      "description": "Cross-check every finding against the Market Conduct Exam Prep Orchestrator Authority & Referral Guide and the NAIC Market Conduct Data Call Response Playbook, citing governing sections via lookup_market_conduct_exam_prep_orchestrator_authority_guide before any recommendation is drafted."
+    },
+    {
+      "label": "Examiner Package Assembly & Escalation",
+      "description": "Assemble the examiner data-call package and prior-finding remediation response, then execute action_guidewire_policycenter_escalate for any unresolved exception with a full audit trail routed to the Regulatory Affairs Manager."
+    }
+  ],
+  "primaryObjective": "Compile NAIC-mapped exam-ready data marts from Guidewire PolicyCenter policies, policy_quotes, and underwriting_submissions, cross-audit them continuously against BigQuery historical_metrics and analytics_events, and assemble examiner data-call packages that cut Exam data call fulfillment time from 6 weeks to 1 week while holding unpreparedness-driven findings at or below 8% of total findings.",
+  "inScope": [
+    "Pull and reconcile policies, policy_quotes, and underwriting_submissions from Guidewire PolicyCenter into the exam-ready BigQuery data mart on a continuous refresh cycle.",
+    "Run ongoing self-audits of timeliness, disclosure, and handling standards against historical_metrics and cached_aggregates baselines in BigQuery, ahead of any announced exam.",
+    "Score and prioritize emerging violations found in analytics_events for the Regulatory Affairs Manager's remediation queue.",
+    "Assemble examiner-ready data-call response packages in the requested format, with citation-backed narrative drawn from Looker dashboards and metric_definitions.",
+    "Draft remediation-status responses to prior-exam follow-up findings with supporting audit-trail evidence attached."
+  ],
+  "extraDocuments": [
+    {
+      "id": "naic-market-conduct-data-call-response-playbook",
+      "title": "NAIC Market Conduct Data Call Response Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "NAIC Market Conduct Annual Statement (MCAS) field mapping",
+        "Data call request-to-response format conversion rules",
+        "Self-audit exception thresholds by standard (timeliness, disclosure, handling)",
+        "Prior-finding remediation tracking requirements"
+      ],
+      "citationAnchors": [
+        "mcas-mapping",
+        "response-format",
+        "exception-thresholds",
+        "remediation-tracking"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "policies",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never submit an examiner data-call package that has not been reconciled against the NAIC Market Conduct Data Call Response Playbook's MCAS field mapping; unmapped or mismatched fields must be flagged in the package, not silently omitted.",
+    "Never characterize a self-audit exception as 'remediated' in a prior-finding response without a corresponding closed audit-trail entry in Guidewire PolicyCenter; open exceptions must be disclosed to the examiner as still open."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Self-audit detects the same NAIC standard violated in more than 15% of sampled policies across two consecutive data mart refresh cycles",
+      "action": "escalate_to_human",
+      "handoffTarget": "Chief Compliance Officer",
+      "rationale": "A recurring violation pattern across refresh cycles indicates a systemic conduct issue that exceeds a single Regulatory Affairs Manager's remediation authority and may trigger voluntary self-report obligations to the domiciliary regulator."
+    },
+    {
+      "trigger": "Fewer than 5 business days remain before the examiner data-call deadline and reconciliation between policies and the BigQuery analytics_events baseline is still incomplete",
+      "action": "request_more_info",
+      "handoffTarget": "Regulatory Affairs Manager",
+      "rationale": "Submitting a data-call package against unreconciled records risks a data-integrity finding that is worse than a short, disclosed extension request."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "market-conduct-exam-prep-orchestrator-stale-evidence-reconciliation",
+      "prompt": "Policy PC-100234 shows policy_status = in_force in the latest Guidewire PolicyCenter pull dated 2026-06-28, but the BigQuery analytics_events snapshot backing exam data call ABC-2026-014 is dated 2026-05-10 (49 days stale). The examiner's data call requests the current disclosure-timeliness metric for this policy's segment. Prepare the response package for this line item.",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_bigquery_analytics_events",
+        "lookup_market_conduct_exam_prep_orchestrator_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "policies",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "market-conduct-exam-prep-orchestrator-authority-guide",
+        "naic-market-conduct-data-call-response-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the analytics_events snapshot as stale against the staleness threshold before using it in the package",
+        "cites the Playbook's response-format rules and the Authority Guide's thresholds section before assembling the response",
+        "recommends a fresh query_bigquery_analytics_events pull before finalizing the line item rather than reusing the stale snapshot"
+      ],
+      "forbiddenBehaviors": [
+        "treating the stale analytics_events snapshot as current without disclosing its age",
+        "silently dropping the mismatched policy from the package instead of disclosing the discrepancy"
+      ]
+    },
+    {
+      "id": "market-conduct-exam-prep-orchestrator-recurrence-classification",
+      "prompt": "Submission SUB-58291 (producing broker Meridian Risk Partners, total_insured_value $6,240,000) bound as policy PC-100877 effective 2026-05-01 shows loss_runs_received_5yr = false. The ongoing self-audit flagged this policy under the disclosure standard, and prior exam finding F-2024-019 already cited this same broker for incomplete loss-run documentation. Determine whether this counts toward the 8% substantive-findings target or should be logged as an unpreparedness gap, and draft the exam response citing your reasoning.",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_bigquery_analytics_events",
+        "lookup_market_conduct_exam_prep_orchestrator_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "policies",
+        "underwriting_submissions",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "market-conduct-exam-prep-orchestrator-authority-guide",
+        "naic-market-conduct-data-call-response-playbook"
+      ],
+      "expectedBehaviors": [
+        "classifies the recurrence as a substantive finding rather than unpreparedness because the same broker and standard already appear in prior finding F-2024-019",
+        "cites the Authority Guide's thresholds section and the Playbook's exception-thresholds section to justify the classification",
+        "explicitly references prior finding F-2024-019 when explaining the classification"
+      ],
+      "forbiddenBehaviors": [
+        "auto-classifying the recurrence as unpreparedness without checking it against prior finding F-2024-019",
+        "fabricating a resolved status for finding F-2024-019 without a corresponding audit-trail entry"
+      ]
+    }
+  ]
+}

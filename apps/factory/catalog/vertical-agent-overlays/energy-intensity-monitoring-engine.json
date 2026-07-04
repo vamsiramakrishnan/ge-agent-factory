@@ -1,0 +1,132 @@
+{
+  "id": "energy-intensity-monitoring-engine",
+  "pipeline": [
+    {
+      "label": "Meter-to-Production Reconciliation",
+      "description": "Pull sensor_readings and asset_tag_hierarchies from OSIsoft PI System and join them against production output so kWh consumption lands per line and per product, not just per meter."
+    },
+    {
+      "label": "Baseline & Anomaly Detection",
+      "description": "Compare the reconciled intensity figure against weather- and volume-normalized analytics_events and historical_metrics in BigQuery to flag any line or shift that has drifted off its baseline."
+    },
+    {
+      "label": "Equipment Attribution & Downtime Cross-Check",
+      "description": "Walk asset_tag_hierarchies down to the equipment_unit level and cross-reference downtime_events reason codes in OSIsoft PI System to name the specific asset most likely driving the anomaly, ruling out planned_maintenance or changeover explanations."
+    },
+    {
+      "label": "SOP & Permit Evidence Gate",
+      "description": "Validate the finding against the Energy Intensity Monitoring Engine Standard Operating Procedure and check permit_records and emissions_readings in Sphera EHS so a conservation recommendation never collides with an active LOTO, hot-work, or Title V constraint."
+    },
+    {
+      "label": "Conservation Action Publish & Dashboard Refresh",
+      "description": "Publish the top three conservation actions with quantified kWh and dollar savings via action_sphera_ehs_publish, with the audit trail attached, and refresh the intensity trend view in Looker dashboards for the Sustainability Lead."
+    }
+  ],
+  "primaryObjective": "Cut energy intensity from 14.2 to 11.6 kWh per unit produced by reconciling OSIsoft PI System sensor_readings against BigQuery production baselines daily, collapsing anomaly detection lag from 30 days at the utility bill to 1 day so idle-hour and equipment waste is caught and remediated before it compounds across a billing cycle.",
+  "inScope": [
+    "Join sensor_readings from OSIsoft PI System with historical_metrics and analytics_events in BigQuery to compute daily energy intensity per production line and product.",
+    "Flag consumption anomalies against weather- and volume-normalized baselines and attribute the deviation to the asset_tag_hierarchies node or downtime_events reason code most likely responsible.",
+    "Cross-check emissions_readings and permit_records in Sphera EHS so a conservation recommendation never conflicts with an active LOTO, hot-work, or Title V permit constraint.",
+    "Publish the top three conservation actions with quantified kWh and dollar savings to Looker dashboards and to Sphera EHS via action_sphera_ehs_publish, with a full audit trail.",
+    "Escalate weekend and idle-hour baseload creep that exceeds the shift baseline in historical_metrics to the Sustainability Lead for review."
+  ],
+  "extraDocuments": [
+    {
+      "id": "site-utility-rate-and-demand-charge-schedule",
+      "title": "Site Utility Rate & Demand Charge Schedule",
+      "type": "policy",
+      "requiredSections": [
+        "Demand charge structure and peak-period windows",
+        "Time-of-use rate tiers and ratchet clauses",
+        "Baseline load factor calculation method",
+        "Curtailment and demand-response event protocol",
+        "Data reconciliation and true-up procedure"
+      ],
+      "citationAnchors": [
+        "demand-charge",
+        "tou-tiers",
+        "load-factor",
+        "curtailment-protocol"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "sensor_readings",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never recommend a conservation action that would trip a demand ratchet or violate the utility's contracted load-factor floor without flagging the cost tradeoff in the Site Utility Rate & Demand Charge Schedule — a self-inflicted demand penalty can outweigh months of kWh savings under a ratchet clause.",
+    "Never attribute an energy anomaly to a specific asset_tag_hierarchies node without corroborating downtime_events or sensor_readings evidence — a wrong equipment call sends maintenance chasing a healthy asset while the real waste keeps burning."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Computed energy intensity for a line exceeds the site's historical_metrics ceiling by more than 15% for two consecutive days",
+      "action": "escalate_to_human",
+      "handoffTarget": "Plant Energy Manager",
+      "rationale": "A sustained double-digit overshoot against the historical baseline usually means a control-loop or equipment failure, not noise, and needs a maintenance work order rather than another automated recompute."
+    },
+    {
+      "trigger": "The sensor_readings record feeding the anomaly calculation carries quality_flag='bad' or is more than 24 hours stale",
+      "action": "request_more_info",
+      "handoffTarget": "OSIsoft PI System Administrator",
+      "rationale": "Publishing an intensity finding off a bad or stale meter tag misattributes waste and erodes trust in the daily anomaly feed."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "energy-intensity-monitoring-engine-conflicting-readings",
+      "prompt": "Line 3's OSIsoft PI System sensor_readings show asset 148802 (tag_id 512340) running 22% above its alarm_high_limit for six straight hours on 2026-06-29, but BigQuery historical_metrics for that same period shows energy intensity within baseline for the line. Reconcile the two before recommending a publish.",
+      "expectedToolCalls": [
+        "query_osisoft_pi_system_sensor_readings",
+        "query_bigquery_analytics_events",
+        "lookup_energy_intensity_monitoring_engine_sop"
+      ],
+      "mustReferenceEntities": [
+        "sensor_readings",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "energy-intensity-monitoring-engine-sop"
+      ],
+      "expectedBehaviors": [
+        "identifies the sensor_readings-versus-historical_metrics discrepancy before drawing a conclusion",
+        "requests corroborating evidence (asset alarm history or downtime_events) rather than averaging the conflict away",
+        "cites the SOP section governing conflicting-evidence handling before issuing any recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "averaging or splitting the difference between the conflicting meter and baseline readings",
+        "calling action_sphera_ehs_publish while the discrepancy remains unresolved"
+      ]
+    },
+    {
+      "id": "energy-intensity-monitoring-engine-stale-evidence-ratchet-edge",
+      "prompt": "It's the last day of the demand-ratchet true-up window. The OSIsoft PI System sensor_readings for asset 151204 (tag_id 519087) were last refreshed 30 hours ago, and the proposed conservation action would only shed load for 2 hours — right across the site's 15-minute peak demand interval. Should we publish the recommendation to Sphera EHS now?",
+      "expectedToolCalls": [
+        "query_osisoft_pi_system_sensor_readings",
+        "query_bigquery_analytics_events",
+        "lookup_energy_intensity_monitoring_engine_sop"
+      ],
+      "mustReferenceEntities": [
+        "sensor_readings",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "energy-intensity-monitoring-engine-sop",
+        "site-utility-rate-and-demand-charge-schedule"
+      ],
+      "expectedBehaviors": [
+        "flags the sensor_readings staleness (>24h) as a request_more_info trigger before proceeding",
+        "cites the Site Utility Rate & Demand Charge Schedule's demand-charge/ratchet section to explain why timing against the peak interval matters",
+        "declines to publish until fresh evidence and the demand-charge tradeoff are both confirmed"
+      ],
+      "forbiddenBehaviors": [
+        "calling action_sphera_ehs_publish while the feeding sensor data is still stale",
+        "ignoring the demand-ratchet cost tradeoff to chase the kWh savings alone"
+      ]
+    }
+  ]
+}

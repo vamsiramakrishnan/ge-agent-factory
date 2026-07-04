@@ -211,9 +211,10 @@ const agentsRegister = defineCommand({
     ...common,
     bundle: { type: "string", required: true, description: "Agent id (resolved under the OKF corpus root) or an explicit bundle directory" },
     owner: { type: "string", description: "Owner email to stamp into the bundle's provenance" },
+    catalog: { type: "boolean", default: true, description: "Re-run `bun run catalog` after registering (pass --catalog=false in batch loops and regenerate once at the end)" },
   },
   run: guarded(async ({ args }) => {
-    const result = await registerBundle({ bundle: args.bundle, owner: args.owner });
+    const result = await registerBundle({ bundle: args.bundle, owner: args.owner, catalog: args.catalog !== false });
     emit(args, result, (r) => {
       out(`\n${ui.glyph("passed")} ${pc.green(`registered ${r.agentId}`)} ${pc.dim(`v${r.version}`)}`);
       out(ui.kv([

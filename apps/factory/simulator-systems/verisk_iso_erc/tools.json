@@ -1,0 +1,75 @@
+{
+  "id": "verisk_iso_erc_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_companies",
+      "description": "Search companies in verisk_iso_erc.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_company",
+      "description": "Get one company in verisk_iso_erc.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "company_id"
+        ]
+      }
+    },
+    {
+      "name": "submit_company_update",
+      "description": "Submit an update to one company in verisk_iso_erc.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "company_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List verisk_iso_erc simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

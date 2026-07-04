@@ -1,0 +1,559 @@
+{
+  "industry": "manufacturing",
+  "entities": {
+    "production_orders": {
+      "lookupKeys": ["order_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "order_number", "type": "number", "required": true, "min": 1000000, "max": 1999999 },
+        { "name": "material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "plant", "type": "enum", "required": true, "values": ["1010", "1020", "2040", "3100"], "weights": [40, 30, 20, 10] },
+        { "name": "order_status", "type": "enum", "required": true, "values": ["created", "released", "in_process", "quality_hold", "confirmed", "teco"], "weights": [10, 18, 30, 4, 23, 15] },
+        { "name": "planned_qty", "type": "number", "required": true, "min": 10, "max": 5000 },
+        { "name": "confirmed_qty", "type": "number", "required": false, "min": 0, "max": 5000 },
+        { "name": "scrap_qty", "type": "number", "required": false, "min": 0, "max": 150 },
+        { "name": "scheduled_start", "type": "date", "required": true },
+        { "name": "oee_impact", "type": "float", "required": false, "min": 0, "max": 12.5, "decimals": 2 }
+      ]
+    },
+    "machine_events": {
+      "lookupKeys": ["asset_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "asset_number", "type": "number", "required": true, "min": 100000, "max": 199999 },
+        { "name": "event_type", "type": "enum", "required": true, "values": ["cycle_complete", "state_change", "warning_alarm", "fault_alarm", "e_stop", "guard_door_open"], "weights": [45, 25, 14, 9, 2, 5] },
+        { "name": "event_code", "type": "number", "required": true, "min": 1000, "max": 9999 },
+        { "name": "severity", "type": "enum", "required": true, "values": ["info", "warning", "critical"], "weights": [70, 24, 6] },
+        { "name": "event_timestamp", "type": "date", "required": true },
+        { "name": "duration_seconds", "type": "number", "required": false, "min": 0, "max": 14400 },
+        { "name": "acknowledged", "type": "boolean", "required": true, "trueRate": 0.82 },
+        { "name": "operator_name", "type": "person.fullName", "required": false }
+      ]
+    },
+    "quality_checks": {
+      "lookupKeys": ["check_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "check_number", "type": "number", "required": true, "min": 5000000, "max": 5999999 },
+        { "name": "characteristic", "type": "enum", "required": true, "values": ["bore_diameter", "overall_length", "surface_roughness_ra", "hardness_hrc", "fastener_torque", "flatness"], "weights": [25, 20, 15, 12, 18, 10] },
+        { "name": "measured_value", "type": "float", "required": true, "min": 0.05, "max": 250, "decimals": 4 },
+        { "name": "lower_spec_limit", "type": "float", "required": true, "min": 0.01, "max": 240, "decimals": 4 },
+        { "name": "upper_spec_limit", "type": "float", "required": true, "min": 0.1, "max": 260, "decimals": 4 },
+        { "name": "cpk", "type": "float", "required": false, "min": 0.6, "max": 2.2, "decimals": 2 },
+        { "name": "result", "type": "enum", "required": true, "values": ["pass", "fail", "conditional"], "weights": [88, 8, 4] },
+        { "name": "inspector_name", "type": "person.fullName", "required": true },
+        { "name": "check_date", "type": "date", "required": true }
+      ]
+    },
+    "process_orders": {
+      "lookupKeys": ["process_order_number", "batch_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "process_order_number", "type": "number", "required": true, "min": 7000000, "max": 7999999 },
+        { "name": "batch_number", "type": "number", "required": true, "min": 800000, "max": 899999 },
+        { "name": "material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "resource", "type": "enum", "required": true, "values": ["REACTOR-01", "MIXER-02", "DRYER-01", "FILLER-03", "PACK-LINE-01"], "weights": [22, 22, 18, 20, 18] },
+        { "name": "phase_status", "type": "enum", "required": true, "values": ["pending", "active", "held", "complete", "aborted"], "weights": [18, 30, 6, 42, 4] },
+        { "name": "target_batch_size_kg", "type": "number", "required": true, "min": 100, "max": 20000 },
+        { "name": "actual_yield_pct", "type": "float", "required": false, "min": 84, "max": 101.5, "decimals": 1 },
+        { "name": "batch_record_complete", "type": "boolean", "required": true, "trueRate": 0.91 },
+        { "name": "scheduled_start", "type": "date", "required": true }
+      ]
+    },
+    "work_center_confirmations": {
+      "lookupKeys": ["confirmation_number", "order_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "confirmation_number", "type": "number", "required": true, "min": 9000000, "max": 9999999 },
+        { "name": "order_number", "type": "number", "required": true, "min": 1000000, "max": 1999999 },
+        { "name": "work_center", "type": "enum", "required": true, "values": ["CNC-01", "WELD-02", "ASSY-03", "PAINT-01", "PRESS-05"], "weights": [25, 18, 27, 14, 16] },
+        { "name": "yield_qty", "type": "number", "required": true, "min": 0, "max": 5000 },
+        { "name": "scrap_qty", "type": "number", "required": false, "min": 0, "max": 120 },
+        { "name": "setup_time_min", "type": "number", "required": false, "min": 0, "max": 480 },
+        { "name": "machine_time_min", "type": "number", "required": true, "min": 1, "max": 1440 },
+        { "name": "confirmed_by", "type": "person.fullName", "required": true },
+        { "name": "confirmation_date", "type": "date", "required": true }
+      ]
+    },
+    "material_stagings": {
+      "lookupKeys": ["staging_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "staging_number", "type": "number", "required": true, "min": 3000000, "max": 3999999 },
+        { "name": "material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "order_number", "type": "number", "required": true, "min": 1000000, "max": 1999999 },
+        { "name": "staging_area", "type": "enum", "required": true, "values": ["line_side", "supermarket", "kanban_rack", "kit_cart", "bulk_floor"], "weights": [30, 25, 20, 15, 10] },
+        { "name": "required_qty", "type": "number", "required": true, "min": 1, "max": 10000 },
+        { "name": "staged_qty", "type": "number", "required": false, "min": 0, "max": 10000 },
+        { "name": "staging_status", "type": "enum", "required": true, "values": ["requested", "picked", "staged", "consumed", "shorted"], "weights": [15, 20, 25, 32, 8] },
+        { "name": "shortage_flag", "type": "boolean", "required": true, "trueRate": 0.08 },
+        { "name": "staging_due", "type": "date", "required": true }
+      ]
+    },
+    "inspection_lots": {
+      "lookupKeys": ["inspection_lot_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "inspection_lot_number", "type": "number", "required": true, "min": 10000000, "max": 19999999 },
+        { "name": "lot_origin", "type": "enum", "required": true, "values": ["goods_receipt", "in_process", "final_inspection", "customer_return", "audit"], "weights": [35, 25, 25, 8, 7] },
+        { "name": "material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "lot_qty", "type": "number", "required": true, "min": 1, "max": 25000 },
+        { "name": "sample_size", "type": "number", "required": true, "min": 1, "max": 315 },
+        { "name": "aql_level", "type": "enum", "required": true, "values": ["0.65", "1.0", "1.5", "2.5", "4.0"], "weights": [15, 25, 25, 25, 10] },
+        { "name": "usage_decision", "type": "enum", "required": true, "values": ["accepted", "rejected", "pending", "accepted_with_deviation"], "weights": [68, 7, 20, 5] },
+        { "name": "skip_lot", "type": "boolean", "required": true, "trueRate": 0.15 },
+        { "name": "lot_created", "type": "date", "required": true }
+      ]
+    },
+    "nonconformance_records": {
+      "lookupKeys": ["nc_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "nc_number", "type": "number", "required": true, "min": 600000, "max": 699999 },
+        { "name": "defect_code", "type": "enum", "required": true, "values": ["dimensional", "surface_finish", "contamination", "missing_operation", "wrong_material", "documentation"], "weights": [30, 20, 12, 14, 8, 16] },
+        { "name": "severity", "type": "enum", "required": true, "values": ["critical", "major", "minor"], "weights": [8, 32, 60] },
+        { "name": "disposition", "type": "enum", "required": true, "values": ["use_as_is", "rework", "repair", "scrap", "return_to_vendor"], "weights": [12, 38, 15, 25, 10] },
+        { "name": "quantity_affected", "type": "number", "required": true, "min": 1, "max": 5000 },
+        { "name": "containment_complete", "type": "boolean", "required": true, "trueRate": 0.85 },
+        { "name": "mrb_required", "type": "boolean", "required": true, "trueRate": 0.12 },
+        { "name": "detected_date", "type": "date", "required": true },
+        { "name": "detected_by", "type": "person.fullName", "required": true }
+      ]
+    },
+    "capa_actions": {
+      "lookupKeys": ["capa_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "capa_number", "type": "number", "required": true, "min": 70000, "max": 79999 },
+        { "name": "source", "type": "enum", "required": true, "values": ["internal_audit", "customer_complaint", "nc_escalation", "management_review", "regulatory_finding"], "weights": [25, 30, 28, 10, 7] },
+        { "name": "action_type", "type": "enum", "required": true, "values": ["corrective", "preventive"], "weights": [72, 28] },
+        { "name": "root_cause_method", "type": "enum", "required": true, "values": ["five_why", "fishbone", "eight_d", "fault_tree", "is_is_not"], "weights": [35, 20, 30, 8, 7] },
+        { "name": "status", "type": "enum", "required": true, "values": ["open", "containment", "root_cause_analysis", "implementation", "effectiveness_check", "closed"], "weights": [10, 8, 15, 20, 12, 35] },
+        { "name": "due_date", "type": "date", "required": true },
+        { "name": "effectiveness_verified", "type": "boolean", "required": true, "trueRate": 0.55 },
+        { "name": "owner_name", "type": "person.fullName", "required": true },
+        { "name": "days_open", "type": "number", "required": false, "min": 0, "max": 400 }
+      ]
+    },
+    "maintenance_work_orders": {
+      "lookupKeys": ["work_order_number", "asset_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "work_order_number", "type": "number", "required": true, "min": 4000000, "max": 4999999 },
+        { "name": "asset_number", "type": "number", "required": true, "min": 100000, "max": 199999 },
+        { "name": "maintenance_type", "type": "enum", "required": true, "values": ["preventive", "corrective", "predictive", "condition_based", "emergency"], "weights": [40, 30, 12, 10, 8] },
+        { "name": "priority", "type": "enum", "required": true, "values": ["emergency", "urgent", "high", "routine", "shutdown_window"], "weights": [5, 12, 25, 45, 13] },
+        { "name": "work_order_status", "type": "enum", "required": true, "values": ["created", "planned", "scheduled", "in_progress", "awaiting_parts", "complete", "closed"], "weights": [10, 12, 15, 18, 8, 17, 20] },
+        { "name": "estimated_hours", "type": "float", "required": true, "min": 0.5, "max": 120, "decimals": 1 },
+        { "name": "actual_hours", "type": "float", "required": false, "min": 0.2, "max": 160, "decimals": 1 },
+        { "name": "planned_start", "type": "date", "required": true },
+        { "name": "technician_name", "type": "person.fullName", "required": false }
+      ]
+    },
+    "asset_registry_entries": {
+      "lookupKeys": ["asset_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "asset_number", "type": "number", "required": true, "min": 100000, "max": 199999 },
+        { "name": "asset_class", "type": "enum", "required": true, "values": ["cnc_machine", "stamping_press", "robot_cell", "conveyor", "air_compressor", "boiler", "chiller", "agv"], "weights": [22, 12, 15, 18, 10, 5, 8, 10] },
+        { "name": "criticality_ranking", "type": "enum", "required": true, "values": ["a_constraint", "b_essential", "c_important", "d_redundant"], "weights": [10, 25, 40, 25] },
+        { "name": "manufacturer", "type": "company.name", "required": true },
+        { "name": "install_date", "type": "date", "required": true },
+        { "name": "replacement_value_usd", "type": "number", "required": true, "min": 15000, "max": 4500000 },
+        { "name": "mtbf_hours", "type": "float", "required": false, "min": 120, "max": 12000, "decimals": 0 },
+        { "name": "mttr_hours", "type": "float", "required": false, "min": 0.5, "max": 72, "decimals": 1 },
+        { "name": "in_service", "type": "boolean", "required": true, "trueRate": 0.93 }
+      ]
+    },
+    "failure_codes": {
+      "lookupKeys": ["failure_code"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "failure_code", "type": "number", "required": true, "min": 1000, "max": 9999 },
+        { "name": "failure_mode", "type": "enum", "required": true, "values": ["bearing_wear", "seal_leak", "motor_overload", "sensor_drift", "belt_break", "hydraulic_failure", "electrical_short", "lubrication_failure"], "weights": [20, 14, 12, 10, 10, 14, 8, 12] },
+        { "name": "failure_mechanism", "type": "enum", "required": true, "values": ["fatigue", "corrosion", "erosion", "overload", "contamination", "misalignment"], "weights": [25, 15, 8, 17, 18, 17] },
+        { "name": "detection_method", "type": "enum", "required": true, "values": ["vibration_analysis", "thermography", "oil_analysis", "operator_round", "run_to_failure"], "weights": [25, 15, 12, 28, 20] },
+        { "name": "mean_time_between_failures_hours", "type": "float", "required": true, "min": 80, "max": 15000, "decimals": 0 },
+        { "name": "mean_time_to_repair_hours", "type": "float", "required": true, "min": 0.25, "max": 96, "decimals": 2 },
+        { "name": "occurrences_ytd", "type": "number", "required": true, "min": 0, "max": 45 },
+        { "name": "description", "type": "lorem.sentence", "required": false }
+      ]
+    },
+    "sensor_readings": {
+      "lookupKeys": ["asset_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "asset_number", "type": "number", "required": true, "min": 100000, "max": 199999 },
+        { "name": "sensor_type", "type": "enum", "required": true, "values": ["vibration_mm_s", "temperature_c", "pressure_bar", "motor_current_amps", "acoustic_db", "flow_lpm"], "weights": [22, 25, 18, 15, 8, 12] },
+        { "name": "reading_value", "type": "float", "required": true, "min": 0, "max": 950, "decimals": 3 },
+        { "name": "alarm_high_limit", "type": "float", "required": true, "min": 5, "max": 1000, "decimals": 2 },
+        { "name": "reading_timestamp", "type": "date", "required": true },
+        { "name": "in_alarm", "type": "boolean", "required": true, "trueRate": 0.05 },
+        { "name": "quality_flag", "type": "enum", "required": true, "values": ["good", "uncertain", "bad"], "weights": [94, 4, 2] },
+        { "name": "sample_rate_hz", "type": "number", "required": false, "min": 1, "max": 25600 }
+      ]
+    },
+    "asset_tag_hierarchies": {
+      "lookupKeys": ["tag_id", "asset_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "tag_id", "type": "number", "required": true, "min": 500000, "max": 599999 },
+        { "name": "asset_number", "type": "number", "required": true, "min": 100000, "max": 199999 },
+        { "name": "hierarchy_level", "type": "enum", "required": true, "values": ["enterprise", "site", "area", "line", "cell", "equipment_unit"], "weights": [1, 4, 10, 20, 25, 40] },
+        { "name": "parent_tag_id", "type": "number", "required": false, "min": 500000, "max": 599999 },
+        { "name": "site", "type": "enum", "required": true, "values": ["1010", "1020", "2040", "3100"], "weights": [40, 30, 20, 10] },
+        { "name": "functional_location_active", "type": "boolean", "required": true, "trueRate": 0.9 },
+        { "name": "tag_description", "type": "lorem.sentence", "required": false }
+      ]
+    },
+    "downtime_events": {
+      "lookupKeys": ["event_number", "asset_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "event_number", "type": "number", "required": true, "min": 2000000, "max": 2999999 },
+        { "name": "asset_number", "type": "number", "required": true, "min": 100000, "max": 199999 },
+        { "name": "downtime_category", "type": "enum", "required": true, "values": ["planned_maintenance", "changeover", "breakdown", "material_shortage", "quality_stop", "operator_unavailable", "minor_stop"], "weights": [15, 22, 18, 12, 8, 5, 20] },
+        { "name": "duration_minutes", "type": "number", "required": true, "min": 1, "max": 2880 },
+        { "name": "oee_loss_category", "type": "enum", "required": true, "values": ["availability", "performance", "quality"], "weights": [55, 33, 12] },
+        { "name": "constraint_asset", "type": "boolean", "required": true, "trueRate": 0.2 },
+        { "name": "reason_code", "type": "number", "required": true, "min": 100, "max": 999 },
+        { "name": "start_time", "type": "date", "required": true },
+        { "name": "reported_by", "type": "person.fullName", "required": false }
+      ]
+    },
+    "engineering_change_orders": {
+      "lookupKeys": ["eco_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "eco_number", "type": "number", "required": true, "min": 20000, "max": 29999 },
+        { "name": "change_class", "type": "enum", "required": true, "values": ["class_1_form_fit_function", "class_2_minor", "document_only"], "weights": [22, 55, 23] },
+        { "name": "change_reason", "type": "enum", "required": true, "values": ["design_defect", "cost_reduction", "supplier_obsolescence", "customer_request", "regulatory", "manufacturability"], "weights": [22, 20, 15, 16, 7, 20] },
+        { "name": "effectivity_type", "type": "enum", "required": true, "values": ["serial_number", "date", "lot", "immediate_use_up"], "weights": [25, 35, 15, 25] },
+        { "name": "effectivity_date", "type": "date", "required": true },
+        { "name": "affected_item_count", "type": "number", "required": true, "min": 1, "max": 240 },
+        { "name": "export_controlled", "type": "boolean", "required": true, "trueRate": 0.1 },
+        { "name": "approval_status", "type": "enum", "required": true, "values": ["draft", "in_review", "approved", "released", "rejected"], "weights": [15, 20, 15, 42, 8] },
+        { "name": "requested_by", "type": "person.fullName", "required": true }
+      ]
+    },
+    "bom_revisions": {
+      "lookupKeys": ["bom_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "bom_number", "type": "number", "required": true, "min": 300000, "max": 399999 },
+        { "name": "parent_material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "revision_level", "type": "enum", "required": true, "values": ["A", "B", "C", "D", "E", "F"], "weights": [30, 25, 18, 13, 8, 6] },
+        { "name": "eco_number", "type": "number", "required": true, "min": 20000, "max": 29999 },
+        { "name": "component_count", "type": "number", "required": true, "min": 2, "max": 850 },
+        { "name": "phantom_assembly", "type": "boolean", "required": true, "trueRate": 0.08 },
+        { "name": "bom_usage", "type": "enum", "required": true, "values": ["production", "engineering", "costing", "service"], "weights": [55, 25, 10, 10] },
+        { "name": "valid_from", "type": "date", "required": true }
+      ]
+    },
+    "cad_document_records": {
+      "lookupKeys": ["document_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "document_number", "type": "number", "required": true, "min": 8000000, "max": 8999999 },
+        { "name": "document_type", "type": "enum", "required": true, "values": ["part_model", "assembly_model", "drawing", "simulation_result", "specification"], "weights": [32, 18, 30, 8, 12] },
+        { "name": "revision", "type": "enum", "required": true, "values": ["A", "B", "C", "D", "E"], "weights": [35, 28, 18, 12, 7] },
+        { "name": "lifecycle_state", "type": "enum", "required": true, "values": ["in_work", "in_review", "released", "superseded", "obsolete"], "weights": [20, 12, 48, 12, 8] },
+        { "name": "itar_restricted", "type": "boolean", "required": true, "trueRate": 0.07 },
+        { "name": "file_size_mb", "type": "float", "required": false, "min": 0.1, "max": 2400, "decimals": 1 },
+        { "name": "checked_out", "type": "boolean", "required": true, "trueRate": 0.15 },
+        { "name": "last_modified", "type": "date", "required": true },
+        { "name": "author_name", "type": "person.fullName", "required": true }
+      ]
+    },
+    "supply_plans": {
+      "lookupKeys": ["plan_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "plan_number", "type": "number", "required": true, "min": 6000000, "max": 6999999 },
+        { "name": "material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "supplying_plant", "type": "enum", "required": true, "values": ["1010", "1020", "2040", "3100", "external_vendor"], "weights": [28, 22, 15, 10, 25] },
+        { "name": "planning_horizon_weeks", "type": "number", "required": true, "min": 4, "max": 52 },
+        { "name": "planned_supply_qty", "type": "number", "required": true, "min": 50, "max": 100000 },
+        { "name": "safety_stock_qty", "type": "number", "required": true, "min": 0, "max": 15000 },
+        { "name": "plan_status", "type": "enum", "required": true, "values": ["draft", "published", "committed", "revised"], "weights": [20, 35, 30, 15] },
+        { "name": "supply_risk_score", "type": "float", "required": false, "min": 0, "max": 100, "decimals": 1 },
+        { "name": "plan_date", "type": "date", "required": true }
+      ]
+    },
+    "demand_signals": {
+      "lookupKeys": ["signal_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "signal_number", "type": "number", "required": true, "min": 5500000, "max": 5599999 },
+        { "name": "material_number", "type": "number", "required": true, "min": 400000, "max": 499999 },
+        { "name": "signal_type", "type": "enum", "required": true, "values": ["firm_order", "statistical_forecast", "edi_release", "spot_demand", "safety_stock_replenishment"], "weights": [30, 30, 22, 10, 8] },
+        { "name": "customer_name", "type": "company.name", "required": true },
+        { "name": "demand_qty", "type": "number", "required": true, "min": 1, "max": 50000 },
+        { "name": "requested_date", "type": "date", "required": true },
+        { "name": "forecast_error_pct", "type": "float", "required": false, "min": -45, "max": 45, "decimals": 1 },
+        { "name": "abc_class", "type": "enum", "required": true, "values": ["A", "B", "C"], "weights": [20, 30, 50] },
+        { "name": "firm_within_fence", "type": "boolean", "required": true, "trueRate": 0.4 }
+      ]
+    },
+    "scenario_runs": {
+      "lookupKeys": ["run_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "run_number", "type": "number", "required": true, "min": 100000, "max": 109999 },
+        { "name": "scenario_type", "type": "enum", "required": true, "values": ["capacity_constraint", "demand_surge", "supplier_disruption", "network_redesign", "inventory_optimization"], "weights": [25, 22, 20, 8, 25] },
+        { "name": "solver_status", "type": "enum", "required": true, "values": ["optimal", "feasible", "infeasible", "timeout"], "weights": [55, 30, 9, 6] },
+        { "name": "service_level_pct", "type": "float", "required": true, "min": 72, "max": 99.9, "decimals": 1 },
+        { "name": "projected_inventory_value_usd", "type": "number", "required": true, "min": 250000, "max": 85000000 },
+        { "name": "run_duration_seconds", "type": "number", "required": false, "min": 5, "max": 7200 },
+        { "name": "baseline_run", "type": "boolean", "required": true, "trueRate": 0.2 },
+        { "name": "run_date", "type": "date", "required": true },
+        { "name": "planner_email", "type": "internet.email", "required": true }
+      ]
+    },
+    "safety_incidents": {
+      "lookupKeys": ["incident_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "incident_number", "type": "number", "required": true, "min": 40000, "max": 49999 },
+        { "name": "osha_classification", "type": "enum", "required": true, "values": ["near_miss", "first_aid", "recordable", "restricted_duty_dart", "lost_time_dart", "fatality"], "weights": [450, 300, 140, 60, 49, 1] },
+        { "name": "injury_type", "type": "enum", "required": true, "values": ["laceration", "strain_sprain", "contusion", "burn", "fracture", "foreign_body_eye", "amputation"], "weights": [24, 30, 18, 8, 9, 9, 2] },
+        { "name": "days_away", "type": "number", "required": false, "min": 0, "max": 180 },
+        { "name": "shift", "type": "enum", "required": true, "values": ["first", "second", "third", "weekend"], "weights": [45, 28, 17, 10] },
+        { "name": "incident_date", "type": "date", "required": true },
+        { "name": "root_cause_complete", "type": "boolean", "required": true, "trueRate": 0.7 },
+        { "name": "reported_to_osha", "type": "boolean", "required": true, "trueRate": 0.05 },
+        { "name": "description", "type": "lorem.sentence", "required": false }
+      ]
+    },
+    "permit_records": {
+      "lookupKeys": ["permit_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "permit_number", "type": "number", "required": true, "min": 150000, "max": 159999 },
+        { "name": "permit_type", "type": "enum", "required": true, "values": ["loto", "hot_work", "confined_space_entry", "line_break", "working_at_height", "energized_electrical"], "weights": [32, 24, 12, 10, 14, 8] },
+        { "name": "permit_status", "type": "enum", "required": true, "values": ["requested", "issued", "active", "suspended", "closed", "expired"], "weights": [10, 15, 20, 3, 45, 7] },
+        { "name": "issue_date", "type": "date", "required": true },
+        { "name": "valid_hours", "type": "number", "required": true, "min": 1, "max": 24 },
+        { "name": "atmospheric_test_required", "type": "boolean", "required": true, "trueRate": 0.4 },
+        { "name": "lel_reading_pct", "type": "float", "required": false, "min": 0, "max": 15, "decimals": 1 },
+        { "name": "attendant_assigned", "type": "boolean", "required": true, "trueRate": 0.35 },
+        { "name": "issuer_name", "type": "person.fullName", "required": true }
+      ]
+    },
+    "emissions_readings": {
+      "lookupKeys": ["reading_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "reading_number", "type": "number", "required": true, "min": 900000, "max": 999999 },
+        { "name": "emission_source", "type": "enum", "required": true, "values": ["boiler_stack", "paint_line_rto", "emergency_generator", "wastewater_treatment", "fugitive_valves", "refrigerant_systems"], "weights": [25, 22, 8, 15, 18, 12] },
+        { "name": "pollutant", "type": "enum", "required": true, "values": ["co2", "ch4", "n2o", "nox", "sox", "voc", "pm25"], "weights": [30, 8, 5, 18, 8, 22, 9] },
+        { "name": "ghg_scope", "type": "enum", "required": true, "values": ["scope_1", "scope_2", "scope_3"], "weights": [55, 30, 15] },
+        { "name": "co2e_tonnes", "type": "float", "required": true, "min": 0.01, "max": 8500, "decimals": 2 },
+        { "name": "permit_limit_tonnes", "type": "float", "required": false, "min": 1, "max": 10000, "decimals": 1 },
+        { "name": "exceedance", "type": "boolean", "required": true, "trueRate": 0.03 },
+        { "name": "measurement_method", "type": "enum", "required": true, "values": ["cems", "stack_test", "emission_factor", "mass_balance"], "weights": [30, 15, 40, 15] },
+        { "name": "reading_date", "type": "date", "required": true }
+      ]
+    }
+  },
+  "valueStreams": {
+    "M-51": {
+      "refusalRules": [
+        "Never instruct or assist in bypassing, jumpering, or muting machine safety interlocks, light curtains, two-hand controls, or e-stops to restore throughput — safeguarding devices are governed by OSHA 1910.212 and only a qualified safety engineer may alter them under a documented management-of-change.",
+        "Never post or adjust a production confirmation for quantities not physically produced; falsified confirmations corrupt lot genealogy required by ISO 9001 clause 8.5.2 identification and traceability and misstate inventory and financial records.",
+        "Never release or restart a production order that is on quality_hold status without a recorded usage decision from Quality — production does not own hold-release authority.",
+        "Never direct operators to run feeds, speeds, temperatures, or cure times outside the released routing and control plan without an approved, documented process deviation."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Unplanned downtime exceeding 4 hours on an asset flagged constraint_asset=true",
+          "action": "escalate_to_human",
+          "handoffTarget": "plant_manager",
+          "rationale": "Constraint-asset downtime consumes irreplaceable throughput at the bottleneck; recovery sequencing and customer-impact calls belong to plant leadership, not an automated scheduler."
+        },
+        {
+          "trigger": "Scrap quantity on a single production order exceeds 5% of planned quantity",
+          "action": "escalate_to_human",
+          "handoffTarget": "process_engineer",
+          "rationale": "Order-level scrap at this rate usually indicates a process shift or tooling degradation that needs first-piece re-qualification before continuing the run."
+        },
+        {
+          "trigger": "Request to modify or reverse a work center confirmation more than 24 hours after shift close",
+          "action": "request_more_info",
+          "handoffTarget": "production_supervisor",
+          "rationale": "Late confirmation corrections are the most common vector for labor and yield misreporting; the supervisor must verify the physical count before the record changes."
+        }
+      ],
+      "outOfScope": [
+        "Employee timekeeping disputes, disciplinary actions, or shift staffing decisions",
+        "Capital equipment purchase justification or appropriation requests",
+        "Direct writes to PLC, DCS, or robot controller programs on the shop floor"
+      ]
+    },
+    "M-52": {
+      "refusalRules": [
+        "Never auto-disposition a critical-severity nonconformance as use_as_is — critical NCs require Material Review Board authority with documented engineering justification, and customer or regulatory concession where the contract demands it.",
+        "Never edit, backdate, or delete recorded inspection results or batch records; data integrity (ALCOA — attributable, legible, contemporaneous, original, accurate) applies to GMP-regulated lines and is the audit backbone of ISO 9001, AS9100, and IATF 16949 certification everywhere else.",
+        "Never skip or reduce mandated inspection of customer-designated critical-to-quality characteristics defined in the PPAP control plan or AS9100 first-article requirements, regardless of schedule pressure.",
+        "Never close a CAPA without a completed, documented effectiveness verification — closing on implementation alone is a repeat-finding generator in registrar audits."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "SPC run rule violation — 4 of 5 consecutive points beyond 1 sigma on the same side of center — on a CTQ characteristic",
+          "action": "escalate_to_human",
+          "handoffTarget": "quality_engineer",
+          "rationale": "A Western Electric zone B run signals a real process shift before parts go out of spec; the QE must decide on containment and re-centering while the material is still segregable."
+        },
+        {
+          "trigger": "Critical nonconformance detected on a lot already shipped or allocated to a customer order",
+          "action": "escalate_to_human",
+          "handoffTarget": "quality_manager",
+          "rationale": "Escaped critical defects trigger customer notification, potential stop-ship or recall, and AS9100 clause 8.7 nonconforming-output obligations that carry contractual and liability weight."
+        },
+        {
+          "trigger": "CAPA effectiveness check past due by more than 30 days",
+          "action": "escalate_to_human",
+          "handoffTarget": "quality_director",
+          "rationale": "An overdue effectiveness check means the organization cannot demonstrate the corrective action worked — a standing major-finding risk at the next surveillance audit."
+        }
+      ],
+      "outOfScope": [
+        "Supplier commercial negotiations or debit-memo settlement amounts",
+        "Product liability or warranty legal determinations",
+        "Laboratory test method development and measurement system validation design"
+      ]
+    },
+    "M-53": {
+      "refusalRules": [
+        "Never authorize removal of another employee's lockout/tagout lock or re-energization of equipment under active LOTO — OSHA 1910.147 reserves lock removal to the employee who applied it, or to the documented absent-employee procedure executed by supervision, never to a system or agent.",
+        "Never defer or extend past their regulatory interval the PM inspections on safety-critical devices — pressure relief valves, fire suppression, overhead crane load-path components — schedule pressure is not a permitted basis for deferral.",
+        "Never fabricate or interpolate meter readings, PM checklist results, or completion timestamps to close work orders; false maintenance history destroys the failure-data foundation of the reliability program.",
+        "Never recommend defeating a machine safety circuit as a temporary repair, even with a plan to correct it later — temporary bypasses require a formal, time-bound, risk-assessed bypass permit owned by engineering."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Vibration velocity reading enters ISO 10816/20816 zone D on an asset with criticality_ranking a_constraint",
+          "action": "escalate_to_human",
+          "handoffTarget": "reliability_engineer",
+          "rationale": "Zone D means damage is probable with continued operation; on a constraint asset the run/shutdown tradeoff is a senior reliability call weighing catastrophic failure against lost throughput."
+        },
+        {
+          "trigger": "Same failure code recorded 3 or more times on one asset within 90 days",
+          "action": "escalate_to_human",
+          "handoffTarget": "reliability_engineer",
+          "rationale": "Repeat failures at that frequency mean the maintenance strategy is treating symptoms; a formal root cause analysis and possible redesign is needed, not another corrective work order."
+        },
+        {
+          "trigger": "Emergency-priority work order raised against a boiler, pressure vessel, or other code-stamped equipment",
+          "action": "escalate_to_human",
+          "handoffTarget": "authorized_inspector",
+          "rationale": "ASME/NBIC jurisdictional equipment may not be repaired ad hoc — repairs need an authorized inspector and an R-stamp holder, and an improper weld repair is a life-safety event."
+        }
+      ],
+      "outOfScope": [
+        "Warranty and insurance claim adjudication with OEMs or underwriters",
+        "Structural or civil engineering certification of building and foundation modifications",
+        "Contractor prequalification and site-access safety approval decisions"
+      ]
+    },
+    "M-54": {
+      "refusalRules": [
+        "Never commit a delivery date to a customer without an available-to-promise or capable-to-promise check against real supply and capacity — verbal 'we'll make it work' commitments are how past-due backlogs are born.",
+        "Never alter demand history, forecast overrides, or consumption records to make inventory or forecast-accuracy KPIs look better; planning data integrity is the substrate every MRP run depends on.",
+        "Never place purchase requisitions with vendors that are blocked, unapproved, or absent from the approved vendor list, and never bypass denied-party and sanctions screening to shortcut a shortage.",
+        "Never expedite or reroute material subject to customs bond, conflict-minerals declaration, or country-of-origin controls without trade-compliance review — a fast truck does not cure a compliance hold."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Projected line-down: material coverage below 24 hours at a constraint work center with staging_status shorted",
+          "action": "escalate_to_human",
+          "handoffTarget": "materials_manager",
+          "rationale": "Sub-day coverage at the bottleneck exhausts every automated remedy (alternate stock, transfer orders); premium freight and allocation decisions carry cost authority the agent does not hold."
+        },
+        {
+          "trigger": "Force-majeure or capacity-decommit notice received from a single-source supplier",
+          "action": "escalate_to_human",
+          "handoffTarget": "procurement_director",
+          "rationale": "Single-source disruption requires commercial leverage, alternate-source qualification, and possibly customer allocation — cross-functional decisions above planning-system authority."
+        },
+        {
+          "trigger": "Approved scenario run projects service level below the 90% contractual floor for any strategic customer",
+          "action": "escalate_to_human",
+          "handoffTarget": "sandop_process_owner",
+          "rationale": "Publishing a plan that knowingly breaches a contractual service commitment is an executive tradeoff (expedite spend vs. penalty exposure), and must be decided in the S&OP forum."
+        }
+      ],
+      "outOfScope": [
+        "Supplier price negotiation, contract award, and signature authority",
+        "Customs broker filings and import/export legal declarations",
+        "Carrier accident, cargo-claim, and freight liability settlements"
+      ]
+    },
+    "M-55": {
+      "refusalRules": [
+        "Never transmit, summarize, or expose ITAR/EAR-controlled technical data (drawings, models, specs flagged itar_restricted or export_controlled) to unauthorized persons, foreign-person accounts, or uncontrolled storage — export-control violations are strict-liability federal offenses.",
+        "Never implement a Class 1 (form/fit/function) engineering change without full change control board approval and, where contracts require it, customer notification before effectivity — Class 1 changes alter interchangeability and certification basis.",
+        "Never modify a released drawing or model outside the ECO process; redline shortcuts on released revisions break the configuration baseline that manufacturing, suppliers, and auditors all build against.",
+        "Never retroactively edit BOM revision history or effectivity records — as-designed/as-built traceability by serial number and lot must remain reconstructible for the life of the product."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "ECO touches a safety-critical characteristic, a certified/qualified design (e.g., part of a regulatory submission or type certificate), or a customer-frozen interface",
+          "action": "escalate_to_human",
+          "handoffTarget": "chief_engineer",
+          "rationale": "Changes inside a certification or qualification envelope can invalidate the approval basis; only the design authority can judge re-qualification scope."
+        },
+        {
+          "trigger": "Effectivity conflict detected: open production orders in process against a revision the ECO supersedes with immediate effectivity",
+          "action": "request_more_info",
+          "handoffTarget": "change_analyst",
+          "rationale": "Cut-in decisions (use-up, rework in place, or scrap WIP) depend on inventory position and customer commitments the ECO record alone does not show."
+        },
+        {
+          "trigger": "Document access request where the requester's export-authorization status does not match the document's ITAR/EAR classification",
+          "action": "refuse",
+          "handoffTarget": "empowered_official",
+          "rationale": "Access mismatches must be denied first and reviewed second; only the company's empowered official can grant exceptions under a license or exemption."
+        }
+      ],
+      "outOfScope": [
+        "Patent filing, IP licensing, and invention-disclosure legal decisions",
+        "Product pricing, margin, and commercial launch decisions",
+        "Industrial design aesthetics and brand styling direction"
+      ]
+    },
+    "M-56": {
+      "refusalRules": [
+        "Never reclassify an OSHA recordable injury as first aid, or suppress case entry on the OSHA 300 log, to protect TRIR/DART metrics — 29 CFR 1904 recordkeeping integrity violations are willful citations when incentive-driven.",
+        "Never adjust, substitute, or 'estimate around' CEMS or stack-test emissions data to stay under a Title V permit limit; exceedances must be reported as measured, with deviation reports filed inside the permit's notification window.",
+        "Never authorize confined-space entry without a completed atmospheric test (oxygen, LEL, toxics), a designated attendant, and a verified rescue plan — 1910.146 has no schedule-pressure exemption.",
+        "Never delete or alter injury/illness and exposure records within their retention period — OSHA 1904.33 requires five years for logs, and 1910.1020 up to thirty years for exposure records."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "LEL reading above 10% at any point during active hot work or in a permit-required space",
+          "action": "refuse",
+          "handoffTarget": "ehs_manager",
+          "rationale": "10% LEL is the universally applied stop-work threshold; work must halt and cannot resume until the source is found and continuous monitoring re-clears the atmosphere."
+        },
+        {
+          "trigger": "Emissions reading with exceedance=true against the source's Title V permit limit",
+          "action": "escalate_to_human",
+          "handoffTarget": "environmental_engineer",
+          "rationale": "Permit exceedances start a regulatory clock — prompt deviation reporting to the agency, root cause, and corrective action documentation, all of which carry enforcement exposure if late."
+        },
+        {
+          "trigger": "Any fatality, inpatient hospitalization, amputation, or loss of an eye",
+          "action": "escalate_to_human",
+          "handoffTarget": "site_leader",
+          "rationale": "OSHA requires fatality reporting within 8 hours and hospitalization/amputation/eye-loss within 24; site leadership owns the report, scene preservation, and family/agency communication."
+        }
+      ],
+      "outOfScope": [
+        "Workers' compensation claim administration and benefit determinations",
+        "Environmental enforcement litigation strategy and settlement posture",
+        "Medical diagnosis, treatment decisions, or fitness-for-duty determinations"
+      ]
+    }
+  }
+}

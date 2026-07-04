@@ -1,0 +1,130 @@
+{
+  "id": "guidewire_policycenter_schema",
+  "version": 1,
+  "collections": {
+    "agreements": {
+      "primaryKey": "agreement_id",
+      "fields": {
+        "agreement_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "counterparty": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "expiration_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "clauses": {
+      "primaryKey": "clause_id",
+      "fields": {
+        "clause_id": {
+          "type": "string"
+        },
+        "agreement_id": {
+          "type": "string"
+        },
+        "clause_type": {
+          "type": "string"
+        },
+        "risk_level": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "obligations": {
+      "primaryKey": "obligation_id",
+      "fields": {
+        "obligation_id": {
+          "type": "string"
+        },
+        "agreement_id": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "amendments": {
+      "primaryKey": "amendment_id",
+      "fields": {
+        "amendment_id": {
+          "type": "string"
+        },
+        "agreement_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": {
+          "type": "string"
+        },
+        "source_record_id": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
