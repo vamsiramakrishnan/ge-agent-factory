@@ -16,6 +16,11 @@ export const OFFICIAL_AGENTS_CLI_SKILLS = [
 
 export const FACTORY_SKILL_BINDINGS = [
   {
+    capability: "factory_install",
+    stages: ["install", "bootstrap", "setup", "provision", "first_proof"],
+    skill: "installing-the-factory",
+  },
+  {
     capability: "factory_line",
     stages: [
       "user_interview",
@@ -70,6 +75,11 @@ export const FACTORY_SKILL_BINDINGS = [
     capability: "release_run",
     stages: ["promote", "plan_deploy", "load_data", "deploy_runtime", "poll_runtime", "register_tools", "publish_enterprise", "verify_live", "deploy", "publish"],
     skill: "running-release",
+  },
+  {
+    capability: "live_proof",
+    stages: ["verify_live", "drive", "bench", "live_proof", "cassette", "evalset_replay", "live_transcript"],
+    skill: "driving-live-proof",
   },
   {
     capability: "console_operation",

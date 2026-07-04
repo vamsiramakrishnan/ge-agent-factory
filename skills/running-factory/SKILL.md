@@ -67,6 +67,12 @@ Harness task:
 node apps/factory/src/cli.js agent run --workspace-dir <workspace-dir> --message "<task>" --agent antigravity-sdk
 ```
 
+Compile the behavioral eval suite from the captured contract — needs only a registered/captured spec (or any spec-envelope JSON), no build artifacts required (local, deterministic; emits evalset/dataset/coverage under `.ge/behavioral/`):
+
+```bash
+bun tools/ge.mjs evals compile --max-cases 40
+```
+
 Summarize a factory run artifact (the run writes `factory-run-<stamp>.json` under `.ge/factory/`):
 
 ```bash
@@ -79,3 +85,4 @@ node skills/running-factory/scripts/summarize-factory-run.mjs .ge/factory/factor
 - Read `references/cli-harness-loop.md` before automating CLI calls.
 - Read `references/assembly-line-role.md` to understand where this skill fits in the line.
 - Use `assets/factory-run-example.json` as the reference shape of a `ge.agent_factory.run` artifact — what `factory run` writes and what scripts/summarize-factory-run.mjs parses (smoke it against this file).
+- Engine: the eval-generation behind `ge evals compile` and the emitted eval artifacts is `@ge/evalkit` (`packages/evalkit/README.md`) — read it with `docs/reference/evaluation-generation.md` when generated evalsets/datasets need tuning or debugging.

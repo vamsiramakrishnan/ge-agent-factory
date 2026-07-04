@@ -46,14 +46,30 @@ one describes what is actually wired in today:
 > implementations in the last column can and do drift independently.
 {: .warning }
 
+## Second Package Wave — synthetic data and evals
+
+> Status as of **2026-07-04**. Unlike the first wave, both packages landed
+> **wired in from day one**: the old in-tree implementations were deleted in
+> the same change, so there is no duplicate un-synced copy to drift.
+{: .status }
+
+| Package | Source Boundary | Status and real call sites today |
+| --- | --- | --- |
+| `@ge/synthkit` | Deterministic synthetic-data engine: pack recipes, seeded distributions, the realism tier, faker-backed value generation, the Snowfakery recipe renderers (see [`packages/synthkit/README.md`](../packages/synthkit/README.md)) | **Wired in** — declared `workspace:*` dependency of `@ge/factory`; imported by `apps/factory/scripts/generate-mock-data.mjs`, `plan-mock-data.mjs`, `generate-simulator-data.mjs`, `materialize-simulator-seeds.mjs`, `factory.mjs`, and `factory/data/bigquery-types.mjs`. The three pre-extraction `generateValue` copies and three divergent Snowfakery renderers were collapsed into the package (golden suites byte-identical). |
+| `@ge/evalkit` | Eval-generation and eval-metrics engine: the behavioral compiler (graph → expansions → set-cover), perturbation/adversarial synthesis, eval-artifact emitters, lexical-similarity metrics, eval statistics (see [`packages/evalkit/README.md`](../packages/evalkit/README.md)) | **Wired in** — imported by `apps/factory/scripts/factory/evals/render-eval-artifacts.mjs`, `tools/ge/evals.mjs`, `tools/lib/evals/compile-command.mjs`, and `tools/lib/live/prove-live.mjs`. |
+
+Reference docs for what the engines produce:
+[Synthetic data](./reference/synthetic-data.html) and
+[Evaluation generation](./reference/evaluation-generation.html).
+
 ## Larger Candidates
 
 | Candidate | Why It Should Become Standalone |
 | --- | --- |
-| `@ge/mock-generator` | The generator currently mixes CLI orchestration, simulator selection, schema projection, fixture generation, and generated workspace emission. Splitting it would let mock generation run as a library, CI task, or service. |
+| `@ge/mock-generator` | **Substantially delivered by `@ge/synthkit`** (second wave, above): recipe/distribution/realism/value generation now live in the package. What remains in `apps/factory` is CLI orchestration, simulator selection, and workspace emission — extract further only if mock generation needs to run as a standalone service. |
 | `@ge/factory-control` | Factory request submission, task queueing, and ledger surfaces can become an API package shared by gateway, console, tests, and external automation. |
 | `@ge/factory-gateway` | HTTP/auth/IAP/OIDC gateway behavior is deployable as its own service package, separate from installer and generated-agent code. |
-| `@ge/eval-contracts` | Evalset, optimizer, golden behavior, and promotion packet shapes are reusable by generated agents, harness tests, and release gates. |
+| `@ge/eval-contracts` | **Substantially delivered by `@ge/evalkit`** (second wave, above): evalset compilation, emitters, and metrics now live in the package. Promotion-packet shapes remain in `apps/factory/src/promotion-packet.js`. |
 
 ## Parallelism Model
 

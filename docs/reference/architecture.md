@@ -142,6 +142,38 @@ The retry metadata on each stage (`RETRY_POLICIES`) describes how a stage
 *may* safely be retried by an operator — it is **metadata, not an automatic
 retry engine**; nothing re-executes a stage from those values today.
 
+### The skill matrix — stations to commands, engines, and docs
+
+Every station skill maps to the `ge` commands it drives, the engine packages
+behind those commands, and the reference docs that describe them. The table is
+rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
+(`apps/factory/src/skill-registry.js`), and the shared command registry
+(`tools/lib/ge-command-registry.mjs`), so it cannot drift from those sources:
+
+<!-- BEGIN GENERATED: skill-matrix — do not edit; run `bun run docs:skill-matrix` -->
+| Station skill | Capability | `ge` commands | Engine packages | Reference docs |
+|---|---|---|---|---|
+| [`installing-the-factory`](../../skills/installing-the-factory/) | `factory_install` | `ge doctor`, `ge prove` | — | [`getting-started.md`](../start/getting-started.md) |
+| [`navigating-factory-line`](../../skills/navigating-factory-line/) | `factory_line` | — | — | [`architecture.md`](architecture.md), [`atomic-capabilities.md`](atomic-capabilities.md) |
+| [`interviewing-specs`](../../skills/interviewing-specs/) | `spec_interview` | `ge capture`, `ge agents register` | [`@ge/agent-spec`](../../packages/agent-spec/) | [`spec-schema.md`](spec-schema.md) |
+| [`planning-missions`](../../skills/planning-missions/) | `mission_planning` | — | — | — |
+| [`running-factory`](../../skills/running-factory/) | `factory_run` | `ge pipeline run`, `ge daemon start`, `ge prove`, `ge agents build`, `ge agents build --local`, `ge agents sync`, `ge evals compile` | [`@ge/evalkit`](../../packages/evalkit/) | [`agent-generation.md`](agent-generation.md), [`evaluation-generation.md`](evaluation-generation.md) |
+| [`building-simulators`](../../skills/building-simulators/) | `simulator_build` | `ge data synth`, `ge pipeline run`, `ge daemon start` | [`@ge/synthkit`](../../packages/synthkit/) | [`synthetic-data.md`](synthetic-data.md), [`simulator-systems.md`](simulator-systems.md) |
+| [`checking-workspaces`](../../skills/checking-workspaces/) | `workspace_check` | — | [`@ge/agent-workspace`](../../packages/agent-workspace/) | — |
+| [`running-release`](../../skills/running-release/) | `release_run` | `ge handoff`, `ge agents status`, `ge agents logs` | — | — |
+| [`driving-live-proof`](../../skills/driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../../packages/evalkit/) | [`evaluation-generation.md`](evaluation-generation.md), [`metric-applicability.md`](metric-applicability.md), [`live-transcript.md`](live-transcript.md), [`live-budgets.md`](live-budgets.md) |
+| [`operating-console`](../../skills/operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](console-and-apis.md) |
+| [`recording-evidence`](../../skills/recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../../packages/run-ledger/) | — |
+| [`operating-the-factory`](../../skills/operating-the-factory/) | `factory_operation` | `ge agents status`, `ge doctor`, `factory list-usecases` | — | [`agent-operability.md`](agent-operability.md), [`cli.md`](cli.md) |
+| [`standing-up-the-platform`](../../skills/standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge mcp doctor` | — | [`config.md`](config.md), [`architecture.md`](architecture.md) |
+| [`deploying-the-control-plane`](../../skills/deploying-the-control-plane/) | `control_plane_deploy` | — | — | [`architecture.md`](architecture.md) |
+| [`grounding-interviews-with-documents`](../../skills/grounding-interviews-with-documents/) | `document_grounding` | `ge capture` | — | [`spec-schema.md`](spec-schema.md) |
+| [`managing-access`](../../skills/managing-access/) | `access_control` | — | — | — |
+| [`triaging-runs`](../../skills/triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
+| [`guarding-the-factory`](../../skills/guarding-the-factory/) | `factory_safety` | — | — | — |
+| [`authoring-okf-specs`](../../skills/authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../../packages/okf/) | [`okf.md`](okf.md), [`agent-lifecycle.md`](agent-lifecycle.md) |
+<!-- END GENERATED: skill-matrix -->
+
 ---
 
 ## The run ledger

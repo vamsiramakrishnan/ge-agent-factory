@@ -88,3 +88,4 @@ node skills/driving-live-proof/scripts/replay-smoke.mjs
 - Read `references/cassettes.md` before recording, editing, or replaying cassettes.
 - Copy `assets/turns-example.txt` as the starting `--script` file, and `assets/live-budgets-example.json` for the `.ge.json` budget/guard/gate blocks (defaults, annotated).
 - Docs: `docs/cookbooks/drive-a-shipped-agent.md`, `docs/cookbooks/prove-live.md`, `docs/cookbooks/bench-live-budgets.md`, `docs/cookbooks/compile-behavioral-evals.md`, `docs/reference/live-transcript.md`, `docs/reference/live-budgets.md`, `docs/reference/metric-applicability.md`.
+- Engine: the behavioral compiler behind `ge evals compile` (and the metric/statistics layer) is `@ge/evalkit` (`packages/evalkit/README.md`) — read it with `docs/reference/evaluation-generation.md` when tuning case generation, coverage/set-cover selection, or adversarial/perturbation synthesis.
