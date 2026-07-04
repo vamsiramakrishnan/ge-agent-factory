@@ -1,6 +1,6 @@
 # Generated / machine-produced artifacts: collapse in diffs and mark as generated
 # so they are not reviewed as hand-written source. Regenerate via the generator
-# scripts (see Makefile), do not edit by hand.
+# scripts (see AGENTS.md/mise.toml), do not edit by hand.
 apps/factory/src/*.generated.js     linguist-generated=true -diff
 apps/factory/src/*.generated.json   linguist-generated=true -diff
 apps/factory/artifacts/*.json       linguist-generated=true -diff

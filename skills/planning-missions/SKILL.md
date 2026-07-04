@@ -92,7 +92,7 @@ Local mode:
 - Factory surface: local harness.
 - Workspace source: `.ge/factory/projects`.
 - Autopilot capability: local doctor/repair.
-- Publish handoff: `ge agents ship`.
+- Publish handoff: `ge handoff`.
 
 Remote mode:
 
