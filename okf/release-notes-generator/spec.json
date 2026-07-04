@@ -1,0 +1,929 @@
+{
+  "id": "release-notes-generator",
+  "title": "Release Notes Generator",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/ReleaseNotesGenerator.tsx",
+  "subtitle": "A-3904 • Software Engineering & DevOps",
+  "persona": "DevOps Lead",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "event",
+  "domainId": "domain-39",
+  "systems": [
+    "GitHub",
+    "Jira",
+    "Confluence",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Release notes prep time",
+      "before": "2-3 hours",
+      "after": "<5 minutes"
+    },
+    {
+      "label": "Breaking change detection",
+      "before": "Manual review",
+      "after": "Automated 100%"
+    },
+    {
+      "label": "Notes quality",
+      "before": "Developer-facing only",
+      "after": "User + internal versions"
+    }
+  ],
+  "statusQuo": [
+    "Release notes written manually by reading through 40+ commits and cross-referencing Jira tickets.",
+    "Breaking changes occasionally missed, causing downstream integration failures after release.",
+    "Notes written in developer jargon — not useful for product managers, support, or customers."
+  ],
+  "agentification": [
+    "Gemini transforms commit messages and Jira tickets into user-facing release notes with business context.",
+    "Breaking change detection catches API signature changes and major dependency bumps automatically.",
+    "Dual output — user-facing notes for customers and internal changelog with technical details for support."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "GitHub",
+        "description": "Commits, PRs, release tags, diff between versions"
+      },
+      {
+        "system": "Jira",
+        "description": "Ticket details, story descriptions, acceptance criteria"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Commit classification, narrative generation, breaking change detection"
+      },
+      {
+        "system": "Confluence",
+        "description": "Published release notes and internal changelog"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Commit & Ticket Collection",
+        "description": "Pull all commits since the last release tag from GitHub. Cross-reference commit messages with Jira tickets to enrich with story context and acceptance criteria."
+      },
+      {
+        "label": "Change Classification",
+        "description": "Classify each commit as feature, fix, or chore. Detect breaking changes from API signature modifications, dependency major version bumps, and database migration files."
+      },
+      {
+        "label": "Release Notes Generation",
+        "description": "Gemini transforms commits into user-facing notes: 'v2.4.0 introduces SSO support for enterprise customers (PROJ-1234), fixes timezone bug in reporting (PROJ-1289), and improves API response times by 30%.'"
+      },
+      {
+        "label": "Publication",
+        "description": "Release notes published to GitHub release page and Confluence. Internal changelog with technical details distributed to engineering and support teams."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Release Notes Generator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "github",
+        "name": "GitHub",
+        "owns": [
+          "pull_requests",
+          "commits",
+          "workflow_runs"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_github_pull_requests",
+          "query_github_commits",
+          "query_github_workflow_runs"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "jira",
+        "name": "Jira",
+        "owns": [
+          "issues",
+          "sprints",
+          "epics"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_jira_issues",
+          "query_jira_sprints",
+          "query_jira_epics"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "confluence",
+        "name": "Confluence",
+        "owns": [
+          "pages",
+          "comments",
+          "space_permissions"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_confluence_pages",
+          "query_confluence_comments",
+          "query_confluence_space_permissions"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "pull_requests",
+        "sourceSystemId": "github",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "commits",
+        "sourceSystemId": "github",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "workflow_runs",
+        "sourceSystemId": "github",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "rolled_back"
+            ],
+            "required": true
+          },
+          {
+            "name": "duration_seconds",
+            "type": "number",
+            "min": 5,
+            "max": 7200,
+            "required": true
+          },
+          {
+            "name": "started_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "environment",
+            "type": "enum",
+            "values": [
+              "dev",
+              "staging",
+              "prod"
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "issues",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sprints",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "epics",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "pages",
+        "sourceSystemId": "confluence",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "comments",
+        "sourceSystemId": "confluence",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "space_permissions",
+        "sourceSystemId": "confluence",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "documents": [
+      {
+        "id": "release-notes-generator-runbook",
+        "sourceSystemId": "github",
+        "type": "runbook",
+        "title": "Release Notes Generator Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "pull_requests",
+          "commits",
+          "workflow_runs"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "github_release_api",
+        "sourceSystemId": "github",
+        "method": "POST",
+        "path": "/api/github/release",
+        "description": "Synchronous endpoint the agent calls to release in GitHub after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "release-notes-generator-baseline-gap",
+        "description": "Seed a realistic gap where Release notes prep time sits between 2-3 hours and <5 minutes, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "pull_requests",
+          "commits"
+        ],
+        "discoveryPath": [
+          "Inspect GitHub records for the affected entities",
+          "Compare against Jira historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next DevOps Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "release_notes_generator",
+        "schemas": [
+          "github",
+          "jira",
+          "confluence"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_release_notes_generator",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "release-notes-generator-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "release-notes-generator-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Release Notes Generator workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "DevOps Lead agent for the Release Notes Generator workflow",
+      "primaryObjective": "Gemini transforms commit messages and Jira tickets into user-facing release notes with business context. Breaking change detection catches API signature changes and major dependency bumps automatically. so the DevOps Lead can move the Release notes prep time KPI.",
+      "inScope": [
+        "Gemini transforms commit messages and Jira tickets into user-facing release notes with business context",
+        "Breaking change detection catches API signature changes and major dependency bumps automatically",
+        "Dual output — user-facing notes for customers and internal changelog with technical details for support"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_github_pull_requests",
+          "kind": "query",
+          "sourceSystemId": "github",
+          "description": "Retrieve pull requests from GitHub for the Release Notes Generator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "pull_requests_records",
+            "pull_requests_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_jira_issues",
+          "kind": "query",
+          "sourceSystemId": "jira",
+          "description": "Retrieve issues from Jira for the Release Notes Generator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "issues_records",
+            "issues_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_confluence_pages",
+          "kind": "query",
+          "sourceSystemId": "confluence",
+          "description": "Retrieve pages from Confluence for the Release Notes Generator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "pages_records",
+            "pages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_release_notes_generator_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "confluence",
+          "description": "Look up sections of the Release Notes Generator Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_github_release",
+          "kind": "action",
+          "sourceSystemId": "github",
+          "description": "Execute the release step in GitHub after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "commit_ticket_collection",
+            "label": "Commit & Ticket Collection",
+            "description": "Pull all commits since the last release tag from GitHub. Cross-reference commit messages with Jira tickets to enrich with story context and acceptance criteria.",
+            "tools": [
+              "query_github_pull_requests",
+              "query_jira_issues",
+              "lookup_release_notes_generator_runbook",
+              "action_github_release"
+            ]
+          },
+          {
+            "id": "release_notes_generation",
+            "label": "Release Notes Generation",
+            "description": "Gemini transforms commits into user-facing notes: 'v2.4.0 introduces SSO support for enterprise customers (PROJ-1234), fixes timezone bug in reporting (PROJ-1289), and improves API response times by 30%.'",
+            "tools": [
+              "lookup_release_notes_generator_runbook",
+              "action_github_release"
+            ]
+          },
+          {
+            "id": "publication",
+            "label": "Publication",
+            "description": "Release notes published to GitHub release page and Confluence. Internal changelog with technical details distributed to engineering and support teams.",
+            "tools": [
+              "query_github_pull_requests",
+              "query_confluence_pages",
+              "lookup_release_notes_generator_runbook",
+              "action_github_release"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Release notes prep time moved from 2-3 hours toward <5 minutes",
+          "mustCite": [
+            "github.pull_requests",
+            "jira.issues"
+          ],
+          "sourceSystemIds": [
+            "github",
+            "jira"
+          ]
+        },
+        {
+          "claim": "Breaking change detection moved from Manual review toward Automated 100%",
+          "mustCite": [
+            "github.pull_requests",
+            "jira.issues"
+          ],
+          "sourceSystemIds": [
+            "github",
+            "jira"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Release notes prep time regresses past the 2-3 hours baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "DevOps Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed release action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from GitHub (and other named systems) entities.",
+        "Never bypass DevOps Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "release-notes-generator-end-to-end",
+          "prompt": "Run the Release Notes Generator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_github_pull_requests",
+            "query_jira_issues",
+            "query_confluence_pages",
+            "lookup_release_notes_generator_runbook",
+            "action_github_release"
+          ],
+          "mustReferenceEntities": [
+            "pull_requests",
+            "issues",
+            "pages"
+          ],
+          "mustCiteDocuments": [
+            "release-notes-generator-runbook"
+          ],
+          "expectedActionOutcome": "Action release executed against GitHub, with audit-trail entry and DevOps Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute release without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/ReleaseNotesGenerator.tsx",
+    "familyId": "release-notes-generator",
+    "variant": {
+      "familyId": "release-notes-generator",
+      "variantId": "release-notes-generator",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

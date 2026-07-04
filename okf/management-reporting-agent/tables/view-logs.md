@@ -1,0 +1,28 @@
+---
+type: Data Entity
+title: view_logs
+description: Data entity view_logs owned by Google Slides.
+tags:
+  - finance
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# view_logs
+
+# Schema
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| id | seq | required; primary key |
+| actor | person.fullName | required |
+| action | enum | required; values: create, update, delete, approve, reject, escalate, view, share |
+| target_type | lorem.words | required |
+| created_at | date | required |
+| notes | lorem.sentence |  |
+| presentation_id | ref | required |
+
+# Citations
+
+- Owned by [Google Slides](/systems/google-slides.md)

@@ -1,0 +1,17 @@
+---
+type: Index
+title: Data Entities
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Data Entities
+
+- [documents](/tables/documents.md)
+- [comments](/tables/comments.md)
+- [revision_history](/tables/revision-history.md)
+- [presentations](/tables/presentations.md)
+- [slide_assets](/tables/slide-assets.md)
+- [view_logs](/tables/view-logs.md)
+- [lms_records](/tables/lms-records.md)
+- [lms_events](/tables/lms-events.md)
+- [lms_audit_trail](/tables/lms-audit-trail.md)

@@ -1,0 +1,1138 @@
+{
+  "id": "savings-realization-tracker",
+  "title": "Savings Realization Tracker",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SavingsRealizationTracker.tsx",
+  "subtitle": "A-1902 • Spend Analytics",
+  "persona": "CPO",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-19",
+  "systems": [
+    "Coupa",
+    "SAP Ariba",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Savings realization rate",
+      "before": "40-50%",
+      "after": "85%+"
+    },
+    {
+      "label": "Leakage root cause coverage",
+      "before": "Ad-hoc investigation",
+      "after": "100% auto-analyzed"
+    },
+    {
+      "label": "Report generation",
+      "before": "3-5 days manual",
+      "after": "Same-day automated"
+    }
+  ],
+  "statusQuo": [
+    "Savings tracked in spreadsheets with no reconciliation against actual PO prices paid.",
+    "$9M gap between identified and realized savings unexplained — board reports use unvalidated numbers.",
+    "Leakage investigation requires manual PO-by-PO review, rarely completed."
+  ],
+  "agentification": [
+    "ML classifies savings types with realization probability scoring based on historical conversion rates.",
+    "LLM interprets why savings leaked — reads PO exception context: 'supplier couldn't deliver, switched to alternate at higher price' vs. 'requester bypassed contract.'",
+    "Generates narrative savings report linking leakage to demand-driven shortfalls vs. execution gaps."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Coupa",
+        "description": "Savings pipeline data, contract pricing schedules, PO actuals"
+      },
+      {
+        "system": "SAP Ariba",
+        "description": "Sourcing event savings, negotiated price baselines, award data"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Savings realization analytics, leakage detection, classification models"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Leakage root cause interpretation, narrative savings report generation"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Baseline-to-Actual Matching",
+        "description": "Pull contracted pricing from sourcing tools and match against actual PO/invoice prices in ERP. Calculate variance by category, initiative, and supplier to quantify realized vs. identified savings."
+      },
+      {
+        "label": "Savings Classification & Scoring",
+        "description": "ML classifies savings type — negotiated price reduction, cost avoidance, demand reduction, specification change. Realization probability scoring based on historical conversion rates. Price drift analysis detects leakage patterns."
+      },
+      {
+        "label": "Leakage Interpretation & Reporting",
+        "description": "Gemini reads PO exception context to determine if leakage is capacity-driven (supplier could not deliver) or compliance-driven (requester bypassed contract). Generates narrative savings report for CPO linking the gap to demand-driven shortfalls vs. execution gaps with actionable remediation."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Savings Realization Tracker so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "coupa",
+        "name": "Coupa",
+        "owns": [
+          "requisitions",
+          "purchase_orders",
+          "invoices"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_coupa_requisitions",
+          "query_coupa_purchase_orders",
+          "query_coupa_invoices"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "sap_ariba",
+        "name": "SAP Ariba",
+        "owns": [
+          "suppliers",
+          "sourcing_events",
+          "contracts"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_ariba_suppliers",
+          "query_sap_ariba_sourcing_events",
+          "query_sap_ariba_contracts"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "requisitions",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "purchase_orders",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "invoices",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "suppliers",
+        "sourceSystemId": "sap_ariba",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "IT",
+              "Consulting",
+              "Manufacturing",
+              "Logistics",
+              "Facilities",
+              "Marketing"
+            ],
+            "required": true
+          },
+          {
+            "name": "rating",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "annual_spend",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "risk_score",
+            "type": "enum",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "weights": [
+              0.5,
+              0.35,
+              0.15
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending_review",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "onboarded_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "sourcing_events",
+        "sourceSystemId": "sap_ariba",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "negotiating",
+              "active",
+              "expired",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "trueRate": 0.4
+          },
+          {
+            "name": "supplier_id",
+            "type": "ref",
+            "ref": "suppliers.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "contracts",
+        "sourceSystemId": "sap_ariba",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "negotiating",
+              "active",
+              "expired",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "trueRate": 0.4
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "sourcing_events.supplier_id",
+        "to": "suppliers.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "savings-realization-tracker-policy-guide",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Savings Realization Tracker Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "requisitions",
+          "purchase_orders",
+          "invoices"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "coupa_generate_api",
+        "sourceSystemId": "coupa",
+        "method": "POST",
+        "path": "/api/coupa/generate",
+        "description": "Synchronous endpoint the agent calls to generate in Coupa after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "savings-realization-tracker-baseline-gap",
+        "description": "Seed a realistic gap where Savings realization rate sits between 40-50% and 85%+, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "requisitions",
+          "purchase_orders"
+        ],
+        "discoveryPath": [
+          "Inspect Coupa records for the affected entities",
+          "Compare against SAP Ariba historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next CPO action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "savings_realization_tracker",
+        "schemas": [
+          "coupa",
+          "sap_ariba"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_savings_realization_tracker",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "savings-realization-tracker-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "savings-realization-tracker-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Savings Realization Tracker workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "CPO agent for the Savings Realization Tracker workflow",
+      "primaryObjective": "ML classifies savings types with realization probability scoring based on historical conversion rates. LLM interprets why savings leaked — reads PO exception context: 'supplier couldn't deliver, switched to alternate at higher price' vs. 'requester bypassed contract.' so the CPO can move the Savings realization rate KPI.",
+      "inScope": [
+        "ML classifies savings types with realization probability scoring based on historical conversion rates",
+        "LLM interprets why savings leaked — reads PO exception context: 'supplier couldn't deliver, switched to alternate at higher price' vs. 'requester bypassed contract.'",
+        "Generates narrative savings report linking leakage to demand-driven shortfalls vs. execution gaps"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_coupa_requisitions",
+          "kind": "query",
+          "sourceSystemId": "coupa",
+          "description": "Retrieve requisitions from Coupa for the Savings Realization Tracker workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "requisitions_records",
+            "requisitions_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_sap_ariba_suppliers",
+          "kind": "query",
+          "sourceSystemId": "sap_ariba",
+          "description": "Retrieve suppliers from SAP Ariba for the Savings Realization Tracker workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "suppliers_records",
+            "suppliers_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Savings Realization Tracker workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_savings_realization_tracker_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Savings Realization Tracker Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_coupa_generate",
+          "kind": "action",
+          "sourceSystemId": "coupa",
+          "description": "Execute the generate step in Coupa after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "baseline_to_actual_matching",
+            "label": "Baseline-to-Actual Matching",
+            "description": "Pull contracted pricing from sourcing tools and match against actual PO/invoice prices in ERP. Calculate variance by category, initiative, and supplier to quantify realized vs. identified savings.",
+            "tools": [
+              "lookup_savings_realization_tracker_policy_guide"
+            ]
+          },
+          {
+            "id": "savings_classification_scoring",
+            "label": "Savings Classification & Scoring",
+            "description": "ML classifies savings type — negotiated price reduction, cost avoidance, demand reduction, specification change. Realization probability scoring based on historical conversion rates. Price drift analysis detects leakage patterns.",
+            "tools": [
+              "lookup_savings_realization_tracker_policy_guide"
+            ]
+          },
+          {
+            "id": "leakage_interpretation_reporting",
+            "label": "Leakage Interpretation & Reporting",
+            "description": "Gemini reads PO exception context to determine if leakage is capacity-driven (supplier could not deliver) or compliance-driven (requester bypassed contract). Generates narrative savings report for CPO linking the gap to demand-driven shortfalls vs. execution gaps with actionable remediation.",
+            "tools": [
+              "lookup_savings_realization_tracker_policy_guide",
+              "action_coupa_generate"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Savings realization rate moved from 40-50% toward 85%+",
+          "mustCite": [
+            "coupa.requisitions",
+            "sap_ariba.suppliers"
+          ],
+          "sourceSystemIds": [
+            "coupa",
+            "sap_ariba"
+          ]
+        },
+        {
+          "claim": "Leakage root cause coverage moved from Ad-hoc investigation toward 100% auto-analyzed",
+          "mustCite": [
+            "coupa.requisitions",
+            "sap_ariba.suppliers"
+          ],
+          "sourceSystemIds": [
+            "coupa",
+            "sap_ariba"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Savings realization rate regresses past the 40-50% baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "CPO",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Coupa (and other named systems) entities.",
+        "Never bypass CPO approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "savings-realization-tracker-end-to-end",
+          "prompt": "Run the Savings Realization Tracker workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_coupa_requisitions",
+            "query_sap_ariba_suppliers",
+            "query_bigquery_analytics_events",
+            "lookup_savings_realization_tracker_policy_guide",
+            "action_coupa_generate"
+          ],
+          "mustReferenceEntities": [
+            "requisitions",
+            "suppliers",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "savings-realization-tracker-policy-guide"
+          ],
+          "expectedActionOutcome": "Action generate executed against Coupa, with audit-trail entry and CPO notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SavingsRealizationTracker.tsx",
+    "familyId": "savings-realization-tracker",
+    "variant": {
+      "familyId": "savings-realization-tracker",
+      "variantId": "savings-realization-tracker",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

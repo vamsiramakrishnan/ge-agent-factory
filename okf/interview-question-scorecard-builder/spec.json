@@ -1,0 +1,960 @@
+{
+  "id": "interview-question-scorecard-builder",
+  "title": "Interview Question & Scorecard Builder",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/InterviewScorecardBuilder.tsx",
+  "subtitle": "A-206 • Interview & Selection",
+  "persona": "Hiring Manager",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "chat",
+  "domainId": "domain-2",
+  "systems": [
+    "ATS",
+    "Google Docs",
+    "Google Calendar"
+  ],
+  "kpis": [
+    {
+      "label": "Prep time",
+      "before": "2 hours",
+      "after": "5 min"
+    },
+    {
+      "label": "Question consistency",
+      "before": "Ad-hoc",
+      "after": "Standardized"
+    },
+    {
+      "label": "Bias reduction",
+      "before": "Unstructured",
+      "after": "Competency-mapped"
+    }
+  ],
+  "statusQuo": [
+    "Interview questions vary wildly across interviewers with no standard alignment to role competencies.",
+    "Scorecards are inconsistent in format and criteria, making cross-interviewer calibration unreliable.",
+    "Structured interview best practices are difficult to enforce at scale across hiring teams."
+  ],
+  "agentification": [
+    "Auto-generates role-specific structured interview guides mapped to required competencies and job level.",
+    "Competency-mapped scorecards with standardized rating scales and behavioral anchor definitions.",
+    "Bias-reducing question frameworks that ensure consistency while adapting to technical and functional domains."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Greenhouse",
+        "description": "Job descriptions, competency requirements, interview stages"
+      },
+      {
+        "system": "Google Docs",
+        "description": "Interview guides, scorecard templates, question banks"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Competency-mapped question generation, scorecard design"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Role Context Ingestion",
+        "description": "Pull job description, competency framework, and interview stage configuration from Greenhouse. Structure role requirements for question generation."
+      },
+      {
+        "label": "Question & Scorecard Generation",
+        "description": "Gemini generates structured interview questions mapped to required competencies. Builds rubric-based scorecards with behavioral anchors and rating scales."
+      },
+      {
+        "label": "Kit Distribution",
+        "description": "Finalized interview kits published to Google Docs and distributed to the interview panel with preparation materials."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Interview Question & Scorecard Builder so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "ats",
+        "name": "ATS",
+        "owns": [
+          "ats_records",
+          "ats_events",
+          "ats_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_ats_ats_records",
+          "query_ats_ats_events",
+          "query_ats_ats_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_docs",
+        "name": "Google Docs",
+        "owns": [
+          "documents",
+          "comments",
+          "revision_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_docs_documents",
+          "query_google_docs_comments",
+          "query_google_docs_revision_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_calendar",
+        "name": "Google Calendar",
+        "owns": [
+          "events",
+          "attendee_responses",
+          "room_bookings"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_calendar_events",
+          "query_google_calendar_attendee_responses",
+          "query_google_calendar_room_bookings"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "ats_records",
+        "sourceSystemId": "ats",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "ats_events",
+        "sourceSystemId": "ats",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "ats_record_id",
+            "type": "ref",
+            "ref": "ats_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "ats_audit_trail",
+        "sourceSystemId": "ats",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "documents",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "comments",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "revision_history",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "document_id",
+            "type": "ref",
+            "ref": "documents.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "events",
+        "sourceSystemId": "google_calendar",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "attendee_response_id",
+            "type": "ref",
+            "ref": "attendee_responses.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "attendee_responses",
+        "sourceSystemId": "google_calendar",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "room_bookings",
+        "sourceSystemId": "google_calendar",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "ats_events.ats_record_id",
+        "to": "ats_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "revision_history.document_id",
+        "to": "documents.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "events.attendee_response_id",
+        "to": "attendee_responses.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "interview-question-scorecard-builder-policy-handbook",
+        "sourceSystemId": "ats",
+        "type": "policy",
+        "title": "Interview Question & Scorecard Builder Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "ats_records",
+          "ats_events",
+          "ats_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "ats_generate_api",
+        "sourceSystemId": "ats",
+        "method": "POST",
+        "path": "/api/ats/generate",
+        "description": "Synchronous endpoint the agent calls to generate in ATS after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "interview-question-scorecard-builder-baseline-gap",
+        "description": "Seed a realistic gap where Prep time sits between 2 hours and 5 min, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "ats_records",
+          "ats_events"
+        ],
+        "discoveryPath": [
+          "Inspect ATS records for the affected entities",
+          "Compare against Google Docs historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Hiring Manager action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "interview_question_scorecard_builder",
+        "schemas": [
+          "ats",
+          "google_docs",
+          "google_calendar"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_interview_question_scorecard_builder",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "interview-question-scorecard-builder-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "interview-question-scorecard-builder-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Interview Question & Scorecard Builder workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Hiring Manager agent for the Interview Question & Scorecard Builder workflow",
+      "primaryObjective": "Auto-generates role-specific structured interview guides mapped to required competencies and job level. Competency-mapped scorecards with standardized rating scales and behavioral anchor definitions. so the Hiring Manager can move the Prep time KPI.",
+      "inScope": [
+        "Auto-generates role-specific structured interview guides mapped to required competencies and job level",
+        "Competency-mapped scorecards with standardized rating scales and behavioral anchor definitions",
+        "Bias-reducing question frameworks that ensure consistency while adapting to technical and functional domains"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_ats_ats_records",
+          "kind": "query",
+          "sourceSystemId": "ats",
+          "description": "Retrieve ats records from ATS for the Interview Question & Scorecard Builder workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "ats_records_records",
+            "ats_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_docs_documents",
+          "kind": "query",
+          "sourceSystemId": "google_docs",
+          "description": "Retrieve documents from Google Docs for the Interview Question & Scorecard Builder workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "documents_records",
+            "documents_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_calendar_events",
+          "kind": "query",
+          "sourceSystemId": "google_calendar",
+          "description": "Retrieve events from Google Calendar for the Interview Question & Scorecard Builder workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "events_records",
+            "events_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_interview_question_scorecard_builder_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_docs",
+          "description": "Look up sections of the Interview Question & Scorecard Builder Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_ats_generate",
+          "kind": "action",
+          "sourceSystemId": "ats",
+          "description": "Execute the generate step in ATS after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "role_context_ingestion",
+            "label": "Role Context Ingestion",
+            "description": "Pull job description, competency framework, and interview stage configuration from Greenhouse. Structure role requirements for question generation.",
+            "tools": [
+              "lookup_interview_question_scorecard_builder_policy_handbook"
+            ]
+          },
+          {
+            "id": "question_scorecard_generation",
+            "label": "Question & Scorecard Generation",
+            "description": "Gemini generates structured interview questions mapped to required competencies. Builds rubric-based scorecards with behavioral anchors and rating scales.",
+            "tools": [
+              "lookup_interview_question_scorecard_builder_policy_handbook",
+              "action_ats_generate"
+            ]
+          },
+          {
+            "id": "kit_distribution",
+            "label": "Kit Distribution",
+            "description": "Finalized interview kits published to Google Docs and distributed to the interview panel with preparation materials.",
+            "tools": [
+              "query_google_docs_documents",
+              "query_google_calendar_events",
+              "lookup_interview_question_scorecard_builder_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Prep time moved from 2 hours toward 5 min",
+          "mustCite": [
+            "ats.ats_records",
+            "google_docs.documents"
+          ],
+          "sourceSystemIds": [
+            "ats",
+            "google_docs"
+          ]
+        },
+        {
+          "claim": "Question consistency moved from Ad-hoc toward Standardized",
+          "mustCite": [
+            "ats.ats_records",
+            "google_docs.documents"
+          ],
+          "sourceSystemIds": [
+            "ats",
+            "google_docs"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Prep time regresses past the 2 hours baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Hiring Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from ATS (and other named systems) entities.",
+        "Never bypass Hiring Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "interview-question-scorecard-builder-end-to-end",
+          "prompt": "Run the Interview Question & Scorecard Builder workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_ats_ats_records",
+            "query_google_docs_documents",
+            "query_google_calendar_events",
+            "lookup_interview_question_scorecard_builder_policy_handbook",
+            "action_ats_generate"
+          ],
+          "mustReferenceEntities": [
+            "ats_records",
+            "documents",
+            "events"
+          ],
+          "mustCiteDocuments": [
+            "interview-question-scorecard-builder-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action generate executed against ATS, with audit-trail entry and Hiring Manager notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/InterviewScorecardBuilder.tsx",
+    "familyId": "interview-question-scorecard-builder",
+    "variant": {
+      "familyId": "interview-question-scorecard-builder",
+      "variantId": "interview-question-scorecard-builder",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

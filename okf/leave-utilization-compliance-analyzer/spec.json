@@ -1,0 +1,1096 @@
+{
+  "id": "leave-utilization-compliance-analyzer",
+  "title": "Leave Utilization & Compliance Analyzer",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/LeaveUtilizationAnalyzer.tsx",
+  "subtitle": "A-608 • Employee Relations",
+  "persona": "HR Ops Lead",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-6",
+  "systems": [
+    "Workday",
+    "Google BigQuery",
+    "Benefits Platform"
+  ],
+  "kpis": [
+    {
+      "label": "Utilization visibility",
+      "before": "Per-jurisdiction silos",
+      "after": "Unified view"
+    },
+    {
+      "label": "Compliance monitoring",
+      "before": "Audit-triggered",
+      "after": "Continuous"
+    },
+    {
+      "label": "Burnout detection",
+      "before": "None",
+      "after": "PTO pattern alerts"
+    }
+  ],
+  "statusQuo": [
+    "Leave utilization data siloed per jurisdiction with no unified visibility.",
+    "FMLA, ADA, and local leave compliance tracked manually with risk of missed obligations.",
+    "Burnout risk from PTO non-usage invisible to managers and HR leadership."
+  ],
+  "agentification": [
+    "Unified leave utilization analytics across all leave types and jurisdictions.",
+    "Automated compliance monitoring with proactive alert escalation for at-risk cases.",
+    "Burnout risk detection from PTO usage patterns with manager notification prompts."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Leave balances, absence records, employee demographics, org hierarchy"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Leave analytics warehouse, utilization trends, compliance models"
+      },
+      {
+        "system": "Looker",
+        "description": "Interactive leave utilization dashboards, compliance reporting"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Pattern analysis, compliance reasoning, burnout risk detection"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Leave Data Aggregation",
+        "description": "Sync all leave types and absence records from Workday across jurisdictions. Normalize leave categories and merge with employee demographics and org data."
+      },
+      {
+        "label": "Pattern & Anomaly Analysis",
+        "description": "Analyze utilization patterns, seasonal trends, and anomalies across leave types, teams, and geographies. Detect PTO non-usage patterns indicating burnout risk."
+      },
+      {
+        "label": "Compliance Validation",
+        "description": "Validate FMLA, ADA, and jurisdiction-specific leave compliance continuously. Flag at-risk cases where obligations may not be met."
+      },
+      {
+        "label": "Reporting & Alerts",
+        "description": "Interactive dashboards for HR Ops with drill-down by leave type, team, and jurisdiction. Proactive burnout risk alerts and manager notification prompts."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Leave Utilization & Compliance Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_bigquery",
+        "name": "Google BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_google_bigquery_analytics_events",
+          "query_google_bigquery_historical_metrics",
+          "query_google_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "benefits_platform",
+        "name": "Benefits Platform",
+        "owns": [
+          "benefit_plans",
+          "enrollments",
+          "eligibility_rules"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_benefits_platform_benefit_plans",
+          "query_benefits_platform_enrollments",
+          "query_benefits_platform_eligibility_rules"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "benefit_plans",
+        "sourceSystemId": "benefits_platform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "enrollments",
+        "sourceSystemId": "benefits_platform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "eligibility_rules",
+        "sourceSystemId": "benefits_platform",
+        "datastore": "alloydb",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "compliance",
+              "operational",
+              "financial",
+              "security"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "draft",
+              "retired"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "leave-utilization-compliance-analyzer-policy-handbook",
+        "sourceSystemId": "google_bigquery",
+        "type": "policy",
+        "title": "Leave Utilization & Compliance Analyzer Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "workday_execute_api",
+        "sourceSystemId": "workday",
+        "method": "POST",
+        "path": "/api/workday/execute",
+        "description": "Synchronous endpoint the agent calls to execute in Workday after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "leave-utilization-compliance-analyzer-baseline-gap",
+        "description": "Seed a realistic gap where Utilization visibility sits between Per-jurisdiction silos and Unified view, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "employees",
+          "positions"
+        ],
+        "discoveryPath": [
+          "Inspect Workday records for the affected entities",
+          "Compare against Google BigQuery historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next HR Ops Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "leave_utilization_compliance_analyzer",
+        "schemas": [
+          "workday",
+          "benefits_platform"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_leave_utilization_compliance_analyzer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "leave-utilization-compliance-analyzer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "leave-utilization-compliance-analyzer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Leave Utilization & Compliance Analyzer workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "HR Ops Lead agent for the Leave Utilization & Compliance Analyzer workflow",
+      "primaryObjective": "Unified leave utilization analytics across all leave types and jurisdictions. Automated compliance monitoring with proactive alert escalation for at-risk cases. so the HR Ops Lead can move the Utilization visibility KPI.",
+      "inScope": [
+        "Unified leave utilization analytics across all leave types and jurisdictions",
+        "Automated compliance monitoring with proactive alert escalation for at-risk cases",
+        "Burnout risk detection from PTO usage patterns with manager notification prompts"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the Leave Utilization & Compliance Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "google_bigquery",
+          "description": "Retrieve analytics events from Google BigQuery for the Leave Utilization & Compliance Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_benefits_platform_benefit_plans",
+          "kind": "query",
+          "sourceSystemId": "benefits_platform",
+          "description": "Retrieve benefit plans from Benefits Platform for the Leave Utilization & Compliance Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "benefit_plans_records",
+            "benefit_plans_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_leave_utilization_compliance_analyzer_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_bigquery",
+          "description": "Look up sections of the Leave Utilization & Compliance Analyzer Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_workday_execute",
+          "kind": "action",
+          "sourceSystemId": "workday",
+          "description": "Execute the execute step in Workday after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "leave_data_aggregation",
+            "label": "Leave Data Aggregation",
+            "description": "Sync all leave types and absence records from Workday across jurisdictions. Normalize leave categories and merge with employee demographics and org data.",
+            "tools": [
+              "query_workday_employees",
+              "lookup_leave_utilization_compliance_analyzer_policy_handbook",
+              "action_workday_execute"
+            ]
+          },
+          {
+            "id": "pattern_anomaly_analysis",
+            "label": "Pattern & Anomaly Analysis",
+            "description": "Analyze utilization patterns, seasonal trends, and anomalies across leave types, teams, and geographies. Detect PTO non-usage patterns indicating burnout risk.",
+            "tools": [
+              "lookup_leave_utilization_compliance_analyzer_policy_handbook"
+            ]
+          },
+          {
+            "id": "compliance_validation",
+            "label": "Compliance Validation",
+            "description": "Validate FMLA, ADA, and jurisdiction-specific leave compliance continuously. Flag at-risk cases where obligations may not be met.",
+            "tools": [
+              "lookup_leave_utilization_compliance_analyzer_policy_handbook"
+            ]
+          },
+          {
+            "id": "reporting_alerts",
+            "label": "Reporting & Alerts",
+            "description": "Interactive dashboards for HR Ops with drill-down by leave type, team, and jurisdiction. Proactive burnout risk alerts and manager notification prompts.",
+            "tools": [
+              "lookup_leave_utilization_compliance_analyzer_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Utilization visibility moved from Per-jurisdiction silos toward Unified view",
+          "mustCite": [
+            "workday.employees",
+            "google_bigquery.analytics_events"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "google_bigquery"
+          ]
+        },
+        {
+          "claim": "Compliance monitoring moved from Audit-triggered toward Continuous",
+          "mustCite": [
+            "workday.employees",
+            "google_bigquery.analytics_events"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "google_bigquery"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Utilization visibility regresses past the Per-jurisdiction silos baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "HR Ops Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed execute action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+        "Never bypass HR Ops Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "leave-utilization-compliance-analyzer-end-to-end",
+          "prompt": "Run the Leave Utilization & Compliance Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_google_bigquery_analytics_events",
+            "query_benefits_platform_benefit_plans",
+            "lookup_leave_utilization_compliance_analyzer_policy_handbook",
+            "action_workday_execute"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "analytics_events",
+            "benefit_plans"
+          ],
+          "mustCiteDocuments": [
+            "leave-utilization-compliance-analyzer-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action execute executed against Workday, with audit-trail entry and HR Ops Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute execute without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/LeaveUtilizationAnalyzer.tsx",
+    "familyId": "leave-utilization-compliance-analyzer",
+    "variant": {
+      "familyId": "leave-utilization-compliance-analyzer",
+      "variantId": "leave-utilization-compliance-analyzer",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

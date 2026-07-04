@@ -1,0 +1,1039 @@
+{
+  "id": "stakeholder-satisfaction-analyzer",
+  "title": "Stakeholder Satisfaction Analyzer",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/StakeholderSatisfactionAnalyzer.tsx",
+  "subtitle": "A-1107 • Procurement Strategy",
+  "persona": "VP Procurement",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-11",
+  "systems": [
+    "Qualtrics",
+    "ServiceNow",
+    "Email Data",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Feedback analysis cycle",
+      "before": "Quarterly manual",
+      "after": "Continuous"
+    },
+    {
+      "label": "Root cause identification",
+      "before": "Anecdotal",
+      "after": "Data-driven"
+    },
+    {
+      "label": "Stakeholder NPS",
+      "before": "Not tracked",
+      "after": "65+"
+    }
+  ],
+  "statusQuo": [
+    "Internal stakeholder feedback collected via annual surveys with 30% response rates.",
+    "Complaints like 'procurement always slows us down' go unanalyzed.",
+    "No systematic way to distinguish process problems from perception problems."
+  ],
+  "agentification": [
+    "Sentiment analysis on survey free-text, ServiceNow ticket patterns, and email communication tone.",
+    "LLM identifies root causes — 'I don't understand why I need 3 quotes for $10K' is a policy communication problem, not a process problem.",
+    "Generates actionable insights, not just sentiment scores."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Qualtrics",
+        "description": "Stakeholder satisfaction surveys, NPS scores, and free-text feedback"
+      },
+      {
+        "system": "ServiceNow",
+        "description": "Procurement ticket data — resolution times, reopens, escalations, categories"
+      },
+      {
+        "system": "Email Data",
+        "description": "Communication tone signals and response time patterns from procurement interactions"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Satisfaction trend storage, topic clustering results, root cause analytics"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Root cause reasoning on free-text feedback and actionable insight generation"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Feedback Aggregation",
+        "description": "Pull survey responses from Qualtrics, aggregate ServiceNow ticket data (resolution times, reopens, escalations), and compile email communication signals into an analysis pipeline."
+      },
+      {
+        "label": "Sentiment & Topic Analysis",
+        "description": "CSAT trend tracking, NPS calculation, topic clustering on ticket categories, response time percentile analysis. Statistical pattern detection across feedback channels."
+      },
+      {
+        "label": "Root Cause Reasoning & Insights",
+        "description": "Gemini reads feedback like 'procurement always slows us down' and identifies the root cause — is this a policy communication problem, a process bottleneck, or a genuine value-add the stakeholder doesn't see? Generates actionable insights, not just sentiment scores."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Stakeholder Satisfaction Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "qualtrics",
+        "name": "Qualtrics",
+        "owns": [
+          "survey_responses",
+          "respondent_segments",
+          "trend_metrics"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_qualtrics_survey_responses",
+          "query_qualtrics_respondent_segments",
+          "query_qualtrics_trend_metrics"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "servicenow",
+        "name": "ServiceNow",
+        "owns": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_tickets",
+          "query_servicenow_change_requests",
+          "query_servicenow_incidents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "email_data",
+        "name": "Email Data",
+        "owns": [
+          "email_data_records",
+          "email_data_events",
+          "email_data_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_email_data_email_data_records",
+          "query_email_data_email_data_events",
+          "query_email_data_email_data_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "survey_responses",
+        "sourceSystemId": "qualtrics",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "respondent_segments",
+        "sourceSystemId": "qualtrics",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "trend_metrics",
+        "sourceSystemId": "qualtrics",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "tickets",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "change_requests",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "incidents",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "email_data_records",
+        "sourceSystemId": "email_data",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "email_data_events",
+        "sourceSystemId": "email_data",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "email_data_record_id",
+            "type": "ref",
+            "ref": "email_data_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "email_data_audit_trail",
+        "sourceSystemId": "email_data",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "email_data_events.email_data_record_id",
+        "to": "email_data_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "stakeholder-satisfaction-analyzer-policy-guide",
+        "sourceSystemId": "qualtrics",
+        "type": "policy",
+        "title": "Stakeholder Satisfaction Analyzer Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "survey_responses",
+          "respondent_segments",
+          "trend_metrics"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "qualtrics_generate_api",
+        "sourceSystemId": "qualtrics",
+        "method": "POST",
+        "path": "/api/qualtrics/generate",
+        "description": "Synchronous endpoint the agent calls to generate in Qualtrics after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "stakeholder-satisfaction-analyzer-baseline-gap",
+        "description": "Seed a realistic gap where Feedback analysis cycle sits between Quarterly manual and Continuous, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "survey_responses",
+          "respondent_segments"
+        ],
+        "discoveryPath": [
+          "Inspect Qualtrics records for the affected entities",
+          "Compare against ServiceNow historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next VP Procurement action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "stakeholder_satisfaction_analyzer",
+        "schemas": [
+          "qualtrics",
+          "servicenow",
+          "email_data"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_stakeholder_satisfaction_analyzer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "stakeholder-satisfaction-analyzer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "stakeholder-satisfaction-analyzer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Stakeholder Satisfaction Analyzer workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "VP Procurement agent for the Stakeholder Satisfaction Analyzer workflow",
+      "primaryObjective": "Sentiment analysis on survey free-text, ServiceNow ticket patterns, and email communication tone. LLM identifies root causes — 'I don't understand why I need 3 quotes for $10K' is a policy communication problem, not a process problem. so the VP Procurement can move the Feedback analysis cycle KPI.",
+      "inScope": [
+        "Sentiment analysis on survey free-text, ServiceNow ticket patterns, and email communication tone",
+        "LLM identifies root causes — 'I don't understand why I need 3 quotes for $10K' is a policy communication problem, not a process problem",
+        "Generates actionable insights, not just sentiment scores"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_qualtrics_survey_responses",
+          "kind": "query",
+          "sourceSystemId": "qualtrics",
+          "description": "Retrieve survey responses from Qualtrics for the Stakeholder Satisfaction Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "survey_responses_records",
+            "survey_responses_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_servicenow_tickets",
+          "kind": "query",
+          "sourceSystemId": "servicenow",
+          "description": "Retrieve tickets from ServiceNow for the Stakeholder Satisfaction Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "tickets_records",
+            "tickets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_email_data_email_data_records",
+          "kind": "query",
+          "sourceSystemId": "email_data",
+          "description": "Retrieve email data records from Email Data for the Stakeholder Satisfaction Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "email_data_records_records",
+            "email_data_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_stakeholder_satisfaction_analyzer_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "qualtrics",
+          "description": "Look up sections of the Stakeholder Satisfaction Analyzer Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_qualtrics_generate",
+          "kind": "action",
+          "sourceSystemId": "qualtrics",
+          "description": "Execute the generate step in Qualtrics after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "feedback_aggregation",
+            "label": "Feedback Aggregation",
+            "description": "Pull survey responses from Qualtrics, aggregate ServiceNow ticket data (resolution times, reopens, escalations), and compile email communication signals into an analysis pipeline.",
+            "tools": [
+              "query_qualtrics_survey_responses",
+              "query_servicenow_tickets",
+              "query_email_data_email_data_records",
+              "lookup_stakeholder_satisfaction_analyzer_policy_guide",
+              "action_qualtrics_generate"
+            ]
+          },
+          {
+            "id": "root_cause_reasoning_insights",
+            "label": "Root Cause Reasoning & Insights",
+            "description": "Gemini reads feedback like 'procurement always slows us down' and identifies the root cause — is this a policy communication problem, a process bottleneck, or a genuine value-add the stakeholder doesn't see? Generates actionable insights, not just sentiment scores.",
+            "tools": [
+              "lookup_stakeholder_satisfaction_analyzer_policy_guide",
+              "action_qualtrics_generate"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Feedback analysis cycle moved from Quarterly manual toward Continuous",
+          "mustCite": [
+            "qualtrics.survey_responses",
+            "servicenow.tickets"
+          ],
+          "sourceSystemIds": [
+            "qualtrics",
+            "servicenow"
+          ]
+        },
+        {
+          "claim": "Root cause identification moved from Anecdotal toward Data-driven",
+          "mustCite": [
+            "qualtrics.survey_responses",
+            "servicenow.tickets"
+          ],
+          "sourceSystemIds": [
+            "qualtrics",
+            "servicenow"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Feedback analysis cycle regresses past the Quarterly manual baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "VP Procurement",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Qualtrics (and other named systems) entities.",
+        "Never bypass VP Procurement approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "stakeholder-satisfaction-analyzer-end-to-end",
+          "prompt": "Run the Stakeholder Satisfaction Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_qualtrics_survey_responses",
+            "query_servicenow_tickets",
+            "query_email_data_email_data_records",
+            "lookup_stakeholder_satisfaction_analyzer_policy_guide",
+            "action_qualtrics_generate"
+          ],
+          "mustReferenceEntities": [
+            "survey_responses",
+            "tickets",
+            "email_data_records"
+          ],
+          "mustCiteDocuments": [
+            "stakeholder-satisfaction-analyzer-policy-guide"
+          ],
+          "expectedActionOutcome": "Action generate executed against Qualtrics, with audit-trail entry and VP Procurement notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/StakeholderSatisfactionAnalyzer.tsx",
+    "familyId": "stakeholder-satisfaction-analyzer",
+    "variant": {
+      "familyId": "stakeholder-satisfaction-analyzer",
+      "variantId": "stakeholder-satisfaction-analyzer",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

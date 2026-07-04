@@ -1,0 +1,1197 @@
+{
+  "id": "access-provisioning-orchestrator",
+  "title": "Access Provisioning Orchestrator",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/AccessProvisioningOrchestrator.tsx",
+  "subtitle": "A-4602 • End User Computing",
+  "persona": "End User Support Lead",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-46",
+  "systems": [
+    "Workday",
+    "Okta",
+    "Google Workspace",
+    "ServiceNow",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Day-one readiness",
+      "before": "60% have all access",
+      "after": "95% fully provisioned"
+    },
+    {
+      "label": "Provisioning time",
+      "before": "2-3 days",
+      "after": "< 4 hours"
+    },
+    {
+      "label": "Access-related tickets",
+      "before": "35 per week",
+      "after": "5 per week"
+    }
+  ],
+  "statusQuo": [
+    "New hire access provisioned manually via ServiceNow tickets — average 2-3 days, often incomplete on day one.",
+    "Role-based access templates are static and miss team-specific tools, requiring follow-up requests.",
+    "Termination access revocation is inconsistent — former employees retain access for days or weeks."
+  ],
+  "agentification": [
+    "Gemini receives HR events and automatically provisions access using role templates enhanced by peer analysis.",
+    "LLM resolves edge cases — recognizing that an ML team data engineer needs different access than a platform DE.",
+    "Sub-4-hour provisioning ensures 95% day-one readiness with complete audit trail."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "HR events — new hire, role change, termination, department transfer"
+      },
+      {
+        "system": "Okta",
+        "description": "Identity management, group assignments, SSO provisioning"
+      },
+      {
+        "system": "Google Workspace",
+        "description": "Email, calendar, Drive, Workspace group memberships"
+      },
+      {
+        "system": "ServiceNow",
+        "description": "Access request tickets, approval workflows, audit trail"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Access pattern analytics, role template optimization"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Edge case reasoning, role-access matching"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Event Processing",
+        "description": "Receive HR lifecycle event from Workday — new hire (with role, department, team, start date), role change (old/new role), or termination. Determine access action type."
+      },
+      {
+        "label": "Role-Based Access Matching",
+        "description": "Match the employee's role and department against access templates. Analyze access patterns of peers in the same team to identify common tools beyond the template."
+      },
+      {
+        "label": "Edge Case Resolution",
+        "description": "Gemini handles cases that don't fit standard templates — a 'Senior Data Engineer' on the ML team needs Vertex AI access not in the standard DE template. Identifies and resolves access gaps before day one."
+      },
+      {
+        "label": "Multi-System Provisioning",
+        "description": "Provision access across Okta, Google Workspace, and all connected applications. Create ServiceNow ticket for audit trail. Request manager approval for elevated permissions."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Access provisioning needs sufficient employees, roles, templates, and audit records to demonstrate template matching, peer enrichment, and escalation without becoming a large-data demo."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "hr_events",
+          "employees",
+          "employment_status",
+          "departments",
+          "roles",
+          "managers"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "json-api",
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_hr_events",
+          "query_workday_role_definitions"
+        ],
+        "mcpToolNames": [
+          "workday_get_hr_event",
+          "workday_get_employee_role"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "okta",
+        "name": "Okta",
+        "owns": [
+          "role_templates",
+          "users",
+          "groups",
+          "group_memberships",
+          "policies"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "json-api",
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_okta_role_templates",
+          "query_okta_user_groups",
+          "action_okta_provision_user_groups"
+        ],
+        "mcpToolNames": [
+          "okta_list_groups",
+          "okta_assign_user_to_group"
+        ],
+        "evidence": [
+          "source_system_record",
+          "api_response",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_workspace",
+        "name": "Google Workspace",
+        "owns": [
+          "groups",
+          "group_memberships",
+          "users",
+          "email_addresses"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "json-api",
+          "firestore"
+        ],
+        "toolNames": [
+          "query_google_workspace_group_memberships",
+          "action_google_workspace_assign_groups"
+        ],
+        "mcpToolNames": [
+          "workspace_add_member_to_group"
+        ],
+        "evidence": [
+          "source_system_record",
+          "api_response",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "servicenow",
+        "name": "ServiceNow",
+        "owns": [
+          "access_requests",
+          "tickets",
+          "approval_workflows",
+          "audit_trails"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "json-api",
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_access_requests",
+          "action_servicenow_create_access_ticket"
+        ],
+        "mcpToolNames": [
+          "servicenow_create_request"
+        ],
+        "evidence": [
+          "source_system_record",
+          "api_response",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "peer_access_patterns",
+          "provisioning_analytics",
+          "anomalies"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "json-api",
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_peer_access_patterns"
+        ],
+        "mcpToolNames": [
+          "bigquery_query"
+        ],
+        "evidence": [
+          "sql_result"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "hr_events",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 50,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "employee_id",
+            "type": "ref",
+            "ref": "employees.id",
+            "required": true
+          },
+          {
+            "name": "event_type",
+            "type": "enum",
+            "values": [
+              "new_hire",
+              "role_change",
+              "termination",
+              "department_transfer"
+            ],
+            "weights": [
+              0.4,
+              0.35,
+              0.15,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "timestamp",
+            "type": "date.recent",
+            "required": true
+          },
+          {
+            "name": "old_role",
+            "type": "string"
+          },
+          {
+            "name": "new_role",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "department_id",
+            "type": "ref",
+            "ref": "departments.id",
+            "required": true
+          },
+          {
+            "name": "manager_id",
+            "type": "ref",
+            "ref": "employees.id"
+          },
+          {
+            "name": "employment_type",
+            "type": "enum",
+            "values": [
+              "full_time",
+              "contractor",
+              "vendor"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "role_templates",
+        "sourceSystemId": "okta",
+        "datastore": "alloydb",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "role_name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "group_assignments",
+            "type": "json",
+            "required": true
+          },
+          {
+            "name": "requires_manager_approval",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "name": "segregation_of_duties_tags",
+            "type": "json"
+          }
+        ]
+      },
+      {
+        "name": "access_provisions",
+        "sourceSystemId": "okta",
+        "datastore": "alloydb",
+        "rowCount": 80,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "hr_event_id",
+            "type": "ref",
+            "ref": "hr_events.id",
+            "required": true
+          },
+          {
+            "name": "employee_id",
+            "type": "ref",
+            "ref": "employees.id",
+            "required": true
+          },
+          {
+            "name": "role_template_id",
+            "type": "ref",
+            "ref": "role_templates.id",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "pending",
+              "provisioned",
+              "escalated",
+              "revoked"
+            ],
+            "required": true
+          },
+          {
+            "name": "provisioned_at",
+            "type": "date.recent"
+          },
+          {
+            "name": "ticket_id",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "peer_access_patterns",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 40,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "common_groups",
+            "type": "json",
+            "required": true
+          },
+          {
+            "name": "anomaly_score",
+            "type": "number",
+            "min": 0,
+            "max": 1,
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "hr_events.employee_id",
+        "to": "employees.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "access_provisions.hr_event_id",
+        "to": "hr_events.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "access_provisions.employee_id",
+        "to": "employees.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "access_provisions.role_template_id",
+        "to": "role_templates.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "employees.manager_id",
+        "to": "employees.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "allowed"
+      }
+    ],
+    "documents": [
+      {
+        "id": "identity-access-policy",
+        "sourceSystemId": "okta",
+        "type": "policy",
+        "title": "Identity Access Management Policy",
+        "requiredSections": [
+          "Role-based access templates",
+          "Manager approval thresholds",
+          "Elevated access controls",
+          "Segregation of duties"
+        ],
+        "linkedEntities": [
+          "role_templates",
+          "employees",
+          "access_provisions"
+        ],
+        "minimumWordCount": 600,
+        "citationAnchors": [
+          "manager-approval-thresholds",
+          "elevated-access",
+          "termination-revocation",
+          "segregation-of-duties"
+        ]
+      },
+      {
+        "id": "role-template-catalog",
+        "sourceSystemId": "okta",
+        "type": "knowledge_base",
+        "title": "Role-Based Access Template Catalog",
+        "requiredSections": [
+          "Software Engineer templates",
+          "Manager templates",
+          "Contractor restrictions",
+          "Department-specific overrides"
+        ],
+        "linkedEntities": [
+          "role_templates",
+          "employees"
+        ],
+        "minimumWordCount": 700,
+        "citationAnchors": [
+          "template-match",
+          "group-assignments",
+          "peer-enrichment",
+          "edge-case-handling"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "systemId": "okta",
+        "operation": "provision_user_to_groups",
+        "method": "POST",
+        "path": "/systems/okta/users/{id}/groups",
+        "requestSchema": {
+          "id": "string",
+          "group_ids": "string[]",
+          "justification": "string"
+        },
+        "responseSchema": {
+          "provision_ids": "string[]",
+          "timestamp": "string",
+          "audit_trail": "string"
+        },
+        "fixture": "mock_data/apis/fixtures/okta_provision_user_groups.json",
+        "mcpToolName": "okta_assign_user_to_group"
+      },
+      {
+        "systemId": "google_workspace",
+        "operation": "assign_user_to_groups",
+        "method": "POST",
+        "path": "/systems/google-workspace/groups/members",
+        "requestSchema": {
+          "user_id": "string",
+          "group_ids": "string[]",
+          "justification": "string"
+        },
+        "responseSchema": {
+          "assignment_ids": "string[]",
+          "timestamp": "string",
+          "audit_trail": "string"
+        },
+        "fixture": "mock_data/apis/fixtures/workspace_assign_groups.json",
+        "mcpToolName": "workspace_add_member_to_group"
+      },
+      {
+        "systemId": "servicenow",
+        "operation": "create_access_request",
+        "method": "POST",
+        "path": "/systems/servicenow/access-requests",
+        "requestSchema": {
+          "employee_id": "string",
+          "access_type": "string",
+          "justification": "string",
+          "manager_approval_required": "boolean"
+        },
+        "responseSchema": {
+          "ticket_id": "string",
+          "approval_state": "string",
+          "audit_trail": "string"
+        },
+        "fixture": "mock_data/apis/fixtures/servicenow_create_access_ticket.json",
+        "mcpToolName": "servicenow_create_request"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "orphaned-access-after-termination",
+        "description": "Access remains provisioned 7+ days after HR termination event, indicating revocation failure.",
+        "affectedEntities": [
+          "access_provisions",
+          "employees",
+          "hr_events"
+        ],
+        "discoveryPath": [
+          "Find hr_events with event_type=termination",
+          "Join access_provisions with status=provisioned",
+          "Check provisioned_at > termination_date + 7 days",
+          "Flag as anomaly"
+        ],
+        "expectedEvidence": [
+          "Termination HR event",
+          "Access provision record",
+          "Missing revocation ticket"
+        ],
+        "expectedRecommendation": "Immediately revoke access and create compliance audit ticket."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "it_iam_provisioning",
+        "schemas": [
+          "workday",
+          "okta",
+          "servicenow"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_iam_analytics",
+        "tables": [
+          "provisioning_sla",
+          "peer_pattern_anomalies",
+          "termination_revocation_audit"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "it-iam-evidence",
+        "prefixes": [
+          "policies/",
+          "templates/",
+          "audit-trails/"
+        ]
+      },
+      "apis": {
+        "serviceName": "it-iam-provisioning-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "behaviorContract": {
+      "role": "Identity access lifecycle orchestrator for GE IT operations",
+      "primaryObjective": "Ingest HR events from Workday, match role-based access templates from Okta, enrich with BigQuery peer patterns, use Gemini to resolve edge cases, provision across Okta, Google Workspace, and ServiceNow, create audit tickets, and route elevated access to manager approval.",
+      "inScope": [
+        "Ingesting new hire, role change, and termination events from Workday",
+        "Matching employee role and department against Okta role templates",
+        "Enriching templates with peer access patterns from BigQuery",
+        "Provisioning to Okta groups, Google Workspace groups, and dependent systems",
+        "Creating ServiceNow audit tickets for every provision action",
+        "Routing elevated access requests to manager approval via HITL"
+      ],
+      "outOfScope": [
+        "Creating or modifying role templates — only matching existing ones",
+        "Overriding segregation-of-duties policy constraints",
+        "Provisioning to security-tagged groups without admin review",
+        "Processing non-HR events from other event sources",
+        "Granting access beyond the scope of the matched template and peer patterns"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_hr_events",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Fetch HR lifecycle events (new hire, role change, termination) for a given employee or time window.",
+          "requiredInputs": [
+            "employee_id",
+            "event_type"
+          ],
+          "produces": [
+            "hr_event_record",
+            "event_timestamp"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_workday_role_definitions",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Resolve the employee's current role, department, team, and manager from Workday.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "role",
+            "department",
+            "team",
+            "manager_id"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_okta_role_templates",
+          "kind": "query",
+          "sourceSystemId": "okta",
+          "description": "Retrieve role-based access templates from Okta, scoped by role and department.",
+          "requiredInputs": [
+            "role",
+            "department"
+          ],
+          "produces": [
+            "role_template_id",
+            "group_assignments",
+            "requires_manager_approval"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_okta_user_groups",
+          "kind": "query",
+          "sourceSystemId": "okta",
+          "description": "List all Okta groups the employee is currently a member of to detect existing access.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "group_ids",
+            "group_names"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_workspace_group_memberships",
+          "kind": "query",
+          "sourceSystemId": "google_workspace",
+          "description": "Check current Google Workspace group memberships for the employee.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "group_ids",
+            "group_names"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_servicenow_access_requests",
+          "kind": "query",
+          "sourceSystemId": "servicenow",
+          "description": "Retrieve ServiceNow access request history and current approval status for an employee.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "request_ids",
+            "approval_status"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_peer_access_patterns",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Analyze peer access patterns in the employee's team and role to identify common tools beyond the template.",
+          "requiredInputs": [
+            "role",
+            "department",
+            "team"
+          ],
+          "produces": [
+            "common_groups",
+            "anomaly_score"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "action_okta_provision_user_groups",
+          "kind": "action",
+          "sourceSystemId": "okta",
+          "description": "Provision the employee to Okta groups based on the matched template and peer enrichment.",
+          "requiredInputs": [
+            "employee_id",
+            "group_ids"
+          ],
+          "produces": [
+            "provision_ids",
+            "timestamp"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        },
+        {
+          "name": "action_google_workspace_assign_groups",
+          "kind": "action",
+          "sourceSystemId": "google_workspace",
+          "description": "Assign the employee to Google Workspace groups for email, calendar, and Drive access.",
+          "requiredInputs": [
+            "employee_id",
+            "group_ids"
+          ],
+          "produces": [
+            "assignment_ids",
+            "timestamp"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        },
+        {
+          "name": "action_servicenow_create_access_ticket",
+          "kind": "action",
+          "sourceSystemId": "servicenow",
+          "description": "Create a ServiceNow access request ticket with full audit trail, approval thresholds, and manager handoff.",
+          "requiredInputs": [
+            "employee_id",
+            "access_type",
+            "justification"
+          ],
+          "produces": [
+            "ticket_id",
+            "approval_state"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        },
+        {
+          "name": "evidence_identity_access_policy",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "okta",
+          "description": "Cite the Identity Access Policy for policy-based assertions (citation anchors: manager-approval-thresholds, elevated-access, termination-revocation, segregation-of-duties).",
+          "requiredInputs": [
+            "citation_anchor"
+          ],
+          "produces": [
+            "policy_citation"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "evidence_role_template_catalog",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "okta",
+          "description": "Cite the Role-Based Access Template Catalog for template match justification.",
+          "requiredInputs": [
+            "role",
+            "department"
+          ],
+          "produces": [
+            "template_citation"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "event_processing",
+            "label": "Event Processing",
+            "description": "Receive HR lifecycle event from Workday — new hire (with role, department, team, start date), role change (old/new role), or termination. Determine access action type.",
+            "tools": [
+              "query_workday_hr_events",
+              "query_workday_role_definitions",
+              "query_okta_role_templates",
+              "query_servicenow_access_requests",
+              "query_bigquery_peer_access_patterns",
+              "action_servicenow_create_access_ticket",
+              "evidence_identity_access_policy",
+              "evidence_role_template_catalog"
+            ]
+          },
+          {
+            "id": "role_based_access_matching",
+            "label": "Role-Based Access Matching",
+            "description": "Match the employee's role and department against access templates. Analyze access patterns of peers in the same team to identify common tools beyond the template.",
+            "tools": [
+              "query_workday_role_definitions",
+              "query_okta_role_templates",
+              "query_servicenow_access_requests",
+              "query_bigquery_peer_access_patterns",
+              "action_servicenow_create_access_ticket",
+              "evidence_identity_access_policy",
+              "evidence_role_template_catalog"
+            ]
+          },
+          {
+            "id": "edge_case_resolution",
+            "label": "Edge Case Resolution",
+            "description": "Gemini handles cases that don't fit standard templates — a 'Senior Data Engineer' on the ML team needs Vertex AI access not in the standard DE template. Identifies and resolves access gaps before day one.",
+            "tools": [
+              "query_okta_role_templates",
+              "query_servicenow_access_requests",
+              "query_bigquery_peer_access_patterns",
+              "action_servicenow_create_access_ticket",
+              "evidence_identity_access_policy",
+              "evidence_role_template_catalog"
+            ]
+          },
+          {
+            "id": "multi_system_provisioning",
+            "label": "Multi-System Provisioning",
+            "description": "Provision access across Okta, Google Workspace, and all connected applications. Create ServiceNow ticket for audit trail. Request manager approval for elevated permissions.",
+            "tools": [
+              "query_okta_role_templates",
+              "query_okta_user_groups",
+              "query_google_workspace_group_memberships",
+              "query_servicenow_access_requests",
+              "query_bigquery_peer_access_patterns",
+              "action_okta_provision_user_groups",
+              "action_google_workspace_assign_groups",
+              "action_servicenow_create_access_ticket",
+              "evidence_identity_access_policy",
+              "evidence_role_template_catalog"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "HR event is valid and recent",
+          "mustCite": [
+            "hr_events.event_type",
+            "hr_events.employee_id",
+            "hr_events.timestamp"
+          ],
+          "sourceSystemIds": [
+            "workday"
+          ]
+        },
+        {
+          "claim": "Template match is correct for role and department",
+          "mustCite": [
+            "role_templates.role_name",
+            "role_templates.group_assignments",
+            "role-template-catalog section"
+          ],
+          "sourceSystemIds": [
+            "okta"
+          ]
+        },
+        {
+          "claim": "Peer enrichment was applied",
+          "mustCite": [
+            "peer_access_patterns.role",
+            "peer_access_patterns.common_groups",
+            "peer_access_patterns.anomaly_score"
+          ],
+          "sourceSystemIds": [
+            "bigquery"
+          ]
+        },
+        {
+          "claim": "Access was provisioned successfully",
+          "mustCite": [
+            "access_provisions.id",
+            "access_provisions.provisioned_at",
+            "servicenow ticket id"
+          ],
+          "sourceSystemIds": [
+            "okta",
+            "google_workspace",
+            "servicenow"
+          ]
+        },
+        {
+          "claim": "Elevated access requires manager approval",
+          "mustCite": [
+            "role_templates.requires_manager_approval",
+            "manager-approval-thresholds from policy"
+          ],
+          "sourceSystemIds": [
+            "okta"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Elevated access requested (requires_manager_approval=true)",
+          "action": "escalate_to_human",
+          "handoffTarget": "Employee's manager",
+          "rationale": "Elevated access must be approved by the employee's direct manager per company policy before provisioning."
+        },
+        {
+          "trigger": "Segregation-of-duties conflict detected (incompatible groups in template)",
+          "action": "refuse",
+          "rationale": "Role template violates segregation-of-duties policy; do not provision conflicting access."
+        },
+        {
+          "trigger": "Peer access pattern anomaly score > 0.8",
+          "action": "request_more_info",
+          "handoffTarget": "Employee's manager",
+          "rationale": "Peer enrichment uncovered an unusual access pattern; request manager confirmation before provisioning."
+        },
+        {
+          "trigger": "Contractor employee without endpoint admin policy coverage",
+          "action": "refuse",
+          "rationale": "Contractors must explicitly opt in to endpoint admin policies; do not auto-provision elevated access."
+        },
+        {
+          "trigger": "Termination event without revocation window compliance check",
+          "action": "escalate_to_human",
+          "handoffTarget": "Compliance officer",
+          "rationale": "Termination revocation must complete within the policy window; escalate to compliance for enforcement."
+        }
+      ],
+      "refusalRules": [
+        "Never provision access without a valid HR event from Workday.",
+        "Never invent role templates or group assignments — only use what exists in Okta.",
+        "Never skip ServiceNow ticket creation for audit trail purposes.",
+        "Never provision to security-tagged groups without admin review.",
+        "Never override segregation-of-duties constraints, even if peer patterns suggest it."
+      ],
+      "goldenEvals": [
+        {
+          "id": "new-hire-standard-template",
+          "prompt": "New hire EMP-8901 with role 'Software Engineer' in 'Platform Services' department joins today. Provision their access.",
+          "expectedToolCalls": [
+            "query_workday_hr_events",
+            "query_workday_role_definitions",
+            "query_okta_role_templates",
+            "query_bigquery_peer_access_patterns",
+            "action_okta_provision_user_groups",
+            "action_google_workspace_assign_groups",
+            "action_servicenow_create_access_ticket"
+          ],
+          "mustReferenceEntities": [
+            "hr_events",
+            "employees",
+            "role_templates",
+            "peer_access_patterns",
+            "access_provisions"
+          ],
+          "mustCiteDocuments": [
+            "identity-access-policy",
+            "role-template-catalog"
+          ],
+          "expectedActionOutcome": "Employee provisioned to Okta groups, Google Workspace groups, and ServiceNow ticket created with full audit trail.",
+          "forbiddenBehaviors": [
+            "do not provision without HR event",
+            "do not invent group assignments"
+          ]
+        },
+        {
+          "id": "elevated-access-manager-approval",
+          "prompt": "Senior role change for EMP-5432 requires elevated access to 'Security Admin' group. Route for manager approval.",
+          "expectedToolCalls": [
+            "query_workday_hr_events",
+            "query_workday_role_definitions",
+            "query_okta_role_templates",
+            "action_servicenow_create_access_ticket"
+          ],
+          "mustReferenceEntities": [
+            "hr_events",
+            "role_templates",
+            "access_provisions"
+          ],
+          "mustCiteDocuments": [
+            "identity-access-policy"
+          ],
+          "expectedActionOutcome": "Escalate to manager for elevated access approval via ServiceNow ticket.",
+          "forbiddenBehaviors": [
+            "do not auto-provision elevated access",
+            "do not skip manager approval routing"
+          ]
+        },
+        {
+          "id": "termination-revocation-with-audit",
+          "prompt": "Employee EMP-3210 is terminated. Revoke access from all groups and create compliance audit ticket.",
+          "expectedToolCalls": [
+            "query_workday_hr_events",
+            "query_okta_user_groups",
+            "query_google_workspace_group_memberships",
+            "action_servicenow_create_access_ticket"
+          ],
+          "mustReferenceEntities": [
+            "hr_events",
+            "employees",
+            "access_provisions"
+          ],
+          "mustCiteDocuments": [
+            "identity-access-policy"
+          ],
+          "expectedActionOutcome": "Access revoked from all groups, ServiceNow ticket created for compliance audit trail.",
+          "forbiddenBehaviors": [
+            "do not skip revocation",
+            "do not fail to create audit ticket"
+          ]
+        }
+      ]
+    },
+    "validation": {
+      "smokePrompt": "New hire EMP-8901 with role 'Senior Data Engineer' in 'ML Platform' joins today. They need access to BigQuery, Vertex AI, and Okta groups.",
+      "expectedAnswer": [
+        "cites Workday HR event",
+        "matches role template from Okta",
+        "enriches with BigQuery peer patterns",
+        "provisions across Okta, Google Workspace, ServiceNow",
+        "creates audit ticket",
+        "escalates elevated access to manager"
+      ],
+      "assertions": [
+        "all toolNames use canonical system IDs",
+        "all entity foreign keys resolve",
+        "at least two document citations present",
+        "escalation rules trigger for elevated access",
+        "audit trail is created end-to-end"
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/AccessProvisioningOrchestrator.tsx",
+    "familyId": "access-provisioning-orchestrator",
+    "variant": {
+      "familyId": "access-provisioning-orchestrator",
+      "variantId": "access-provisioning-orchestrator",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

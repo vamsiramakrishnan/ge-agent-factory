@@ -1,0 +1,1256 @@
+{
+  "id": "engagement-insight-synthesizer",
+  "title": "Engagement Insight Synthesizer",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/EngagementSynthesizer.tsx",
+  "subtitle": "A-702 • Employee Engagement",
+  "persona": "HRBP",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "event",
+  "domainId": "domain-7",
+  "systems": [
+    "Culture Amp",
+    "Qualtrics",
+    "Workday",
+    "Google BigQuery"
+  ],
+  "kpis": [
+    {
+      "label": "Analysis time",
+      "before": "6 weeks",
+      "after": "24 hours"
+    },
+    {
+      "label": "Driver identification",
+      "before": "Top-level only",
+      "after": "Team-specific"
+    },
+    {
+      "label": "Action plan quality",
+      "before": "Generic",
+      "after": "Contextualized"
+    }
+  ],
+  "statusQuo": [
+    "Survey results shared in static decks weeks after closing.",
+    "Action planning is unstructured and follow-through is inconsistent.",
+    "No systematic driver analysis to identify causal impact."
+  ],
+  "agentification": [
+    "Instant multi-dimensional analysis and driver identification.",
+    "Automated generation of team-level action planning guides.",
+    "Longitudinal tracking of action plan effectiveness over time."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Qualtrics",
+        "description": "Survey responses, demographic cuts, open-text feedback"
+      },
+      {
+        "system": "Workday",
+        "description": "Org hierarchy, team structure, tenure and level data"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Engagement data warehouse, historical trends, driver models"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "NLP theme extraction, driver analysis, action plan generation"
+      },
+      {
+        "system": "Google Slides",
+        "description": "Team-level engagement reports and action planning decks"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Response Ingestion",
+        "description": "Pull survey responses with full demographic and org hierarchy context from Qualtrics. Join with Workday data for team-level segmentation and tenure-based analysis."
+      },
+      {
+        "label": "Statistical Driver Analysis",
+        "description": "Run multi-dimensional driver analysis to identify which factors most strongly predict engagement scores. Segment by team, level, and tenure cohort for targeted insights."
+      },
+      {
+        "label": "Theme & Sentiment Extraction",
+        "description": "Gemini performs NLP on open-text responses to extract themes, sentiment, and actionable signals. Cross-references quantitative drivers for narrative coherence."
+      },
+      {
+        "label": "Action Plan Generation",
+        "description": "Generate team-specific action plans with owner assignments and progress tracking templates. Format as presentation-ready reports for HRBP distribution."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Engagement Insight Synthesizer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "culture_amp",
+        "name": "Culture Amp",
+        "owns": [
+          "engagement_surveys",
+          "feedback_records",
+          "review_cycles"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_culture_amp_engagement_surveys",
+          "query_culture_amp_feedback_records",
+          "query_culture_amp_review_cycles"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "qualtrics",
+        "name": "Qualtrics",
+        "owns": [
+          "survey_responses",
+          "respondent_segments",
+          "trend_metrics"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_qualtrics_survey_responses",
+          "query_qualtrics_respondent_segments",
+          "query_qualtrics_trend_metrics"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_bigquery",
+        "name": "Google BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_google_bigquery_analytics_events",
+          "query_google_bigquery_historical_metrics",
+          "query_google_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "engagement_surveys",
+        "sourceSystemId": "culture_amp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "feedback_records",
+        "sourceSystemId": "culture_amp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "review_cycles",
+        "sourceSystemId": "culture_amp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "survey_responses",
+        "sourceSystemId": "qualtrics",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "respondent_segments",
+        "sourceSystemId": "qualtrics",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "trend_metrics",
+        "sourceSystemId": "qualtrics",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "engagement-insight-synthesizer-policy-handbook",
+        "sourceSystemId": "google_bigquery",
+        "type": "policy",
+        "title": "Engagement Insight Synthesizer Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "engagement_surveys",
+          "feedback_records",
+          "review_cycles"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "culture_amp_execute_api",
+        "sourceSystemId": "culture_amp",
+        "method": "POST",
+        "path": "/api/culture_amp/execute",
+        "description": "Synchronous endpoint the agent calls to execute in Culture Amp after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "engagement-insight-synthesizer-baseline-gap",
+        "description": "Seed a realistic gap where Analysis time sits between 6 weeks and 24 hours, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "engagement_surveys",
+          "feedback_records"
+        ],
+        "discoveryPath": [
+          "Inspect Culture Amp records for the affected entities",
+          "Compare against Qualtrics historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next HRBP action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "engagement_insight_synthesizer",
+        "schemas": [
+          "culture_amp",
+          "qualtrics",
+          "workday"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_engagement_insight_synthesizer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "engagement-insight-synthesizer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "engagement-insight-synthesizer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Engagement Insight Synthesizer workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "HRBP agent for the Engagement Insight Synthesizer workflow",
+      "primaryObjective": "Instant multi-dimensional analysis and driver identification. Automated generation of team-level action planning guides. so the HRBP can move the Analysis time KPI.",
+      "inScope": [
+        "Instant multi-dimensional analysis and driver identification",
+        "Automated generation of team-level action planning guides",
+        "Longitudinal tracking of action plan effectiveness over time"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_culture_amp_engagement_surveys",
+          "kind": "query",
+          "sourceSystemId": "culture_amp",
+          "description": "Retrieve engagement surveys from Culture Amp for the Engagement Insight Synthesizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "engagement_surveys_records",
+            "engagement_surveys_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_qualtrics_survey_responses",
+          "kind": "query",
+          "sourceSystemId": "qualtrics",
+          "description": "Retrieve survey responses from Qualtrics for the Engagement Insight Synthesizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "survey_responses_records",
+            "survey_responses_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the Engagement Insight Synthesizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "google_bigquery",
+          "description": "Retrieve analytics events from Google BigQuery for the Engagement Insight Synthesizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_engagement_insight_synthesizer_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_bigquery",
+          "description": "Look up sections of the Engagement Insight Synthesizer Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_culture_amp_execute",
+          "kind": "action",
+          "sourceSystemId": "culture_amp",
+          "description": "Execute the execute step in Culture Amp after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "response_ingestion",
+            "label": "Response Ingestion",
+            "description": "Pull survey responses with full demographic and org hierarchy context from Qualtrics. Join with Workday data for team-level segmentation and tenure-based analysis.",
+            "tools": [
+              "query_qualtrics_survey_responses",
+              "query_workday_employees"
+            ]
+          },
+          {
+            "id": "statistical_driver_analysis",
+            "label": "Statistical Driver Analysis",
+            "description": "Run multi-dimensional driver analysis to identify which factors most strongly predict engagement scores. Segment by team, level, and tenure cohort for targeted insights.",
+            "tools": [
+              "query_culture_amp_engagement_surveys",
+              "lookup_engagement_insight_synthesizer_policy_handbook"
+            ]
+          },
+          {
+            "id": "theme_sentiment_extraction",
+            "label": "Theme & Sentiment Extraction",
+            "description": "Gemini performs NLP on open-text responses to extract themes, sentiment, and actionable signals. Cross-references quantitative drivers for narrative coherence.",
+            "tools": [
+              "query_qualtrics_survey_responses"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Analysis time moved from 6 weeks toward 24 hours",
+          "mustCite": [
+            "culture_amp.engagement_surveys",
+            "qualtrics.survey_responses"
+          ],
+          "sourceSystemIds": [
+            "culture_amp",
+            "qualtrics"
+          ]
+        },
+        {
+          "claim": "Driver identification moved from Top-level only toward Team-specific",
+          "mustCite": [
+            "culture_amp.engagement_surveys",
+            "qualtrics.survey_responses"
+          ],
+          "sourceSystemIds": [
+            "culture_amp",
+            "qualtrics"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Analysis time regresses past the 6 weeks baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "HRBP",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed execute action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Culture Amp (and other named systems) entities.",
+        "Never bypass HRBP approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "engagement-insight-synthesizer-end-to-end",
+          "prompt": "Run the Engagement Insight Synthesizer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_culture_amp_engagement_surveys",
+            "query_qualtrics_survey_responses",
+            "query_workday_employees",
+            "query_google_bigquery_analytics_events",
+            "lookup_engagement_insight_synthesizer_policy_handbook",
+            "action_culture_amp_execute"
+          ],
+          "mustReferenceEntities": [
+            "engagement_surveys",
+            "survey_responses",
+            "employees",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "engagement-insight-synthesizer-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action execute executed against Culture Amp, with audit-trail entry and HRBP notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute execute without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/EngagementSynthesizer.tsx",
+    "familyId": "engagement-insight-synthesizer",
+    "variant": {
+      "familyId": "engagement-insight-synthesizer",
+      "variantId": "engagement-insight-synthesizer",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

@@ -1,0 +1,1016 @@
+{
+  "id": "redline-comparison-agent",
+  "title": "Redline Comparison Agent",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/RedlineComparisonAgent.tsx",
+  "subtitle": "A-1405 • Contract Lifecycle",
+  "persona": "Contract Manager",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "event",
+  "domainId": "domain-14",
+  "systems": [
+    "Icertis",
+    "DocuSign CLM",
+    "Microsoft Word",
+    "Google Docs",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Review time per redline",
+      "before": "2-4 hours",
+      "after": "20 minutes"
+    },
+    {
+      "label": "Semantic changes caught",
+      "before": "Word-level only",
+      "after": "Meaning-level"
+    },
+    {
+      "label": "Deleted protections missed",
+      "before": "15-20%",
+      "after": "<1%"
+    }
+  ],
+  "statusQuo": [
+    "Redline comparison uses MS Word track changes — shows every word edit equally, burying critical changes in noise.",
+    "Semantic shifts like 'best efforts' to 'commercially reasonable efforts' not flagged as meaningful reductions.",
+    "Entire section deletions (e.g., Data Protection clause removed) treated the same as formatting changes."
+  ],
+  "agentification": [
+    "Gemini performs semantic diff — understanding that 'best efforts' to 'commercially reasonable efforts' is a meaningful commitment reduction.",
+    "LLM detects section deletions that remove protections and flags as likely intentional risk reallocation, not editing error.",
+    "Prioritizes changes by business impact rather than presenting a 200-item word-level diff list — reviewers focus on what matters."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Icertis",
+        "description": "Document versioning, previous contract versions"
+      },
+      {
+        "system": "DocuSign CLM",
+        "description": "New document version ingestion, version history"
+      },
+      {
+        "system": "Microsoft Word",
+        "description": "Word document parsing, track changes extraction"
+      },
+      {
+        "system": "Google Docs",
+        "description": "Google Doc version comparison, comment integration"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Semantic diff analysis, meaning-level change interpretation, impact prioritization"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Version Retrieval",
+        "description": "Receive new document version from CLM. Retrieve previous version for comparison. Normalize both versions from Word/Google Docs into comparable structured format."
+      },
+      {
+        "label": "Structural Diff Detection",
+        "description": "Word-level diff detection with structural change identification — section additions, deletions, and moves. Classify changes by type: substantive, formatting, or structural."
+      },
+      {
+        "label": "Semantic Impact Analysis",
+        "description": "Gemini performs meaning-level comparison — understanding that 'best efforts' to 'commercially reasonable efforts' is a commitment reduction, not a word edit. Detects deleted protections (entire Data Protection clause removed) and flags as likely intentional risk reallocation. Prioritizes changes by business impact."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Redline Comparison Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "icertis",
+        "name": "Icertis",
+        "owns": [
+          "contracts",
+          "amendments",
+          "obligations"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_icertis_contracts",
+          "query_icertis_amendments",
+          "query_icertis_obligations"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "docusign_clm",
+        "name": "DocuSign CLM",
+        "owns": [
+          "contracts",
+          "amendments",
+          "obligations"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_docusign_clm_contracts",
+          "query_docusign_clm_amendments",
+          "query_docusign_clm_obligations"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "microsoft_word",
+        "name": "Microsoft Word",
+        "owns": [
+          "microsoft_word_records",
+          "microsoft_word_events",
+          "microsoft_word_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_microsoft_word_microsoft_word_records",
+          "query_microsoft_word_microsoft_word_events",
+          "query_microsoft_word_microsoft_word_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_docs",
+        "name": "Google Docs",
+        "owns": [
+          "documents",
+          "comments",
+          "revision_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_docs_documents",
+          "query_google_docs_comments",
+          "query_google_docs_revision_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "contracts",
+        "sourceSystemId": "icertis",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "negotiating",
+              "active",
+              "expired",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "trueRate": 0.4
+          }
+        ]
+      },
+      {
+        "name": "amendments",
+        "sourceSystemId": "icertis",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "negotiating",
+              "active",
+              "expired",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "trueRate": 0.4
+          }
+        ]
+      },
+      {
+        "name": "obligations",
+        "sourceSystemId": "icertis",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "negotiating",
+              "active",
+              "expired",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "trueRate": 0.4
+          }
+        ]
+      },
+      {
+        "name": "microsoft_word_records",
+        "sourceSystemId": "microsoft_word",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "microsoft_word_events",
+        "sourceSystemId": "microsoft_word",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "microsoft_word_record_id",
+            "type": "ref",
+            "ref": "microsoft_word_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "microsoft_word_audit_trail",
+        "sourceSystemId": "microsoft_word",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "documents",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "comments",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "revision_history",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "document_id",
+            "type": "ref",
+            "ref": "documents.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "microsoft_word_events.microsoft_word_record_id",
+        "to": "microsoft_word_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "revision_history.document_id",
+        "to": "documents.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "redline-comparison-agent-policy-guide",
+        "sourceSystemId": "icertis",
+        "type": "policy",
+        "title": "Redline Comparison Agent Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "contracts",
+          "amendments",
+          "obligations"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "redline-comparison-agent-baseline-gap",
+        "description": "Seed a realistic gap where Review time per redline sits between 2-4 hours and 20 minutes, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "contracts",
+          "amendments"
+        ],
+        "discoveryPath": [
+          "Inspect Icertis records for the affected entities",
+          "Compare against DocuSign CLM historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Contract Manager action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "redline_comparison_agent",
+        "schemas": [
+          "icertis",
+          "docusign_clm",
+          "microsoft_word",
+          "google_docs"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_redline_comparison_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "redline-comparison-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "redline-comparison-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Redline Comparison Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Contract Manager agent for the Redline Comparison Agent workflow",
+      "primaryObjective": "Gemini performs semantic diff — understanding that 'best efforts' to 'commercially reasonable efforts' is a meaningful commitment reduction. LLM detects section deletions that remove protections and flags as likely intentional risk reallocation, not editing error. so the Contract Manager can move the Review time per redline KPI.",
+      "inScope": [
+        "Gemini performs semantic diff — understanding that 'best efforts' to 'commercially reasonable efforts' is a meaningful commitment reduction",
+        "LLM detects section deletions that remove protections and flags as likely intentional risk reallocation, not editing error",
+        "Prioritizes changes by business impact rather than presenting a 200-item word-level diff list — reviewers focus on what matters"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_icertis_contracts",
+          "kind": "query",
+          "sourceSystemId": "icertis",
+          "description": "Retrieve contracts from Icertis for the Redline Comparison Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "contracts_records",
+            "contracts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_docusign_clm_contracts",
+          "kind": "query",
+          "sourceSystemId": "docusign_clm",
+          "description": "Retrieve contracts from DocuSign CLM for the Redline Comparison Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "contracts_records",
+            "contracts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_microsoft_word_microsoft_word_records",
+          "kind": "query",
+          "sourceSystemId": "microsoft_word",
+          "description": "Retrieve microsoft word records from Microsoft Word for the Redline Comparison Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "microsoft_word_records_records",
+            "microsoft_word_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_docs_documents",
+          "kind": "query",
+          "sourceSystemId": "google_docs",
+          "description": "Retrieve documents from Google Docs for the Redline Comparison Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "documents_records",
+            "documents_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_redline_comparison_agent_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_docs",
+          "description": "Look up sections of the Redline Comparison Agent Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "version_retrieval",
+            "label": "Version Retrieval",
+            "description": "Receive new document version from CLM. Retrieve previous version for comparison. Normalize both versions from Word/Google Docs into comparable structured format.",
+            "tools": [
+              "query_docusign_clm_contracts",
+              "query_microsoft_word_microsoft_word_records",
+              "query_google_docs_documents",
+              "lookup_redline_comparison_agent_policy_guide"
+            ]
+          },
+          {
+            "id": "structural_diff_detection",
+            "label": "Structural Diff Detection",
+            "description": "Word-level diff detection with structural change identification — section additions, deletions, and moves. Classify changes by type: substantive, formatting, or structural.",
+            "tools": [
+              "query_microsoft_word_microsoft_word_records"
+            ]
+          },
+          {
+            "id": "semantic_impact_analysis",
+            "label": "Semantic Impact Analysis",
+            "description": "Gemini performs meaning-level comparison — understanding that 'best efforts' to 'commercially reasonable efforts' is a commitment reduction, not a word edit. Detects deleted protections (entire Data Protection clause removed) and flags as likely intentional risk reallocation. Prioritizes changes by business impact.",
+            "tools": [
+              "query_microsoft_word_microsoft_word_records",
+              "lookup_redline_comparison_agent_policy_guide"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Review time per redline moved from 2-4 hours toward 20 minutes",
+          "mustCite": [
+            "icertis.contracts",
+            "docusign_clm.contracts"
+          ],
+          "sourceSystemIds": [
+            "icertis",
+            "docusign_clm"
+          ]
+        },
+        {
+          "claim": "Semantic changes caught moved from Word-level only toward Meaning-level",
+          "mustCite": [
+            "icertis.contracts",
+            "docusign_clm.contracts"
+          ],
+          "sourceSystemIds": [
+            "icertis",
+            "docusign_clm"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Review time per redline regresses past the 2-4 hours baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Contract Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Icertis (and other named systems) entities.",
+        "Never bypass Contract Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "redline-comparison-agent-end-to-end",
+          "prompt": "Run the Redline Comparison Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_icertis_contracts",
+            "query_docusign_clm_contracts",
+            "query_microsoft_word_microsoft_word_records",
+            "query_google_docs_documents",
+            "lookup_redline_comparison_agent_policy_guide"
+          ],
+          "mustReferenceEntities": [
+            "contracts",
+            "contracts",
+            "microsoft_word_records",
+            "documents"
+          ],
+          "mustCiteDocuments": [
+            "redline-comparison-agent-policy-guide"
+          ],
+          "expectedActionOutcome": "Contract Manager receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/RedlineComparisonAgent.tsx",
+    "familyId": "redline-comparison-agent",
+    "variant": {
+      "familyId": "redline-comparison-agent",
+      "variantId": "redline-comparison-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

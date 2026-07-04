@@ -1,0 +1,1279 @@
+{
+  "id": "it-grc-dashboard-reporter",
+  "title": "IT GRC Dashboard & Reporter",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/ITGRCDashboard.tsx",
+  "subtitle": "A-4507 • IT Governance & Compliance",
+  "persona": "CIO / CTO",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-45",
+  "systems": [
+    "ServiceNow GRC",
+    "RSA Archer",
+    "OneTrust",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "GRC report preparation",
+      "before": "5 days manual compilation",
+      "after": "Auto-generated monthly"
+    },
+    {
+      "label": "Metric coverage",
+      "before": "60% of GRC domains",
+      "after": "100% cross-domain"
+    },
+    {
+      "label": "Board report turnaround",
+      "before": "2 weeks",
+      "after": "Same day"
+    }
+  ],
+  "statusQuo": [
+    "GRC reports assembled manually from 3+ platforms — takes 5 days and the data is stale before delivery.",
+    "Board-level summaries require translating technical GRC metrics into business language, adding another week.",
+    "No unified view across risk, compliance, audit, and policy — each domain reports separately."
+  ],
+  "agentification": [
+    "Gemini aggregates GRC metrics from ServiceNow, RSA Archer, and OneTrust into a unified cross-domain view.",
+    "LLM generates executive narratives that translate technical GRC status into board-ready business language.",
+    "Automated monthly reporting with interactive drill-down dashboards replaces manual compilation."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "ServiceNow GRC",
+        "description": "Control test results, audit findings, policy status, risk register"
+      },
+      {
+        "system": "RSA Archer",
+        "description": "Risk assessments, compliance scores, control effectiveness"
+      },
+      {
+        "system": "OneTrust",
+        "description": "Privacy compliance status, DPIA results, consent metrics"
+      },
+      {
+        "system": "BigQuery",
+        "description": "GRC metric warehouse, trend analytics, benchmark data"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Executive narrative generation, trend explanation"
+      },
+      {
+        "system": "Looker",
+        "description": "Interactive GRC dashboards, drill-down visualizations"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Cross-Domain Aggregation",
+        "description": "Pull GRC metrics from ServiceNow GRC (control test results, audit findings), RSA Archer (risk scores, compliance status), and OneTrust (privacy compliance, consent rates). Normalize into unified scoring framework."
+      },
+      {
+        "label": "Trend & Benchmark Analysis",
+        "description": "Calculate compliance score trends, risk heat map evolution, audit finding aging, and policy review completion rates. Compare against targets and industry benchmarks."
+      },
+      {
+        "label": "Executive Narrative Generation",
+        "description": "Gemini generates a board-ready GRC summary — highlighting key improvements, remaining gaps, and recommended actions. Explains compliance score changes with specific causal factors."
+      },
+      {
+        "label": "Dashboard & Report Delivery",
+        "description": "Publish interactive dashboard to Looker for drill-down analysis. Generate PDF executive summary for board distribution."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for IT GRC Dashboard & Reporter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "servicenow_grc",
+        "name": "ServiceNow GRC",
+        "owns": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_grc_tickets",
+          "query_servicenow_grc_change_requests",
+          "query_servicenow_grc_incidents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "rsa_archer",
+        "name": "RSA Archer",
+        "owns": [
+          "rsa_archer_records",
+          "rsa_archer_events",
+          "rsa_archer_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_rsa_archer_rsa_archer_records",
+          "query_rsa_archer_rsa_archer_events",
+          "query_rsa_archer_rsa_archer_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "onetrust",
+        "name": "OneTrust",
+        "owns": [
+          "onetrust_records",
+          "onetrust_events",
+          "onetrust_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_onetrust_onetrust_records",
+          "query_onetrust_onetrust_events",
+          "query_onetrust_onetrust_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "tickets",
+        "sourceSystemId": "servicenow_grc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "change_requests",
+        "sourceSystemId": "servicenow_grc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "incidents",
+        "sourceSystemId": "servicenow_grc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "rsa_archer_records",
+        "sourceSystemId": "rsa_archer",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "rsa_archer_events",
+        "sourceSystemId": "rsa_archer",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "rsa_archer_record_id",
+            "type": "ref",
+            "ref": "rsa_archer_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "rsa_archer_audit_trail",
+        "sourceSystemId": "rsa_archer",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "onetrust_records",
+        "sourceSystemId": "onetrust",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "onetrust_events",
+        "sourceSystemId": "onetrust",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "onetrust_record_id",
+            "type": "ref",
+            "ref": "onetrust_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "onetrust_audit_trail",
+        "sourceSystemId": "onetrust",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "rsa_archer_events.rsa_archer_record_id",
+        "to": "rsa_archer_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "onetrust_events.onetrust_record_id",
+        "to": "onetrust_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "it-grc-dashboard-reporter-runbook",
+        "sourceSystemId": "bigquery",
+        "type": "runbook",
+        "title": "IT GRC Dashboard & Reporter Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "servicenow_grc_generate_api",
+        "sourceSystemId": "servicenow_grc",
+        "method": "POST",
+        "path": "/api/servicenow_grc/generate",
+        "description": "Synchronous endpoint the agent calls to generate in ServiceNow GRC after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "it-grc-dashboard-reporter-baseline-gap",
+        "description": "Seed a realistic gap where GRC report preparation sits between 5 days manual compilation and Auto-generated monthly, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "tickets",
+          "change_requests"
+        ],
+        "discoveryPath": [
+          "Inspect ServiceNow GRC records for the affected entities",
+          "Compare against RSA Archer historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next CIO / CTO action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "it_grc_dashboard_reporter",
+        "schemas": [
+          "servicenow_grc",
+          "rsa_archer",
+          "onetrust"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_it_grc_dashboard_reporter",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "it-grc-dashboard-reporter-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "it-grc-dashboard-reporter-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the IT GRC Dashboard & Reporter workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "CIO / CTO agent for the IT GRC Dashboard & Reporter workflow",
+      "primaryObjective": "Gemini aggregates GRC metrics from ServiceNow, RSA Archer, and OneTrust into a unified cross-domain view. LLM generates executive narratives that translate technical GRC status into board-ready business language. so the CIO / CTO can move the GRC report preparation KPI.",
+      "inScope": [
+        "Gemini aggregates GRC metrics from ServiceNow, RSA Archer, and OneTrust into a unified cross-domain view",
+        "LLM generates executive narratives that translate technical GRC status into board-ready business language",
+        "Automated monthly reporting with interactive drill-down dashboards replaces manual compilation"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_servicenow_grc_tickets",
+          "kind": "query",
+          "sourceSystemId": "servicenow_grc",
+          "description": "Retrieve tickets from ServiceNow GRC for the IT GRC Dashboard & Reporter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "tickets_records",
+            "tickets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_rsa_archer_rsa_archer_records",
+          "kind": "query",
+          "sourceSystemId": "rsa_archer",
+          "description": "Retrieve rsa archer records from RSA Archer for the IT GRC Dashboard & Reporter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "rsa_archer_records_records",
+            "rsa_archer_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_onetrust_onetrust_records",
+          "kind": "query",
+          "sourceSystemId": "onetrust",
+          "description": "Retrieve onetrust records from OneTrust for the IT GRC Dashboard & Reporter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "onetrust_records_records",
+            "onetrust_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the IT GRC Dashboard & Reporter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_it_grc_dashboard_reporter_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the IT GRC Dashboard & Reporter Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_servicenow_grc_generate",
+          "kind": "action",
+          "sourceSystemId": "servicenow_grc",
+          "description": "Execute the generate step in ServiceNow GRC after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "cross_domain_aggregation",
+            "label": "Cross-Domain Aggregation",
+            "description": "Pull GRC metrics from ServiceNow GRC (control test results, audit findings), RSA Archer (risk scores, compliance status), and OneTrust (privacy compliance, consent rates). Normalize into unified scoring framework.",
+            "tools": [
+              "query_servicenow_grc_tickets",
+              "query_rsa_archer_rsa_archer_records",
+              "query_onetrust_onetrust_records",
+              "action_servicenow_grc_generate"
+            ]
+          },
+          {
+            "id": "executive_narrative_generation",
+            "label": "Executive Narrative Generation",
+            "description": "Gemini generates a board-ready GRC summary — highlighting key improvements, remaining gaps, and recommended actions. Explains compliance score changes with specific causal factors.",
+            "tools": [
+              "query_servicenow_grc_tickets",
+              "action_servicenow_grc_generate"
+            ]
+          },
+          {
+            "id": "dashboard_report_delivery",
+            "label": "Dashboard & Report Delivery",
+            "description": "Publish interactive dashboard to Looker for drill-down analysis. Generate PDF executive summary for board distribution.",
+            "tools": [
+              "lookup_it_grc_dashboard_reporter_runbook",
+              "action_servicenow_grc_generate"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "GRC report preparation moved from 5 days manual compilation toward Auto-generated monthly",
+          "mustCite": [
+            "servicenow_grc.tickets",
+            "rsa_archer.rsa_archer_records"
+          ],
+          "sourceSystemIds": [
+            "servicenow_grc",
+            "rsa_archer"
+          ]
+        },
+        {
+          "claim": "Metric coverage moved from 60% of GRC domains toward 100% cross-domain",
+          "mustCite": [
+            "servicenow_grc.tickets",
+            "rsa_archer.rsa_archer_records"
+          ],
+          "sourceSystemIds": [
+            "servicenow_grc",
+            "rsa_archer"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "GRC report preparation regresses past the 5 days manual compilation baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "CIO / CTO",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from ServiceNow GRC (and other named systems) entities.",
+        "Never bypass CIO / CTO approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "it-grc-dashboard-reporter-end-to-end",
+          "prompt": "Run the IT GRC Dashboard & Reporter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_servicenow_grc_tickets",
+            "query_rsa_archer_rsa_archer_records",
+            "query_onetrust_onetrust_records",
+            "query_bigquery_analytics_events",
+            "lookup_it_grc_dashboard_reporter_runbook",
+            "action_servicenow_grc_generate"
+          ],
+          "mustReferenceEntities": [
+            "tickets",
+            "rsa_archer_records",
+            "onetrust_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "it-grc-dashboard-reporter-runbook"
+          ],
+          "expectedActionOutcome": "Action generate executed against ServiceNow GRC, with audit-trail entry and CIO / CTO notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/ITGRCDashboard.tsx",
+    "familyId": "it-grc-dashboard-reporter",
+    "variant": {
+      "familyId": "it-grc-dashboard-reporter",
+      "variantId": "it-grc-dashboard-reporter",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}
