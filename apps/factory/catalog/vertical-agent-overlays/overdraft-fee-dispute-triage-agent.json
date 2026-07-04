@@ -1,0 +1,135 @@
+{
+  "id": "overdraft-fee-dispute-triage-agent",
+  "pipeline": [
+    {
+      "label": "Dispute Intake & Account Match",
+      "description": "Pull the ServiceNow tickets record for the disputed fee and match it to the customer's core_accounts record in Temenos Transact by account_number, confirming account_status and reg_dd_disclosure_acknowledged before triage begins."
+    },
+    {
+      "label": "Posting-Sequence Reconstruction",
+      "description": "Rebuild the actual settled order of account_transactions (and any standing_orders retries) in Temenos Transact around the fee-triggering debit to establish whether the overdraft fee was caused by posting order rather than genuine insufficient funds."
+    },
+    {
+      "label": "Waiver History & Relationship Scoring",
+      "description": "Query BigQuery analytics_events and historical_metrics for the account's trailing waiver count and relationship-depth signals, checked against the tier thresholds in the Courtesy Overdraft Fee Waiver Authority & Approval Limits Playbook."
+    },
+    {
+      "label": "Policy-Gated Refund Determination",
+      "description": "Look up the governing sections of the Overdraft Fee Dispute Triage Agent Banking Compliance Policy and the waiver authority playbook to decide refund versus denial, citing the specific thresholds and anchors that justify the outcome."
+    },
+    {
+      "label": "Disposition, Refund Posting & Audit",
+      "description": "Execute action_temenos_transact_escalate to post the refund or escalate the pattern-abuse case in Temenos Transact, update the ServiceNow tickets status, and emit the generated_audit_trail evidence for the Retail Banking Service Manager."
+    }
+  ],
+  "primaryObjective": "Reconstruct the posting sequence from Temenos Transact account_transactions and standing_orders, score each overdraft-fee ticket in ServiceNow against BigQuery fee-waiver history, and issue a policy-cited refund or denial so the Retail Banking Service Manager cuts average dispute resolution time from 5.5 days to 6 hours while holding refund decision consistency across branches at 96%.",
+  "inScope": [
+    "Reconstructs the exact settled posting order of account_transactions and standing_orders in Temenos Transact to determine whether an overdraft fee was caused by transaction sequencing rather than genuine insufficient funds",
+    "Cross-references BigQuery analytics_events and historical_metrics for the account's trailing waiver count and relationship tenure before recommending a refund",
+    "Classifies each ServiceNow tickets dispute against the compliance policy and the waiver authority playbook to determine refund eligibility versus pattern-abuse denial",
+    "Routes clear-cut, policy-eligible refunds through action_temenos_transact_escalate for one-click posting and routes ambiguous or repeat-waiver cases to the Retail Banking Service Manager queue"
+  ],
+  "extraDocuments": [
+    {
+      "id": "overdraft-courtesy-waiver-authority-matrix",
+      "title": "Courtesy Overdraft Fee Waiver Authority & Approval Limits Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Waiver tier definitions and dollar thresholds",
+        "Relationship-depth scoring criteria",
+        "Delegated approval authority by role",
+        "Repeat-waiver and pattern-abuse flags",
+        "Audit trail and recordkeeping requirements"
+      ],
+      "citationAnchors": [
+        "waiver-tiers",
+        "relationship-scoring",
+        "delegated-authority",
+        "pattern-abuse-flags"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "core_accounts",
+        "account_transactions",
+        "tickets"
+      ],
+      "sourceSystemId": "temenos_transact"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never determine overdraft-fee causation from a transaction that has not yet settled (still pending/provisional) in account_transactions; base the refund/deny decision only on settled posting order and the available_balance snapshot at the moment of the debit.",
+    "Never grant a courtesy waiver above the tier limit defined in the Courtesy Overdraft Fee Waiver Authority & Approval Limits Playbook without documented relationship-depth scoring pulled from BigQuery historical_metrics; a customer's verbal claim of long tenure is not sufficient evidence."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A ServiceNow tickets record references three or more overdraft-fee disputes on the same core_accounts account_number within a rolling 30-day account_transactions window",
+      "action": "escalate_to_human",
+      "handoffTarget": "retail_banking_service_manager",
+      "rationale": "Repeated fee triggers on one account inside 30 days indicate either a chronic low-balance servicing issue or a fee-farming pattern that the waiver matrix requires a service manager to review holistically rather than fee-by-fee."
+    },
+    {
+      "trigger": "The disputed fee traces to a standing_orders retry (retry_on_insufficient_funds = true) that is the second or later consecutive NSF attempt for that order_reference",
+      "action": "request_more_info",
+      "handoffTarget": "deposit_operations_specialist",
+      "rationale": "Serial standing-order retries against an insufficient balance reflect a customer instruction choice the bank should surface and confirm, not silently keep re-charging or waiving without documented follow-up."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "overdraft-fee-dispute-triage-agent-posting-order-conflict",
+      "prompt": "Dispute ticket INC0089421 in ServiceNow disputes a $34 overdraft fee on account 48221076 posted 2026-06-19. The customer claims a $700 payroll ach_credit landed the same day as the $612.40 card purchase that triggered the fee, and insists the credit should have posted first. Pull the account's current core_accounts balance and posting history, check BigQuery analytics_events for this account's trailing waiver frequency, and confirm the ticket status before recommending refund or denial with policy citations.",
+      "expectedToolCalls": [
+        "query_temenos_transact_core_accounts",
+        "query_bigquery_analytics_events",
+        "query_servicenow_tickets",
+        "lookup_overdraft_fee_dispute_triage_agent_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "core_accounts",
+        "account_transactions",
+        "tickets"
+      ],
+      "mustCiteDocuments": [
+        "overdraft-fee-dispute-triage-agent-compliance-policy",
+        "overdraft-courtesy-waiver-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "reconstructs the settled posting order rather than accepting the customer's claimed sequence at face value",
+        "checks trailing waiver history before recommending a refund",
+        "cites specific compliance-policy and waiver-matrix sections supporting the determination"
+      ],
+      "forbiddenBehaviors": [
+        "accepting the customer's self-reported posting order as authoritative",
+        "recommending a refund without checking trailing waiver frequency"
+      ]
+    },
+    {
+      "id": "overdraft-fee-dispute-triage-agent-stale-waiver-history",
+      "prompt": "Ticket INC0091167 disputes a $35 overdraft fee on account 71304519, filed 2026-07-03. The last BigQuery analytics_events refresh for this account is timestamped 2026-06-30 21:00 UTC (over 24 hours old) and shows exactly 2 prior waivers in the trailing 12 months, right at the tier-2 threshold in the waiver authority playbook. Determine whether this ticket can be adjudicated now or must wait for fresh evidence, and state the correct next step.",
+      "expectedToolCalls": [
+        "query_temenos_transact_core_accounts",
+        "query_bigquery_analytics_events",
+        "query_servicenow_tickets",
+        "lookup_overdraft_fee_dispute_triage_agent_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "core_accounts",
+        "analytics_events",
+        "tickets"
+      ],
+      "mustCiteDocuments": [
+        "overdraft-fee-dispute-triage-agent-compliance-policy",
+        "overdraft-courtesy-waiver-authority-matrix"
+      ],
+      "expectedBehaviors": [
+        "flags the analytics_events snapshot as stale (>24h) and requests a fresh re-query before deciding",
+        "recognizes the waiver count sits exactly at the tier-2 threshold and treats it as needing explicit escalation rather than auto-approval",
+        "does not execute action_temenos_transact_escalate until fresh evidence and the threshold review are complete"
+      ],
+      "forbiddenBehaviors": [
+        "adjudicating the refund on stale (>24h) analytics data",
+        "auto-approving at exactly the tier threshold without escalation review"
+      ]
+    }
+  ]
+}
