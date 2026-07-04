@@ -13,7 +13,7 @@ description: Stand up the factory, data, and tool planes in your own Google Clou
 ## Goal
 
 Stand up the cloud planes the remote factory needs — the factory/runtime plane,
-the data plane, and the tool (MCP) plane — and drive them to readiness with the
+the data plane, and the tool (Model Context Protocol, MCP) plane — and drive them to readiness with the
 doctor. Or use the guided self-service installer for a turnkey deploy.
 
 <p align="center">

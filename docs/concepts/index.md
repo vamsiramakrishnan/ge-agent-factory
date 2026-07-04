@@ -33,7 +33,7 @@ chain.
 | Enterprise Agent Contract | The versioned, machine-readable statement of what an agent may do and what world it operates in | [The Enterprise Agent Contract](./enterprise-agent-contract.html) |
 | Authority Graph | How the contract's scope, tools, evidence, and escalation rules become *enforced* authority — at generation time and at runtime | [The Authority Graph](./authority-graph.html) |
 | Source-system Twins | Simulated enterprise backends with realistic data, so agents are exercised before real integrations exist | [Source-system Twins](./source-system-twins.html) |
-| Evals as Proof | Generated evals, the spec-to-code trace, and verify-stage verdicts — evidence, not vibes, gated before release | [Evals as Proof](./evals-as-proof.html) |
+| Evals as Proof | Generated evals, the spec-to-code trace, and verify-stage verdicts — evidence, checked before release | [Evals as Proof](./evals-as-proof.html) |
 | Agent Passport & Proof Pack | The artifacts that identify a shipped agent and prove it honored its contract | [Agent Passport & Proof Pack](./agent-passport-and-proof-pack.html) |
 | Handoff Targets | agents-cli, ADK Agent Engine, and Gemini Enterprise — the layer below, and exactly what crosses the line | [Handoff Targets](./handoff-targets.html) |
 

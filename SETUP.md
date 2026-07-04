@@ -3,7 +3,7 @@
 The canonical, step-by-step path from a fresh clone to a working local
 factory. This is the one place setup steps are written out in full — other
 docs (`README.md`, `docs/start/getting-started.md`, `tools/README.md`)
-link back here instead of repeating the steps.
+link back here instead of repeating them.
 
 ## 1. Clone
 
@@ -27,7 +27,7 @@ cd ge-agent-factory
 - **Optional, for cloud ops later:** `gcloud` (Google Cloud CLI). Not required
   for local mode — `mise run setup`/`mise run deps` will print a warning (not an
   error) if it's missing, since it's only needed for `up`/`data`/`mcp`/
-  `provision` against a real GCP project.
+  `provision` against a real GCP (Google Cloud Platform) project.
 
 Everything else — **Bun, Python 3.11, uv, Terraform** — is pinned in
 [`mise.toml`](mise.toml) and installed automatically the first time you run
@@ -112,9 +112,9 @@ This is `ge doctor --local` under the hood. It checks:
 All checks follow the same pass/warn/fail pattern; failures print a `fix:`
 line with the exact command to resolve them.
 
-For narrower, scoped checks, use `ge data doctor` (data plane only) or
-`ge mcp doctor` (tool plane / MCP services only) instead of the unified
-`ge doctor`.
+For narrower checks, use `ge data doctor` (data plane only) or
+`ge mcp doctor` (tool plane / MCP — Model Context Protocol — services only)
+instead of the unified `ge doctor`.
 
 ## 6. First command
 

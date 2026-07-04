@@ -122,7 +122,7 @@ when a bucket is configured.
   direct API call sent no payload or a zero-byte decode.
 - **Extraction returns empty text with a `note`** — the parser for that format
   is unavailable (no `pdftotext`, or an Office parse failed). The file is
-  still stored; it just can't ground the interview.
+  still stored; it can't ground the interview.
 - **Grounding seems truncated** — the budget guard clamped an oversized
   document; that is by design.
 

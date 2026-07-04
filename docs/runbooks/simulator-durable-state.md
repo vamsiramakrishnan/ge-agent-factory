@@ -1,7 +1,7 @@
 # Runbook — Simulator durable state (Firestore / AlloyDB)
 
 **Status:** Manual deploy step. Wiring (code, env passthrough, tests) has landed;
-**actually flipping a system to a cloud backend is a documented manual operation**
+**flipping a system to a cloud backend is a documented manual operation**
 and is **not** performed by CI or by building this repo. It needs project
 credentials and is effectively irreversible for live demo state, so it is gated
 behind this runbook (per ADR 0001 and the phase-2 design spec).
@@ -32,8 +32,8 @@ Backend selection precedence (in `get_state_store` / `generic.py`):
 
 If a cloud backend is requested but its dependency or config is missing at
 runtime, the store **logs a warning and degrades to memory** rather than failing
-the run. So a misconfigured deploy never hard-fails demos — but state is then
-ephemeral; verify (below) to confirm it is actually durable.
+the run. A misconfigured deploy never hard-fails demos, but state is then
+ephemeral — verify (below) to confirm it is durable.
 
 ## 0. Prerequisites
 
@@ -160,7 +160,7 @@ degraded to memory (missing dep / ADC / DSN). Check the service logs for
 
 - Global: unset `GE_SIMULATOR_STATE_BACKEND` (or set `=memory`) and `ge mcp deploy`.
 - Per-system: set `stateBackend` back to `memory` (or remove it) in `registry.json`.
-- Existing durable docs are left in place; switching back to memory simply ignores
+- Existing durable docs are left in place; switching back to memory ignores
   them (state re-hydrates from seed). Delete the `simulator_state` collection/table
   manually if you want a clean slate.
 

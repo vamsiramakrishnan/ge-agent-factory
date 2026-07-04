@@ -7,11 +7,12 @@ layout: default
 
 # OKF — Open Knowledge Format
 
-OKF (Open Knowledge Format) v0.1 is the factory's **portable BRD format**: a
-plaintext *Knowledge Bundle* of Markdown "Concept" files, each with YAML
-frontmatter and a Markdown body. It lets a rich use-case spec be read, diffed,
-hand-edited, and exchanged as ordinary Markdown, then round-tripped back into a
-spec.
+OKF (Open Knowledge Format) v0.1 is [Google Cloud's open knowledge
+format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md),
+used by the factory as its **portable spec format**: a plaintext *Knowledge
+Bundle* of Markdown "Concept" files, each with YAML frontmatter and a
+Markdown body. It lets a rich use-case spec be read, diffed, hand-edited,
+and exchanged as ordinary Markdown, then round-tripped back into a spec.
 
 The integration has three pieces, all under
 `apps/factory/scripts/`:

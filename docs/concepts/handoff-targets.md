@@ -20,12 +20,12 @@ The factory compiles and proves; the targets build, run, and serve.
 ## Why the boundary exists
 
 The factory refuses to reimplement the layer below it — that is a design
-decision, not a limitation. Because the generated workspace is a *standard*
-ADK project driven by *standard* `agents-cli` commands, there is no factory
-runtime library in production, no lock-in shim between your agent and
-Google's stack, and nothing to migrate off if you stop using the factory
-tomorrow. The factory's entire value is upstream: the contract, the twins,
-the evals, and the proof.
+decision, not a limitation. The generated workspace is a *standard* ADK
+project driven by *standard* `agents-cli` commands, so there is no factory
+runtime library in production and no lock-in shim between your agent and
+Google's stack. There is nothing to migrate off if you stop using the
+factory tomorrow. The factory's entire value is upstream: the contract, the
+twins, the evals, and the proof.
 
 ## What each target receives
 
@@ -38,8 +38,8 @@ the evals, and the proof.
 
 ## Example — a generated workspace is an agents-cli project
 
-The proof that the boundary is honest is that you can ignore the factory and
-drive a workspace with the target's own tools:
+The boundary is honest — you can ignore the factory and drive a workspace
+with the target's own tools directly:
 
 ```bash
 cd .ge/factory/workspaces/<id>

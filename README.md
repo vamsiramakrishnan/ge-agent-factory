@@ -1,9 +1,20 @@
 # GE Agent Factory
 
-GE Agent Factory compiles enterprise workflows into governed agent contracts,
-source-system simulations, eval suites, tool plans, and proof packs. It does
-not replace agents-cli, ADK, or Gemini Enterprise; it produces the upstream
-contract and proof artifacts they need.
+**An agent is a contract with the external world.** It reads your systems,
+acts on your data, and speaks to your users — so it should be built from a
+contract, proven with evidence, and admitted to production by policy, not
+by hope.
+
+GE Agent Factory builds agents exactly that way. A user interview, a BRD,
+or a PRD becomes a canonical spec — an Enterprise Agent Contract, captured
+in [OKF](docs/reference/okf.md), Google Cloud's Open Knowledge Format:
+plain Markdown, portable, vendor-agnostic. The spec generates the agent's
+code, evals, synthetic data, and simulated source systems; the evidence is
+sealed into a signed Agent Passport; and an admission gate verifies that
+passport before the agent ships to
+[agents-cli](https://google.github.io/agents-cli/), ADK Agent Engine, and
+Gemini Enterprise. The factory does not replace those tools — it produces
+the contract and proof they need.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
@@ -11,26 +22,59 @@ contract and proof artifacts they need.
   <img src="docs/assets/diagrams/signature-pipeline.svg" alt="Flow diagram: capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
-The golden path is three commands, and they run today:
+## Why generate agents from a spec
+
+A hand-built agent is an unwritten contract. Its promises are scattered
+across prompts, tool definitions, mocks, and test notebooks, and the
+evidence that it keeps them lives nowhere — it might behave, but nothing
+can prove it will. That holds for one demo. It does not hold for a
+portfolio of hundreds.
+
+Spec-driven development is not a new idea. What is new is the spec itself:
+one canonical Enterprise Agent Contract, captured in
+[OKF](docs/reference/okf.md) — the Open Knowledge Format from Google Cloud.
+OKF is plain Markdown with structured frontmatter: portable,
+vendor-agnostic, readable by a business owner, and compilable by the
+factory. That one spec drives every artifact downstream:
+
+1. **Capture** — start from a user interview or an existing BRD; the
+   factory compiles it into a contract.
+2. **Generate** — the contract generates the agent's ADK code and tools.
+3. **Evaluate** — the contract and the generated code produce the eval
+   suite, in agents-cli's own eval format.
+4. **Simulate** — the contract's source systems become simulated backends
+   seeded with synthetic data, so every tool call is exercised before any
+   production integration exists.
+5. **Admit** — the evidence is sealed into a signed Agent Passport, and an
+   admission gate verifies it — evals passed, gates green, shipped bytes
+   unchanged — before the agent ships through agents-cli to ADK Agent
+   Engine.
+6. **Run** — the deployed agent is published to Gemini Enterprise, where
+   your business users talk to it.
+
+The passport carries standard in-toto attestations, so admission
+controllers you may already run — sigstore policy-controller, Kyverno,
+Binary Authorization — can verify the same evidence downstream.
+
+On the command line, that path is three verbs:
 
 ```bash
-ge capture               # capture intent into a contract — opens the console Interview
-ge prove                 # prove it: build the agent, run its evals → a validated workspace
-ge handoff agents-cli    # hand the proven agent to agents-cli → Agent Engine → Gemini Enterprise
+ge capture               # interview or BRD → Enterprise Agent Contract
+ge prove                 # contract → code, evals, data, simulations → a validated workspace
+ge handoff agents-cli    # proven workspace → Agent Engine → Gemini Enterprise
 ```
 
-Capture is console-first today: `ge capture` opens the conversational
-Interview in your browser (and `ge capture --from <agent-spec.json>`
-registers a contract you already have). A capture flow that lives entirely
-in the terminal is [roadmap](#roadmap-the-golden-path), not pretense. At any
-point, bare `ge` (or `ge status`) answers three questions: where am I on
-capture → prove → handoff, what blocks me, and what is the exact next
-command.
+`ge capture` opens the conversational Interview in your browser;
+`ge capture --from <agent-spec.json>` registers a contract you already
+have. At any point, bare `ge` (or `ge status`) reports where you are on the
+path, what blocks you, and the exact next command. A capture flow that
+lives entirely in the terminal is on the
+[roadmap](#roadmap-the-golden-path).
 
-Not sure this is the layer you need? Read
+Deciding whether you need this layer at all? Read
 [GE Agent Factory vs agents-cli](https://vamsiramakrishnan.github.io/ge-agent-factory/start/vs-agents-cli/).
 
-## Start with skills — works with your coding agent
+## Works with your coding agent
 
 <p align="center">
   <img src="docs/assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
@@ -40,11 +84,10 @@ Not sure this is the layer you need? Read
   <img src="docs/assets/icons/mcp.svg" alt="MCP" height="44">
 </p>
 
-The recommended setup path is skills-first. The whole factory is packaged as
-agent skills — including the install itself
-([`installing-the-factory`](skills/installing-the-factory/SKILL.md)) — so your
-coding agent can bootstrap a bare machine, verify each phase, and then operate
-the factory end to end:
+Every factory job ships as an agent skill — including the install itself
+([`installing-the-factory`](skills/installing-the-factory/SKILL.md)) — so a
+coding agent can set up a bare machine, verify each step, and operate the
+factory end to end:
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install
@@ -57,7 +100,7 @@ bunx create-ge-agent-factory        # any machine: clone + guided, verified inst
 | **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` (in a checkout: `mise run skills-install`) |
 | **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |
 
-The generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise. Skills are the assistant-facing setup and operations layer that gets the factory installed and keeps it on the golden path.
+Generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills automate the setup and operations layer above that handoff.
 
 ## See it
 
@@ -95,7 +138,7 @@ The generated workspaces still hand off to [Google agents-cli](https://google.gi
   <em>The full catalog — 363 agents across five departments — laid out as a periodic table. One tile per agent, click to explore.</em>
 </p>
 
-Terminal, not screenshots — these are `.gif`s of real runs, not staged:
+The CLI, recorded from real runs:
 
 <table>
 <tr>
@@ -133,10 +176,11 @@ ge handoff agents-cli        # when ready: deploy proven agents to your own Goog
 
 The result on disk after `ge prove` is the whole layer in miniature: the
 contract (`usecase-spec.json` with its `behaviorContract`), generated ADK
-code and tools, fixture data, smoke tests, an eval suite in `agents-cli`'s
-own format, and the artifacts the promotion gate reads. Everything before
-handoff is pure local computation — safe to loop, and `ge prove --watch`
-re-proves automatically whenever a contract changes.
+code and tools, synthetic fixture data, smoke tests, an eval suite in
+`agents-cli`'s own format, and the artifacts the promotion gate reads.
+Everything before handoff is pure local computation, so it is safe to
+repeat; `ge prove --watch` re-proves automatically whenever a contract
+changes.
 
 <details>
 <summary>Under the hood: what each verb runs</summary>
@@ -199,7 +243,7 @@ term into plain language — the operator vocabulary included.
 
 ## Roadmap: the golden path
 
-The three verbs are real commands now. What genuinely remains future:
+All three verbs are working commands today. Two pieces remain ahead:
 
 - **CLI-native capture** — a conversational capture flow in the terminal
   itself; today `ge capture` opens the console Interview.
@@ -209,9 +253,8 @@ The three verbs are real commands now. What genuinely remains future:
 ## Operate
 
 Everything below this line is the machinery behind the three verbs, in the
-operator register — planes, modes, canary, harness, fleet, and friends
-(each defined in the [Glossary](docs/GLOSSARY.md)). Golden path above;
-levers below.
+operator register — planes, modes, canary, harness, and fleet, each defined
+in the [Glossary](docs/GLOSSARY.md).
 
 The golden path, one lever at a time:
 

@@ -102,6 +102,10 @@ export function codeAntipatternIds(line) {
 function isActiveSourcePath(path) {
   if (!path) return false;
   if (SOURCE_STATE_PATH_ALLOWED_FILES.has(path)) return false;
+  // Vendored third-party skills (installed by their own tooling) are not this
+  // repo's active source; their internals answer to their upstream, not to
+  // these antipattern rules.
+  if (path.startsWith(".github/skills/") || path.startsWith(".claude/skills/")) return false;
   if (path.includes("/docs/") || path.includes("/README") || path.endsWith("/README.md") || path.endsWith(".md")) return false;
   if (path.includes("/tests/") || /\.test\.[cm]?[jt]sx?$/.test(path) || path.endsWith(".test.mjs")) return false;
   if (path.includes("/catalog/interview-specs/")) return false;

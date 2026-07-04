@@ -40,9 +40,8 @@ whatever gaps remain) is written down as an artifact, not asserted in prose.
 
 ## Hardening flags
 
-Both are opt-in and off by default — a default compile stays byte-identical
-to the pre-flag compiler, which is what keeps the golden-pinned downstream
-artifacts stable.
+Both are opt-in — a default compile stays byte-identical to the pre-flag
+compiler, which keeps the golden-pinned downstream artifacts stable.
 
 ### `--perturb <n>` — linguistic variants
 
@@ -99,7 +98,7 @@ The compiler's sibling modules grade what the compiled cases produce:
   A 3/3 run reports `rate: 1` with an honest lower bound well below 1 — the
   interval says how much *n* cases actually constrain the pass rate, instead
   of letting a small sample masquerade as certainty. Advisory only: verdicts,
-  blockers, and baselines are computed exactly as without it.
+  blockers, and baselines are computed the same with or without it.
 - **Bootstrap confidence intervals** (`bootstrapCI`) — seeded (mulberry32),
   for score distributions rather than pass counts; plus `passAtK` and
   `flakiness` for repeated-run analysis.

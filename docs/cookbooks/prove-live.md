@@ -8,9 +8,9 @@ description: Run evalset cases through the deployed agent's assist surface (or a
 
 # Prove the shipped agent live
 
-**Scope:** live by default and therefore explicit — `--live` never runs as
-part of plain `ge prove`, and cost caps are in your hands. With `--cassette`
-the whole run is local-only, zero cloud.
+**Scope:** opt-in, not automatic — `--live` never runs as part of plain
+`ge prove`, and cost caps are in your hands. With `--cassette` the whole run
+is local-only, zero cloud.
 
 Local proof shows the agent you *built* behaves;
 [live proof](../concepts/live-proof.html) shows the agent you *shipped* still

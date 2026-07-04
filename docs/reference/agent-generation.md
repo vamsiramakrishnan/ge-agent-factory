@@ -7,7 +7,7 @@ layout: default
 
 # Agent generation
 
-Generated agents are **real ADK** code — not mocks. The emitter is the `tools`
+Generated agents are **real ADK** (Agent Development Kit) code — not mocks. The emitter is the `tools`
 command of
 [`apps/factory/scripts/factory.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 (`cmdTools`), which reads the use-case [spec](spec-schema.html) and writes a
@@ -45,7 +45,7 @@ account-reconciliation-agent/
 ```
 
 > The checked-in `account-reconciliation-agent` sample is **single-agent** and has
-> no `app/knowledge/` directory: the OKF bundle and multi-agent topology are
+> no `app/knowledge/` directory: the OKF (Open Knowledge Format) bundle and multi-agent topology are
 > emitted **conditionally** (see below), and this committed snapshot predates
 > them. New builds emit `app/knowledge/` whenever the spec carries a
 > behavior contract.

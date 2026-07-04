@@ -12,7 +12,7 @@ description: The versioned, machine-readable statement of what an agent may do a
 statement of *what an agent is allowed and expected to do* and *what world it
 operates in* — materialized in this repo as the use-case spec
 (`usecase-spec.json`), with a
-[portable Markdown twin](#the-contracts-portable-form).
+[portable OKF twin](#the-contracts-portable-form-okf).
 
 <p align="center">
   <img src="../assets/diagrams/signature-pipeline-enterprise-agent-contract.svg" alt="the signature capture-to-handoff diagram zoomed to the Enterprise Agent Contract stage, lit; capture, generate, source-system twins, prove, passport, handoff, and authority graph shown dimmed for context" width="700">
@@ -131,22 +131,23 @@ its workflow has enough tool-bearing stages and distinct tools (the
 thresholds live in the same module) — the factory never fabricates structure
 the contract did not justify.
 
-## The contract's portable form
+## The contract's portable form: OKF
 
 The JSON contract is precise but awkward for humans to author, diff, or
-exchange. So the same contract also exists as a directory of plain Markdown
-concepts that a person, a reviewer, or another tool can read and edit. The
-two are two forms of one object, and they round-trip — a business
-requirements document authored outside the factory and a contract compiled
-inside it are the same kind of artifact.
+exchange. So the same contract also exists in **OKF** — the
+[Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
+from Google Cloud — as a directory of plain Markdown concept files that a
+person, a reviewer, or another tool can read and edit. The two are two
+forms of one object, and they round-trip: a business requirements document
+authored outside the factory and a contract compiled inside it are the same
+kind of artifact.
 
 <details>
-<summary>Operator spelling / under the hood</summary>
+<summary>Under the hood</summary>
 
-The Markdown form is **OKF (Open Knowledge Format — this repo's own
-spec-as-Markdown format)**. `spec-to-okf.mjs` exports, `okf-to-spec.mjs`
-ingests. The full field-by-field mapping lives in the
-[OKF reference](../reference/okf.html); the conversion walkthrough is the
+`spec-to-okf.mjs` exports, `okf-to-spec.mjs` ingests. The full
+field-by-field mapping lives in the [OKF reference](../reference/okf.html);
+the conversion walkthrough is the
 [Contract ⇄ OKF guide](../cookbooks/spec-to-okf.html).
 
 </details>

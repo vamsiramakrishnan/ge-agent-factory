@@ -75,7 +75,7 @@ All under `.ge/behavioral/` (or `--out`):
 | `coverage.json` | The coverage report: which contract dimensions the selected cases exercise, and the gaps. |
 | `selected-cases.json` | The set-cover-selected conversation cases with their expectations (must call, must cite, must refuse). |
 | `bench-profile.json` | A load profile (sessions, turns per session, turn texts) for `ge bench --profile`. |
-| `<spec-id>.evalset.json` | The ADK-compatible evalset — feed it to `ge prove --live --evalset`. |
+| `<spec-id>.evalset.json` | The evalset in ADK (Agent Development Kit) format — feed it to `ge prove --live --evalset`. |
 | `<spec-id>.agents-cli-dataset.json` | The grading dataset for the agents-cli/platform graders. |
 
 Plus `.ge/proof/metric-applicability.json` — the machine-readable

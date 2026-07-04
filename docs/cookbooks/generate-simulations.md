@@ -15,9 +15,9 @@ A simulation — a [source-system twin](../concepts/source-system-twins.html) �
 is a stateful stand-in for an enterprise backend, realistic enough that a
 compiled agent behaves as if it were wired into the real system. This guide
 creates a new twin from natural language, an OpenAPI spec, or sample rows,
-mounts it into the running MCP (Model Context Protocol) service — the layer
-generated agents call through to reach source systems — and optionally
-promotes it into the curated corpus so it loads as a built-in.
+and mounts it into the running MCP (Model Context Protocol) service — the
+layer generated agents call through to reach source systems. It can also
+promote the twin into the curated corpus so it loads as a built-in.
 
 <p align="center">
   <img src="../assets/diagrams/byo-synthesis.svg" alt="A description, samples, or OpenAPI spec is synthesized into a sketch, then a contract with tool bindings and workflows, then referentially-consistent seed data, and finally registered into the runtime overlay where the generic engine resolves it" width="700">
