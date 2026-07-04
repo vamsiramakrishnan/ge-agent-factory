@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TD
     T["app/tools.py\nsource_adapters"] -->|"GE_DATA_BACKEND=fixtures\ndefault, local / eval"| F[("local fixture files\nJSON / CSV")]
     T -->|"GE_DATA_BACKEND=mcp\ncloud"| R["Agent Registry\nget_mcp_toolset()"]
     R --> M[("per-agent store\nvia MCP tool plane")]
