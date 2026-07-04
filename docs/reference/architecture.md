@@ -28,7 +28,7 @@ and [ADR 0001 — remote control plane](https://github.com/vamsiramakrishnan/ge-
 ## The three planes
 
 <p align="center">
-  <img src="../assets/diagrams/three-planes.svg" alt="ge CLI and console drive the factory plane (gateway, Cloud Tasks, worker), which reads and writes the data plane and the tool (MCP) plane" width="650">
+  <img src="../assets/diagrams/three-planes.svg" alt="The ge CLI and console call into your Google Cloud project, drawn as one box holding all three planes: the factory plane (Cloud Run gateway, Cloud Tasks queue, worker), the data plane stores (GCS, AlloyDB, Firestore, BigQuery, Bigtable), and the tool plane (Agent Gateway, per-department MCP services, Agent Registry), with the worker reading and writing the other two planes" width="660">
 </p>
 
 | Plane | What it is | Provisioned by |
