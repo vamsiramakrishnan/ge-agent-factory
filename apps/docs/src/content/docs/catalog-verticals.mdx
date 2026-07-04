@@ -1,0 +1,40 @@
+---
+title: The Periodic Table of Vertical Agents
+description: 150 industry agents across retail, banking, insurance, telco, and manufacturing — one tile per agent, grouped by value stream, click to open its spec.
+sidebar:
+  order: 5
+  label: Vertical agent catalog
+---
+
+import VerticalPeriodicTable from '../../components/VerticalPeriodicTable.astro';
+
+The factory's **industry vertical catalog** — **150 agents across five
+industries** — laid out as a periodic table. Switch industries with the tabs;
+each group is one **value stream** (the industry's operating segmentation:
+Claims, Lending & Credit, Network Operations, Production & Shop Floor…), and
+each tile is one agent, numbered by its value-stream code (`R-1101`,
+`I-3201`). The **layer dot** and **corner icon** read the same as the
+[horizontal catalog](/ge-agent-factory/catalog/); click any tile for the
+agent's full **Open Knowledge Format (OKF)** spec — playbook, tools, source
+systems, data model, workflow, and evals.
+
+<VerticalPeriodicTable />
+
+:::tip[The other half of the fleet]
+The **horizontal fleet** — 363 shared-services agents across HR, Finance, IT,
+Marketing, and Procurement — has its own
+[periodic table](/ge-agent-factory/catalog/). To slice both halves together —
+by industry, business function (with specialization links, e.g. retail
+supply-chain agents in the procurement family), or free text — use the
+[catalog explorer](/ge-agent-factory/catalog/explorer/).
+:::
+
+:::note[Where this comes from]
+This grid is generated from the drift-gated agent-spec registry and the
+catalog taxonomy (`apps/factory/catalog/taxonomy.json`) — industry × function
+× value stream. Nothing here is hand-maintained: the vertical fleet is
+regenerated from `apps/factory/catalog/vertical-seeds/` (plus its enrichment
+packs and per-agent overlays) by `generate-vertical-agents.mjs`, and
+`apps/docs/scripts/gen-catalog.mjs` rebuilds this page's data on every docs
+build.
+:::
