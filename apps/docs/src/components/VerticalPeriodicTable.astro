@@ -1,0 +1,50 @@
+---
+/**
+ * VerticalPeriodicTable.astro — the vertical fleet rendered through the same
+ * periodic-table component as the horizontal deck grid: industries become the
+ * tabs, value streams become the domain groups, and each tile is one vertical
+ * agent (numbered by its value-stream code, e.g. R-1101). All data comes from
+ * agent-catalog.json (gen-catalog.mjs); nothing here is authored.
+ */
+import PeriodicTable from "./PeriodicTable.astro";
+import catalog from "../data/agent-catalog.json";
+
+const { verticalAgents = [], taxonomy = { industries: [], valueStreams: [] }, legend } = catalog as any;
+
+const streamNum = (code: string) => Number(String(code).replace(/^[A-Z]+-/, "")) || 0;
+
+const departments = taxonomy.industries.map((industry: any) => ({
+  key: industry.id,
+  label: industry.title,
+  shortLabel: industry.title,
+  accentColor: industry.color,
+  domainRange: industry.domainNumberRange ?? [0, 0],
+  title: `${industry.title} — vertical agents`,
+  subtitle: `${industry.agentCount} agents across ${
+    taxonomy.valueStreams.filter((v: any) => v.industry === industry.id).length
+  } value streams`,
+  agentCount: industry.agentCount,
+}));
+
+const industryColor = new Map(taxonomy.industries.map((i: any) => [i.id, i.color]));
+
+const domains = taxonomy.valueStreams.map((stream: any) => ({
+  id: `vs-${stream.code.toLowerCase()}`,
+  num: streamNum(stream.code),
+  title: `${stream.code} · ${stream.title}`,
+  color: industryColor.get(stream.industry) ?? "#5f6368",
+  department: stream.industry,
+  agentCount: stream.agentCount,
+}));
+
+const agents = verticalAgents.map((a: any) => ({
+  ...a,
+  // Tile number = the full value-stream ordinal (R-1101 → 1101), so tiles
+  // sort and read like the horizontal grid's A-#### numbering.
+  num: Number(String(a.agentId).replace(/^[A-Z]+-/, "")) || a.num,
+}));
+
+const data = { departments, domains, legend, agents, meta: null };
+---
+
+<PeriodicTable data={data} />
