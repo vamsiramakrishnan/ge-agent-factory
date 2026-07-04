@@ -23,6 +23,9 @@ The integration has three pieces, all under
 The same bundle is also emitted into a generated agent at `app/knowledge/` (see
 [Agent generation](agent-generation.html)) and served live by the console at
 `GET /api/interviews/:id/okf` (see [Console & APIs](console-and-apis.html)).
+The whole catalog lives in this form as the committed repo-root `okf/` corpus —
+one bundle per use case, the primary source `bun run catalog` builds from (see
+[OKF corpus](okf-corpus.html)).
 
 <p align="center">
   <img src="../assets/diagrams/okf-spine.svg" alt="The OKF spine: the interview produces a spec in OKF form authorable by humans or agents, which drives generation of real ADK code, validation, tests derived from the contract, and runtime grounding where the agent cites the same systems and entities" width="750">

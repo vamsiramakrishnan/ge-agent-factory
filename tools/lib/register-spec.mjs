@@ -22,7 +22,11 @@ export async function registerSpecWith({ run, repoRoot, genDir }, { input, allow
   }
   let sync = null;
   if (syncCatalog) {
-    sync = run("node", ["scripts/sync-use-cases-from-slides.mjs"], { cwd: genDir, allowFail: true });
+    // The committed OKF corpus (okf/) is the primary catalog source: the
+    // migration materializes the freshly registered spec's bundle (running
+    // the legacy slides+interview sync first as its input) and verifies it,
+    // so the corpus↔catalog gate (tools/check-okf-primary.mjs) stays green.
+    sync = run("node", ["scripts/migrate-catalog-to-okf.mjs"], { cwd: genDir, allowFail: true });
     if (!sync.ok) throw new Error((sync.err || sync.out || "spec registered but catalog sync failed").trim());
   }
   return {

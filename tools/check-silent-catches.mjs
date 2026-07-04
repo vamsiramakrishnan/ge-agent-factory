@@ -64,6 +64,10 @@ const files = globSync("{apps,tools,packages}/**/*.{mjs,js,ts}", {
     // Vendored third-party bundles are not ours to sweep.
     "**/vendor/**",
     "**/*.min.js",
+    // Local build output (git-ignored; e.g. `bun run build:presentation`
+    // emits minified bundles under apps/presentation/dist/) is not source.
+    "**/dist/**",
+    "**/dist-ssr/**",
     // apps/docs is swept by the docs-website workstream, which owns every
     // file under it; remove this exclusion once that sweep lands.
     "apps/docs/**",

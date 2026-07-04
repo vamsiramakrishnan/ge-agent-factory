@@ -14,3 +14,9 @@
 # DOES work is calling `setDefaultTimeout()` from `bun:test` inside a `[test] preload`
 # script, which this repo uses via ./bunfig.test-preload.mjs below.
 preload = ["./bunfig.test-preload.mjs"]
+
+# Keep `bun test`'s test-file discovery out of the committed OKF corpus (okf/):
+# it holds no tests, but its ~4k directories exhaust a 4096 open-file limit
+# during bun's concurrent scan (EMFILE/ProcessFdQuotaExceeded before any test
+# runs). Verified in bun 1.3.11: this bunfig key is honored (unlike `timeout`).
+pathIgnorePatterns = ["okf/**"]

@@ -105,6 +105,9 @@ function isActiveSourcePath(path) {
   if (path.includes("/docs/") || path.includes("/README") || path.endsWith("/README.md") || path.endsWith(".md")) return false;
   if (path.includes("/tests/") || /\.test\.[cm]?[jt]sx?$/.test(path) || path.endsWith(".test.mjs")) return false;
   if (path.includes("/catalog/interview-specs/")) return false;
+  // The committed OKF corpus: per-bundle spec.json records are catalog data
+  // (like interview-specs), not active source.
+  if (path.startsWith("okf/")) return false;
   return /\.(mjs|js|ts|tsx|json|ya?ml)$/.test(path) || path === "mise.toml" || path.endsWith("package.json");
 }
 

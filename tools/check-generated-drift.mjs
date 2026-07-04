@@ -30,8 +30,10 @@ const ROOT = join(HERE, "..");
 export const GENERATED_FILES = [
   {
     id: "agent-spec-registry",
+    // Regenerated from the OKF corpus (okf/ is the primary catalog source);
+    // sync-use-cases-from-slides.mjs remains the byte-identical legacy path.
     trackedFile: "apps/factory/src/agent-spec-registry.generated.json",
-    command: ["node", "apps/factory/scripts/sync-use-cases-from-slides.mjs"],
+    command: ["node", "apps/factory/scripts/sync-use-cases-from-okf.mjs"],
     outEnv: "GE_AGENT_SPEC_REGISTRY_OUT",
     regenerate: "bun run catalog",
   },

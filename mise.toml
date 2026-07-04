@@ -73,8 +73,8 @@ depends = ["bootstrap"]
 run = "true"
 
 [tasks.catalog]
-description = "Generate the use-case catalog build artifact (git-ignored) from the slide + interview registries"
-run = "cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs"
+description = "Generate the use-case catalog build artifact (git-ignored) from the committed OKF corpus (okf/)"
+run = "cd apps/factory && bun scripts/sync-use-cases-from-okf.mjs"
 
 [tasks.ci]
 description = "Run the CI gate locally (hygiene + lint + docs:gate + gated test suite) — mirrors cloudbuild.ci.yaml"

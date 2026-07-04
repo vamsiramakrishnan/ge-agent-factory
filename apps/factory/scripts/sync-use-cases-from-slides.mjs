@@ -1,4 +1,15 @@
 #!/usr/bin/env node
+// sync-use-cases-from-slides.mjs — LEGACY catalog sync (escape hatch).
+//
+// The committed OKF corpus (repo-root okf/, one Knowledge Bundle per use case)
+// is the PRIMARY source of the agent catalog; day-to-day builds run
+// sync-use-cases-from-okf.mjs (`bun run catalog`). This script remains as
+// `bun run catalog:from-slides`: it derives the same artifacts from the
+// historical upstreams (presentation slide TSX + catalog/interview-specs) and
+// is what migrate-catalog-to-okf.mjs runs to (re)materialize the corpus. Both
+// syncs are byte-identical by contract — if you change an artifact writer
+// here, mirror it in sync-use-cases-from-okf.mjs (and vice versa), then run
+// `bun run catalog:migrate` so the corpus follows.
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import {

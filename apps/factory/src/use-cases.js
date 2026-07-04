@@ -21,11 +21,14 @@ import { globSync } from "tinyglobby";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = join(HERE, "..");
 const DATA_PATH = join(APP_ROOT, "generated", "use-cases.generated.json");
-const SYNC_SCRIPT = join(APP_ROOT, "scripts", "sync-use-cases-from-slides.mjs");
-// Primary source the sync reads (the slide use-case definitions). Newer source =
-// stale artifact. The interview-spec registry is a secondary source; a missing
-// artifact (the common case) covers the rest.
-const SLIDES_SOURCE = join(APP_ROOT, "..", "presentation", "src", "components", "slides", "use-cases");
+const SYNC_SCRIPT = join(APP_ROOT, "scripts", "sync-use-cases-from-okf.mjs");
+// Primary source the sync reads: the committed OKF corpus (repo-root okf/,
+// one Knowledge Bundle per use case). Newer source = stale artifact. Staleness
+// watches each bundle's spec.json (the byte-authoritative record) plus the
+// corpus root index — not the 20k concept markdown files, which the sync
+// verifies against spec.json anyway. The legacy slide sources are only read by
+// scripts/sync-use-cases-from-slides.mjs (bun run catalog:from-slides).
+const CORPUS_SOURCE = join(APP_ROOT, "..", "..", "okf");
 
 let cache = null;
 
@@ -33,11 +36,13 @@ function autosyncDisabled() {
   return ["1", "true", "yes", "on"].includes(String(process.env.GE_NO_CATALOG_AUTOSYNC || "").toLowerCase());
 }
 
-function newestMtimeMs(path) {
+function newestMtimeMs(path, pattern = "**/*") {
   try {
     let max = statSync(path).mtimeMs;
-    // Recurse via tinyglobby (dirs + files, incl. dotfiles) and take the newest mtime.
-    for (const entry of globSync("**/*", { cwd: path, absolute: true, dot: true, onlyFiles: false })) {
+    // Recurse via tinyglobby and take the newest mtime. The corpus pattern
+    // stats one spec.json per bundle plus index.md — not the ~20k concept
+    // markdown files (the sync itself verifies those against spec.json).
+    for (const entry of globSync(pattern, { cwd: path, absolute: true, dot: true, onlyFiles: false })) {
       const m = statSync(entry).mtimeMs;
       if (m > max) max = m;
     }
@@ -52,7 +57,7 @@ function isStale() {
   const artifactMtime = statSync(DATA_PATH).mtimeMs;
   let scriptMtime = 0;
   try { scriptMtime = statSync(SYNC_SCRIPT).mtimeMs; } catch { /* ignore */ }
-  const sourceMtime = Math.max(newestMtimeMs(SLIDES_SOURCE), scriptMtime);
+  const sourceMtime = Math.max(newestMtimeMs(CORPUS_SOURCE, "{*/spec.json,index.md}"), scriptMtime);
   return sourceMtime > artifactMtime;
 }
 

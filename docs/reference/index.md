@@ -23,6 +23,7 @@ use [Core Concepts](../concepts/).
 | [CLI](cli.html) | The `ge` operator CLI (generated from the command tree), the `factory` generator CLI, and the `mise` tasks. |
 | [Contract schema](spec-schema.html) | The Enterprise Agent Contract's fields: `generationSpec`, `behaviorContract` (incl. `workflow`, `answerableQueries`, eval `mechanisms`), and `architecture.pipeline` — tables generated from the zod schema. |
 | [OKF](okf.html) | The contract's portable Markdown form — concept types, bundle layout, and the `spec-to-okf` / `okf-to-spec` converters. |
+| [OKF corpus](okf-corpus.html) | The committed `okf/` corpus that is the primary source of the catalog: bundle layout, provenance keys, the corpus-first sync (`bun run catalog`), and the `check-okf-primary` gate. |
 | [Agent lifecycle](agent-lifecycle.html) | How an agent moves through its OKF-bundle lifecycle: `ge okf customize` (variants), `ge agents register` (draft → registered + catalog refresh), `ge agents track` (provenance, registry, variant lineage). |
 | [Generated artifacts](agent-generation.html) | What a compiled agent looks like on disk: real ADK, the three callbacks, the dual tool backend, multi-agent topology, the knowledge bundle, and the eval set. |
 | [Simulator systems](simulator-systems.html) | The source-system twin engine: the pack contract, the generic runtime, the BYO overlay, state backends, the pack tooling, and the determinism extras (virtual clock, chaos profiles, record/replay). |
