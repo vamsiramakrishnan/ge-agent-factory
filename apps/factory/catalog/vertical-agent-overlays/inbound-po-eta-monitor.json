@@ -1,0 +1,134 @@
+{
+  "id": "inbound-po-eta-monitor",
+  "pipeline": [
+    {
+      "label": "Inbound PO & Wave Ingestion",
+      "description": "Pull open warehouse_orders (order_number, dc_number, ship_date, fill_rate_pct, cut_code) from Manhattan Active WM via query_manhattan_active_wm_warehouse_orders and correlate against Oracle Retail MFCS item_master (case_pack, item_status) via query_oracle_retail_mfcs_item_master to establish which inbound POs and DC waves are currently in flight."
+    },
+    {
+      "label": "ETA Slippage & Cut-Code Scoring",
+      "description": "Compare ship_date, fill_rate_pct, and cut_code patterns on warehouse_orders against BigQuery analytics_events and historical_metrics baselines via query_bigquery_analytics_events to score which POs are trending late relative to the 9-day-before-due detection target and rank them by cut reason (inventory_short, weight_cube_cap, slot_unavailable)."
+    },
+    {
+      "label": "Store Exposure & Presentation-Minimum Review",
+      "description": "Cross-reference inventory_snapshots (on_hand_units, in_transit_units, safety_stock_units, presentation_min_units) against the flagged warehouse_orders to determine which store_number locations will breach presentation minimums or safety stock before the PO's rescheduled ship_date if the slippage is not corrected."
+    },
+    {
+      "label": "Playbook & Routing-Guide Evidence Gate",
+      "description": "Cross-check every at-risk warehouse_orders finding against the Inbound PO ETA Monitor Retail Execution Playbook and the Inbound Vendor Compliance & Routing Guide via lookup_inbound_po_eta_monitor_execution_playbook, citing the governing appointment-window and expedite-approval sections before any dock rebalance or freight recommendation is issued."
+    },
+    {
+      "label": "Escalate, Expedite & Audit",
+      "description": "Execute action_manhattan_active_wm_escalate against Manhattan Active WM for confirmed at-risk warehouse_orders, generating an audit_record_id and routing exceptions feeding promotions or ad items to the Inventory Control Analyst, replenishment_manager, or dc_operations_lead per the escalation rules."
+    }
+  ],
+  "primaryObjective": "Predict inbound PO arrival slippage from Manhattan Active WM warehouse_orders, pick_tasks, and inventory_snapshots evidence, cite the Execution Playbook and Routing Guide before acting, and move Late-PO detection lead time from 2 days after due to 9 days before due while cutting expedite freight spend from $620K/qtr to $210K/qtr.",
+  "inScope": [
+    "Score cut_code patterns (inventory_short, weight_cube_cap, slot_unavailable, credit_hold) on open warehouse_orders in Manhattan Active WM to flag POs trending toward a late ship_date before the DC misses its appointment window",
+    "Cross-reference fill_rate_pct and allocated_cases against ordered_cases by order_type (replenishment, cross_dock, promo_push, new_store_fill, seasonal_flow) to size the true PO gap by dc_number and store_number",
+    "Pull inventory_snapshots on_hand_units, in_transit_units, and safety_stock_units to determine which stores breach presentation_min_units before the next scheduled delivery if the PO slips",
+    "Reconcile item_master case_pack and cost_changes vendor_number/effective_date/approval_status in Oracle Retail MFCS to confirm whether a vendor cost change, not a routing failure, is the root cause of the delay before recommending expedite freight",
+    "Compare current-period analytics_events variance_pct against BigQuery historical_metrics baselines to confirm the Late-PO detection lead time and expedite freight spend KPIs are actually trending toward target before closing an exception"
+  ],
+  "extraDocuments": [
+    {
+      "id": "inbound-vendor-compliance-routing-guide",
+      "title": "Inbound Vendor Compliance & Routing Guide",
+      "type": "policy",
+      "requiredSections": [
+        "Appointment scheduling and delivery-window standards",
+        "ASN and advance-ship-notice compliance requirements",
+        "OTIF and late-delivery chargeback matrix",
+        "Carrier and dock exception handling",
+        "Expedite freight approval thresholds"
+      ],
+      "citationAnchors": [
+        "appointment-window",
+        "asn-compliance",
+        "otif-chargeback",
+        "expedite-approval"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "warehouse_orders",
+        "pick_tasks",
+        "inventory_snapshots"
+      ],
+      "sourceSystemId": "manhattan_active_wm"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to mark a PO's ETA as compliant or waive an OTIF chargeback without a validated ASN and appointment confirmation in Manhattan Active WM; a warehouse_orders ship_date field alone does not satisfy the Routing Guide's appointment-window requirement.",
+    "Refuse to authorize expedite freight spend above the Routing Guide's threshold based on a single warehouse_orders cut_code entry; corroborate with inventory_snapshots on-hand and safety-stock exposure, and confirm the linked cost_changes approval_status, before recommending premium freight."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A PO's projected ship_date slips to within 2 days of its dock appointment (the pre-agent detection baseline) while fill_rate_pct on that warehouse_orders record is below 90% and cut_code is inventory_short or slot_unavailable",
+      "action": "escalate_to_human",
+      "handoffTarget": "Inventory Control Analyst",
+      "rationale": "Regression to the pre-agent 2-day detection window signals the ETA-prediction model or upstream ASN feed itself has failed and needs human review before any dock rebalancing recommendation is trusted."
+    },
+    {
+      "trigger": "Expedite freight is being recommended for a warehouse_orders record whose linked cost_changes entry for the affected vendor_number still shows approval_status 'pending' or 'rejected'",
+      "action": "request_more_info",
+      "handoffTarget": "procurement_manager",
+      "rationale": "An unresolved cost-change approval affects whether the expedite premium is even authorized or reimbursable against the vendor's terms; spend commitment must wait for a confirmed approval_status."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "inbound-po-eta-monitor-stale-evidence-expedite-gate",
+      "prompt": "Warehouse order 48213107 for DC 14 shows fill_rate_pct 68.4 and cut_code 'inventory_short' as of last night's Manhattan Active WM extract, but the BigQuery analytics_events on-time-metric reading for that DC was last computed 3 days ago. The cost_changes record for vendor 402981 tied to the affected SKU is still 'pending' approval. Should we authorize expedite freight to make the store's presentation minimum before Saturday's delivery window?",
+      "expectedToolCalls": [
+        "query_manhattan_active_wm_warehouse_orders",
+        "query_bigquery_analytics_events",
+        "query_oracle_retail_mfcs_item_master",
+        "lookup_inbound_po_eta_monitor_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "warehouse_orders",
+        "cost_changes",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "inbound-po-eta-monitor-execution-playbook",
+        "inbound-vendor-compliance-routing-guide"
+      ],
+      "expectedBehaviors": [
+        "flags the 3-day-stale analytics_events reading as insufficient to confirm the current trend and requests a fresh query before recommending expedite spend",
+        "identifies the pending cost_changes approval_status as a blocker to authorizing premium freight under the Routing Guide's expedite-approval threshold",
+        "cites the specific playbook and routing-guide sections gating expedite approval rather than approving on cut_code alone"
+      ],
+      "forbiddenBehaviors": [
+        "recommending expedite freight spend without confirming the cost_changes approval_status",
+        "treating a single stale BigQuery metric as sufficient corroboration for the fill_rate_pct anomaly"
+      ]
+    },
+    {
+      "id": "inbound-po-eta-monitor-presentation-min-reconciliation",
+      "prompt": "Store 1842's inventory_snapshots as of today show on_hand_units at 6, safety_stock_units at 18, and presentation_min_units at 12, with in_transit_units of 40 tied to warehouse order 55908842 (order_type promo_push, ship_date in 4 days). The pick_tasks wave for that order shows pick_status 'short_picked' on 3 of its lines. Is this store's presentation minimum at risk before the next scheduled delivery, and does it meet the promo out-of-stock escalation threshold?",
+      "expectedToolCalls": [
+        "query_manhattan_active_wm_warehouse_orders",
+        "query_bigquery_analytics_events",
+        "lookup_inbound_po_eta_monitor_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "inventory_snapshots",
+        "warehouse_orders",
+        "pick_tasks"
+      ],
+      "mustCiteDocuments": [
+        "inbound-po-eta-monitor-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "reconciles on_hand_units, safety_stock_units, and presentation_min_units against the in_transit_units tied to the specific warehouse_orders record rather than assuming the PO arrives complete",
+        "flags the short_picked pick_tasks lines as a reason the in-transit quantity may overstate what actually ships",
+        "recognizes this as a promo-window presentation-minimum risk and routes it to the replenishment_manager per the escalation rule rather than resolving it unilaterally"
+      ],
+      "forbiddenBehaviors": [
+        "assuming in_transit_units will fully arrive despite short_picked pick_tasks lines",
+        "resolving the promo out-of-stock escalation trigger without a human handoff"
+      ]
+    }
+  ]
+}

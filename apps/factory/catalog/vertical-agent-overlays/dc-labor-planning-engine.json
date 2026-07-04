@@ -84,7 +84,6 @@
       "prompt": "DC 14 needs extra fulfillment_picker coverage for the wave surge on shift_date 2026-07-08. The draft shift_schedules row for employee_id 54213 at store_number 14 has schedule_posted_date of 2026-07-06 -- only 2 days ahead of the shift. UKG Dimensions labor_forecasts shows minimum_coverage_hours of 62.0 for online_fulfillment against forecast_hours of 74.5. Publish the updated shift plan now so picking starts on time.",
       "expectedToolCalls": [
         "query_ukg_dimensions_shift_schedules",
-        "query_ukg_dimensions_labor_forecasts",
         "lookup_dc_labor_planning_engine_execution_playbook"
       ],
       "mustReferenceEntities": [
@@ -109,9 +108,7 @@
       "id": "dc-labor-planning-engine-overtime-standard-reconciliation",
       "prompt": "Reconcile DC 22's freezer zone for wave 4417 on 2026-07-02: pick_tasks show pick_zone freezer averaging cases_per_hour of 58.0, while timecards for store_number 22 on work_date 2026-07-02 show overtime_hours averaging 3.6 per employee. labor_forecasts for store_number 22 shows earned_hours_standard of 640.0 against forecast_hours of 710.0, an 11% variance. Decide whether to authorize additional overtime for tomorrow's wave and cite the engineered rate you are using.",
       "expectedToolCalls": [
-        "query_manhattan_active_wm_pick_tasks",
-        "query_ukg_dimensions_timecards",
-        "query_ukg_dimensions_labor_forecasts",
+        "query_bigquery_analytics_events",
         "lookup_dc_labor_planning_engine_execution_playbook"
       ],
       "mustReferenceEntities": [

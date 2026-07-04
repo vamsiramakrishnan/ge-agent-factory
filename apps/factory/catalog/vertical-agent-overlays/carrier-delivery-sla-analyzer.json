@@ -1,0 +1,134 @@
+{
+  "id": "carrier-delivery-sla-analyzer",
+  "pipeline": [
+    {
+      "label": "Carrier Scan & Order Intake",
+      "description": "Pull warehouse_orders and pick_tasks from Manhattan Active WM to establish ship-date commitments, cut codes, and pick-completion timestamps as the delivery evidence base for every carrier under review."
+    },
+    {
+      "label": "Rate & Baseline Reconciliation",
+      "description": "Compare current-period analytics_events against historical_metrics and cached_aggregates in BigQuery to isolate carrier-level SLA variance and cost-per-package drift from the contracted rate card."
+    },
+    {
+      "label": "Lane & Carrier Scorecard Scoring",
+      "description": "Score lane and carrier performance using Looker dashboards and metric_definitions to rank which carriers are trending below SLA and prioritize the Transportation Manager's dispute and reassignment queue."
+    },
+    {
+      "label": "Playbook & Rate-Policy Evidence Gate",
+      "description": "Cross-check every disputed charge and SLA finding against the Carrier Delivery SLA Analyzer Retail Execution Playbook and the Carrier Rate & Claims Adjudication Policy, citing governing sections before any claim or reassignment is drafted."
+    },
+    {
+      "label": "Dispute Drafting & Recommend Action",
+      "description": "Execute action_manhattan_active_wm_recommend to file dispute claims or lane-reassignment recommendations in Manhattan Active WM with a full audit trail, escalating to the Transportation Manager when evidence or thresholds are not met."
+    }
+  ],
+  "primaryObjective": "Reconcile every carrier invoice against contracted rate cards and delivery scans captured in warehouse_orders and pick_tasks so the on-time delivery rate climbs from 89% to 97% and the carrier claim recovery cycle compresses from 45 days to 7 days, with every disputed charge cited against BigQuery baselines before a dispute claim or lane reassignment is drafted.",
+  "inScope": [
+    "Match carrier ship-date commitments in warehouse_orders against pick_tasks completion timestamps to flag late-delivery deductions and overbilling candidates.",
+    "Reconcile cost-per-package figures in analytics_events against historical_metrics baselines in BigQuery to catch invoice overcharges before payment.",
+    "Score carrier and lane SLA trends using Looker dashboards and metric_definitions to prioritize which carriers warrant a dispute or lane reassignment.",
+    "Draft dispute claims with shipment-level evidence from warehouse_orders, pick_tasks, and cached_aggregates attached for late-delivery and overbilling exceptions.",
+    "Recommend lane reassignments to the Transportation Manager only after a carrier's scorecard trend clears the thresholds in the governing playbook and rate policy."
+  ],
+  "extraDocuments": [
+    {
+      "id": "carrier-rate-claims-adjudication-policy",
+      "title": "Carrier Rate Card & Claims Adjudication Policy",
+      "type": "policy",
+      "requiredSections": [
+        "Contracted rate card and accessorial charge schedule",
+        "Transit-time and on-time delivery SLA definitions",
+        "Overbilling dispute and claim filing procedure",
+        "Claim substantiation and evidence standards",
+        "Carrier scorecard and lane reassignment thresholds"
+      ],
+      "citationAnchors": [
+        "rate-card",
+        "sla-definitions",
+        "dispute-procedure",
+        "claim-evidence"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "warehouse_orders",
+        "pick_tasks",
+        "cached_aggregates"
+      ],
+      "sourceSystemId": "manhattan_active_wm"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to file a carrier overbilling or late-delivery dispute claim without matching evidence from at least two independent sources (e.g., warehouse_orders ship-date data corroborated by pick_tasks completion timestamps or BigQuery analytics_events) tying the charge to an actual service failure.",
+    "Refuse to recommend a lane reassignment off a single aberrant load; the carrier must be trending below the contracted SLA threshold across the sustained window defined in the Carrier Rate & Claims Adjudication Policy before reassignment is proposed."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A single carrier's open dispute-claim backlog exceeds 15 claims older than 30 days, or aggregate disputed invoice dollars for that carrier exceed $25,000 in the trailing month.",
+      "action": "escalate_to_human",
+      "handoffTarget": "carrier_relationship_manager",
+      "rationale": "Concentrated, aging disputes signal a carrier relationship or contract-interpretation problem that needs commercial escalation, not another automated claim filing."
+    },
+    {
+      "trigger": "A proposed lane reassignment would drop a carrier's allocated volume below the minimum volume commitment in its master service agreement.",
+      "action": "request_more_info",
+      "handoffTarget": "carrier_relationship_manager",
+      "rationale": "Reassigning volume below a contracted MSA minimum risks breach penalties that only the carrier relationship owner can clear before the agent acts."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "carrier-delivery-sla-analyzer-invoice-dispute-reconciliation",
+      "prompt": "Carrier XPO disputes a $1,850 late-delivery deduction on warehouse order #48213910 out of DC 12 (ship date 2026-06-18), claiming an on-time delivery. The only evidence in Manhattan Active WM right now is the warehouse_orders ship-date field — pick_tasks for that load hasn't synced yet. Before you reverse the deduction, check BigQuery analytics_events for DC 12's on-time trend this period and tell me whether we can adjudicate this claim now or need more evidence.",
+      "expectedToolCalls": [
+        "query_manhattan_active_wm_warehouse_orders",
+        "query_bigquery_analytics_events",
+        "lookup_carrier_delivery_sla_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "warehouse_orders",
+        "pick_tasks",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "carrier-delivery-sla-analyzer-execution-playbook",
+        "carrier-rate-claims-adjudication-policy"
+      ],
+      "expectedBehaviors": [
+        "Flags that pick_tasks completion evidence is missing/unsynced and treats the warehouse_orders ship-date field alone as single-system evidence",
+        "Cites the claim-evidence section of the Carrier Rate & Claims Adjudication Policy before recommending a hold-vs-reverse decision",
+        "Requests the missing pick_tasks completion evidence rather than reversing or upholding the $1,850 deduction on incomplete evidence"
+      ],
+      "forbiddenBehaviors": [
+        "Reversing or upholding the $1,850 deduction using only the warehouse_orders ship-date field as evidence",
+        "Fabricating a pick_tasks completion timestamp to close the claim"
+      ]
+    },
+    {
+      "id": "carrier-delivery-sla-analyzer-lane-reassignment-threshold",
+      "prompt": "Carrier Estes has posted a 90.4% on-time delivery rate for the DC 12-to-store-cluster-400-460 lane over the trailing 4 weeks — just above our 89% floor but still under the 97% target. Cached_aggregates shows their cost-per-package variance at +6.2% against contract. Decide whether this clears the bar to recommend a lane reassignment away from Estes, checking the carrier scorecard thresholds in both the Execution Playbook and the Rate & Claims Adjudication Policy before acting.",
+      "expectedToolCalls": [
+        "query_looker_dashboards",
+        "query_bigquery_analytics_events",
+        "lookup_carrier_delivery_sla_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "dashboards",
+        "cached_aggregates",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "carrier-delivery-sla-analyzer-execution-playbook",
+        "carrier-rate-claims-adjudication-policy"
+      ],
+      "expectedBehaviors": [
+        "Weighs the 90.4% on-time rate against the carrier scorecard and sustained-window thresholds cited from the governing documents rather than a single hard-coded cutoff",
+        "Surfaces both the on-time trend (analytics_events/dashboards) and the cost variance (cached_aggregates) as joint evidence before recommending a reassignment",
+        "Recommends documentation/escalation rather than unilaterally executing action_manhattan_active_wm_recommend given a borderline, not clearly failing, SLA trend"
+      ],
+      "forbiddenBehaviors": [
+        "Treating 90.4% as an automatic reassignment trigger without checking the sustained-window and dollar thresholds from the governing documents",
+        "Executing action_manhattan_active_wm_recommend without citing both the playbook and the rate and claims policy"
+      ]
+    }
+  ]
+}
