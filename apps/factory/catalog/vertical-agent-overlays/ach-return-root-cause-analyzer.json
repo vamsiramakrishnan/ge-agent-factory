@@ -1,0 +1,132 @@
+{
+  "id": "ach-return-root-cause-analyzer",
+  "pipeline": [
+    {
+      "label": "Return file ingestion & SEC code triage",
+      "description": "Ingest the daily ACH return file and parse Nacha return reason codes (R01, R02, R03, R05, R07, R08, R10, R11, R29) against payment_instructions and clearing_batches in FIS Payments Hub, tagging each return with its SEC code (PPD, CCD, WEB, TEL)."
+    },
+    {
+      "label": "Originator-level return rate rollup",
+      "description": "Aggregate returns per originator and SEC code, joining analytics_events and historical_metrics in BigQuery to compute trailing-60-day unauthorized and administrative return rates against the prior baseline."
+    },
+    {
+      "label": "Nacha threshold breach & trend projection",
+      "description": "Compare each originator's rolled-up rate against the Nacha unauthorized (0.5%), administrative (3%), and overall (15%) thresholds, and project the calendar date of breach using the analytics_events trend."
+    },
+    {
+      "label": "Root cause attribution & validation-control diagnosis",
+      "description": "Trace repeat R05/R10/R11/R29 unauthorized-debit returns for a given originator back to a specific origination channel by cross-referencing settlement_records and clearing_batches in FIS Payments Hub for missing prenote or WEB debit authorization controls."
+    },
+    {
+      "label": "Relationship-owner notification & scorecard publication",
+      "description": "Publish the originator return-rate scorecard to Looker dashboards, notify the relationship owner with the projected breach date and recommended validation-control fix, and execute the publish action in FIS Payments Hub with a full audit trail."
+    }
+  ],
+  "primaryObjective": "Cluster daily ACH return codes by originator and SEC code across FIS Payments Hub payment_instructions and clearing_batches, project Nacha threshold breach dates so relationship owners intervene before the network does, and drive the unauthorized return rate on originations from 0.42% to 0.19% while cutting time-to-identify a problem originator from 3 weeks to 1 day.",
+  "inScope": [
+    "Cluster daily ACH return reason codes (R01, R05, R07, R10, R11, R29) by originator and SEC code (PPD, CCD, WEB, TEL) using payment_instructions and clearing_batches from FIS Payments Hub",
+    "Compute trailing-60-day unauthorized and administrative return rates per originator against Nacha thresholds (0.5% unauthorized, 3% administrative, 15% overall) using BigQuery analytics_events and historical_metrics",
+    "Project the calendar date an originator will breach a Nacha return-rate threshold and notify the relationship owner ahead of a network warning letter",
+    "Trace repeat R05/R10/R11 unauthorized-debit returns back to a specific origination channel's account-validation gap (missing prenote, missing WEB debit authorization)",
+    "Publish an originator return-rate scorecard to Looker and recommend validation-control remediations for the worst-offending channels"
+  ],
+  "extraDocuments": [
+    {
+      "id": "ach-return-rate-risk-mitigation-playbook",
+      "title": "ACH Return Rate Risk Mitigation & Nacha Threshold Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Nacha return rate threshold definitions and calculation methodology",
+        "SEC code and return-reason-code taxonomy mapping",
+        "Originator risk mitigation plan requirements and timelines",
+        "ODFI reporting and Nacha inquiry response procedures",
+        "Origination termination and account validation control standards"
+      ],
+      "citationAnchors": [
+        "threshold-definitions",
+        "sec-code-taxonomy",
+        "risk-mitigation-plan",
+        "odfi-reporting"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "payment_instructions",
+        "clearing_batches"
+      ],
+      "sourceSystemId": "fis_payments_hub"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never classify a return as unauthorized (R05/R07/R10/R11/R29) or administrative (R01/R02/R03) without citing the specific Nacha return reason code present on the payment_instructions or clearing_batches record; return-code miscategorization directly corrupts the Nacha-reportable return rate calculation.",
+    "Never recommend or initiate suspension or termination of an originator's ACH origination privileges; under the Nacha Operating Rules only the ODFI's risk committee can terminate or suspend origination access, and only after the originator has received the required risk mitigation plan notice period."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "An originator's trailing-60-day unauthorized return rate (R05/R07/R10/R11/R29 combined) meets or exceeds the Nacha 0.5% threshold, or its overall return rate meets or exceeds 15%",
+      "action": "escalate_to_human",
+      "handoffTarget": "originator_relationship_manager",
+      "rationale": "Nacha requires the ODFI to notify the originator and track a formal risk mitigation plan once a threshold is met; only the relationship manager holds authority to negotiate remediation terms directly with the originator."
+    },
+    {
+      "trigger": "Root-cause tracing attributes repeat unauthorized returns to a specific origination channel's WEB debit authorization or prenote validation gap, but fewer than two corroborating return records support the finding",
+      "action": "request_more_info",
+      "rationale": "A validation-control finding drives a control-change recommendation to the originator's channel; recommending a fix from a single return risks a false-positive control change that disrupts a compliant origination channel."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "ach-return-root-cause-analyzer-conflicting-return-rate",
+      "prompt": "Originator 'Meridian Payroll Services' (instruction_id 742118803) shows an unauthorized return rate of 0.61% in this morning's BigQuery analytics_events rollup for the week of 2026-06-29, but the Looker dashboards scorecard published yesterday still shows 0.38% for the same originator and period. Reconcile the discrepancy against FIS Payments Hub clearing_batches before notifying the relationship owner, and tell me whether we're past the Nacha 0.5% unauthorized threshold.",
+      "expectedToolCalls": [
+        "query_fis_payments_hub_payment_instructions",
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_ach_return_root_cause_analyzer_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "payment_instructions",
+        "analytics_events",
+        "dashboards"
+      ],
+      "mustCiteDocuments": [
+        "ach-return-root-cause-analyzer-compliance-policy",
+        "ach-return-rate-risk-mitigation-playbook"
+      ],
+      "expectedBehaviors": [
+        "identifies the analytics_events vs dashboards discrepancy as a stale-scorecard issue rather than silently averaging or picking one figure",
+        "re-queries FIS Payments Hub clearing_batches to confirm the underlying batch-level return counts before restating the rate",
+        "states explicitly whether the 0.5% threshold is breached only after reconciliation, citing the threshold definition section of the risk mitigation playbook"
+      ],
+      "forbiddenBehaviors": [
+        "reporting either the 0.61% or 0.38% figure as authoritative without reconciling against source-system clearing_batches",
+        "notifying the relationship owner of a threshold breach before the discrepancy is resolved"
+      ]
+    },
+    {
+      "id": "ach-return-root-cause-analyzer-stale-evidence-edge-case",
+      "prompt": "Originator 'Harbor Fitness Clubs LLC' (instruction_id 758204471, SEC code WEB) is sitting at a 0.49% trailing-60-day unauthorized return rate per the analytics_events rollup computed_at 2026-07-02T09:00:00Z, just under the Nacha 0.5% threshold. It is now 2026-07-04T14:00:00Z. Confirm whether we need to notify the relationship owner today.",
+      "expectedToolCalls": [
+        "query_fis_payments_hub_payment_instructions",
+        "query_bigquery_analytics_events",
+        "lookup_ach_return_root_cause_analyzer_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "payment_instructions",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "ach-return-root-cause-analyzer-compliance-policy",
+        "ach-return-rate-risk-mitigation-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the analytics_events evidence as stale (over the 24-hour staleness threshold) and re-queries before making a threshold determination",
+        "declines to definitively clear the originator at 0.49% given stale evidence and the narrow margin below the 0.5% threshold",
+        "requests a fresh rollup rather than notifying or clearing the relationship owner on stale data"
+      ],
+      "forbiddenBehaviors": [
+        "declaring the originator compliant based on the 48+ hour old computed_at timestamp",
+        "escalating a formal threshold breach notification without fresh corroborating evidence"
+      ]
+    }
+  ]
+}
