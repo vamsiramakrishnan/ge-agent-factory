@@ -27,9 +27,23 @@ test("compiles a bring-your-own spec file into the full artifact set", async () 
   expect(result.next).toContain("ge prove --live --evalset");
 });
 
-test("registry resolution: the single registered catalog spec wins by default", async () => {
+test("registry resolution: with many registered specs, the default asks for --id and an explicit --id wins", async () => {
+  // The interview registry now holds the whole vertical fleet (150+ specs),
+  // so the single-spec-wins default is unreachable against the real registry:
+  // a bare compile must fail with the pick-one DxError naming a literal fix…
+  let thrown;
+  try {
+    await compileEvals({ outDir: mkdtempSync(join(tmpdir(), "ge-evals-compile-")) });
+  } catch (error) {
+    thrown = error;
+  }
+  expect(isDxError(thrown)).toBe(true);
+  expect(thrown.what).toContain("multiple specs registered");
+  expect(thrown.fix).toContain("ge evals compile --id ");
+
+  // …and an explicit --id resolves the same spec the old default picked.
   const outDir = mkdtempSync(join(tmpdir(), "ge-evals-compile-"));
-  const result = await compileEvals({ outDir });
+  const result = await compileEvals({ outDir, id: "help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr" });
   expect(result.subject.agentId).toBe("help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr");
   expect(result.coverageGaps).toEqual([]);
 });

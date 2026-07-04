@@ -203,10 +203,108 @@ const legend = {
   triggers: Object.entries(TRIGGERS).map(([key, v]) => ({ key, ...v })),
 };
 
+// ── 7. Vertical agents (registry-driven, no slides) ─────────────────────────
+// The vertical fleet lives in the agent-spec registry + use-case catalog with
+// a three-axis classification (industry × function × value stream) from
+// apps/factory/catalog/taxonomy.json — there is no presentation grid for it,
+// so these entries are assembled straight from the durable sources and
+// rendered by the catalog explorer page (and the same per-agent detail route).
+const taxonomy = JSON.parse(read("apps/factory/catalog/taxonomy.json"));
+const industryById = new Map(taxonomy.industries.map((i) => [i.id, i]));
+const VERTICAL_COLORS = {
+  retail: "#f59e0b",
+  banking: "#10b981",
+  insurance: "#6366f1",
+  telco: "#06b6d4",
+  manufacturing: "#ef4444",
+};
+const DECK_TRIGGER = { "on-demand": "chat", "event-driven": "event", scheduled: "scheduled" };
+
+const UC_PATH_EARLY = p("apps/factory/generated/use-cases.generated.json");
+if (!existsSync(UC_PATH_EARLY)) {
+  console.log("catalog: materializing use-cases.generated.json (bun run catalog)…");
+  execFileSync("bun", [p("apps/factory/scripts/sync-use-cases-from-slides.mjs")], { stdio: "inherit" });
+}
+const specByIdEarly = new Map(JSON.parse(readFileSync(UC_PATH_EARLY, "utf8")).map((s) => [s.id, s]));
+
+const verticalAgents = registry.entries
+  .filter((e) => e.classification && e.classification.industry !== "cross_industry")
+  .map((e) => {
+    const spec = specByIdEarly.get(e.id) || {};
+    const cls = e.classification;
+    const streamNum = Number((cls.valueStream?.code || "").replace(/^[A-Z]+-/, "")) || 0;
+    const trigKey = DECK_TRIGGER[spec.triggerType] ?? "chat";
+    const trig = TRIGGERS[trigKey] ?? { label: spec.triggerType, color: "#5f6368" };
+    const layer = LAYERS[3] ?? { label: "Custom ADK", desc: "", color: "#5f6368" };
+    return {
+      ucId: e.id,
+      agentId: (spec.subtitle || "").split(" • ")[0] || cls.valueStream?.code || cls.industryCode,
+      num: streamNum,
+      slug: e.id,
+      shortName: e.title,
+      title: e.title,
+      domain: streamNum,
+      domainTitle: cls.valueStream?.title ?? cls.function,
+      domainColor: VERTICAL_COLORS[cls.industry] ?? "#5f6368",
+      department: cls.industry,
+      industry: cls.industry,
+      industryTitle: industryById.get(cls.industry)?.title ?? cls.industry,
+      function: cls.function,
+      functionKind: cls.functionKind,
+      specializes: cls.specializes ?? [],
+      valueStream: cls.valueStream,
+      persona: spec.persona ?? null,
+      layer: 3,
+      layerLabel: layer.label,
+      layerDesc: layer.desc,
+      layerColor: layer.color,
+      triggerType: trigKey,
+      triggerLabel: trig.label,
+      triggerColor: trig.color,
+      hitl: false,
+      hitlActor: null,
+      hitlAction: null,
+      detail: {
+        systems: e.systems ?? [],
+        sources: [],
+        goal: spec.subtitle ?? null,
+        targetStage: null,
+        rows: null,
+        buildable: e.registry?.build?.enabled ?? null,
+        buildReason: e.registry?.build?.reason ?? null,
+        maturity: e.registry?.quality?.maturity ?? null,
+        hasBehaviorContract: e.hasBehaviorContract ?? false,
+        sourcePath: e.registry?.sourcePath ?? null,
+      },
+    };
+  })
+  .sort((x, y) => (x.agentId > y.agentId ? 1 : -1));
+
+const taxonomySummary = {
+  industries: taxonomy.industries
+    .filter((i) => i.id !== "cross_industry")
+    .map((i) => ({
+      ...i,
+      color: VERTICAL_COLORS[i.id] ?? "#5f6368",
+      agentCount: verticalAgents.filter((a) => a.industry === i.id).length,
+    })),
+  functions: taxonomy.functions.map((f) => ({
+    ...f,
+    agentCount:
+      verticalAgents.filter((a) => a.function === f.id).length +
+      (f.kind === "horizontal" ? agents.filter((a) => a.department === f.department).length : 0),
+  })),
+  valueStreams: taxonomy.valueStreams.map((v) => ({
+    ...v,
+    agentCount: verticalAgents.filter((a) => a.valueStream?.code === v.code).length,
+  })),
+};
+
 const payload = {
   generatedBy: "apps/docs/scripts/gen-catalog.mjs",
   meta: {
     totalAgents: agents.length,
+    totalVerticalAgents: verticalAgents.length,
     totalDomains: domains.length,
     totalDepartments: departments.length,
     hitlCount: agents.filter((a) => a.hitl).length,
@@ -215,6 +313,8 @@ const payload = {
   domains,
   legend,
   agents,
+  verticalAgents,
+  taxonomy: taxonomySummary,
 };
 
 // ── Report + fail loud on unresolved joins ───────────────────────────────────
@@ -239,16 +339,11 @@ console.log(`→ ${OUT.replace(REPO + "/", "")}`);
 // anomalies, documents, data-generation policy). We emit the structured data
 // (not flattened markdown) so the docs can render a dense, navigable explorer.
 // Written to its own file so the (large) bodies never load on the grid page.
-const UC_PATH = p("apps/factory/generated/use-cases.generated.json");
-if (!existsSync(UC_PATH)) {
-  console.log("catalog: materializing use-cases.generated.json (bun run catalog)…");
-  execFileSync("bun", [p("apps/factory/scripts/sync-use-cases-from-slides.mjs")], { stdio: "inherit" });
-}
-const specById = new Map(JSON.parse(readFileSync(UC_PATH, "utf8")).map((s) => [s.id, s]));
+const specById = specByIdEarly;
 
 const okfMisses = [];
 const okfBySlug = {};
-for (const a of agents) {
+for (const a of [...agents, ...verticalAgents]) {
   const spec = specById.get(a.slug);
   if (!spec) {
     okfMisses.push(a.slug);

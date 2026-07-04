@@ -302,6 +302,846 @@
       "ok": false
     }
   },
+  "interview-specs/account-opening-doc-followup-agent.json": {
+    "id": "interview-specs/account-opening-doc-followup-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/ach-return-root-cause-analyzer.json": {
+    "id": "interview-specs/ach-return-root-cause-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/advisor-next-best-action-engine.json": {
+    "id": "interview-specs/advisor-next-best-action-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/advisory-fee-billing-anomaly-analyzer.json": {
+    "id": "interview-specs/advisory-fee-billing-anomaly-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/agency-production-performance-monitor.json": {
+    "id": "interview-specs/agency-production-performance-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/agent-commission-reconciliation-engine.json": {
+    "id": "interview-specs/agent-commission-reconciliation-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/alarm-noise-reduction-engine.json": {
+    "id": "interview-specs/alarm-noise-reduction-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/aml-alert-investigation-agent.json": {
+    "id": "interview-specs/aml-alert-investigation-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/application-fraud-screening-agent.json": {
+    "id": "interview-specs/application-fraud-screening-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/assortment-rationalization-engine.json": {
+    "id": "interview-specs/assortment-rationalization-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/b2b-quote-configuration-agent.json": {
+    "id": "interview-specs/b2b-quote-configuration-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/bad-actor-asset-analyzer.json": {
+    "id": "interview-specs/bad-actor-asset-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/batch-record-review-analyzer.json": {
+    "id": "interview-specs/batch-record-review-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/beneficial-ownership-refresh-agent.json": {
+    "id": "interview-specs/beneficial-ownership-refresh-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/bill-dispute-resolution-agent.json": {
+    "id": "interview-specs/bill-dispute-resolution-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/bom-plm-erp-sync-monitor.json": {
+    "id": "interview-specs/bom-plm-erp-sync-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/branch-cash-position-forecast-engine.json": {
+    "id": "interview-specs/branch-cash-position-forecast-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/broker-submission-intake-orchestrator.json": {
+    "id": "interview-specs/broker-submission-intake-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/cancellation-notice-compliance-agent.json": {
+    "id": "interview-specs/cancellation-notice-compliance-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/capa-orchestration-agent.json": {
+    "id": "interview-specs/capa-orchestration-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/card-dispute-chargeback-orchestrator.json": {
+    "id": "interview-specs/card-dispute-chargeback-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/care-call-resolution-copilot-agent.json": {
+    "id": "interview-specs/care-call-resolution-copilot-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/carrier-delivery-sla-analyzer.json": {
+    "id": "interview-specs/carrier-delivery-sla-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/cart-abandonment-recovery-orchestrator.json": {
+    "id": "interview-specs/cart-abandonment-recovery-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/cat-exposure-rollup-engine.json": {
+    "id": "interview-specs/cat-exposure-rollup-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/cell-congestion-forecasting-engine.json": {
+    "id": "interview-specs/cell-congestion-forecasting-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/certificate-of-insurance-issuance-agent.json": {
+    "id": "interview-specs/certificate-of-insurance-issuance-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/changeover-time-optimization-agent.json": {
+    "id": "interview-specs/changeover-time-optimization-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/churn-save-desk-agent.json": {
+    "id": "interview-specs/churn-save-desk-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/click-and-collect-sla-monitor.json": {
+    "id": "interview-specs/click-and-collect-sla-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/commercial-credit-memo-drafting-agent.json": {
+    "id": "interview-specs/commercial-credit-memo-drafting-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/competitive-price-response-agent.json": {
+    "id": "interview-specs/competitive-price-response-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/competitive-win-loss-analyzer.json": {
+    "id": "interview-specs/competitive-win-loss-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/complaint-root-cause-analyzer.json": {
+    "id": "interview-specs/complaint-root-cause-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/component-obsolescence-risk-monitor.json": {
+    "id": "interview-specs/component-obsolescence-risk-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/counterparty-credit-exposure-monitor.json": {
+    "id": "interview-specs/counterparty-credit-exposure-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/credit-portfolio-concentration-monitor.json": {
+    "id": "interview-specs/credit-portfolio-concentration-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/customer-care-triage-agent.json": {
+    "id": "interview-specs/customer-care-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/dc-labor-planning-engine.json": {
+    "id": "interview-specs/dc-labor-planning-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/demand-forecast-exception-agent.json": {
+    "id": "interview-specs/demand-forecast-exception-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/demand-supply-gap-scenario-engine.json": {
+    "id": "interview-specs/demand-supply-gap-scenario-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/deposit-attrition-early-warning-monitor.json": {
+    "id": "interview-specs/deposit-attrition-early-warning-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/dispatch-optimization-orchestrator.json": {
+    "id": "interview-specs/dispatch-optimization-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/dormant-account-remediation-agent.json": {
+    "id": "interview-specs/dormant-account-remediation-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/early-delinquency-outreach-orchestrator.json": {
+    "id": "interview-specs/early-delinquency-outreach-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/eco-impact-analysis-agent.json": {
+    "id": "interview-specs/eco-impact-analysis-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/endorsement-processing-agent.json": {
+    "id": "interview-specs/endorsement-processing-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/energy-intensity-monitoring-engine.json": {
+    "id": "interview-specs/energy-intensity-monitoring-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/engineering-change-backlog-analyzer.json": {
+    "id": "interview-specs/engineering-change-backlog-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/enterprise-rfp-response-agent.json": {
+    "id": "interview-specs/enterprise-rfp-response-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/eod-pnl-attribution-analyzer.json": {
+    "id": "interview-specs/eod-pnl-attribution-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/esim-activation-orchestrator.json": {
+    "id": "interview-specs/esim-activation-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/expedite-request-triage-agent.json": {
+    "id": "interview-specs/expedite-request-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/fiber-build-permitting-agent.json": {
+    "id": "interview-specs/fiber-build-permitting-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/fiber-cut-triage-agent.json": {
+    "id": "interview-specs/fiber-cut-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/field-job-closure-quality-analyzer.json": {
+    "id": "interview-specs/field-job-closure-quality-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/fnol-triage-routing-agent.json": {
+    "id": "interview-specs/fnol-triage-routing-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/fraud-alert-triage-agent.json": {
+    "id": "interview-specs/fraud-alert-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/fraud-ring-network-analyzer.json": {
+    "id": "interview-specs/fraud-ring-network-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/fraud-rule-tuning-analyzer.json": {
+    "id": "interview-specs/fraud-rule-tuning-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
   "interview-specs/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr.json": {
     "id": "interview-specs/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr.json",
     "validateAgentSpecQuality": {
@@ -316,8 +1156,3368 @@
       "ok": true
     }
   },
+  "interview-specs/inbound-po-eta-monitor.json": {
+    "id": "interview-specs/inbound-po-eta-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/incident-near-miss-triage-agent.json": {
+    "id": "interview-specs/incident-near-miss-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/intraday-liquidity-forecasting-engine.json": {
+    "id": "interview-specs/intraday-liquidity-forecasting-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/inventory-rebalancing-orchestrator.json": {
+    "id": "interview-specs/inventory-rebalancing-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/lead-qualification-scoring-engine.json": {
+    "id": "interview-specs/lead-qualification-scoring-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/legacy-service-migration-orchestrator.json": {
+    "id": "interview-specs/legacy-service-migration-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/loan-covenant-monitoring-agent.json": {
+    "id": "interview-specs/loan-covenant-monitoring-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/loan-doc-exception-clearing-agent.json": {
+    "id": "interview-specs/loan-doc-exception-clearing-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/loss-ratio-trend-monitor.json": {
+    "id": "interview-specs/loss-ratio-trend-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/loyalty-churn-prediction-agent.json": {
+    "id": "interview-specs/loyalty-churn-prediction-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/markdown-optimization-engine.json": {
+    "id": "interview-specs/markdown-optimization-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/market-conduct-exam-prep-orchestrator.json": {
+    "id": "interview-specs/market-conduct-exam-prep-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/material-shortage-early-warning-monitor.json": {
+    "id": "interview-specs/material-shortage-early-warning-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/medical-bill-review-engine.json": {
+    "id": "interview-specs/medical-bill-review-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/member-winback-orchestrator.json": {
+    "id": "interview-specs/member-winback-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/midterm-cancellation-retention-agent.json": {
+    "id": "interview-specs/midterm-cancellation-retention-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/network-slice-sla-monitor.json": {
+    "id": "interview-specs/network-slice-sla-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/new-item-launch-orchestrator.json": {
+    "id": "interview-specs/new-item-launch-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/next-best-offer-engine.json": {
+    "id": "interview-specs/next-best-offer-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/nonconformance-triage-agent.json": {
+    "id": "interview-specs/nonconformance-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/nonrenewal-notice-compliance-monitor.json": {
+    "id": "interview-specs/nonrenewal-notice-compliance-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/npi-launch-readiness-orchestrator.json": {
+    "id": "interview-specs/npi-launch-readiness-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/nps-detractor-recovery-agent.json": {
+    "id": "interview-specs/nps-detractor-recovery-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/number-porting-exception-agent.json": {
+    "id": "interview-specs/number-porting-exception-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/oee-loss-pareto-analyzer.json": {
+    "id": "interview-specs/oee-loss-pareto-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/on-shelf-availability-monitor.json": {
+    "id": "interview-specs/on-shelf-availability-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/order-fallout-resolution-agent.json": {
+    "id": "interview-specs/order-fallout-resolution-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/order-jeopardy-prediction-engine.json": {
+    "id": "interview-specs/order-jeopardy-prediction-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/overdraft-fee-dispute-triage-agent.json": {
+    "id": "interview-specs/overdraft-fee-dispute-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/payment-plan-recommendation-agent.json": {
+    "id": "interview-specs/payment-plan-recommendation-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/pdp-content-quality-agent.json": {
+    "id": "interview-specs/pdp-content-quality-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/periodic-kyc-review-orchestrator.json": {
+    "id": "interview-specs/periodic-kyc-review-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/permit-to-work-compliance-monitor.json": {
+    "id": "interview-specs/permit-to-work-compliance-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/planogram-compliance-analyzer.json": {
+    "id": "interview-specs/planogram-compliance-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/pm-schedule-optimization-engine.json": {
+    "id": "interview-specs/pm-schedule-optimization-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/policyholder-correspondence-drafting-agent.json": {
+    "id": "interview-specs/policyholder-correspondence-drafting-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/portfolio-review-prep-agent.json": {
+    "id": "interview-specs/portfolio-review-prep-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/pos-exception-triage-agent.json": {
+    "id": "interview-specs/pos-exception-triage-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/predictive-asset-failure-monitor.json": {
+    "id": "interview-specs/predictive-asset-failure-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/premium-delinquency-outreach-agent.json": {
+    "id": "interview-specs/premium-delinquency-outreach-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/premium-leakage-detection-analyzer.json": {
+    "id": "interview-specs/premium-leakage-detection-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/price-execution-audit-monitor.json": {
+    "id": "interview-specs/price-execution-audit-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/proactive-outage-notification-orchestrator.json": {
+    "id": "interview-specs/proactive-outage-notification-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/production-schedule-adherence-monitor.json": {
+    "id": "interview-specs/production-schedule-adherence-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/promo-forecast-accuracy-analyzer.json": {
+    "id": "interview-specs/promo-forecast-accuracy-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/ran-parameter-optimization-agent.json": {
+    "id": "interview-specs/ran-parameter-optimization-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/rate-indication-preparation-engine.json": {
+    "id": "interview-specs/rate-indication-preparation-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/regulatory-complaint-response-agent.json": {
+    "id": "interview-specs/regulatory-complaint-response-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/regulatory-emissions-reporting-agent.json": {
+    "id": "interview-specs/regulatory-emissions-reporting-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/renewal-risk-requalification-agent.json": {
+    "id": "interview-specs/renewal-risk-requalification-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/reserve-adequacy-analyzer.json": {
+    "id": "interview-specs/reserve-adequacy-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/reserve-development-early-warning-monitor.json": {
+    "id": "interview-specs/reserve-development-early-warning-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/returns-abuse-analyzer.json": {
+    "id": "interview-specs/returns-abuse-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/revenue-leakage-detection-analyzer.json": {
+    "id": "interview-specs/revenue-leakage-detection-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/roaming-settlement-reconciliation-engine.json": {
+    "id": "interview-specs/roaming-settlement-reconciliation-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/safety-observation-trend-analyzer.json": {
+    "id": "interview-specs/safety-observation-trend-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/sanctions-screening-hit-analyzer.json": {
+    "id": "interview-specs/sanctions-screening-hit-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/sar-filing-preparation-agent.json": {
+    "id": "interview-specs/sar-filing-preparation-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/scrap-and-rework-analytics-engine.json": {
+    "id": "interview-specs/scrap-and-rework-analytics-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/shrink-anomaly-analyzer.json": {
+    "id": "interview-specs/shrink-anomaly-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/sim-swap-fraud-detection-monitor.json": {
+    "id": "interview-specs/sim-swap-fraud-detection-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/site-search-relevance-engine.json": {
+    "id": "interview-specs/site-search-relevance-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/site-serviceability-qualification-agent.json": {
+    "id": "interview-specs/site-serviceability-qualification-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/siu-referral-scoring-engine.json": {
+    "id": "interview-specs/siu-referral-scoring-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/size-pack-optimization-engine.json": {
+    "id": "interview-specs/size-pack-optimization-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/small-commercial-quote-bind-stp-engine.json": {
+    "id": "interview-specs/small-commercial-quote-bind-stp-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/spare-parts-stockout-prediction-agent.json": {
+    "id": "interview-specs/spare-parts-stockout-prediction-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/spc-drift-detection-monitor.json": {
+    "id": "interview-specs/spc-drift-detection-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/store-labor-forecast-engine.json": {
+    "id": "interview-specs/store-labor-forecast-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/store-replenishment-orchestrator.json": {
+    "id": "interview-specs/store-replenishment-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/store-task-compliance-agent.json": {
+    "id": "interview-specs/store-task-compliance-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/submission-appetite-screening-agent.json": {
+    "id": "interview-specs/submission-appetite-screening-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/subrogation-opportunity-analyzer.json": {
+    "id": "interview-specs/subrogation-opportunity-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/suitability-drift-review-monitor.json": {
+    "id": "interview-specs/suitability-drift-review-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/supplier-delivery-risk-analyzer.json": {
+    "id": "interview-specs/supplier-delivery-risk-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/supplier-quality-scorecard-engine.json": {
+    "id": "interview-specs/supplier-quality-scorecard-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/total-loss-settlement-orchestrator.json": {
+    "id": "interview-specs/total-loss-settlement-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/tower-maintenance-scheduling-engine.json": {
+    "id": "interview-specs/tower-maintenance-scheduling-engine.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/trade-confirmation-break-resolution-agent.json": {
+    "id": "interview-specs/trade-confirmation-break-resolution-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/truck-roll-avoidance-agent.json": {
+    "id": "interview-specs/truck-roll-avoidance-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/unapplied-cash-resolution-agent.json": {
+    "id": "interview-specs/unapplied-cash-resolution-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/unplanned-downtime-root-cause-agent.json": {
+    "id": "interview-specs/unplanned-downtime-root-cause-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/usage-rating-anomaly-monitor.json": {
+    "id": "interview-specs/usage-rating-anomaly-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/var-limit-breach-triage-monitor.json": {
+    "id": "interview-specs/var-limit-breach-triage-monitor.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/vendor-promo-funding-reconciliation-agent.json": {
+    "id": "interview-specs/vendor-promo-funding-reconciliation-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/vendor-scorecard-analyzer.json": {
+    "id": "interview-specs/vendor-scorecard-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/voice-of-customer-insights-analyzer.json": {
+    "id": "interview-specs/voice-of-customer-insights-analyzer.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/wealth-client-onboarding-orchestrator.json": {
+    "id": "interview-specs/wealth-client-onboarding-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/wire-exception-repair-agent.json": {
+    "id": "interview-specs/wire-exception-repair-agent.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "interview-specs/work-order-backlog-triage-orchestrator.json": {
+    "id": "interview-specs/work-order-backlog-triage-orchestrator.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/account-opening-doc-followup-agent": {
+    "id": "loaded-entry/account-opening-doc-followup-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/ach-return-root-cause-analyzer": {
+    "id": "loaded-entry/ach-return-root-cause-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/advisor-next-best-action-engine": {
+    "id": "loaded-entry/advisor-next-best-action-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/advisory-fee-billing-anomaly-analyzer": {
+    "id": "loaded-entry/advisory-fee-billing-anomaly-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/agency-production-performance-monitor": {
+    "id": "loaded-entry/agency-production-performance-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/agent-commission-reconciliation-engine": {
+    "id": "loaded-entry/agent-commission-reconciliation-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/alarm-noise-reduction-engine": {
+    "id": "loaded-entry/alarm-noise-reduction-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/aml-alert-investigation-agent": {
+    "id": "loaded-entry/aml-alert-investigation-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/application-fraud-screening-agent": {
+    "id": "loaded-entry/application-fraud-screening-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/assortment-rationalization-engine": {
+    "id": "loaded-entry/assortment-rationalization-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/b2b-quote-configuration-agent": {
+    "id": "loaded-entry/b2b-quote-configuration-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/bad-actor-asset-analyzer": {
+    "id": "loaded-entry/bad-actor-asset-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/batch-record-review-analyzer": {
+    "id": "loaded-entry/batch-record-review-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/beneficial-ownership-refresh-agent": {
+    "id": "loaded-entry/beneficial-ownership-refresh-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/bill-dispute-resolution-agent": {
+    "id": "loaded-entry/bill-dispute-resolution-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/bom-plm-erp-sync-monitor": {
+    "id": "loaded-entry/bom-plm-erp-sync-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/branch-cash-position-forecast-engine": {
+    "id": "loaded-entry/branch-cash-position-forecast-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/broker-submission-intake-orchestrator": {
+    "id": "loaded-entry/broker-submission-intake-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/cancellation-notice-compliance-agent": {
+    "id": "loaded-entry/cancellation-notice-compliance-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/capa-orchestration-agent": {
+    "id": "loaded-entry/capa-orchestration-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/card-dispute-chargeback-orchestrator": {
+    "id": "loaded-entry/card-dispute-chargeback-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/care-call-resolution-copilot-agent": {
+    "id": "loaded-entry/care-call-resolution-copilot-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/carrier-delivery-sla-analyzer": {
+    "id": "loaded-entry/carrier-delivery-sla-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/cart-abandonment-recovery-orchestrator": {
+    "id": "loaded-entry/cart-abandonment-recovery-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/cat-exposure-rollup-engine": {
+    "id": "loaded-entry/cat-exposure-rollup-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/cell-congestion-forecasting-engine": {
+    "id": "loaded-entry/cell-congestion-forecasting-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/certificate-of-insurance-issuance-agent": {
+    "id": "loaded-entry/certificate-of-insurance-issuance-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/changeover-time-optimization-agent": {
+    "id": "loaded-entry/changeover-time-optimization-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/churn-save-desk-agent": {
+    "id": "loaded-entry/churn-save-desk-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/click-and-collect-sla-monitor": {
+    "id": "loaded-entry/click-and-collect-sla-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/commercial-credit-memo-drafting-agent": {
+    "id": "loaded-entry/commercial-credit-memo-drafting-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/competitive-price-response-agent": {
+    "id": "loaded-entry/competitive-price-response-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/competitive-win-loss-analyzer": {
+    "id": "loaded-entry/competitive-win-loss-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/complaint-root-cause-analyzer": {
+    "id": "loaded-entry/complaint-root-cause-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/component-obsolescence-risk-monitor": {
+    "id": "loaded-entry/component-obsolescence-risk-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/counterparty-credit-exposure-monitor": {
+    "id": "loaded-entry/counterparty-credit-exposure-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/credit-portfolio-concentration-monitor": {
+    "id": "loaded-entry/credit-portfolio-concentration-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/customer-care-triage-agent": {
+    "id": "loaded-entry/customer-care-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/dc-labor-planning-engine": {
+    "id": "loaded-entry/dc-labor-planning-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/demand-forecast-exception-agent": {
+    "id": "loaded-entry/demand-forecast-exception-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/demand-supply-gap-scenario-engine": {
+    "id": "loaded-entry/demand-supply-gap-scenario-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/deposit-attrition-early-warning-monitor": {
+    "id": "loaded-entry/deposit-attrition-early-warning-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/dispatch-optimization-orchestrator": {
+    "id": "loaded-entry/dispatch-optimization-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/dormant-account-remediation-agent": {
+    "id": "loaded-entry/dormant-account-remediation-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/early-delinquency-outreach-orchestrator": {
+    "id": "loaded-entry/early-delinquency-outreach-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/eco-impact-analysis-agent": {
+    "id": "loaded-entry/eco-impact-analysis-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/endorsement-processing-agent": {
+    "id": "loaded-entry/endorsement-processing-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/energy-intensity-monitoring-engine": {
+    "id": "loaded-entry/energy-intensity-monitoring-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/engineering-change-backlog-analyzer": {
+    "id": "loaded-entry/engineering-change-backlog-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/enterprise-rfp-response-agent": {
+    "id": "loaded-entry/enterprise-rfp-response-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/eod-pnl-attribution-analyzer": {
+    "id": "loaded-entry/eod-pnl-attribution-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/esim-activation-orchestrator": {
+    "id": "loaded-entry/esim-activation-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/expedite-request-triage-agent": {
+    "id": "loaded-entry/expedite-request-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/fiber-build-permitting-agent": {
+    "id": "loaded-entry/fiber-build-permitting-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/fiber-cut-triage-agent": {
+    "id": "loaded-entry/fiber-cut-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/field-job-closure-quality-analyzer": {
+    "id": "loaded-entry/field-job-closure-quality-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/fnol-triage-routing-agent": {
+    "id": "loaded-entry/fnol-triage-routing-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/fraud-alert-triage-agent": {
+    "id": "loaded-entry/fraud-alert-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/fraud-ring-network-analyzer": {
+    "id": "loaded-entry/fraud-ring-network-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/fraud-rule-tuning-analyzer": {
+    "id": "loaded-entry/fraud-rule-tuning-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
   "loaded-entry/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr": {
     "id": "loaded-entry/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/inbound-po-eta-monitor": {
+    "id": "loaded-entry/inbound-po-eta-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/incident-near-miss-triage-agent": {
+    "id": "loaded-entry/incident-near-miss-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/intraday-liquidity-forecasting-engine": {
+    "id": "loaded-entry/intraday-liquidity-forecasting-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/inventory-rebalancing-orchestrator": {
+    "id": "loaded-entry/inventory-rebalancing-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/lead-qualification-scoring-engine": {
+    "id": "loaded-entry/lead-qualification-scoring-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/legacy-service-migration-orchestrator": {
+    "id": "loaded-entry/legacy-service-migration-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/loan-covenant-monitoring-agent": {
+    "id": "loaded-entry/loan-covenant-monitoring-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/loan-doc-exception-clearing-agent": {
+    "id": "loaded-entry/loan-doc-exception-clearing-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/loss-ratio-trend-monitor": {
+    "id": "loaded-entry/loss-ratio-trend-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/loyalty-churn-prediction-agent": {
+    "id": "loaded-entry/loyalty-churn-prediction-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/markdown-optimization-engine": {
+    "id": "loaded-entry/markdown-optimization-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/market-conduct-exam-prep-orchestrator": {
+    "id": "loaded-entry/market-conduct-exam-prep-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/material-shortage-early-warning-monitor": {
+    "id": "loaded-entry/material-shortage-early-warning-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/medical-bill-review-engine": {
+    "id": "loaded-entry/medical-bill-review-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/member-winback-orchestrator": {
+    "id": "loaded-entry/member-winback-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/midterm-cancellation-retention-agent": {
+    "id": "loaded-entry/midterm-cancellation-retention-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/network-slice-sla-monitor": {
+    "id": "loaded-entry/network-slice-sla-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/new-item-launch-orchestrator": {
+    "id": "loaded-entry/new-item-launch-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/next-best-offer-engine": {
+    "id": "loaded-entry/next-best-offer-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/nonconformance-triage-agent": {
+    "id": "loaded-entry/nonconformance-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/nonrenewal-notice-compliance-monitor": {
+    "id": "loaded-entry/nonrenewal-notice-compliance-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/npi-launch-readiness-orchestrator": {
+    "id": "loaded-entry/npi-launch-readiness-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/nps-detractor-recovery-agent": {
+    "id": "loaded-entry/nps-detractor-recovery-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/number-porting-exception-agent": {
+    "id": "loaded-entry/number-porting-exception-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/oee-loss-pareto-analyzer": {
+    "id": "loaded-entry/oee-loss-pareto-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/on-shelf-availability-monitor": {
+    "id": "loaded-entry/on-shelf-availability-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/order-fallout-resolution-agent": {
+    "id": "loaded-entry/order-fallout-resolution-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/order-jeopardy-prediction-engine": {
+    "id": "loaded-entry/order-jeopardy-prediction-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/overdraft-fee-dispute-triage-agent": {
+    "id": "loaded-entry/overdraft-fee-dispute-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/payment-plan-recommendation-agent": {
+    "id": "loaded-entry/payment-plan-recommendation-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/pdp-content-quality-agent": {
+    "id": "loaded-entry/pdp-content-quality-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/periodic-kyc-review-orchestrator": {
+    "id": "loaded-entry/periodic-kyc-review-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/permit-to-work-compliance-monitor": {
+    "id": "loaded-entry/permit-to-work-compliance-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/planogram-compliance-analyzer": {
+    "id": "loaded-entry/planogram-compliance-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/pm-schedule-optimization-engine": {
+    "id": "loaded-entry/pm-schedule-optimization-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/policyholder-correspondence-drafting-agent": {
+    "id": "loaded-entry/policyholder-correspondence-drafting-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/portfolio-review-prep-agent": {
+    "id": "loaded-entry/portfolio-review-prep-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/pos-exception-triage-agent": {
+    "id": "loaded-entry/pos-exception-triage-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/predictive-asset-failure-monitor": {
+    "id": "loaded-entry/predictive-asset-failure-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/premium-delinquency-outreach-agent": {
+    "id": "loaded-entry/premium-delinquency-outreach-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/premium-leakage-detection-analyzer": {
+    "id": "loaded-entry/premium-leakage-detection-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/price-execution-audit-monitor": {
+    "id": "loaded-entry/price-execution-audit-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/proactive-outage-notification-orchestrator": {
+    "id": "loaded-entry/proactive-outage-notification-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/production-schedule-adherence-monitor": {
+    "id": "loaded-entry/production-schedule-adherence-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/promo-forecast-accuracy-analyzer": {
+    "id": "loaded-entry/promo-forecast-accuracy-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/ran-parameter-optimization-agent": {
+    "id": "loaded-entry/ran-parameter-optimization-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/rate-indication-preparation-engine": {
+    "id": "loaded-entry/rate-indication-preparation-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/regulatory-complaint-response-agent": {
+    "id": "loaded-entry/regulatory-complaint-response-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/regulatory-emissions-reporting-agent": {
+    "id": "loaded-entry/regulatory-emissions-reporting-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/renewal-risk-requalification-agent": {
+    "id": "loaded-entry/renewal-risk-requalification-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/reserve-adequacy-analyzer": {
+    "id": "loaded-entry/reserve-adequacy-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/reserve-development-early-warning-monitor": {
+    "id": "loaded-entry/reserve-development-early-warning-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/returns-abuse-analyzer": {
+    "id": "loaded-entry/returns-abuse-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/revenue-leakage-detection-analyzer": {
+    "id": "loaded-entry/revenue-leakage-detection-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/roaming-settlement-reconciliation-engine": {
+    "id": "loaded-entry/roaming-settlement-reconciliation-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/safety-observation-trend-analyzer": {
+    "id": "loaded-entry/safety-observation-trend-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/sanctions-screening-hit-analyzer": {
+    "id": "loaded-entry/sanctions-screening-hit-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/sar-filing-preparation-agent": {
+    "id": "loaded-entry/sar-filing-preparation-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/scrap-and-rework-analytics-engine": {
+    "id": "loaded-entry/scrap-and-rework-analytics-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/shrink-anomaly-analyzer": {
+    "id": "loaded-entry/shrink-anomaly-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/sim-swap-fraud-detection-monitor": {
+    "id": "loaded-entry/sim-swap-fraud-detection-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/site-search-relevance-engine": {
+    "id": "loaded-entry/site-search-relevance-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/site-serviceability-qualification-agent": {
+    "id": "loaded-entry/site-serviceability-qualification-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/siu-referral-scoring-engine": {
+    "id": "loaded-entry/siu-referral-scoring-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/size-pack-optimization-engine": {
+    "id": "loaded-entry/size-pack-optimization-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/small-commercial-quote-bind-stp-engine": {
+    "id": "loaded-entry/small-commercial-quote-bind-stp-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/spare-parts-stockout-prediction-agent": {
+    "id": "loaded-entry/spare-parts-stockout-prediction-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/spc-drift-detection-monitor": {
+    "id": "loaded-entry/spc-drift-detection-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/store-labor-forecast-engine": {
+    "id": "loaded-entry/store-labor-forecast-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/store-replenishment-orchestrator": {
+    "id": "loaded-entry/store-replenishment-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/store-task-compliance-agent": {
+    "id": "loaded-entry/store-task-compliance-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/submission-appetite-screening-agent": {
+    "id": "loaded-entry/submission-appetite-screening-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/subrogation-opportunity-analyzer": {
+    "id": "loaded-entry/subrogation-opportunity-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/suitability-drift-review-monitor": {
+    "id": "loaded-entry/suitability-drift-review-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/supplier-delivery-risk-analyzer": {
+    "id": "loaded-entry/supplier-delivery-risk-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/supplier-quality-scorecard-engine": {
+    "id": "loaded-entry/supplier-quality-scorecard-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/total-loss-settlement-orchestrator": {
+    "id": "loaded-entry/total-loss-settlement-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/tower-maintenance-scheduling-engine": {
+    "id": "loaded-entry/tower-maintenance-scheduling-engine",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/trade-confirmation-break-resolution-agent": {
+    "id": "loaded-entry/trade-confirmation-break-resolution-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/truck-roll-avoidance-agent": {
+    "id": "loaded-entry/truck-roll-avoidance-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/unapplied-cash-resolution-agent": {
+    "id": "loaded-entry/unapplied-cash-resolution-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/unplanned-downtime-root-cause-agent": {
+    "id": "loaded-entry/unplanned-downtime-root-cause-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/usage-rating-anomaly-monitor": {
+    "id": "loaded-entry/usage-rating-anomaly-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/var-limit-breach-triage-monitor": {
+    "id": "loaded-entry/var-limit-breach-triage-monitor",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/vendor-promo-funding-reconciliation-agent": {
+    "id": "loaded-entry/vendor-promo-funding-reconciliation-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/vendor-scorecard-analyzer": {
+    "id": "loaded-entry/vendor-scorecard-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/voice-of-customer-insights-analyzer": {
+    "id": "loaded-entry/voice-of-customer-insights-analyzer",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/wealth-client-onboarding-orchestrator": {
+    "id": "loaded-entry/wealth-client-onboarding-orchestrator",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/wire-exception-repair-agent": {
+    "id": "loaded-entry/wire-exception-repair-agent",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/work-order-backlog-triage-orchestrator": {
+    "id": "loaded-entry/work-order-backlog-triage-orchestrator",
     "validateAgentSpecQuality": {
       "gaps": [],
       "maturity": "factory_grade_catalog_spec",
