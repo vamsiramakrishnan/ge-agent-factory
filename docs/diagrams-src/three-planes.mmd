@@ -1,13 +1,29 @@
 flowchart TB
-    CLI["ge CLI / console"] --> GW
-    subgraph FP["Factory plane"]
-        direction LR
-        GW["Cloud Run gateway"] --> CT["Cloud Tasks queue"] --> W["Worker"]
+    CLI["ge CLI / console\n(your machine)"]
+    subgraph GCP["Your Google Cloud project"]
+        subgraph FP["Factory plane — orchestration and build"]
+            direction LR
+            GW["Cloud Run\ngateway"] --> CT["Cloud Tasks\nqueue"] --> W["worker"]
+        end
+        subgraph DP["Data plane — shared and per-agent stores"]
+            direction LR
+            GCS[("GCS")]
+            ADB[("AlloyDB")]
+            FS[("Firestore")]
+            BQ[("BigQuery")]
+            BT[("Bigtable")]
+        end
+        subgraph TP["Tool (MCP) plane"]
+            direction LR
+            AG["Agent Gateway"] --> MS["per-department\nMCP services"] --> AR["Agent Registry"]
+        end
+        W --> ADB
+        W --> FS
+        W --> AG
     end
-    W --> DP[("Data plane\nGCS, AlloyDB, Firestore,\nBigQuery, Bigtable")]
-    W --> TP["Tool (MCP) plane\nAgent Gateway + per-department\nMCP services + Agent Registry"]
+    CLI --> GW
 
     classDef data fill:#e6ebff,stroke:#2953ff,color:#14171c
     classDef tool fill:#e1f3e7,stroke:#16874a,color:#14171c
-    class DP data
-    class TP tool
+    class GCS,ADB,FS,BQ,BT data
+    class AG,MS,AR tool

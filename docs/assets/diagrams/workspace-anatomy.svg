@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 936.35 615.4000000000001" width="936.35" height="615.4000000000001" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="WS" data-label=".ge/factory/workspaces/&lt;id&gt;/ — one proven agent">
+  <rect x="40" y="40" width="856.35" height="535.4000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="40" width="856.35" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">.ge/factory/workspaces/&lt;id&gt;/ — one proven agent</text>
+<g class="subgraph" data-id="CB" data-label="Contract">
+  <rect x="65.1085" y="84" width="468.45799999999997" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="65.1085" y="84" width="468.45799999999997" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="77.1085" y="98" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Contract</text>
+</g>
+<g class="subgraph" data-id="GB" data-label="Generated agent — standard ADK Python">
+  <rect x="396.848" y="264.8" width="323.96299999999997" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="396.848" y="264.8" width="323.96299999999997" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="408.848" y="278.8" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Generated agent — standard ADK Python</text>
+</g>
+<g class="subgraph" data-id="SB" data-label="Simulation">
+  <rect x="56" y="257.8" width="312.848" height="127.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="56" y="257.8" width="312.848" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="68" y="271.8" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Simulation</text>
+</g>
+<g class="subgraph" data-id="PB" data-label="Proof">
+  <rect x="393.819" y="445.6" width="486.531" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="393.819" y="445.6" width="486.531" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="405.819" y="459.6" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Proof</text>
+</g>
+</g>
+<polyline class="edge" data-from="SPECJ" data-to="AGPY" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="391.3695,181.8 391.3695,245.6625 645.6745,245.6625 645.6745,309.525" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="SPECJ" data-to="TW" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="391.3695,181.8 391.3695,245.6625 137.0645,245.6625 137.0645,309.525" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AGPY" data-to="EV" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="645.6745,346.42499999999995 645.6745,433.4625 468.5815,433.4625 468.5815,489.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="FX" data-to="EV" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="291.48850000000004,377.325 291.48850000000004,433.4625 468.5815,433.4625 468.5815,489.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="SPECJ" data-label="usecase-spec.json
+behaviorContract + generationSpec" data-shape="rectangle">
+  <rect x="265.1725" y="128" width="252.39399999999998" height="53.800000000000004" rx="0" ry="0" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
+  <text x="391.3695" y="154.9" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="391.3695" dy="-3.9000000000000012">usecase-spec.json</tspan><tspan x="391.3695" dy="16.900000000000002">behaviorContract + generationSpec</tspan></text>
+</g>
+<g class="node" data-id="OKFT" data-label="OKF twin
+portable Markdown" data-shape="rectangle">
+  <rect x="81.1085" y="128" width="156.064" height="53.800000000000004" rx="0" ry="0" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
+  <text x="159.1405" y="154.9" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="159.1405" dy="-3.9000000000000012">OKF twin</tspan><tspan x="159.1405" dy="16.900000000000002">portable Markdown</tspan></text>
+</g>
+<g class="node" data-id="AGPY" data-label="app/agent.py" data-shape="rectangle">
+  <rect x="586.538" y="309.525" width="118.273" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="645.6745" y="327.97499999999997" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">app/agent.py</text>
+</g>
+<g class="node" data-id="TLPY" data-label="app/tools.py
+source_adapters" data-shape="rectangle">
+  <rect x="412.848" y="309.525" width="145.69" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="485.693" y="336.42499999999995" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="485.693" dy="-3.9000000000000012">app/tools.py</tspan><tspan x="485.693" dy="16.900000000000002">source_adapters</tspan></text>
+</g>
+<g class="node" data-id="TW" data-label="source-system
+twins" data-shape="cylinder">
+  <rect x="72" y="316.525" width="130.12900000000002" height="53.80000000000001" fill="#eceef2" stroke="none" />
+  <line x1="72" y1="316.525" x2="72" y2="370.325" stroke="#565e6c" stroke-width="0.75" />
+  <line x1="202.12900000000002" y1="316.525" x2="202.12900000000002" y2="370.325" stroke="#565e6c" stroke-width="0.75" />
+  <ellipse cx="137.0645" cy="370.325" rx="65.06450000000001" ry="7" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <ellipse cx="137.0645" cy="316.525" rx="65.06450000000001" ry="7" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="137.0645" y="343.42499999999995" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="137.0645" dy="-3.9000000000000012">source-system</tspan><tspan x="137.0645" dy="16.900000000000002">twins</tspan></text>
+</g>
+<g class="node" data-id="FX" data-label="fixtures
+synthetic data" data-shape="cylinder">
+  <rect x="230.12900000000002" y="316.525" width="122.71900000000001" height="53.80000000000001" fill="#eceef2" stroke="none" />
+  <line x1="230.12900000000002" y1="316.525" x2="230.12900000000002" y2="370.325" stroke="#565e6c" stroke-width="0.75" />
+  <line x1="352.848" y1="316.525" x2="352.848" y2="370.325" stroke="#565e6c" stroke-width="0.75" />
+  <ellipse cx="291.48850000000004" cy="370.325" rx="61.359500000000004" ry="7" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <ellipse cx="291.48850000000004" cy="316.525" rx="61.359500000000004" ry="7" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="291.48850000000004" y="343.42499999999995" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="291.48850000000004" dy="-3.9000000000000012">fixtures</tspan><tspan x="291.48850000000004" dy="16.900000000000002">synthetic data</tspan></text>
+</g>
+<g class="node" data-id="EV" data-label="eval suite" data-shape="hexagon">
+  <polygon points="419.04400000000004,489.6 518.119,489.6 527.344,508.05 518.119,526.5 419.04400000000004,526.5 409.819,508.05" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="468.5815" y="508.05" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">eval suite</text>
+</g>
+<g class="node" data-id="TR" data-label="spec-to-code
+trace" data-shape="rectangle">
+  <rect x="555.344" y="489.6" width="119.01400000000001" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="614.8510000000001" y="516.5" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="614.8510000000001" dy="-3.9000000000000012">spec-to-code</tspan><tspan x="614.8510000000001" dy="16.900000000000002">trace</tspan></text>
+</g>
+<g class="node" data-id="MF" data-label="workspace.json
+manifest + readiness" data-shape="rectangle">
+  <rect x="702.358" y="489.6" width="161.99200000000002" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="783.3539999999999" y="516.5" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="783.3539999999999" dy="-3.9000000000000012">workspace.json</tspan><tspan x="783.3539999999999" dy="16.900000000000002">manifest + readiness</tspan></text>
+</g>
+</svg>

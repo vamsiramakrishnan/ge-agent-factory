@@ -167,6 +167,20 @@ mise run console
   </figure>
 </div>
 
+## One layered system
+
+Three operator surfaces sit on one command registry; the registry drives one
+generator engine; the engine leaves a contract, an ADK workspace, and a proof
+pack on disk. Only the final handoff crosses into your Google Cloud project.
+
+<p align="center">
+  <img src="/ge-agent-factory/assets/diagrams/platform-stack.svg" alt="Five stacked layers: the surfaces layer (ge CLI, console, MCP tools and skills) drives the operator core (one command registry and job runner), which drives the generator engine (contract compiler, workspace generator, twins and synthetic data, eval compiler); the engine's output lands on disk as the contract, the ADK workspace, and the proof pack; a thick handoff edge crosses into your Google Cloud project, where agents-cli and ADK deploy to Agent Engine and publish to Gemini Enterprise" width="640" loading="lazy" />
+</p>
+
+:::note[One registry, three surfaces]
+Every operator command is a CLI command, an HTTP route in the console, and an MCP tool backed by the same registry and job runner. Start in whichever surface fits your workflow; the behavior is the same.
+:::
+
 ## Jump to the job you have
 
 <CardGrid>
@@ -177,7 +191,3 @@ mise run console
   <LinkCard title="Operate the platform" description="Provision, observe, repair, and harden the control plane." href="/ge-agent-factory/operations/" />
   <LinkCard title="Reference everything" description="Generated CLI, schema, OKF, console API, MCP, and architecture reference." href="/ge-agent-factory/reference/" />
 </CardGrid>
-
-:::note[One registry, three surfaces]
-Every operator command is a CLI command, an HTTP route in the console, and an MCP tool backed by the same registry and job runner. Start in whichever surface fits your workflow; the behavior is the same.
-:::
