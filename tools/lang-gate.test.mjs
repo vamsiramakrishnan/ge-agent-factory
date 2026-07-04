@@ -1,7 +1,7 @@
 // The language gate must catch a seeded violation (CS-7/CS-11 of the
 // Language & DX refactor) — a gate that can't fail is decoration.
 import { test, expect } from "bun:test";
-import { scanZoneText, OPERATOR_TERMS } from "./lang-gate.mjs";
+import { scanZoneText, scanCopyText, OPERATOR_TERMS, BANNED_PHRASES } from "./lang-gate.mjs";
 import { renderGoldenPathSection } from "./ge/help.mjs";
 import { rootCommand } from "./ge.mjs";
 
@@ -36,6 +36,18 @@ test("every operator term in the policy list is actually detected", () => {
   for (const term of OPERATOR_TERMS) {
     expect(scanZoneText(`leading with ${term} here`).map((f) => f.term)).toEqual([term]);
   }
+});
+
+test("every banned copy phrase in the policy list is actually detected", () => {
+  for (const phrase of BANNED_PHRASES) {
+    expect(scanCopyText(`This sentence uses ${phrase} in running prose.`).map((f) => f.term)).toEqual([phrase]);
+  }
+});
+
+test("copy scan exempts fenced code blocks — quoted output is not the docs' voice", () => {
+  const text = "Clean prose.\n```text\nold output said: evidence, not vibes\n```\nStill clean.\n";
+  expect(scanCopyText(text)).toEqual([]);
+  expect(scanCopyText("evidence, not vibes").map((f) => f.term)).toEqual(["vibes"]);
 });
 
 test("the ge --help Golden path section speaks the golden register today", () => {

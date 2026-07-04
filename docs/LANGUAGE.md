@@ -55,6 +55,43 @@ Content inside `<details>` blocks is exempt — collapsing *is* the sanctioned
 way to disclose machinery. [`GLOSSARY.md`](GLOSSARY.md) defines every term in
 both registers, golden first.
 
+## Copy standards
+
+The register tables above decide *which words* lead. These rules decide how
+the sentences around them are written. They apply to every reader-facing
+page: `README.md`, `SETUP.md`, `CONTRIBUTING.md`, and `docs/` (internal
+working documents under `docs/plans/`, `docs/design-specs/`, and
+`docs/adr/` are exempt).
+
+1. **Lead with what the reader gets.** First sentence of a page or section
+   states the outcome or the claim; mechanism and caveats follow.
+2. **Declarative, active, one idea per sentence.** Cut hedges ("basically",
+   "essentially"), defensive asides ("not pretense", "no pretending"), and
+   self-commentary about the docs themselves.
+3. **Evidence over adjectives.** Say what is generated, checked, signed, or
+   verified — never "powerful", "seamless", "blazingly fast". If a claim
+   can't name its artifact or command, it doesn't ship.
+4. **No insider voice.** In-jokes and operator slang ("running it in
+   anger", "evidence, not vibes") read as confidence to the author and as
+   noise to a stranger. Write for the stranger.
+5. **Expand acronyms on first use per page.** "OKF — the Open Knowledge
+   Format from Google Cloud", then "OKF" thereafter.
+6. **One front-door story.** The README and docs landing page tell the same
+   arc in the same order: an agent is a contract with the external world →
+   canonical spec in OKF → generate → evaluate → simulate → admit → run.
+   New front-door copy extends that arc; it doesn't invent a second one.
+
+The mechanical slice of this is enforced by the same gate as the registers:
+`bun run lang:gate` fails when a phrase from the banned-phrase list
+(`BANNED_PHRASES` in `tools/lang-gate.mjs`) appears in a reader-facing
+page. The list holds phrases with no legitimate documentation use — extend
+it whenever a new tic slips through review, so the fix outlives the PR that
+made it.
+
+For a full-page rewrite, the repo vendors the `impeccable` skill
+(`.github/skills/impeccable/`); its `clarify` flow is the copy-editing
+playbook this section distills.
+
 ## The Review Board
 
 Every interface decision here had to survive this board. The questions are
@@ -84,9 +121,9 @@ carried `fix:` lines before this change; thrown errors now match them.
 
 **fly.io — does one verb take a stranger from nothing to running? Honest copy?**
 `ge prove` on a fresh clone runs the health check and builds a first agent to
-a validated workspace with zero flags. The copy says what is console-first
-today (capture) and what is roadmap (CLI-native capture, more handoff
-targets) — no pretending.
+a validated workspace with zero flags. The copy states plainly what is
+console-first today (capture) and what is roadmap (CLI-native capture, more
+handoff targets).
 
 **Vercel/Next — do defaults make flags unnecessary?**
 Every golden-path flag is optional with a working default: `prove` picks its
