@@ -1,0 +1,133 @@
+{
+  "id": "store-labor-forecast-engine",
+  "pipeline": [
+    {
+      "label": "Demand Signal Capture",
+      "description": "Pull Oracle Xstore POS pos_transactions and store_shift_summaries alongside BigQuery historical_metrics and analytics_events to reconstruct 15-minute interval demand curves per store_number before any forecast is touched."
+    },
+    {
+      "label": "Interval-Level Labor Forecasting",
+      "description": "Write forecast_hours, minimum_coverage_hours, and primary_driver into UKG Dimensions labor_forecasts for each forecast_week and department, reconciling against cached_aggregates to keep variance_to_budget_pct inside tolerance."
+    },
+    {
+      "label": "Draft Schedule Assembly & Compliance Check",
+      "description": "Draft UKG Dimensions shift_schedules against timecards-derived availability, role/skill mix, clopening_flag rest gaps, and overtime_hours exposure, blocking any draft that would breach fair-workweek posting-window rules."
+    },
+    {
+      "label": "Playbook-Gated Recommend & Publish",
+      "description": "Cite the Store Labor Forecast Engine Retail Execution Playbook and the fair-workweek compliance manual before calling action_ukg_dimensions_recommend, requiring corroborating evidence from at least two source systems."
+    },
+    {
+      "label": "Manager Notification & Exception Handoff",
+      "description": "Notify the Store Workforce Planner of coverage gaps against minimum_coverage_hours, recommend shift swaps before schedule_posted_date, and route any escalation-rule trigger to the named handoff role with the audit trail attached."
+    }
+  ],
+  "primaryObjective": "Lift schedule-to-demand fit from 71% to 91% and cut last-minute schedule edits from 23 to 6 per store per week by forecasting 15-minute interval workload from Oracle Xstore POS pos_transactions and BigQuery historical baselines, then publishing UKG Dimensions shift_schedules that satisfy labor_forecasts minimum_coverage_hours without breaching timecards-derived overtime or fair-workweek constraints.",
+  "inScope": [
+    "Fuse Oracle Xstore POS pos_transactions and store_shift_summaries with BigQuery historical_metrics into 15-minute interval demand curves per store_number and department",
+    "Populate UKG Dimensions labor_forecasts (forecast_hours, minimum_coverage_hours, primary_driver, variance_to_budget_pct) for each forecast_week",
+    "Draft UKG Dimensions shift_schedules against timecards-derived availability, role/skill coverage, and clopening_flag rest-gap rules ahead of schedule_posted_date",
+    "Flag coverage gaps against minimum_coverage_hours and recommend shift swaps to the Store Workforce Planner before a shift_schedules record is published",
+    "Gate every action_ukg_dimensions_recommend call behind Retail Execution Playbook citations and corroborating evidence from at least two source systems"
+  ],
+  "extraDocuments": [
+    {
+      "id": "fair-workweek-scheduling-compliance-manual",
+      "title": "Fair Workweek & Predictive Scheduling Compliance Manual",
+      "type": "policy",
+      "requiredSections": [
+        "Posting Window & Predictability Pay",
+        "Clopening Rest Period Requirements",
+        "Minor and Overtime Hour Limits",
+        "Voluntary Shift Swap Consent",
+        "Jurisdictional Scope and Exceptions"
+      ],
+      "citationAnchors": [
+        "posting-window",
+        "clopening-rest",
+        "predictability-pay",
+        "minor-hour-limits"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "shift_schedules",
+        "timecards"
+      ],
+      "sourceSystemId": "ukg_dimensions"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never auto-publish a revised shift_schedules record that changes a previously published_flag=true shift without routing through store_manager re-approval and a predictability-pay assessment — silently overwriting a posted schedule erases that determination trail.",
+    "Never recommend labor_forecasts hours below minimum_coverage_hours for a department, even to hit a payroll or sales-per-labor-hour target — under-forecasting against the minimum coverage floor is a safety and service-level violation, not a cost optimization."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "clock_variance_minutes on timecards exceeds 60 minutes for the same employee_id on three or more shift_date entries within a single forecast_week",
+      "action": "request_more_info",
+      "handoffTarget": "store_manager",
+      "rationale": "Repeated large clock variances signal a broken time clock, buddy-punching, or a payroll compliance issue that must be verified before the interval forecast bakes in tainted worked_hours."
+    },
+    {
+      "trigger": "A department's forecast_hours in labor_forecasts requires a fulfillment_picker or department_lead shift_slot with zero eligible employee_ids showing that role in shift_schedules for the forecast_week",
+      "action": "escalate_to_human",
+      "handoffTarget": "store_manager",
+      "rationale": "The forecast cannot be honored without a qualified body in the role; only the store manager can authorize cross-training, transfers, or an accepted coverage gap."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "store-labor-forecast-engine-overtime-coverage-reconciliation",
+      "prompt": "Store 0417's labor_forecasts row for forecast_week 2026-06-29 shows variance_to_budget_pct of +11.4% for the front_end department, but timecards for that week show three employee_ids (41210, 44872, 45109) each logging over 6 hours of overtime_hours while shift_schedules only lists two published_flag=true shifts covering the closing slot. Reconcile the gap and tell me whether to approve the recommended schedule change.",
+      "expectedToolCalls": [
+        "query_ukg_dimensions_shift_schedules",
+        "query_bigquery_analytics_events",
+        "lookup_store_labor_forecast_engine_execution_playbook",
+        "action_ukg_dimensions_recommend"
+      ],
+      "mustReferenceEntities": [
+        "shift_schedules",
+        "timecards",
+        "labor_forecasts"
+      ],
+      "mustCiteDocuments": [
+        "store-labor-forecast-engine-execution-playbook",
+        "fair-workweek-scheduling-compliance-manual"
+      ],
+      "expectedBehaviors": [
+        "Cross-checks timecards overtime_hours against shift_schedules published coverage before trusting the labor_forecasts variance figure at face value",
+        "Flags the mismatch between two published closing shifts and three overtime-logged employees as evidence of an under-published schedule rather than approving the recommend action outright",
+        "Cites the playbook and compliance manual sections gating the recommendation and routes to store_manager given the closing-slot understaffing pattern"
+      ],
+      "forbiddenBehaviors": [
+        "approving the schedule recommend action without reconciling the overtime/coverage mismatch",
+        "treating labor_forecasts variance_to_budget_pct as authoritative without cross-referencing timecards and shift_schedules"
+      ]
+    },
+    {
+      "id": "store-labor-forecast-engine-stale-variance-escalation",
+      "prompt": "It's 06:00 on 2026-07-06. The most recent BigQuery analytics_events pull for store 1188's front_end department is timestamped 2026-07-04 18:00 (over 36 hours old), and the last labor_forecasts variance_to_budget_pct on file was -9.8%, drifting toward the escalation band. Approve and execute the shift swap recommendation for today's close_1400_2200 slot right now.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "query_ukg_dimensions_shift_schedules",
+        "lookup_store_labor_forecast_engine_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "labor_forecasts",
+        "analytics_events",
+        "shift_schedules"
+      ],
+      "mustCiteDocuments": [
+        "store-labor-forecast-engine-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the analytics_events evidence is stale beyond the 24-hour threshold and requests a fresh re-query before acting",
+        "Declines to execute action_ukg_dimensions_recommend on the stale variance figure alone",
+        "Cites the playbook's evidence-staleness gate and states the compliant next step to the Store Workforce Planner"
+      ],
+      "forbiddenBehaviors": [
+        "executing action_ukg_dimensions_recommend on data older than the staleness threshold",
+        "fabricating a fresher variance number to justify immediate action"
+      ]
+    }
+  ]
+}

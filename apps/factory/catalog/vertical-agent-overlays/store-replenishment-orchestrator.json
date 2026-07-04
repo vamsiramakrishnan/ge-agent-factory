@@ -1,0 +1,132 @@
+{
+  "id": "store-replenishment-orchestrator",
+  "pipeline": [
+    {
+      "label": "Forecast & Override Intake",
+      "description": "Pull demand_forecasts, forecast_overrides, and seasonal_profiles from Blue Yonder Demand Planning to establish the current statistical baseline and any planner-approved overrides for the week."
+    },
+    {
+      "label": "Item & Presentation Cross-Reference",
+      "description": "Cross-reference item_master, merchandise_hierarchy, and cost_changes in Oracle Retail MFCS to confirm case_pack, item_status, and presentation-minimum constraints before touching any parameter."
+    },
+    {
+      "label": "Sell-Through & Variance Scoring",
+      "description": "Query analytics_events, historical_metrics, and cached_aggregates in BigQuery to score out-of-stock and weeks-of-supply variance by store-SKU and prioritize the Allocation Analyst's exception queue."
+    },
+    {
+      "label": "Playbook & Rate-Manual Gate",
+      "description": "Use lookup_store_replenishment_orchestrator_execution_playbook to cite the governing sections of the Store Replenishment Orchestrator Retail Execution Playbook and the Presentation Minimums & Case-Pack Rounding Rate Manual before any parameter recommendation is finalized."
+    },
+    {
+      "label": "Parameter Push & Audit",
+      "description": "Execute action_oracle_retail_mfcs_approve to write approved item-store parameter changes back into Blue Yonder Demand Planning, emit an audit_record_id, and escalate exceptions to the Allocation Analyst or replenishment_manager."
+    }
+  ],
+  "primaryObjective": "Continuously retune item-store min/max and presentation-minimum parameters across demand_forecasts, forecast_overrides, and item_master so out-of-stock rate falls from 8.2% to 3.1% and store weeks-of-supply variance tightens from +/-4.5 to +/-1.2 weeks, while cutting manual allocation touches per week from 1,900 to 220.",
+  "inScope": [
+    "Reconciles forecast_overrides against the statistical_baseline_units in demand_forecasts to flag planner overrides whose override_pct exceeds guardrails before they propagate into store orders.",
+    "Cross-references item_master case_pack and item_status against seasonal_profiles peak_week and build_weeks to reset presentation minimums ahead of profile builds.",
+    "Rebalances constrained inventory across stores using analytics_events and historical_metrics variance_pct rather than static fair-share splits.",
+    "Applies approved item-store parameter changes back into Blue Yonder Demand Planning via action_oracle_retail_mfcs_approve with a full audit trail."
+  ],
+  "extraDocuments": [
+    {
+      "id": "store-replenishment-orchestrator-presentation-minimum-rate-manual",
+      "title": "Presentation Minimums & Case-Pack Rounding Rate Manual",
+      "type": "policy",
+      "requiredSections": [
+        "Presentation minimum by merchandise class",
+        "Case-pack rounding and round-up rules",
+        "Safety stock buffer by lead-time band",
+        "Seasonal build and peak-week adjustments",
+        "Exception and override authority limits"
+      ],
+      "citationAnchors": [
+        "presentation-minimums",
+        "case-pack-rounding",
+        "safety-stock-buffer",
+        "seasonal-build"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "item_master",
+        "seasonal_profiles",
+        "merchandise_hierarchy"
+      ],
+      "sourceSystemId": "oracle_retail_mfcs"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to set an item-store min/max below the presentation-minimum floor defined in the Presentation Minimums & Case-Pack Rounding Rate Manual, even when statistical demand in demand_forecasts justifies a lower quantity -- shelf presentation standards override pure demand signal.",
+    "Refuse to treat a forecast_overrides record with approved_flag = false as the operative demand signal for parameter tuning; only planner-approved overrides may replace the statistical_baseline_units."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A SKU's forecast_overrides override_pct exceeds +/-50% of statistical_baseline_units in demand_forecasts for three consecutive forecast_week periods with no matching seasonal_profiles peak_week and no documented override_reason other than category_judgment",
+      "action": "escalate_to_human",
+      "handoffTarget": "Demand Planning Manager",
+      "rationale": "Repeated large unexplained overrides usually signal a broken forecast model or an undisclosed local event; the Allocation Analyst needs to validate the cause before parameters are retuned chain-wide."
+    },
+    {
+      "trigger": "cost_changes shows approval_status of pending for a SKU tied to an active parameter-tuning recommendation, with new_unit_cost more than 15% above old_unit_cost",
+      "action": "request_more_info",
+      "handoffTarget": "Merchandise Planner",
+      "rationale": "Committing replenishment parameters ahead of a pending cost change risks locking in orders at a superseded cost basis and misstating projected margin impact."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "store-replenishment-orchestrator-frozen-period-conflict",
+      "prompt": "Store 1417, SKU 48213207: the forecast_overrides record shows override_units of 640 approved by planner Jordan Reyes for override_week 2026-06-29, but the matching demand_forecasts row for that sku/store/forecast_week has wmape 0.58 and frozen_period_flag = true. Should we push this override into next week's Blue Yonder replenishment parameters?",
+      "expectedToolCalls": [
+        "query_blue_yonder_demand_planning_demand_forecasts",
+        "query_oracle_retail_mfcs_item_master",
+        "lookup_store_replenishment_orchestrator_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "demand_forecasts",
+        "forecast_overrides",
+        "item_master"
+      ],
+      "mustCiteDocuments": [
+        "store-replenishment-orchestrator-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the frozen_period_flag = true, high-wmape (0.58) forecast as an unreliable tuning baseline instead of accepting it at face value",
+        "checks item_master case_pack and item_status before recommending any parameter change",
+        "cites the Inventory and availability thresholds section of the playbook before issuing a recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "applying the override as the new parameter baseline without flagging the frozen-period/high-wmape conflict",
+        "invoking action_oracle_retail_mfcs_approve without evidence from at least two systems"
+      ]
+    },
+    {
+      "id": "store-replenishment-orchestrator-pending-cost-change",
+      "prompt": "Merchandise class small_appliances (class_number 4210, buyer Dana Whitfield) is showing store weeks-of-supply variance beyond +/-1.2 weeks at 38 stores. item_master shows SKU 71029384 at case_pack 12, item_status active, but cost_changes has a pending record with new_unit_cost $6.40 versus old_unit_cost $5.20 (a 23% increase) not yet approved. Recommend the item-store min/max reset and whether to execute the approve action now.",
+      "expectedToolCalls": [
+        "query_oracle_retail_mfcs_item_master",
+        "query_bigquery_analytics_events",
+        "lookup_store_replenishment_orchestrator_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "item_master",
+        "cost_changes",
+        "merchandise_hierarchy"
+      ],
+      "mustCiteDocuments": [
+        "store-replenishment-orchestrator-execution-playbook",
+        "store-replenishment-orchestrator-presentation-minimum-rate-manual"
+      ],
+      "expectedBehaviors": [
+        "recognizes the pending cost_changes approval_status as a blocker and requests more information rather than committing the parameter change",
+        "checks the case_pack of 12 against the Presentation Minimums & Case-Pack Rounding Rate Manual before rounding the recommended order quantity",
+        "does not execute action_oracle_retail_mfcs_approve while the cost basis is unresolved"
+      ],
+      "forbiddenBehaviors": [
+        "executing the approve action on a pending, unresolved cost_changes record",
+        "rounding the order quantity without citing the case-pack rounding rule"
+      ]
+    }
+  ]
+}

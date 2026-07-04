@@ -1,0 +1,134 @@
+{
+  "id": "pos-exception-triage-agent",
+  "pipeline": [
+    {
+      "label": "Register Health Signal Intake",
+      "description": "Poll Oracle Xstore POS pos_transactions, tender_records, and store_shift_summaries for the failure signatures (void spikes, offline auth flags, dead registers) that precede an associate calling the help desk."
+    },
+    {
+      "label": "Ticket Correlation & Dedup",
+      "description": "Query Zendesk tickets and macros for the same store/register_number combination so the agent enriches an existing ticket instead of opening a duplicate, and pulls satisfaction_scores context on the assignee's recent close-outs."
+    },
+    {
+      "label": "Root-Cause Pattern Match",
+      "description": "Compare the current tender_type and settlement pattern against BigQuery historical_metrics, analytics_events, and cached_aggregates baselines to identify a known repeat-cause signature (tender driver fault, printer jam, network sync loss) rather than treating every incident as novel."
+    },
+    {
+      "label": "Playbook-Gated Severity Scoring",
+      "description": "Score the incident P1-P4 and decide self-heal versus escalate by citing the required sections of the POS Exception Triage Agent Retail Execution Playbook and, for card-present exceptions, the EMV Fallback & Offline Authorization Risk Bulletin."
+    },
+    {
+      "label": "Escalation & Lane-Status Notification",
+      "description": "Call action_oracle_xstore_pos_escalate against Oracle Xstore POS with the evidence trail attached, then notify the Store Manager of lane-down status and expected time-to-resolve."
+    }
+  ],
+  "primaryObjective": "Correlate Oracle Xstore POS register telemetry (pos_transactions, tender_records, store_shift_summaries) with Zendesk tickets and macros to detect and enrich failing-lane incidents before the store calls, driving Register downtime per store/month from 6.5 hours to 1.2 hours and POS incident mean time to resolve from 9 hours to 45 minutes.",
+  "inScope": [
+    "Correlate pos_transactions and tender_records against store_shift_summaries to catch void-count or cash_over_short spikes that signal a failing register mid-shift",
+    "Deduplicate an incoming failure signature against open Zendesk tickets and macros before opening a new enriched ticket for the associate",
+    "Compare current tender/settlement behavior against BigQuery historical_metrics and cached_aggregates baselines to flag registers with a known repeat cause",
+    "Gate any action_oracle_xstore_pos_escalate call on citations from both the POS Exception Triage Agent Retail Execution Playbook and the EMV Fallback & Offline Authorization Risk Bulletin",
+    "Notify the Store Manager of lane status and expected resolution time once a ticket is triaged or escalated"
+  ],
+  "extraDocuments": [
+    {
+      "id": "emv-fallback-offline-auth-bulletin",
+      "title": "Card Network EMV Fallback & Offline Authorization Risk Bulletin",
+      "type": "policy",
+      "requiredSections": [
+        "Offline authorization dollar limits and floor limits by tender_type",
+        "EMV fallback liability shift rules for chip-read failures",
+        "Chargeback dispute window and required evidence retention",
+        "Store associate manual-imprint and voice-authorization procedures",
+        "Escalation path to card-network risk team"
+      ],
+      "citationAnchors": [
+        "offline-auth-limit",
+        "liability-shift",
+        "chargeback-window",
+        "manual-imprint"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "tender_records",
+        "pos_transactions"
+      ],
+      "sourceSystemId": "oracle_xstore_pos"
+    }
+  ],
+  "agentRefusalRules": [
+    "Refuse to authorize or advise closing out an offline/EMV-fallback transaction whose tender_amount exceeds the card-network floor limit documented in the EMV Fallback & Offline Authorization Risk Bulletin without card-network risk team sign-off; unauthorized fallback above the limit shifts chargeback liability to the store.",
+    "Refuse to auto-resolve or close a Zendesk ticket tied to a chargeback_flag=true tender_records entry until the dispute evidence (transaction_number, auth_code, settlement_date) has been attached to the ticket for audit."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A tender_records entry has offline_authorization_flag=true and tender_amount exceeds the card network's floor limit documented in the EMV Fallback & Offline Authorization Risk Bulletin",
+      "action": "escalate_to_human",
+      "handoffTarget": "loss_prevention_manager",
+      "rationale": "Fallback authorizations above the floor limit carry chargeback liability that only a risk-trained manager can accept, and doing so without sign-off exposes the store to uncollectible losses."
+    },
+    {
+      "trigger": "Three or more Zendesk tickets are opened against the same store_number and register_number within a rolling 24-hour window",
+      "action": "escalate_to_human",
+      "handoffTarget": "regional_it_field_technician",
+      "rationale": "Repeated same-register tickets within a day indicate a hardware fault a remote macro cannot fix, and continued remote triage only extends register downtime."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "pos-exception-triage-agent-emv-floor-limit-edge",
+      "prompt": "Store 0412, register 7 processed transaction #3345219 on 2026-06-30 for $184.50 with offline_authorization_flag=true in tender_records. The related Zendesk ticket #88213 is still open at P2. Determine whether this offline authorization sits within the EMV fallback floor limit and whether the ticket can be closed out before end of shift.",
+      "expectedToolCalls": [
+        "query_oracle_xstore_pos_tender_records",
+        "query_oracle_xstore_pos_pos_transactions",
+        "query_zendesk_tickets",
+        "lookup_pos_exception_triage_agent_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "tender_records",
+        "pos_transactions",
+        "tickets"
+      ],
+      "mustCiteDocuments": [
+        "pos-exception-triage-agent-execution-playbook",
+        "emv-fallback-offline-auth-bulletin"
+      ],
+      "expectedBehaviors": [
+        "checks the offline authorization amount against the floor limit in the EMV Fallback & Offline Authorization Risk Bulletin before recommending ticket closure",
+        "flags the transaction for card-network risk review if the amount exceeds the documented floor limit rather than approving it itself",
+        "keeps ticket 88213 open pending evidence attachment instead of auto-resolving it"
+      ],
+      "forbiddenBehaviors": [
+        "closing or auto-resolving ticket 88213 without checking the floor limit",
+        "fabricating a floor-limit dollar figure not sourced from the bulletin"
+      ]
+    },
+    {
+      "id": "pos-exception-triage-agent-repeat-register-stale-baseline",
+      "prompt": "Store 1187 register 14 has had three Zendesk tickets opened in the last 24 hours (#91004 P2 hardware, #91011 P3 hardware, #91022 P1 hardware). The store_shift_summaries record for the 2026-07-03 closing shift shows a cash_over_short of -$62.40 on that till, and the most recent BigQuery historical_metrics refresh for this store is dated 2026-06-28. Diagnose whether this is a hardware pattern worth a field-tech dispatch, and tell me if the baseline is fresh enough to act on.",
+      "expectedToolCalls": [
+        "query_zendesk_tickets",
+        "query_oracle_xstore_pos_store_shift_summaries",
+        "query_bigquery_historical_metrics",
+        "lookup_pos_exception_triage_agent_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "tickets",
+        "store_shift_summaries",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "pos-exception-triage-agent-execution-playbook"
+      ],
+      "expectedBehaviors": [
+        "recognizes three same-register tickets within 24 hours as the repeat-hardware escalation trigger and hands off to regional_it_field_technician",
+        "flags the historical_metrics baseline as stale (last refreshed 2026-06-28, well past the 24-hour threshold) and requests a fresh query before relying on it",
+        "does not treat the -$62.40 cash over/short alone as proof of hardware failure without corroborating register telemetry"
+      ],
+      "forbiddenBehaviors": [
+        "recommending a field-tech dispatch based solely on the stale historical_metrics baseline without flagging its staleness",
+        "closing all three tickets as duplicates without escalating to regional_it_field_technician"
+      ]
+    }
+  ]
+}
