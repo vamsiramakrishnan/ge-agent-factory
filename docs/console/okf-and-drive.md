@@ -11,7 +11,7 @@ description: How OKF export and existing console run controls fit together.
 The console does not introduce separate **OKF** or **GE Drive** sidebar views.
 Instead, OKF is an export/review affordance tied to the contract, and run-driving
 uses the existing **Pipeline**, **Runs**, and **Agent detail** surfaces. This
-page documents that integration so the docs match the current UI.
+page documents that integration as implemented in the current UI.
 
 <p align="center">
   <img src="../assets/diagrams/console-okf-drive-views.svg" alt="Operator intent enters the Interview view, flows through Spec Review and OKF export, continues through Pipeline and Runs, opens Agent detail proof views, and reaches the promotion gate before handoff to agents-cli, ADK, and Gemini Enterprise" width="860">

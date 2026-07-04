@@ -21,7 +21,7 @@ systems, data entities, tool bindings, workflows, eval mechanisms, generated cod
 and cloud release stages all trace back to that contract.
 
 That is why the repo has more than an app shell. It has a generator, local
-fixtures, simulator packs, an operator CLI, a console, an MCP server, Terraform,
+fixtures, simulator packs, an operator CLI, a console, an MCP (Model Context Protocol) server, Terraform,
 run [ledgers](./GLOSSARY.html#ledger) (durable run records), evals, and
 generated-agent workspaces. Those pieces exist so a
 developer can reproduce the agent locally and an operator can release the same

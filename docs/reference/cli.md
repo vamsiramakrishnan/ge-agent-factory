@@ -20,8 +20,8 @@ which verb). The factory exposes three command surfaces:
 - **`mise run <task>`** — task runner that wraps both for the common flows.
 
 `ge` is a thin renderer over `tools/lib/factory-core.mjs`. Every command accepts
-`--json` (structured result on stdout, progress on stderr); the MCP server drives
-the same core for model/harness callers.
+`--json` (structured result on stdout, progress on stderr). The MCP (Model
+Context Protocol) server drives the same core for model/harness callers.
 
 ## Table of contents
 {: .no_toc .text-delta }

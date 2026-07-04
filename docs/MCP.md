@@ -115,8 +115,8 @@ product API is enabled.
 
 **Tier 2 — custom per-department MCP** (domain facades). A generic multi-tenant
 FastMCP server (`apps/factory/mcp-service/`) is deployed once per
-department (`ge-agent-factory-mcp-<dept>`). It resolves `?agent=<id>`, loads that
-agent's `mock_data/apis/mcp-tools.json`, and maps each tool's `binding`
+department (`ge-agent-factory-mcp-<dept>`). It resolves `?agent=<id>` and loads that
+agent's `mock_data/apis/mcp-tools.json`. It then maps each tool's `binding`
 (`{op, store, entity, key, sourceSystem}`) to an op over the agent's per-agent 1P
 store, wrapping results in a source-system envelope — this is what makes the data
 behave like Workday/Ariba/SAP. Each agent gets one Agent Registry entry pointing
@@ -143,7 +143,7 @@ carries the same roles — identical code path. Calls send
 
 **Constraints:** `toolspec.json` ≤ 10 KB; manual Agent Registry registration is
 blocked in `us`/`eu` multi-region (use a region or `global`); legacy-bucket roles
-cannot be granted to agent identities (we use uniform BLA + `objectAdmin`).
+cannot be granted to agent identities (uniform BLA + `objectAdmin` applies instead).
 
 ### Tool authorization (agent identity → tools)
 

@@ -48,9 +48,9 @@ generation and validation. Its refine verdict file is
 </details>
 
 The eval criteria are not generic: each generated `eval_config.json` scores
-tool-call trajectory, tool-use quality, final-response quality against
-pack-specific rubrics, hallucination, and safety — with thresholds the run
-must clear.
+tool-call trajectory, tool-use quality, final-response quality,
+hallucination, and safety against pack-specific rubrics — with thresholds
+the run must clear.
 
 ## Example — what a generated eval asserts
 

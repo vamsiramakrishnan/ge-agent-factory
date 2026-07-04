@@ -9,7 +9,8 @@ description: Every live.budgets key, its default and enforcing command; the live
 # Live budgets and gates
 
 Three related `.ge.json` blocks govern the live layer. **Budgets**
-(`live.budgets`) are the NFR side of the contract — numbers a run must meet.
+(`live.budgets`) are the non-functional-requirement (NFR) side of the
+contract — numbers a run must meet.
 **Guards** (`live.bench`) are hard caps a run may never exceed — cost
 protection, not quality assertion. **Gate policy** (`promotion.gates.live`)
 decides whether live verdicts block promotion. All three merge over defaults,
@@ -52,8 +53,8 @@ not a flag.
 | `maxConcurrency` | `8` | Cap on the highest level in a `--concurrency` sweep. |
 | `maxDurationSeconds` | `120` | Wall-clock deadline; a run that reaches it stops early (reported as `stopped at deadline`). |
 
-Live runs additionally require `--yes` (`confirm=true` over MCP) regardless
-of guards; cassette replays need neither.
+Live runs additionally require `--yes` (`confirm=true` over MCP — the Model
+Context Protocol) regardless of guards; cassette replays need neither.
 
 ## `promotion.gates.live` — gate policy
 

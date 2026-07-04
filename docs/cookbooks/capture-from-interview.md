@@ -12,8 +12,8 @@ description: Capture an enterprise agent contract through the console's artifact
 
 ## When to use this
 
-You have a business use case and someone who can answer questions about it,
-and you need the contract — the use-case spec (saved by the interview as
+You have a business use case and someone who can answer questions about it.
+You need the contract — the use-case spec (saved by the interview as
 `agent-spec.json`) — captured in a reviewable, typed form. The console's
 artifact-driven interview asks the questions, renders the contract
 incrementally in a canvas as you answer, and saves the result with the two
@@ -41,7 +41,7 @@ Environment prerequisites:
 - The console running: `mise run console` → http://localhost:18260.
 - The interview fires a **harness** run — the local, LLM-driven runtime that
   drives capture and checks (see the [Glossary](../GLOSSARY.html)) — powered
-  by the Antigravity SDK, so local (Antigravity) mode must be healthy:
+  by the Antigravity SDK. Local (Antigravity) mode must be healthy:
   `mise run doctor-local`.
 
 ## Steps

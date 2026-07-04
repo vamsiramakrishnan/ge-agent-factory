@@ -4,7 +4,7 @@ Thanks for working on the factory. This guide covers local setup, the repo layou
 the checks to run before a PR, and the conventions for the parts of the repo that
 have their own rules (skills, specs/OKF, simulators).
 
-If you just want to *use* the factory, start with the [README](README.md) and the
+If you want to *use* the factory, start with the [README](README.md) and the
 [docs site](https://vamsiramakrishnan.github.io/ge-agent-factory/). This document is
 for people changing the code.
 

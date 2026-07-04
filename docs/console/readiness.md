@@ -9,7 +9,7 @@ description: The preflight verdict with runnable fixes — every environment and
 # Readiness
 
 **Readiness** answers one question before you run anything mutating: *is
-this environment actually ready for what you're about to do?* — and when the
+this environment ready for what you're about to do?* — and when the
 answer is no, it hands you the exact command that fixes it.
 
 ## How it works
