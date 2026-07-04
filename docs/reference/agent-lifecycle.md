@@ -21,7 +21,7 @@ the MCP server (`factory_okf_customize`, `factory_agents_register`,
 `factory_agents_track`):
 
 ```bash
-ge okf customize --base <agent-id> --id <new-agent-id>   # scaffold a variant bundle
+ge okf customize --base <agent-id> --id <new-agent-id>   # produce a variant bundle from a base agent
 ge agents register --bundle <agent-id> --owner <email>   # draft → registered (+ catalog refresh)
 ge agents track --id <agent-id>                          # provenance · registry · lineage
 ```

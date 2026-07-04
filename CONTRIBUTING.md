@@ -195,7 +195,7 @@ Generated agents are grounded by simulated source systems under
 `apps/factory/simulator-systems/`. To add one:
 
 ```bash
-bun run generator:new-simulator          # scaffold a new simulator pack
+bun run generator:scaffold-simulator          # scaffold a new simulator pack
 bun run generator:validate-simulators    # validate the pack (schema/tools/workflows)
 bun run generator:materialize-simulators # materialize seed data
 bun run generator:test-simulators        # python3 -m pytest simulator conformance

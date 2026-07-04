@@ -89,7 +89,7 @@ uses Vertex; pass `--no-llm` to force the offline heuristic tier.
    ```bash
    node apps/factory/scripts/scaffold-simulator-pack.mjs --id partsledger --archetype procurement
    # or via the npm wrapper:
-   npm run generator:new-simulator -- --id partsledger --archetype procurement
+   npm run generator:scaffold-simulator -- --id partsledger --archetype procurement
    # list available archetypes:
    node apps/factory/scripts/scaffold-simulator-pack.mjs --list-archetypes
    ```

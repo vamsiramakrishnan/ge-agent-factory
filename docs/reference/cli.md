@@ -792,7 +792,7 @@ Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant reso
 
 ### `ge okf customize`
 
-Scaffold a variant bundle from a base agent (system swaps, terminology, vertical policy overlay) and compile it against the base
+Customize a base agent into a variant bundle (system swaps, terminology, vertical policy overlay) and compile it against the base
 
 | Flag | Type | Description |
 |---|---|---|

@@ -1,5 +1,5 @@
 // tools/lib/okf-lifecycle.mjs — the agent lifecycle over OKF bundles:
-// customize (scaffold a variant bundle from a base) → register (flip
+// customize (produce a variant bundle from a base agent) → register (flip
 // provenance draft→registered + refresh the catalog) → track (report one
 // agent's lifecycle state and variant lineage).
 //
