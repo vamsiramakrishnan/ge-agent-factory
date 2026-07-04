@@ -7,17 +7,16 @@ description: GE Agent Factory generates enterprise agents from a spec — an Ent
 
 # What is GE Agent Factory?
 
-GE Agent Factory generates enterprise agents from a spec. It captures a
-business workflow into an Enterprise Agent **Contract**, generates the
-agent code, **eval** suites, synthetic data, and simulated **source
-systems** the contract implies, and hands the **proven** result to
-agents-cli, ADK, and Gemini Enterprise for deployment.
+**An agent is a contract with the external world.** It reads your systems,
+acts on your data, and speaks to your users — so the factory builds it
+from one: not hand-assembled, not trusted on faith, but compiled from a
+canonical spec and admitted to production on verifiable evidence.
 
-Spec-driven development is not a new idea. The spec is: an Enterprise Agent
-Contract captured in **OKF**, the Open Knowledge Format from Google Cloud —
-plain Markdown a business owner can review and the factory can compile, so
-intent, code, tests, and evidence never drift apart. One spec drives the
-whole path:
+The spec is an Enterprise Agent **Contract**, captured in **OKF** — the
+Open Knowledge Format from Google Cloud: plain Markdown with structured
+frontmatter, portable and vendor-agnostic, readable by a business owner
+and compilable by the factory. A user interview, a BRD, or a PRD yields
+it, and that one spec drives the whole path:
 
 1. **Capture** — start from a user interview or an existing BRD; the
    factory compiles it into a contract.
@@ -27,10 +26,17 @@ whole path:
 4. **Simulate** — the contract's source systems become simulated backends
    seeded with synthetic data, so every tool call is exercised before any
    production integration exists.
-5. **Deploy** — a promotion gate checks the evidence, then the agent ships
-   through agents-cli to ADK Agent Engine.
+5. **Admit** — the evidence is sealed into a signed Agent Passport, and an
+   admission gate verifies it — evals passed, gates green, shipped bytes
+   unchanged — before the agent ships through agents-cli to ADK Agent
+   Engine.
 6. **Run** — the deployed agent is published to Gemini Enterprise, where
    your business users talk to it.
+
+The passport carries standard in-toto attestations, so admission
+controllers you may already run — sigstore policy-controller, Kyverno,
+Binary Authorization — can verify the same evidence downstream. See
+[Agent Passport & Proof Pack](./concepts/agent-passport-and-proof-pack.html).
 
 Everything below the handoff line — scaffolding the ADK project, deploying to
 Agent Engine, publishing into Gemini Enterprise — is done *by* those tools.

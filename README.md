@@ -1,13 +1,20 @@
 # GE Agent Factory
 
-Generate enterprise agents from a spec — with the code, evals, synthetic
-data, and simulated systems to prove each one works before it ships.
+**An agent is a contract with the external world.** It reads your systems,
+acts on your data, and speaks to your users — so it should be built from a
+contract, proven with evidence, and admitted to production by policy, not
+by hope.
 
-GE Agent Factory compiles a business workflow into a governed agent
-contract, generates every artifact the contract implies, and hands proven
-agents to [agents-cli](https://google.github.io/agents-cli/), ADK, and
-Gemini Enterprise for deployment. It does not replace those tools; it
-produces the contract and proof they need.
+GE Agent Factory builds agents exactly that way. A user interview, a BRD,
+or a PRD becomes a canonical spec — an Enterprise Agent Contract, captured
+in [OKF](docs/reference/okf.md), Google Cloud's Open Knowledge Format:
+plain Markdown, portable, vendor-agnostic. The spec generates the agent's
+code, evals, synthetic data, and simulated source systems; the evidence is
+sealed into a signed Agent Passport; and an admission gate verifies that
+passport before the agent ships to
+[agents-cli](https://google.github.io/agents-cli/), ADK Agent Engine, and
+Gemini Enterprise. The factory does not replace those tools — it produces
+the contract and proof they need.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
@@ -17,16 +24,18 @@ produces the contract and proof they need.
 
 ## Why generate agents from a spec
 
-Writing an enterprise agent by hand means writing everything around it by
-hand too: the prompts, the tool definitions, the mocks, the test cases, and
-the evidence reviewers need before granting production access. That works
-for one agent. It does not work for a portfolio of hundreds.
+A hand-built agent is an unwritten contract. Its promises are scattered
+across prompts, tool definitions, mocks, and test notebooks, and the
+evidence that it keeps them lives nowhere — it might behave, but nothing
+can prove it will. That holds for one demo. It does not hold for a
+portfolio of hundreds.
 
 Spec-driven development is not a new idea. What is new is the spec itself:
-an Enterprise Agent Contract, captured in [OKF](docs/reference/okf.md) —
-the Open Knowledge Format from Google Cloud — so one document is both plain
-Markdown a business owner can review and a source the factory can compile.
-That one spec drives every artifact downstream:
+one canonical Enterprise Agent Contract, captured in
+[OKF](docs/reference/okf.md) — the Open Knowledge Format from Google Cloud.
+OKF is plain Markdown with structured frontmatter: portable,
+vendor-agnostic, readable by a business owner, and compilable by the
+factory. That one spec drives every artifact downstream:
 
 1. **Capture** — start from a user interview or an existing BRD; the
    factory compiles it into a contract.
@@ -36,10 +45,16 @@ That one spec drives every artifact downstream:
 4. **Simulate** — the contract's source systems become simulated backends
    seeded with synthetic data, so every tool call is exercised before any
    production integration exists.
-5. **Deploy** — a promotion gate checks the evidence, then the agent ships
-   through agents-cli to ADK Agent Engine.
+5. **Admit** — the evidence is sealed into a signed Agent Passport, and an
+   admission gate verifies it — evals passed, gates green, shipped bytes
+   unchanged — before the agent ships through agents-cli to ADK Agent
+   Engine.
 6. **Run** — the deployed agent is published to Gemini Enterprise, where
    your business users talk to it.
+
+The passport carries standard in-toto attestations, so admission
+controllers you may already run — sigstore policy-controller, Kyverno,
+Binary Authorization — can verify the same evidence downstream.
 
 On the command line, that path is three verbs:
 
