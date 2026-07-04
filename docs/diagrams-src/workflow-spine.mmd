@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TD
     A["architecture.pipeline\n[{label, description}]"] --> B["matchPipelineSteps()\nagent-workflow.mjs, one place"]
     B --> C["spec generation\nWRITES behaviorContract.workflow"]
     B --> D["build\nderives multi-agent topology"]

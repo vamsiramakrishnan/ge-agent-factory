@@ -10,9 +10,9 @@ export function StatusChip({ status, className = "" }: { status: string; classNa
   const style = runStatusStyle(s);
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-4xs font-semibold uppercase tracking-wide ${style.badgeClass} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-outline-variant/70 bg-surface px-2 py-0.5 text-4xs font-semibold uppercase tracking-wide ${style.textClass} ${className}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${style.dotClass} ${s === "running" ? "animate-pulse motion-reduce:animate-none" : ""}`} />
+      <span className={`lamp h-1.5 w-1.5 rounded-full ${style.dotClass} ${s === "running" ? "animate-pulse motion-reduce:animate-none" : ""}`} />
       {style.label}
     </span>
   );

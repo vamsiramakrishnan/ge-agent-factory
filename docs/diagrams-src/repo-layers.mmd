@@ -1,0 +1,18 @@
+flowchart TD
+    subgraph APPS["apps/* — product surfaces"]
+        direction LR
+        ACON["apps/console\noperator UI"] --- AFAC["apps/factory\ngenerator + worker"] --- ADOC["apps/docs\ndocs site"]
+    end
+    subgraph OPS["tools/ — the operator core"]
+        direction LR
+        GE["tools/ge.mjs\nCLI boundary"] --- LIB["tools/lib/*\nfactory-core · registry · ledger"] --- MCPS["tools/mcp-server.mjs\nMCP boundary"]
+    end
+    subgraph PKG["packages/* — shared engines"]
+        direction LR
+        SPEC["@ge/agent-spec"] --- SYNK["@ge/synthkit"] --- EVK["@ge/evalkit"] --- RL["@ge/run-ledger"]
+    end
+    APPS -->|"imports — never the reverse"| OPS
+    OPS -->|"imports — never the reverse"| PKG
+
+    classDef core fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18
+    class LIB core

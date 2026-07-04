@@ -15,16 +15,18 @@ export interface StatProps {
 
 export function Stat({ label, value, size = "sm", className, title }: StatProps) {
   return (
+    // An instrument readout: engraved caption over a mono value, the way a
+    // meter is labeled on the fascia.
     <div
       title={title}
       className={cx(
-        "border border-outline-variant/40 bg-surface",
+        "border border-outline-variant/50 bg-surface",
         size === "sm" ? "rounded-md px-3 py-2" : "rounded-lg px-4 py-3",
         className,
       )}
     >
-      <div className="text-4xs font-semibold uppercase tracking-wide text-secondary">{label}</div>
-      <div className={cx("text-on-surface tabular-nums", size === "sm" ? "text-xs font-semibold truncate" : "mt-0.5 font-headline text-xl font-semibold")}>{value}</div>
+      <div className="engraved">{label}</div>
+      <div className={cx("font-mono text-on-surface tabular-nums", size === "sm" ? "text-xs font-semibold truncate" : "mt-0.5 text-lg font-semibold")}>{value}</div>
     </div>
   );
 }

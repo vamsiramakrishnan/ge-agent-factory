@@ -48,6 +48,16 @@ reviewer.
   <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
+That flow runs on a deliberately small stack. Three operator surfaces —
+CLI, console, MCP — share one command registry; the registry drives one
+generator engine; the engine leaves everything it makes on disk as
+inspectable artifacts. Only the handoff at the bottom touches your Google
+Cloud project:
+
+<p align="center">
+  <img src="assets/diagrams/platform-stack.svg" alt="Five stacked layers: the surfaces layer (ge CLI, console, MCP tools and skills) drives the operator core (one command registry and job runner with route, CLI invocation, and risk level per command); the core drives the generator engine (contract compiler, workspace generator, twins and synthetic data, eval compiler); the engine's output lands on disk as the contract, the ADK workspace, and the proof pack; a thick handoff edge crosses into your Google Cloud project, where agents-cli and ADK deploy to Agent Engine and publish to Gemini Enterprise" width="620">
+</p>
+
 ## Works with your coding agent
 
 <p align="center">
@@ -152,7 +162,13 @@ re-proves on contract change.
 The result on disk is the whole layer in miniature: a contract
 (`usecase-spec.json` with its `behaviorContract`), generated ADK code and
 tools, fixture data, smoke tests, an eval suite, and the validation artifacts
-the promotion gate reads. Continue with the
+the promotion gate reads:
+
+<p align="center">
+  <img src="assets/diagrams/workspace-anatomy.svg" alt="One workspace directory drawn as a box containing four inner boxes: the contract (usecase-spec.json and its portable OKF twin), the generated agent (app/agent.py and app/tools.py), the simulation (source-system twins and synthetic-data fixtures), and the proof (eval suite, spec-to-code trace, and the workspace.json manifest); arrows show the contract generating the agent and the twins, and the agent plus fixtures feeding the eval suite" width="760">
+</p>
+
+Continue with the
 [ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/)
 or the fuller [local setup guide](./start/getting-started.html).
 

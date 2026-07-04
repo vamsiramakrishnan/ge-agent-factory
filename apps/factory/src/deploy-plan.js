@@ -198,7 +198,7 @@ export function buildDeliveryGraph({ workspace, readiness = {}, evidence = {} } 
 
 export function renderMermaidGraph(graph) {
   const safeId = (value) => String(value).replace(/[^a-zA-Z0-9_]/g, "_");
-  const lines = ["flowchart LR"];
+  const lines = ["flowchart TD"];
   for (const node of graph.nodes) {
     const label = `${node.label}\\n${node.status}${node.path ? `\\n${node.path}` : ""}`;
     lines.push(`  ${safeId(node.id)}["${label.replace(/"/g, "'")}"]`);

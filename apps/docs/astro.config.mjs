@@ -28,9 +28,11 @@ export default defineConfig({
       // pointing back at their docs/ source file instead.
       editLink: { baseUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/apps/docs/" },
       expressiveCode: {
-        // Match the product's light-first palette; accessible-pygments
-        // github-light is what the Jekyll site used.
-        themes: ["github-dark", "github-light"],
+        // One dark theme in BOTH site themes: code is terminal content, so
+        // it always renders behind the instrument's black readout glass
+        // (the "dial window" of the Punktraster design language — see
+        // custom.css's .expressive-code .frame chrome).
+        themes: ["github-dark"],
         styleOverrides: { borderRadius: "0.5rem" },
       },
       sidebar: [

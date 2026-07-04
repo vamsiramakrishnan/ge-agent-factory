@@ -100,7 +100,7 @@ export function statusLabel(status: StatusValue): string {
 
 export function statusStyle(status: StatusValue) {
   const tone = TONE_CLASSES[toneOf(status)];
-  return { className: `${tone.badge}`, dot: tone.dot };
+  return { className: `${tone.badge}`, dot: tone.dot, text: tone.text };
 }
 
 // ── Run-status vocabulary (moved from apps/console/src/lib/runStatus.tsx) ──
