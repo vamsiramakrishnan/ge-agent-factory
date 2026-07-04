@@ -18,7 +18,10 @@ const EXPECTED_TOOLS = {
   // Admission-gate widening (Agent Passport + handoff admission gate,
   // 2026-07-04): factory_handoff gains the recorded break-glass `force`.
   factory_handoff: ["target?", "ids?", "startStage?", "targetStage?", "noProxy?", "force?"],
-  factory_list_usecases: ["department?", "search?", "limit?"],
+  // Renamed from factory_list_usecases (2026-07-04) to match the
+  // noun_verb convention every other tool name follows (its own registry
+  // id was already "usecases.list"; only this field lagged).
+  factory_usecases_list: ["department?", "search?", "limit?"],
   factory_doctor: [],
   factory_status: ["noProxy?"],
   factory_logs: ["runId", "stage?", "item?"],

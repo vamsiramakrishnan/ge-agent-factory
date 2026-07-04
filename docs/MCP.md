@@ -59,7 +59,7 @@ Operator tools — the same machinery under its operator names:
 
 | Tool | Args | Notes |
 |---|---|---|
-| `factory_list_usecases` | `department?`, `search?`, `limit?` | Browse the 363-use-case catalog. Read-only, offline. |
+| `factory_usecases_list` | `department?`, `search?`, `limit?` | Browse the 363-use-case catalog. Read-only, offline. |
 | `factory_doctor` | — | Preflight (APIs/IAM/IAP/memory/health) with fixes. Read-only. |
 | `factory_status` | `noProxy?` | Stage tally + per-run status for submitted runs. Read-only. |
 | `factory_logs` | `runId`, `stage?`, `item?` | A stage's result JSON (errors, exit codes, build log URL). Read-only. |

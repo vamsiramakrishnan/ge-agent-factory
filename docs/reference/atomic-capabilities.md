@@ -44,7 +44,7 @@ the others.
 | Bench | `ge bench` | yes | `POST /api/ge/bench` | `factory_bench` | `driving-live-proof` |
 
 Supporting operator tools exist alongside these (read-only:
-`factory_list_usecases`, `factory_doctor`, `factory_status`, `factory_logs`,
+`factory_usecases_list`, `factory_doctor`, `factory_status`, `factory_logs`,
 `factory_mcp_doctor`; mutating: `factory_sync`, `factory_mcp_deploy`) — the
 authoritative list is the registry itself.
 
