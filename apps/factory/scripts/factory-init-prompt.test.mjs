@@ -79,8 +79,21 @@ describe("resolveInitPromptPlan", () => {
     expect(plan.domainDefault).toBe("it");
   });
 
-  test("domain choices are the canonical short department list plus 'general', not the 46-entry DOMAIN_CATALOG", () => {
-    expect(INIT_DOMAIN_CHOICES).toEqual(["general", "hr", "finance", "it", "marketing", "procurement"]);
+  test("domain choices are the canonical short department list plus 'general', not the 76-entry DOMAIN_CATALOG", () => {
+    expect(INIT_DOMAIN_CHOICES).toEqual([
+      "general",
+      "hr",
+      "finance",
+      "it",
+      "marketing",
+      "procurement",
+      // Vertical industries (value-stream domains from catalog/vertical-seeds)
+      "banking",
+      "insurance",
+      "manufacturing",
+      "retail",
+      "telco",
+    ]);
   });
 
   test("plan always exposes the same domain choice list regardless of flags", () => {
