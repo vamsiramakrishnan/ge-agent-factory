@@ -8,6 +8,7 @@ import { specToOkf } from "../../apps/factory/scripts/spec-to-okf.mjs";
 import { okfToSpec } from "../../apps/factory/scripts/okf-to-spec.mjs";
 import { compileOkfBundle, toDxError } from "../../packages/okf/src/compile/index.mjs";
 import { customizeVariant, parsePairs } from "../lib/okf-lifecycle.mjs";
+import { auditQuality, renderQualityMarkdown } from "../lib/okf-quality.mjs";
 import { common, emit, guarded, out, ui } from "./shared.mjs";
 
 const EDGE_KIND = { Authority:"authority", "Required Evidence":"evidence", Tools:"tool", Evals:"eval", Citations:"citation", Risks:"risk", "Used By":"used_by", Capabilities:"capability", "Source Systems":"source_system", Workflow:"workflow", Persona:"persona", "Synthetic World":"world", "Live Proof":"live_proof" };
@@ -81,6 +82,27 @@ async function compileAllCatalogSpecs(outDir){
   await writeJson(join(outDir, "bulk-okf-summary.json"), summary);
   return summary;
 }
+
+function renderQualityAudit(r){
+  out(ui.title("OKF Quality Audit"));
+  out(ui.kv([
+    ["blueprints", String(r.summary.total)],
+    ["average score", String(r.summary.averageScore)],
+    ["failed rules", String(r.summary.failedRules)],
+  ]));
+  out("Status");
+  for (const [status, count] of Object.entries(r.summary.byStatus)) out(`  ${status.padEnd(2)} ${count}`);
+  out("Risk");
+  for (const [risk, count] of Object.entries(r.summary.byRisk)) out(`  ${risk.padEnd(10)} ${count}`);
+  const worst = [...r.specs].sort((a,b)=>a.score.total-b.score.total).slice(0,10);
+  if (worst.length) {
+    out("Lowest scoring blueprints");
+    for (const s of worst) out(`  ${s.slug} · ${s.currentStatus} · ${s.risk.tier} · ${s.score.total} · ${s.failedRules.length} gaps`);
+  }
+}
+const qualityAudit=defineCommand({ meta:{name:"audit",description:"Compute deterministic L0-L5 OKF blueprint quality reports"}, args:{...common, all:{type:"boolean"}, spec:{type:"string"}, changed:{type:"boolean"}, root:{type:"string",default:"okf"}, "fail-under":{type:"string",description:"Fail if any audited spec score is below this threshold"}, write:{type:"string",description:"Write JSON report to this path"}, markdown:{type:"string",description:"Write Markdown report to this path"}}, async run({args}){ const result=await auditQuality({ all:args.all, spec:args.spec, changed:args.changed, root:args.root }); if(args.write) await writeJson(args.write,result); if(args.markdown) { await mkdir(dirname(args.markdown),{recursive:true}); await writeFile(args.markdown, renderQualityMarkdown(result)); } const min = args["fail-under"] ? Number(args["fail-under"]) : null; if (Number.isFinite(min)) { const bad=result.specs.filter(s=>s.score.total<min); if(bad.length) throw new Error(`OKF quality score below ${min}: ${bad.map(s=>`${s.slug}=${s.score.total}`).join(", ")}`); } emit(args,result,renderQualityAudit); }});
+const quality=defineCommand({ meta:{name:"quality",description:"Quality status, scoring, and deterministic audit for OKF blueprints"}, subCommands:{audit:qualityAudit} });
+
 const audit=defineCommand({ meta:{name:"audit",description:"Audit an OKF bundle across base conformance, navigability, semantics, behavior, and consumption readiness"}, args:{...common, bundle:{type:"positional",required:true}, strict:{type:"boolean"}}, async run({args}){ emit(args, await auditBundle(resolve(args.bundle),{strict:args.strict}), renderAudit); }});
 const graph=defineCommand({ meta:{name:"graph",description:"Extract concept authority/relationship graph from an OKF bundle"}, args:{...common, bundle:{type:"positional",required:true}, format:{type:"string",description:"json or cytoscape"}}, async run({args}){ const b=await readOkfBundle(resolve(args.bundle)); emit(args, graphFromBundle(b,{cytoscape:args.format==="cytoscape"}), r=>out(JSON.stringify(r,null,2))); }});
 const explain=defineCommand({ meta:{name:"explain",description:"Explain one OKF concept's authority, backlinks, proof, citations, and gaps"}, args:{...common, concept:{type:"positional",required:true}, bundle:{type:"string",description:"OKF bundle directory",default:"okf"}}, async run({args}){ emit(args, await explainConcept(args.concept, resolve(args.bundle)), renderExplain); }});
@@ -125,5 +147,5 @@ const customize=defineCommand({
   }),
 });
 const repair=defineCommand({ meta:{name:"repair",description:"Conservatively repair navigability (missing indexes/log); dry-run by default"}, args:{...common,bundle:{type:"positional",required:true}, dryRun:{type:"boolean",default:true}}, async run({args}){ const bundle=await readOkfBundle(resolve(args.bundle)); const writes=[]; if(!bundle.indexes.some(i=>i.path==="index.md")) writes.push({path:join(args.bundle,"index.md"), body:renderConcept({okf_version:"0.1",type:"Knowledge Bundle",title:"OKF Bundle"},"# Concepts\n")}); if(!bundle.logs.some(l=>l.path==="log.md")) writes.push({path:join(args.bundle,"log.md"), body:"# 2026-07-03\n\n- Initialized OKF log.\n"}); if(!args.dryRun) for(const w of writes) await writeConceptFile(w.path,w.body); emit(args,{dryRun:args.dryRun,writes:writes.map(w=>w.path)},r=>out(JSON.stringify(r,null,2))); }});
-export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · customize · audit · graph · explain · diff · repair"}, subCommands:{audit,graph,explain,compile,customize,diff,repair} });
+export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · customize · audit · quality · graph · explain · diff · repair"}, subCommands:{audit,quality,graph,explain,compile,customize,diff,repair} });
 export const __test = { graphFromBundle, auditBundle, explainConcept, coverageFromGraph };
