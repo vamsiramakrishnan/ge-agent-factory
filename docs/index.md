@@ -12,24 +12,37 @@ acts on your data, and speaks to your users — so the factory builds it
 from one: not hand-assembled, not trusted on faith, but compiled from a
 canonical spec and admitted to production on verifiable evidence.
 
+Hand-writing an agent from a business requirements document works for one
+demo — one person can hold the whole intent in their head while wiring up
+prompts and tool calls. It stops working at the second agent, because
+nothing written down connects the business's request to the code that's
+supposed to satisfy it. Skipping the document and writing straight from
+judgment calls is worse: there's no requirement left to check the agent
+against, so nothing catches it drifting from what was asked until a user
+does.
+
 The spec is an Enterprise Agent **Contract**, captured in **OKF** — the
 Open Knowledge Format from Google Cloud: plain Markdown with structured
 frontmatter, portable and vendor-agnostic, readable by a business owner
 and compilable by the factory. A user interview, a BRD, or a PRD yields
-it, and that one spec drives the whole path:
+it, and that one spec drives the whole path — every stage after capture is
+checked against the same contract, not just generated from it once and left
+to drift:
 
 1. **Capture** — start from a user interview or an existing BRD; the
    factory compiles it into a contract.
-2. **Generate** — the contract generates the agent's ADK code and tools.
+2. **Generate** — the contract generates the agent's ADK code and tools; a
+   spec-to-code trace checks the result against the contract's tool intents.
 3. **Evaluate** — the contract and the generated code produce the eval
-   suite, in agents-cli's own eval format.
-4. **Simulate** — the contract's source systems become simulated backends
-   seeded with synthetic data, so every tool call is exercised before any
-   production integration exists.
-5. **Admit** — the evidence is sealed into a signed Agent Passport, and an
-   admission gate verifies it — evals passed, gates green, shipped bytes
-   unchanged — before the agent ships through agents-cli to ADK Agent
-   Engine.
+   suite, in agents-cli's own eval format, scored against the contract's
+   success criteria.
+4. **Simulate** — the contract's declared source systems become simulated
+   third-party SaaS backends, seeded with synthetic data, so every tool
+   call is exercised against them before any production integration exists.
+5. **Admit** — the evidence from every checked stage is sealed into a
+   signed Agent Passport, and an admission gate — a required prerequisite,
+   not a suggestion — verifies it before the agent ships through agents-cli
+   to ADK Agent Engine.
 6. **Run** — the deployed agent is published to Gemini Enterprise, where
    your business users talk to it.
 
@@ -179,6 +192,24 @@ or the fuller [local setup guide](./start/getting-started.html).
 The console (`mise run console` → `http://localhost:18260`) shows the same
 state live — a real capture from the screenshot factory below, not a mock.
 See [Console](./console/).
+
+## Do this at scale
+
+The same contract, generated code, checked evals, and simulated systems
+exist today for 363 horizontal agents across HR, Finance, IT, Marketing,
+and Procurement, plus 150 industry-vertical agents across retail, banking,
+insurance, telco, and manufacturing. Browse the canonical spec and
+generated source for any of them, laid out as a periodic table — one tile
+per agent, click through to its Enterprise Agent Contract and code:
+
+- [Horizontal catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/) — 363 shared-services agents across five departments
+- [Vertical catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog-verticals/) — 150 industry agents across five verticals
+- [Catalog explorer](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/explorer/) — both halves together, filterable by industry, function, and value stream
+
+None of it is hand-maintained: the catalog is generated from the same
+drift-gated registry the factory itself builds from
+(`apps/factory/src/agent-spec-registry.generated.json`), so it can never
+drift from the specs it's showing.
 
 ## Where to go
 

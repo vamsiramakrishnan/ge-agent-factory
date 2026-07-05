@@ -24,31 +24,40 @@ the contract and proof they need.
 
 ## Why generate agents from a spec
 
-A hand-built agent is an unwritten contract. Its promises are scattered
-across prompts, tool definitions, mocks, and test notebooks, and the
-evidence that it keeps them lives nowhere — it might behave, but nothing
-can prove it will. That holds for one demo. It does not hold for a
-portfolio of hundreds.
+Hand-writing an agent from a business requirements document works for one
+demo, because one person can hold the whole intent in their head while
+wiring up prompts and tool calls. It stops working at the second agent:
+the promises end up scattered across prompts, tool definitions, mocks, and
+test notebooks, and the evidence that any of it holds lives nowhere — it
+might behave, but nothing can prove it will. Skipping the document and
+writing straight from judgment calls is worse, not better: there's no
+requirement left to check the agent against, so nothing catches it
+drifting from what the business asked for until a user does.
 
 Spec-driven development is not a new idea. What is new is the spec itself:
 one canonical Enterprise Agent Contract, captured in
 [OKF](docs/reference/okf.md) — the Open Knowledge Format from Google Cloud.
 OKF is plain Markdown with structured frontmatter: portable,
 vendor-agnostic, readable by a business owner, and compilable by the
-factory. That one spec drives every artifact downstream:
+factory. That one spec drives every artifact downstream — machine-verifiable
+business logic, evals, synthetic data, and simulated third-party SaaS
+systems — and every stage after capture is checked against that same
+contract, not just generated from it once and left to drift:
 
 1. **Capture** — start from a user interview or an existing BRD; the
    factory compiles it into a contract.
-2. **Generate** — the contract generates the agent's ADK code and tools.
+2. **Generate** — the contract generates the agent's ADK code and tools; a
+   spec-to-code trace checks the result against the contract's tool intents.
 3. **Evaluate** — the contract and the generated code produce the eval
-   suite, in agents-cli's own eval format.
-4. **Simulate** — the contract's source systems become simulated backends
-   seeded with synthetic data, so every tool call is exercised before any
-   production integration exists.
-5. **Admit** — the evidence is sealed into a signed Agent Passport, and an
-   admission gate verifies it — evals passed, gates green, shipped bytes
-   unchanged — before the agent ships through agents-cli to ADK Agent
-   Engine.
+   suite, in agents-cli's own eval format, scored against the contract's
+   success criteria.
+4. **Simulate** — the contract's declared source systems become simulated
+   third-party SaaS backends, seeded with synthetic data, so every tool
+   call is exercised against them before any production integration exists.
+5. **Admit** — the evidence from every checked stage is sealed into a
+   signed Agent Passport, and an admission gate — a required prerequisite,
+   not a suggestion — verifies it before the agent ships through agents-cli
+   to ADK Agent Engine.
 6. **Run** — the deployed agent is published to Gemini Enterprise, where
    your business users talk to it.
 
@@ -159,6 +168,26 @@ The CLI, recorded from real runs:
 </td>
 </tr>
 </table>
+
+## Do this at scale
+
+The same contract, generated code, checked evals, and simulated systems
+exist today for 363 horizontal agents across HR, Finance, IT, Marketing,
+and Procurement, plus 150 industry-vertical agents across retail, banking,
+insurance, telco, and manufacturing. Browse the canonical spec and
+generated source for any of them, laid out as a periodic table — one tile
+per agent, click through to its Enterprise Agent Contract and code:
+
+| | |
+|---|---|
+| **[Horizontal catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/)** | 363 shared-services agents across five departments |
+| **[Vertical catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog-verticals/)** | 150 industry agents across five verticals |
+| **[Catalog explorer](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/explorer/)** | both halves together, filterable by industry, function, and value stream |
+
+None of it is hand-maintained: the catalog is generated from the same
+drift-gated registry the factory itself builds from
+(`apps/factory/src/agent-spec-registry.generated.json`), so it can never
+drift from the specs it's showing.
 
 ## Quickstart
 
