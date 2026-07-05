@@ -55,6 +55,13 @@ export {
   selectWorkspacesForRegen,
 } from "./planes/tool-plane-checks.mjs";
 export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor/engine.mjs";
+// The local-execution spawn-and-emit primitive + the daemon-first/fallback
+// ordering it backs (see ge-job-runner.mjs's header) — re-exported so
+// apps/console/src/server/transport/jobs.mjs can reach them through the
+// frozen jobs.mjs -> factory-core.mjs seam instead of importing
+// tools/lib/ge-job-runner.mjs directly (not on the allowlist in
+// tools/check-app-import-surface.mjs).
+export { runSpawnedJob, createLocalJobSubmit } from "./ge-job-runner.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./ledger/factory-ledger.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
