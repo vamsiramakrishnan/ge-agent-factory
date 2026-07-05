@@ -8,6 +8,7 @@ import { specToOkf } from "../../apps/factory/scripts/spec-to-okf.mjs";
 import { okfToSpec } from "../../apps/factory/scripts/okf-to-spec.mjs";
 import { compileOkfBundle, toDxError } from "../../packages/okf/src/compile/index.mjs";
 import { customizeVariant, parsePairs } from "../lib/okf-lifecycle.mjs";
+import { applyEnrichmentPatch, auditQuality, generateEnrichmentPatch, generateEnrichmentPlan, loadDomainPacks, matchDomainPacksForSpec, renderQualityMarkdown, renderEnrichmentShardPrompt, shardEnrichmentPlan, verifyOkfEvals } from "../lib/okf-quality.mjs";
 import { common, emit, guarded, out, ui } from "./shared.mjs";
 
 const EDGE_KIND = { Authority:"authority", "Required Evidence":"evidence", Tools:"tool", Evals:"eval", Citations:"citation", Risks:"risk", "Used By":"used_by", Capabilities:"capability", "Source Systems":"source_system", Workflow:"workflow", Persona:"persona", "Synthetic World":"world", "Live Proof":"live_proof" };
@@ -81,6 +82,56 @@ async function compileAllCatalogSpecs(outDir){
   await writeJson(join(outDir, "bulk-okf-summary.json"), summary);
   return summary;
 }
+
+function renderQualityAudit(r){
+  out(ui.title("OKF Quality Audit"));
+  out(ui.kv([
+    ["blueprints", String(r.summary.total)],
+    ["average score", String(r.summary.averageScore)],
+    ["failed rules", String(r.summary.failedRules)],
+  ]));
+  out("Status");
+  for (const [status, count] of Object.entries(r.summary.byStatus)) out(`  ${status.padEnd(2)} ${count}`);
+  out("Risk");
+  for (const [risk, count] of Object.entries(r.summary.byRisk)) out(`  ${risk.padEnd(10)} ${count}`);
+  const worst = [...r.specs].sort((a,b)=>a.score.total-b.score.total).slice(0,10);
+  if (worst.length) {
+    out("Lowest scoring blueprints");
+    for (const s of worst) out(`  ${s.slug} · ${s.currentStatus} · ${s.risk.tier} · ${s.score.total} · ${s.failedRules.length} gaps`);
+  }
+}
+const qualityAudit=defineCommand({ meta:{name:"audit",description:"Compute deterministic L0-L5 OKF blueprint quality reports"}, args:{...common, all:{type:"boolean"}, spec:{type:"string"}, changed:{type:"boolean"}, root:{type:"string",default:"okf"}, "fail-under":{type:"string",description:"Fail if any audited spec score is below this threshold"}, write:{type:"string",description:"Write JSON report to this path"}, markdown:{type:"string",description:"Write Markdown report to this path"}}, async run({args}){ const result=await auditQuality({ all:args.all, spec:args.spec, changed:args.changed, root:args.root }); if(args.write) await writeJson(args.write,result); if(args.markdown) { await mkdir(dirname(args.markdown),{recursive:true}); await writeFile(args.markdown, renderQualityMarkdown(result)); } const min = args["fail-under"] ? Number(args["fail-under"]) : null; if (Number.isFinite(min)) { const bad=result.specs.filter(s=>s.score.total<min); if(bad.length) throw new Error(`OKF quality score below ${min}: ${bad.map(s=>`${s.slug}=${s.score.total}`).join(", ")}`); } emit(args,result,renderQualityAudit); }});
+const quality=defineCommand({ meta:{name:"quality",description:"Quality status, scoring, and deterministic audit for OKF blueprints"}, subCommands:{audit:qualityAudit} });
+
+
+function renderDomainPacks(r){
+  if (Array.isArray(r)) for (const p of r) out(`${p.id} · ${p.name} · ${p.invariants?.length || 0} invariants · ${p.eval_seeds?.length || 0} seeds`);
+  else out(JSON.stringify(r, null, 2));
+}
+const domainPacksList=defineCommand({ meta:{name:"list",description:"List reusable OKF enrichment domain packs"}, args:{...common, root:{type:"string",default:"domain-packs"}}, async run({args}){ emit(args, await loadDomainPacks({root:args.root}), renderDomainPacks); }});
+const domainPacksInspect=defineCommand({ meta:{name:"inspect",description:"Inspect one OKF enrichment domain pack"}, args:{...common, id:{type:"positional",required:true}, root:{type:"string",default:"domain-packs"}}, async run({args}){ const packs=await loadDomainPacks({root:args.root}); const pack=packs.find((p)=>p.id===args.id); if(!pack) throw new Error(`domain pack not found: ${args.id}`); emit(args, pack, renderDomainPacks); }});
+const domainPacksMatch=defineCommand({ meta:{name:"match",description:"Match a spec to deterministic domain packs"}, args:{...common, spec:{type:"string",required:true}, root:{type:"string",default:"okf"}, "pack-root":{type:"string",default:"domain-packs"}}, async run({args}){ emit(args, await matchDomainPacksForSpec(args.spec,{okfRoot:args.root,packRoot:args["pack-root"]}), (r)=>out(JSON.stringify(r,null,2))); }});
+const domainPacks=defineCommand({ meta:{name:"domain-packs",description:"Reusable enrichment invariant and eval seed packs"}, subCommands:{list:domainPacksList, inspect:domainPacksInspect, match:domainPacksMatch} });
+function renderEnrichPlan(r){ out(ui.title("OKF Enrichment Plan")); out(ui.kv([["target", r.targetStatus], ["tasks", String(r.summary.tasks)], ["obligations", String(r.summary.obligations)]])); for (const t of r.tasks.slice(0,10)) out(`  ${t.specId} · ${t.riskTier} · ${t.currentStatus}->${t.targetStatus} · ${t.obligations.length} obligations`); }
+const enrichPlan=defineCommand({ meta:{name:"plan",description:"Generate coverage obligations for OKF blueprint enrichment"}, args:{...common, all:{type:"boolean"}, spec:{type:"string"}, target:{type:"string",default:"L4"}, root:{type:"string",default:"okf"}, "pack-root":{type:"string",default:"domain-packs"}, write:{type:"string",description:"Write plan JSON to this path"}}, async run({args}){ const result=await generateEnrichmentPlan({all:args.all,spec:args.spec,root:args.root,packRoot:args["pack-root"],target:args.target}); if(args.write) await writeJson(args.write,result); emit(args,result,renderEnrichPlan); }});
+const enrichGenerate=defineCommand({ meta:{name:"generate",description:"Generate a reviewable OKF enrichment patch without mutating source specs"}, args:{...common, spec:{type:"string",required:true}, target:{type:"string",default:"L4"}, root:{type:"string",default:"okf"}, "pack-root":{type:"string",default:"domain-packs"}, out:{type:"string",description:"Write patch JSON to this path"}, "max-evals":{type:"string",default:"5"}}, async run({args}){ const result=await generateEnrichmentPatch({spec:args.spec,root:args.root,packRoot:args["pack-root"],target:args.target,maxEvals:Number(args["max-evals"]||5)}); if(args.out) await writeJson(args.out,result); emit(args,result,(r)=>out(JSON.stringify(r,null,2))); }});
+const enrichApply=defineCommand({ meta:{name:"apply",description:"Apply or dry-run a structured OKF enrichment patch"}, args:{...common, patch:{type:"string",required:true}, root:{type:"string",default:"okf"}, write:{type:"boolean"}, force:{type:"boolean"}}, async run({args}){ const result=await applyEnrichmentPatch({patchPath:args.patch,root:args.root,write:args.write,force:args.force}); emit(args,result,(r)=>out(JSON.stringify(r,null,2))); }});
+const enrichShard=defineCommand({ meta:{name:"shard",description:"Group an enrichment plan into bounded parallel shard manifests"}, args:{...common, plan:{type:"string",required:true}, out:{type:"string",required:true}}, async run({args}){ const plan=JSON.parse(await readFile(args.plan,"utf8")); const shards=shardEnrichmentPlan(plan); await mkdir(args.out,{recursive:true}); for (const shard of shards) await writeJson(join(args.out, `${shard.id}.json`), shard); emit(args,{schemaVersion:"okf-enrichment-shards.v1",out:args.out,shards}, (r)=>out(`Wrote ${r.shards.length} shard(s) to ${r.out}`)); }});
+const enrichPrompt=defineCommand({ meta:{name:"prompt",description:"Render a Codex/Claude/Antigravity shard prompt from an enrichment manifest"}, args:{...common, shard:{type:"string",required:true}, harness:{type:"string",default:"codex"}, out:{type:"string"}}, async run({args}){ const shard=JSON.parse(await readFile(args.shard,"utf8")); const prompt=renderEnrichmentShardPrompt(shard,{harness:args.harness}); if(args.out){ await mkdir(dirname(args.out),{recursive:true}); await writeFile(args.out,prompt); } emit(args,{harness:args.harness,shard:shard.id,prompt},(r)=>out(r.prompt)); }});
+const enrich=defineCommand({ meta:{name:"enrich",description:"Plan and shard OKF blueprint enrichment work"}, subCommands:{plan:enrichPlan, generate:enrichGenerate, apply:enrichApply, shard:enrichShard, prompt:enrichPrompt} });
+
+
+function renderEvalVerify(r){
+  out(ui.title("OKF Eval Verify"));
+  out(ui.kv([["specs", String(r.summary.specs)], ["evals", String(r.summary.evals)], ["errors", String(r.summary.errors)], ["warnings", String(r.summary.warnings)]]));
+  for (const spec of r.specs.filter((s)=>!s.ok).slice(0,10)) {
+    out(`${spec.specId} · ${spec.errors.length} error(s)`);
+    for (const err of spec.errors.slice(0,5)) out(`  ${pc.red("✗")} ${err.code} ${pc.dim(err.path)} ${err.message}`);
+  }
+}
+const evalVerify=defineCommand({ meta:{name:"verify",description:"Static verification for OKF eval references, fixtures, assertions, and action-tool state coverage"}, args:{...common, all:{type:"boolean"}, spec:{type:"string"}, changed:{type:"boolean"}, root:{type:"string",default:"okf"}}, async run({args}){ const result=await verifyOkfEvals({all:args.all,spec:args.spec,changed:args.changed,root:args.root}); emit(args,result,renderEvalVerify); if(!result.summary.ok) throw new Error(`OKF eval verification failed: ${result.summary.errors} error(s)`); }});
+const evalGroup=defineCommand({ meta:{name:"eval",description:"Static OKF eval verification"}, subCommands:{verify:evalVerify} });
+
 const audit=defineCommand({ meta:{name:"audit",description:"Audit an OKF bundle across base conformance, navigability, semantics, behavior, and consumption readiness"}, args:{...common, bundle:{type:"positional",required:true}, strict:{type:"boolean"}}, async run({args}){ emit(args, await auditBundle(resolve(args.bundle),{strict:args.strict}), renderAudit); }});
 const graph=defineCommand({ meta:{name:"graph",description:"Extract concept authority/relationship graph from an OKF bundle"}, args:{...common, bundle:{type:"positional",required:true}, format:{type:"string",description:"json or cytoscape"}}, async run({args}){ const b=await readOkfBundle(resolve(args.bundle)); emit(args, graphFromBundle(b,{cytoscape:args.format==="cytoscape"}), r=>out(JSON.stringify(r,null,2))); }});
 const explain=defineCommand({ meta:{name:"explain",description:"Explain one OKF concept's authority, backlinks, proof, citations, and gaps"}, args:{...common, concept:{type:"positional",required:true}, bundle:{type:"string",description:"OKF bundle directory",default:"okf"}}, async run({args}){ emit(args, await explainConcept(args.concept, resolve(args.bundle)), renderExplain); }});
@@ -125,5 +176,5 @@ const customize=defineCommand({
   }),
 });
 const repair=defineCommand({ meta:{name:"repair",description:"Conservatively repair navigability (missing indexes/log); dry-run by default"}, args:{...common,bundle:{type:"positional",required:true}, dryRun:{type:"boolean",default:true}}, async run({args}){ const bundle=await readOkfBundle(resolve(args.bundle)); const writes=[]; if(!bundle.indexes.some(i=>i.path==="index.md")) writes.push({path:join(args.bundle,"index.md"), body:renderConcept({okf_version:"0.1",type:"Knowledge Bundle",title:"OKF Bundle"},"# Concepts\n")}); if(!bundle.logs.some(l=>l.path==="log.md")) writes.push({path:join(args.bundle,"log.md"), body:"# 2026-07-03\n\n- Initialized OKF log.\n"}); if(!args.dryRun) for(const w of writes) await writeConceptFile(w.path,w.body); emit(args,{dryRun:args.dryRun,writes:writes.map(w=>w.path)},r=>out(JSON.stringify(r,null,2))); }});
-export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · customize · audit · graph · explain · diff · repair"}, subCommands:{audit,graph,explain,compile,customize,diff,repair} });
+export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair"}, subCommands:{audit,quality,"domain-packs":domainPacks,enrich,eval:evalGroup,graph,explain,compile,customize,diff,repair} });
 export const __test = { graphFromBundle, auditBundle, explainConcept, coverageFromGraph };

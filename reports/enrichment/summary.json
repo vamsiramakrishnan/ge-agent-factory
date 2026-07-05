@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "okf-enrichment-run-summary.v1",
+  "generatedAt": "2026-07-05T02:53:06.981Z",
+  "commands": [
+    "bun tools/ge.mjs okf quality audit --all --json --write reports/quality/baseline.json",
+    "bun tools/ge.mjs okf enrich plan --all --target L4 --write reports/enrichment/plan.json --json",
+    "bun tools/ge.mjs okf enrich shard --plan reports/enrichment/plan.json --out reports/enrichment/shards",
+    "bun tools/ge.mjs okf enrich prompt --shard <first-shard> --harness codex --out reports/enrichment/prompts/<first-shard>.codex.md"
+  ],
+  "quality": {
+    "total": 514,
+    "byStatus": {
+      "L0": 0,
+      "L1": 0,
+      "L2": 514,
+      "L3": 0,
+      "L4": 0,
+      "L5": 0
+    },
+    "byRisk": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "regulated": 514
+    },
+    "averageScore": 27,
+    "failedRules": 7530
+  },
+  "enrichment": {
+    "tasks": 514,
+    "obligations": 43443
+  },
+  "shards": {
+    "count": 56,
+    "example": "reports/enrichment/examples/regulated-L2-aml-001.json"
+  },
+  "prompts": {
+    "exampleCodex": "reports/enrichment/examples/regulated-L2-aml-001.codex.md"
+  },
+  "note": "Full baseline/plan/shard artifacts are generated locally by the commands above and intentionally not committed to keep PRs reviewable."
+}
