@@ -49,7 +49,19 @@ import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/comp
     <strong>Evidence-ready</strong>
     <span>Generated evals, traces, and promotion gates turn “it seems fine” into reviewable proof.</span>
   </a>
+  <a class="ge-value-card" href="/ge-agent-factory/catalog/">
+    <strong>Proven at scale</strong>
+    <span>363 horizontal and 150 industry-vertical agents run the same contract, code, evals, and simulations today.</span>
+  </a>
 </div>
+
+Hand-writing an agent from a BRD works for one demo; skipping the BRD and
+writing straight from judgment calls is worse. The factory compiles a
+canonical Enterprise Agent Contract instead — one spec that every later
+stage is checked against, not just generated from once: codegen against
+its tool intents, evals against its success criteria, simulation against
+its declared source systems. That check is a gate, not a formality — the
+admission gate can require it to pass before an agent is allowed to ship.
 
 ## Choose your fastest path
 
@@ -180,6 +192,26 @@ pack on disk. Only the final handoff crosses into your Google Cloud project.
 :::note[One registry, three surfaces]
 Every operator command is a CLI command, an HTTP route in the console, and an MCP tool backed by the same registry and job runner. Start in whichever surface fits your workflow; the behavior is the same.
 :::
+
+## Do this at scale
+
+The same contract, generated code, checked evals, and simulated systems
+exist today for 363 horizontal agents across HR, Finance, IT, Marketing,
+and Procurement, plus 150 industry-vertical agents across retail, banking,
+insurance, telco, and manufacturing. Browse the canonical spec and
+generated source for any of them, laid out as a periodic table — one tile
+per agent, click through to its Enterprise Agent Contract and code.
+
+<CardGrid>
+  <LinkCard title="Horizontal catalog" description="363 shared-services agents across five departments." href="/ge-agent-factory/catalog/" />
+  <LinkCard title="Vertical catalog" description="150 industry agents across five verticals." href="/ge-agent-factory/catalog-verticals/" />
+  <LinkCard title="Catalog explorer" description="Both halves together, filterable by industry, function, and value stream." href="/ge-agent-factory/catalog/explorer/" />
+</CardGrid>
+
+None of it is hand-maintained: the catalog is generated from the same
+drift-gated registry the factory itself builds from
+(`apps/factory/src/agent-spec-registry.generated.json`), so it can never
+drift from the specs it's showing.
 
 ## Jump to the job you have
 
