@@ -50,7 +50,7 @@ export const DaemonNextActionSchema = z.enum([
 ]);
 export type DaemonNextAction = z.infer<typeof DaemonNextActionSchema>;
 
-// (d) CLI command ids from tools/lib/ge-command-registry.mjs (a separate namespace).
+// (d) CLI command ids from @ge/capability-registry's GE_COMMANDS (a separate namespace).
 //     Completeness is enforced structurally — tools/contracts-registry-parity.test.mjs
 //     fails when a GE_COMMANDS entry is added without extending this enum.
 export const GeCommandIdSchema = z.enum([
@@ -88,9 +88,10 @@ export const GeCommandIdSchema = z.enum([
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 
 // (e) Risk levels encoded by GE_COMMANDS entries (used for confirm-gating).
-//     Same parity test keeps this a superset of the registry's risks;
-//     apps/console/src/services/geClient.ts types GeCommand.risk from here
-//     instead of hand-mirroring the union.
+//     The zod twin of @ge/core-api's RISK_LEVELS (the dependency-free kernel
+//     vocabulary the registry validates against) — the same parity test holds
+//     the two equal; apps/console/src/services/geClient.ts types
+//     GeCommand.risk from here instead of hand-mirroring the union.
 export const RiskLevelSchema = z.enum([
   "mutates-cloud",
   "starts-workloads",

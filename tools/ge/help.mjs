@@ -12,7 +12,7 @@
 // register (agent, contract, proof, handoff) — the gate fails CI otherwise.
 import pc from "picocolors";
 import { cmd, padVisible } from "./ui.mjs";
-import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 
 // Order is the message: the four verbs a stranger needs, in the order they
 // need them.
@@ -74,7 +74,7 @@ export function renderRootUsage(root) {
 // Rendered under citty's own usage for any top-level command with a registry
 // entry: what the command is for, how long it usually takes, and the literal
 // next commands — so a --help screen orients an agent (or a human) instead of
-// only listing flags. Sourced from tools/lib/ge-command-registry.mjs (the
+// only listing flags. Sourced from packages/capability-registry/src/registry.mjs (the
 // same table the console and MCP server read), so guidance can't drift per
 // surface.
 const registryByCliName = new Map(

@@ -36,7 +36,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { rootCommand } from "./ge.mjs";
-import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 
 // citty allows lazy subcommands (`() => import(...)`); resolve either shape.
 async function resolveCommand(cmd) {

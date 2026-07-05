@@ -1,62 +1,40 @@
 /**
- * Single source of truth wiring a `ge` CLI command into the console (route,
- * CLI invocation, risk level, requirements, observability shape) — see
- * `commandForRoute`, `commandMeta`, and `factory/registry.mjs`'s `dispatch()`
- * for how this table is consumed.
+ * The capability registry — the single source of truth wiring every operator
+ * capability into its surfaces: console route, CLI invocation, MCP tool, risk
+ * level, preflight requirements, and observability shape. Every surface is a
+ * consumer of this table, never a second declaration of it:
  *
- * Field contract for each entry:
- * - `risk` (string): one of
- *   - "mutates-cloud" — calls out to GCP/Terraform and changes cloud state.
- *   - "starts-workloads" — kicks off cloud-side (remote) build/run work.
- *   - "starts-local-workloads" — starts a process on the operator's machine
- *     (local factory harness, daemon, etc.), no cloud mutation.
- *   - "writes-repo" — writes/commits files into the local git repo.
- *   - "read-only" — reads/reports state only; mutates nothing (cloud, repo,
- *     or local processes).
- *   The console types `GeCommand.risk` from `@ge/contracts`' RiskLevelSchema;
- *   parity between this table and that schema is enforced by
- *   tools/contracts-registry-parity.test.mjs (new value here → extend the
- *   contracts enum, or that test fails in CI).
- * - `requirements` (object, all keys optional): preflight checks the console
- *   runs before allowing the command to be invoked.
- *   - `bins` (string[]) — CLI binaries that must be on PATH.
- *   - `config` (string[]) — `.ge.json` keys that must already be set.
- *   - `cloudAuth` (boolean) — requires an authenticated gcloud session.
- *   - `terraformRoot` (boolean) — requires a Terraform root to be present.
- *   - `configWritable` (boolean) — `.ge.json` must be writable (command may
- *     merge new values into it).
- *   - `localToolchain` (boolean) — requires the local dev toolchain (e.g.
- *     `uv`) provisioned by `mise run setup`.
- *   - `toolPlane` (boolean) — requires the MCP tool plane to be deployed.
- *   - `bigQueryHard` (boolean) — hard preflight blocker: BigQuery API must be
- *     enabled (not a soft warning).
- *   - `shipHandoff` (boolean) — requires the cloud-run-proxy gcloud component
- *     and gateway agent-provision flag for the ship handoff.
- *   - `dataGenerationRuntime` (boolean) — requires the local data-generation
- *     runtime to be available.
- * - `observability` (object, optional — defaults to
- *   `{ mode: "command-output", events: false }` via `commandMetaFromCommand`):
- *   - `mode` (string): one of
- *     - "command-output" — no structured events; console shows raw stdout.
- *     - "remote-stage-logs" — cloud factory stage logs, polled via
- *       `statusCommand`.
- *     - "local-factory-events" — local harness emits a JSONL event log
- *       (`eventLog`) plus generated `artifacts`.
- *     - "runtime-events" — pipeline-graph runtime events, polled via
- *       `statusCommand`.
- *   - `events` (boolean) — whether the command streams structured events.
- *   - `statusCommand` (string, optional) — CLI command to poll status.
- *   - `eventLog` (string, optional) — path to a JSONL event log.
- *   - `artifacts` (string[], optional) — generated file globs to surface.
- * - `mcp` (object, optional): presence means this command is exposed as an MCP
- *   tool by tools/mcp-server.mjs (which derives name/description/schema from
- *   here — never hand-write them there).
- *   - `tool` (string) — MCP tool name, `factory_*` convention.
- *   - `description` (string) — full tool description shown to models.
- *   - `params` (object) — flat param descriptors, keyed by param name:
- *     { type: "string"|"boolean"|"number", enum?: string[], optional?: true,
- *       description?: string }
+ * - the `ge` CLI renders `guide`/`summary` in its help output (tools/ge/help.mjs)
+ *   and derives per-command requirement checks (tools/lib/factory-core.mjs),
+ * - the console serves routes from `commandForRoute` and ships
+ *   `GE_COMMAND_LIST` to clients (apps/console/src/server/ge-api.mjs, via the
+ *   apps/console/src/shared/ge-commands.mjs shim),
+ * - the MCP server registers one tool per `mcp` block (tools/mcp-server.mjs —
+ *   never hand-write a tool there),
+ * - the docs site renders command cards from the same table at build time
+ *   (apps/docs/src/lib/ge-commands.mjs), and the console-API reference is
+ *   generated from it (tools/gen-console-api-reference.mjs).
+ *
+ * The field contract (risk levels, requirement keys, observability modes,
+ * MCP param descriptors) lives in @ge/core-api — see
+ * packages/core-api/src/capability.mjs for the closed vocabularies and their
+ * meanings. `assertCapabilityTable` below validates this table against that
+ * contract at import time, so a malformed entry fails every surface at load.
+ *
+ * Field notes beyond the kernel contract:
+ * - `risk`: @ge/contracts' RiskLevelSchema is the zod twin the console types
+ *   `GeCommand.risk` from; tools/contracts-registry-parity.test.mjs holds it
+ *   equal to @ge/core-api's RISK_LEVELS (new value → extend both, or CI fails).
+ * - `observability` defaults to `{ mode: "command-output", events: false }`
+ *   via `capabilityMeta` when omitted.
+ * - `mcp` presence means tools/mcp-server.mjs exposes the command as an MCP
+ *   tool, deriving name/description/schema from here;
+ *   tools/mcp-registry-parity.test.mjs freezes that tool surface.
+ * - `argv(body)` maps a console/MCP request body to the equivalent `ge` argv —
+ *   the CLI is the one execution path every surface shares.
  */
+import { assertCapabilityTable, capabilityMeta } from "@ge/core-api";
+
 export const GE_COMMANDS = {
   // ── the golden path (capture → prove → handoff) ────────────────────────────
   // Front-door verbs; each delegates to the same core function on every
@@ -869,7 +847,10 @@ export const GE_COMMANDS = {
   },
 };
 
-export const GE_COMMAND_LIST = Object.values(GE_COMMANDS).map(commandMetaFromCommand);
+// Fail every surface at import if the table drifts from the kernel contract.
+assertCapabilityTable(GE_COMMANDS);
+
+export const GE_COMMAND_LIST = Object.values(GE_COMMANDS).map(capabilityMeta);
 
 export function commandForRoute(method, parts) {
   const path = `/${parts.join("/")}`;
@@ -878,7 +859,7 @@ export function commandForRoute(method, parts) {
 
 export function commandMeta(id) {
   const command = GE_COMMANDS[id];
-  return command ? commandMetaFromCommand(command) : null;
+  return command ? capabilityMeta(command) : null;
 }
 
 export function commandRequirements(id) {
@@ -887,19 +868,4 @@ export function commandRequirements(id) {
 
 export function commandIds() {
   return Object.keys(GE_COMMANDS);
-}
-
-function commandMetaFromCommand(command) {
-  return {
-    id: command.id,
-    method: command.method,
-    path: command.path,
-    cli: command.cli,
-    label: command.label,
-    summary: command.summary,
-    risk: command.risk,
-    expectedDuration: command.expectedDuration,
-    requirements: command.requirements,
-    observability: command.observability || { mode: "command-output", events: false },
-  };
 }

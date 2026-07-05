@@ -10,7 +10,7 @@
  * explicit.
  *
  * The tool surface (names, descriptions, param schemas) is derived from the
- * `mcp` blocks in tools/lib/ge-command-registry.mjs — never hand-write a tool
+ * `mcp` blocks in packages/capability-registry/src/registry.mjs — never hand-write a tool
  * here. Only the in-process handler bodies live in this file.
  */
 
@@ -18,7 +18,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import * as core from "./lib/factory-core.mjs";
-import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 import { runDrive } from "./lib/live/drive-session.mjs";
 import { proveLive } from "./lib/live/prove-live.mjs";
 import { runBench } from "./lib/bench/runner.mjs";
@@ -144,6 +144,22 @@ const HANDLERS = {
     const { trackAgent } = await import("./lib/okf-lifecycle.mjs");
     return trackAgent({ id: a.id });
   },
+  // Release admission — the same return/throw core as `ge passport emit` /
+  // `ge passport verify` / `ge passport admit` (tools/lib/admission/
+  // admission-ops.mjs; dynamic so the server never pays for @ge/admission
+  // until a passport tool is called).
+  "passport.emit": async (a) => {
+    const { emitPassport } = await import("./lib/admission/admission-ops.mjs");
+    return emitPassport({ id: a.id });
+  },
+  "passport.verify": async (a) => {
+    const { verifyPassport } = await import("./lib/admission/admission-ops.mjs");
+    return verifyPassport({ id: a.id });
+  },
+  "passport.admit": async (a) => {
+    const { checkAdmission } = await import("./lib/admission/admission-ops.mjs");
+    return checkAdmission({ id: a.id, stage: a.stage || "handoff", force: !!a.force });
+  },
 };
 
 for (const command of Object.values(GE_COMMANDS)) {
@@ -154,4 +170,11 @@ for (const command of Object.values(GE_COMMANDS)) {
     async (a) => { try { return result(await handler(a)); } catch (e) { return fail(e); } });
 }
 
-await server.connect(new StdioServerTransport());
+// Exported for tools/mcp-registry-parity.test.mjs, which holds this map equal
+// to the registry's declared mcp surface — a declared tool with no executor
+// fails there (in CI) instead of at server boot.
+export { HANDLERS };
+
+if (import.meta.main) {
+  await server.connect(new StdioServerTransport());
+}
