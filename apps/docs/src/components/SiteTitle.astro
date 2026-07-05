@@ -1,0 +1,14 @@
+---
+// Header wordmark — an accent monogram plate + the "ge agent factory"
+// logotype, per the gaf-ui-002 interface spec (§01). Replaces Starlight's
+// default accent-text title on every page. The monogram rides JetBrains Mono
+// (the machine-label register); the logotype is the Hanken display face — two
+// families in one lockup, no third typeface. Styling lives in custom.css
+// (.ge-wordmark) so the whole landing-chrome design layer stays in one file.
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title ge-wordmark" translate="no" aria-label={siteTitle}>
+  <span class="ge-monogram" aria-hidden="true">af</span>
+  <span class="ge-wordmark-text">ge agent factory</span>
+</a>

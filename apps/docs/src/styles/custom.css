@@ -211,6 +211,60 @@ h3 {
   font-weight: 700;
 }
 
+/* ── Header wordmark (gaf-ui-002 §01) — a machined monogram plate + the
+ * "ge agent factory" logotype. The plate is the header's single accent
+ * moment (Braun's "one lit element"): navy fill, the one place blue is not
+ * reserved for a live/interactive state because it IS the brand mark, not
+ * chrome. The logotype stays ink so the wordmark reads as type, not a link,
+ * until you hover it. Two type families, one lockup — mono for the machine
+ * monogram, the display face for the name — never a third typeface. ─────── */
+.ge-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ge-space-3);
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--sl-color-white);
+}
+
+.ge-monogram {
+  display: grid;
+  place-items: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  flex-shrink: 0;
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f2f4f8; /* near-white — >8:1 on the navy plate in both themes */
+  background: var(--sl-color-accent); /* Braun Blue #00408b */
+  border-radius: var(--ge-radius-sm);
+}
+
+.ge-wordmark-text {
+  font-family: var(--ge-display-font);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+  color: var(--sl-color-white);
+  transition: color 120ms ease;
+}
+
+/* Interactivity surfaces only on touch — blue arrives the moment you hover,
+ * the same rule the rest of the site follows. */
+.ge-wordmark:hover .ge-wordmark-text,
+.ge-wordmark:focus-visible .ge-wordmark-text {
+  color: var(--sl-color-text-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ge-wordmark-text {
+    transition: none;
+  }
+}
+
 /* Sidebar group labels are engraved captions — the same industrial-label
  * register as .ge-label (mono, tiny, uppercase, wide-tracked): machine
  * navigation chrome, not prose. Same treatment for the right-rail "On this
@@ -590,6 +644,43 @@ button > kbd {
   margin-inline: auto;
   font-size: clamp(3rem, 9vw, 5.5rem);
   line-height: 0.95;
+}
+
+/* ── Motion — one deliberate entrance on the landing hero, nothing that
+ * loops or repeats on navigation. The header wordmark and every below-fold
+ * card stay still; motion here orients the eye down the hero once, then gets
+ * out of the way (Rams: unobtrusive). A single rise+settle on a fast-out
+ * ease, staggered a beat apart, and fully removed for reduced-motion. ────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ge-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero h1,
+  .hero .tagline,
+  .hero .actions,
+  .ge-hero-panel {
+    animation: ge-rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hero .tagline {
+    animation-delay: 90ms;
+  }
+
+  .hero .actions {
+    animation-delay: 180ms;
+  }
+
+  .ge-hero-panel {
+    animation-delay: 260ms;
+  }
 }
 
 .hero .tagline {
