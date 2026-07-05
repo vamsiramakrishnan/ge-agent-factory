@@ -34,7 +34,7 @@ function makeWorkspace(extra = {}) {
 const KEYS = generateAdmissionKeypair();
 const SIGNER = createLocalSigner(KEYS.privateKeyPem, KEYS.publicKeyPem);
 
-function passportFor(dir, { predicate = { promotionGate: { ok: true } }, issuedAt = new Date().toISOString(), extraAttestations = [] } = {}) {
+function passportFor(dir, { predicate = { promotionGate: { ok: true }, proofBinding: { ok: true, workspace: { hex: "a".repeat(64) }, proofPolicy: { hex: "b".repeat(64) } } }, issuedAt = new Date().toISOString(), extraAttestations = [] } = {}) {
   const workspaceDigest = computeWorkspaceDigest(dir);
   const contractDigest = computeFileDigest(join(dir, "mock_systems", "usecase-spec.json"));
   const statement = buildStatement({
@@ -173,6 +173,38 @@ describe("evaluateAdmission", () => {
     });
     expect(decision.allowed).toBe(false);
     expect(decision.blockers.map((b) => b.code)).toContain("GEADM006");
+  });
+
+
+
+  test("denies with GEADM009 when attested proof binding is missing", () => {
+    const dir = makeWorkspace();
+    const passport = passportFor(dir, { predicate: { promotionGate: { ok: true } } });
+    const decision = evaluateAdmission({
+      passport,
+      expected: {
+        workspaceDigest: computeWorkspaceDigest(dir),
+        contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+      },
+      publicKeyPem: KEYS.publicKeyPem,
+    });
+    expect(decision.allowed).toBe(false);
+    expect(decision.blockers.map((b) => b.code)).toContain("GEADM009");
+  });
+
+  test("denies with GEADM009 when attested proof binding is stale", () => {
+    const dir = makeWorkspace();
+    const passport = passportFor(dir, { predicate: { promotionGate: { ok: true }, proofBinding: { ok: false, status: "stale" } } });
+    const decision = evaluateAdmission({
+      passport,
+      expected: {
+        workspaceDigest: computeWorkspaceDigest(dir),
+        contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+      },
+      publicKeyPem: KEYS.publicKeyPem,
+    });
+    expect(decision.allowed).toBe(false);
+    expect(decision.blockers.map((b) => b.code)).toContain("GEADM009");
   });
 
   test("denies with GEADM007 when the passport is older than maxAgeDays", () => {
