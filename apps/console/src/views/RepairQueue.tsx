@@ -303,7 +303,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
                   {detail.items.length === 0 && (
                     <tr>
                       <td colSpan={4} className="px-4 py-6 text-sm text-secondary">
-                        No repair items were created for this run. The selected agents had nothing to inspect, fix, or observe.
+                        Nothing to repair — the selected agents are already at their target stage.
                       </td>
                     </tr>
                   )}

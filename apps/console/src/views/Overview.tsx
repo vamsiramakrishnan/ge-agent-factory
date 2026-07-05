@@ -539,7 +539,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
         ) : (
           <EmptyState
             icon={User}
-            title="No agents have been deployed or submitted yet."
+            title="Nothing deployed yet — build one from the Fleet."
             action={<ButtonLink variant="ghost" size="sm" href="#/fleet">View all agents</ButtonLink>}
           />
         )}
