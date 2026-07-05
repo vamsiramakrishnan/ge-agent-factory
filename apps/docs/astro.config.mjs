@@ -28,6 +28,8 @@ export default defineConfig({
         // The header wordmark: an accent monogram plate + "ge agent factory"
         // logotype (gaf-ui-002 §01), replacing the default accent-text title.
         SiteTitle: "./src/components/SiteTitle.astro",
+        ThemeSelect: "./src/components/ThemeSelect.astro",
+        Footer: "./src/components/Footer.astro",
       },
       social: [
         { icon: "github", label: "GitHub", href: "https://github.com/vamsiramakrishnan/ge-agent-factory" },
