@@ -57,11 +57,11 @@ escalation — weighted so risky writes and sensitive claims are never the ones
 trimmed.
 
 The selected cases are emitted as ordinary, tool-compatible artifacts: ADK
-evalsets, grading datasets, live conversation scripts, and load profiles.
-GE compiles behavior and carries the verdicts; the grading engines and
-metrics stay the platform's (ADK and the agents CLI). Coverage — what was
-generated, what was selected, what remains uncovered — is itself an artifact,
-not a claim.
+(Agent Development Kit) evalsets, grading datasets, live conversation
+scripts, and load profiles. GE compiles behavior and carries the verdicts;
+the grading engines and metrics stay the platform's (ADK and the agents
+CLI). Coverage — what was generated, what was selected, what remains
+uncovered — is itself an artifact, not a claim.
 
 ## Local and live, same behavior
 

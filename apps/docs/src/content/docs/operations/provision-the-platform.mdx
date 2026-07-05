@@ -11,9 +11,10 @@ import { Badge, Steps } from '@astrojs/starlight/components';
 
 ## Goal
 
-Stand up the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> the remote factory needs — the factory/runtime plane,
-the data plane, and the tool (Model Context Protocol, MCP) plane — and drive them to readiness with the
-<a href="/ge-agent-factory/reference/glossary/#doctor" title="The health-check family: a set of read-only, actionable pass/fail checks over the toolchain and the three planes.">doctor</a>. Or use the guided self-service installer for a turnkey deploy.
+Stand up the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project: the factory plane, the data plane, and the tool plane.">planes</a> the remote factory needs — the factory/runtime plane,
+the data plane, and the tool (Model Context Protocol, MCP) plane — and drive
+them to a green readiness verdict with the <a href="/ge-agent-factory/reference/glossary/#doctor" title="The health-check family: a set of read-only, actionable pass/fail checks over the toolchain and the three planes.">doctor</a>. Or skip the plane-by-plane
+path and run the guided self-service installer instead.
 
 <p align="center">
   <img src="/ge-agent-factory/assets/diagrams/three-planes.svg" alt="The ge CLI or console talks to the factory plane (Cloud Run gateway, Cloud Tasks queue, worker); the worker reaches the data plane (GCS, AlloyDB, Firestore, BigQuery, Bigtable) and the tool plane (Agent Gateway, per-department MCP services, Agent Registry)" width="700" />

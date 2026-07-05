@@ -13,9 +13,9 @@ Google Cloud project.
 
 ## Goal
 
-Run an agent build through the pipeline, local on your machine or remote in the
-cloud factory. Watch it live in the console (Run Drawer / Activity), and resume a
-run that has blocked.
+Run an agent build through the pipeline — locally on your machine or remotely
+in the cloud factory — watch it live in the console (Run Drawer / Activity),
+and resume a run that's blocked.
 
 <p align="center">
   <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build stages, then Validate and Refine ending at preview (the local build boundary), then the Release stages that touch your GCP project — the part only a remote run performs" width="700">

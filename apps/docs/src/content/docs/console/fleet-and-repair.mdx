@@ -24,8 +24,8 @@ the bulk actions.
 ## Repair Queue — converge to a target
 
 A targeted queue for driving agents to a goal stage (`preview`, `promote`,
-`deploy:plan`, `publish:plan`) with optional auto-repair: pick a
-department/status scope and a target, run it, and the queue tracks the
+`deploy:plan`, `publish:plan`) with optional auto-repair. Pick a
+department/status scope and a target, then run it — the queue tracks the
 resulting <a href="/ge-agent-factory/reference/glossary/#repair-run" title="The daemon-native convergence loop for many workspaces at once: given a set of ids (or the current queue), it observes each workspace's blockers, runs repair up to --attempts times, and keeps going until every item reaches the target stage (default preview).">repair runs</a> as they observe blockers, fix what they can, and
 retry. This is the console face of
 [repairing a failed proof](/ge-agent-factory/cookbooks/repair-failed-proof/); the CLI

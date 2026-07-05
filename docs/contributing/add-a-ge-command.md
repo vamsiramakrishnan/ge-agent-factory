@@ -17,8 +17,8 @@ preflight gating, risk labeling, and live job streaming for it — without
 writing any bespoke route or process-spawning logic.
 
 Worked example throughout: **`daemon.start`**, the entry that backs the
-console's one-click "Start daemon" button (added in commit `fc0c61b`, and the
-precedent AGENTS.md points at).
+console's one-click "Start daemon" button — and the precedent AGENTS.md
+points to.
 
 ## Prerequisites
 
@@ -32,10 +32,10 @@ precedent AGENTS.md points at).
 - Read the **field-contract JSDoc at the top of
   `tools/lib/ge-command-registry.mjs`** — it is the source of truth for the
   `risk` vocabulary, every `requirements` key, and the `observability.mode`
-  vocabulary. This cookbook shows the flow; the JSDoc defines the fields.
+  vocabulary.
 
 > Before adding a new `/api/*` route for a console action, check whether the
-> underlying `ge`/`factory` command already exists and just needs a registry
+> underlying `ge`/`factory` command already exists and needs only a registry
 > entry. Bespoke route logic in the console server is the exception
 > (repair runs, interviews, systems), not the rule.
 {: .important }
@@ -221,8 +221,8 @@ tools/check-design-tokens.mjs`) and `bun run test:gated`.
 
 - `skills/operating-console/references/api-transport-contract.md` — the
   console's layer rules (`geClient.ts → ge-api.mjs → transport.mjs →
-  factory-core.mjs`) and the condensed mutating-command pattern this cookbook
-  expands.
+  factory-core.mjs`) and the condensed mutating-command pattern this page
+  builds on.
 - [Console & APIs](../reference/console-and-apis.html) — the full route
   surface.
 - [CLI reference](../reference/cli.html) — the `ge` command tree.

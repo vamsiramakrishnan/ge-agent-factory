@@ -95,8 +95,8 @@ contract JSON file on disk (for example the interview's saved
 4. **Author OKF directly (the skill).** The `authoring-okf-specs` skill (at
    `skills/authoring-okf-specs/SKILL.md`, composes `interviewing-specs`)
    documents the same commands and conventions for authoring or exchanging a
-   BRD (Business Requirements Document) as an OKF bundle, and grounding an
-   agent from one.
+   BRD (Business Requirements Document) as an OKF bundle, and for grounding
+   an agent from one.
 
 ## Expected output
 

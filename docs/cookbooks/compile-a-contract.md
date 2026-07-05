@@ -138,7 +138,8 @@ Inside the generated workspace (one contract → one workspace):
 
 - `app/agent.py` — the compiled agent (real ADK; Sequential/Parallel topology
   derived from `behaviorContract.workflow`, not a mock).
-- `app/tools.py` — real `FunctionTool`s with the dual fixtures/MCP backend.
+- `app/tools.py` — real `FunctionTool`s with the dual fixtures / MCP (Model
+  Context Protocol) backend.
 - Fixtures / simulation data for the agent's source systems (see
   [source-system twins](../concepts/source-system-twins.html)).
 - `app/knowledge/` — the OKF knowledge bundle grounding the agent (see

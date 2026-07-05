@@ -17,8 +17,8 @@ serves one of those five verbs.
 | Verb | What it means | Where it happens today |
 |---|---|---|
 | **Capture** | Turn business intent (an interview, a document, an API surface) into structured input | `ge capture` (opens the console **Interview**; `--from` registers an existing contract file); document upload; simulator synthesis from OpenAPI |
-| **Compile** | Materialize an **Enterprise Agent Contract**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable OKF twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form-okf) |
-| **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge prove` / `ge agents build` (one workspace per contract) |
+| **Compile** | Materialize an **Enterprise Agent Contract**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable OKF (Open Knowledge Format) twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form-okf) |
+| **Generate** | Emit everything the contract implies: ADK (Agent Development Kit) agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge prove` / `ge agents build` (one workspace per contract) |
 | **Prove** | Show — not claim — that the generated agent honors the contract | `ge prove`: evals, the spec-to-code trace, verify-stage review/refine verdicts, the promotion gate |
 | **Hand off** | Give the proven agent to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` |
 
@@ -57,7 +57,7 @@ for the artifact itself.
 
 ## The build boundary: everything before handoff is pure computation
 
-The line has a hard cut in the middle — the **build boundary**:
+The factory line has a hard cut in the middle — the **build boundary**:
 
 <p align="center">
   <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build, Validate and Refine, Release, with the build boundary between them" width="700">
@@ -73,7 +73,7 @@ The line has a hard cut in the middle — the **build boundary**:
 Building on this machine is the default (billable cloud work is opt-in),
 and `ge handoff` is the bridge: it takes a workspace that was built and
 proven locally and runs only the post-boundary stages in the cloud. The
-same workspace crosses the boundary unchanged — simulated backends simply
+same workspace crosses the boundary unchanged — simulated backends
 give way to governed cloud services.
 
 <details>
@@ -101,9 +101,10 @@ planned → created → validated → harness_reviewed → harness_refined
 
 Three things are worth knowing up front, and each has a plain-language
 glossary entry: runs are recorded durably (the *ledger*), long-running work
-is supervised by a local background runtime, and the LLM review-and-fix
-step between generation and validation is the build-and-verify engine. You
-can operate the factory for a long time knowing only that much about them.
+is supervised by a local background runtime, and the LLM (large language
+model) review-and-fix step between generation and validation is the
+build-and-verify engine. That's enough to operate the factory for a long
+time.
 
 <details>
 <summary>Operator names for those three</summary>

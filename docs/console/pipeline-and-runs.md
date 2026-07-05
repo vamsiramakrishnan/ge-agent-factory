@@ -15,8 +15,8 @@ Compilation and observation are two views: **Pipeline** starts work,
 
 A three-step wizard — **Source → Configure → Review**:
 
-1. **Source** picks an existing contract or starts a new one (handing you to
-   the [contract editor](./contract-editor.html) if needed).
+1. **Source** picks an existing contract or starts a new one, routing to the
+   [contract editor](./contract-editor.html) if needed.
 2. **Configure** sets the scenario and the **source systems** via the
    SystemsField, which autocompletes over the simulated-system corpus. Its
    **Bring Your Own System** flow synthesizes a brand-new

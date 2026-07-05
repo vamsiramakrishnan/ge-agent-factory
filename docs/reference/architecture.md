@@ -69,8 +69,8 @@ created → validated → harness_reviewed → harness_refined → data_packaged
 
 Driven by `core.provision`. The CLI **submits** the build intent to the gateway
 and observes; the cloud worker runs all stages through to publish (or stops at the
-requested `targetStage`). State is written to the durable ledger (Firestore +
-AlloyDB).
+requested `targetStage`). The durable ledger (Firestore + AlloyDB) records the
+run state.
 
 ---
 
@@ -214,7 +214,7 @@ by `ge ledger *`, `ge fleet`, and the console.
 The CLI talks to the gateway in one of two transports: a `gcloud run services
 proxy` tunnel (the default, no public ingress needed) or a direct HTTPS call with
 a bearer ID token. The managed **Agent Gateway** governs the MCP plane — only its
-Service Extensions identity is granted `roles/run.invoker` on the MCP services.
+Service Extensions identity holds `roles/run.invoker` on the MCP services.
 
 > The exact CLI→gateway request payload shape and the optional legacy IAP
 > load-balancer path are referenced in ADR 0001 and the Terraform module but were

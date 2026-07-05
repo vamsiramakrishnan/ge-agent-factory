@@ -32,8 +32,8 @@ releases — refusing denied ones once the gate is required.
 
 ## Prerequisites
 
-- A locally-built, proven workspace: `ge prove` — the passport attests the
-  promotion packet, so the workspace must have one.
+- A locally-built, proven workspace with a promotion packet from `ge prove`
+  — the passport attests that packet, so it has to exist first.
 - Optional but stronger: a live proof result on this machine
   ([Prove the shipped agent live](prove-live.html)) — `emit` attests it
   automatically when present.
@@ -60,9 +60,9 @@ releases — refusing denied ones once the gate is required.
    ge passport verify <workspace-id>
    ```
 
-   Signature checks plus recomputed digests. A ✗ means the workspace (or
-   contract) changed since issuance — that is the feature: re-prove, then
-   re-emit.
+   It checks the signature and recomputes both digests. A ✗ means the
+   workspace (or contract) changed since issuance — that is the feature:
+   re-prove, then re-emit.
 
 3. **Run the admission gate** — the same decision `ge handoff` enforces:
 

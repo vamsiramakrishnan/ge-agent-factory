@@ -5,23 +5,26 @@ sidebar:
   label: Overview
   order: 0
 ---
-The canonical runbook for deploying the factory and shipping agents. Everything
-is driven by `bun tools/ge.mjs` (`ge`). Config resolves: flags > env >
-`.ge.json` > terraform outputs > gcloud discovery.
+This is the runbook for deploying the factory and shipping agents. Every
+command in it runs through `bun tools/ge.mjs` (`ge`), which resolves config in
+this order: flags > env > `.ge.json` > terraform outputs > gcloud discovery.
 
-Use this page when the question is operational: how to stand up the platform,
+Reach for this page for operational questions: how to stand up the platform,
 what each cloud component owns, which stage failed, how local and remote mode
-split responsibility, and how to recover without inventing a one-off path.
+split responsibility, and how to recover without inventing a one-off fix.
 
 ---
 
 ## Components
 
+Three components divide the work: a gateway that scaffolds and enqueues, a
+worker that runs the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a>, and a shared image both build from.
+
 | Component | Cloud Run service | Role |
 |---|---|---|
-| Gateway | `ge-agent-factory-gateway` | Scaffolds each agent <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> in-process; enqueues the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a>. Browser/UI entry (IAP-protected). |
+| Gateway | `ge-agent-factory-gateway` | Scaffolds each agent <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> in-process; enqueues the pipeline. Browser/UI entry (IAP-protected). |
 | Worker | `ge-agent-factory-worker` | Runs non-release stages; dispatches release stages to Cloud Build. Invoked by Cloud Tasks (OIDC). |
-| Builder image | `…/ge-agent-factory/ge-agent-factory-builder` | Shared toolchain (uv, gcloud, <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a>) + warm uv cache, so per-agent builds skip installs. |
+| Builder image | `…/ge-agent-factory/ge-agent-factory-builder` | Shared toolchain (uv, gcloud, <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a>) + warm uv cache, so per-agent builds skip installs. |
 
 Supporting: Cloud Tasks queue `ge-agent-factory-stages`, Pub/Sub topic
 `ge-agent-factory-events`, bucket `<project>-ge-agent-factory`, Firestore
@@ -35,17 +38,20 @@ Supporting: Cloud Tasks queue `ge-agent-factory-stages`, Pub/Sub topic
 </p>
 
 Release stages (`validate`, `preview`, `deploy_runtime`, `poll_runtime`,
-`publish_enterprise`) run in Cloud Build via `cloudbuild.factory-stage.yaml`;
-the rest run on the worker. `validate` runs the pytest smoke test and (default
-on) `agents-cli eval` with an achievable, reference-free `eval_config.json`.
+`publish_enterprise`) run in Cloud Build via `cloudbuild.factory-stage.yaml`.
+Every other stage runs on the worker. `validate` runs the pytest smoke test
+and, by default, `agents-cli eval` against an achievable, reference-free
+`eval_config.json`.
 
-`harness_refine` runs **<a href="/ge-agent-factory/reference/glossary/#antigravity" title="Google's agent SDK (the google-antigravity Python package) that powers the harness review/refine step — the factory drives it headlessly to judge and repair spec-to-code fidelity.">Antigravity</a> review+refine** (with the best ADK skills) on
-the generated workspace — the same pass local builds run — so cloud and local
-produce identically-refined code, then re-gated by `validate`. It runs with
-`--soft`, so a Vertex outage or <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a> error degrades to the deterministic code
-instead of failing the run; it is never a hard dependency. On by default for all
-363; opt out per run with `ge agents build --no-refine` (or `REFINE=0`).
-`ge handoff agents-cli` resumes at `load_data` (already refined locally) and skips it.
+`harness_refine` runs **<a href="/ge-agent-factory/reference/glossary/#antigravity" title="Google's agent SDK (the google-antigravity Python package) that powers the harness review/refine step — the factory drives it headlessly to judge and repair spec-to-code fidelity.">Antigravity</a> review+refine** with ADK (Agent
+Development Kit) skills on the generated workspace — the same pass local
+builds run, so cloud and local produce identically-refined code. `validate`
+re-gates the result afterward. The stage runs with `--soft`: a Vertex outage
+or <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven review-and-fix step that checks whether generated code matches the spec, running on your machine (or the worker) after code generation and before anything ships to the cloud.">harness</a> error degrades to the deterministic code instead of failing the
+run, so it's never a hard dependency. It's on by default for all 363 agents;
+opt out per run with `ge agents build --no-refine` (or `REFINE=0`).
+`ge handoff agents-cli` resumes at `load_data`, since the workspace is already
+refined locally, and skips this stage.
 
 ## Lifecycle
 
@@ -75,14 +81,15 @@ bun tools/ge.mjs agents sync --ids account-reconciliation-agent --local
 bun tools/ge.mjs agents sync --ids account-reconciliation-agent --local --remote <git-url> --push
 ```
 
-Run bare `ge` anytime for a status board (mode · <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> ✓/○ · next command).
+Run bare `ge` anytime for a status board (mode · <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project: the factory plane, the data plane, and the tool plane.">planes</a> ✓/○ · next command).
 All commands accept `--json` for scripting/CI; `agents build`/`status` accept
 `--no-proxy` if you're already inside an authenticated network.
 
 ## Data + tool planes
 
-Agents operate on real Google Cloud stores via two layers provisioned alongside
-the factory. Run these once per project, before/with the <a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">fleet</a> provision:
+Agents read and write real Google Cloud stores through two layers provisioned
+alongside the factory. Run both once per project, before or alongside the
+<a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">fleet</a> provision:
 
 ```bash
 # Data plane — shared stores + per-agent IAM (GCS, BigQuery, AlloyDB, Bigtable, Firestore).
@@ -104,11 +111,12 @@ stage. Each agent registers against its department MCP URL (`?agent=<id>`) in th
 
 ## Modes: local vs remote
 
-`ge` has two first-class modes, set once with `ge mode local|remote` (persisted in
-`.ge.json`, default `local` — remote, billable work is opt-in) and overridable per command with `--local`/`--remote`.
-Bare `ge` shows the active mode and what the client machine does.
+`ge` has two first-class modes. Set one with `ge mode local|remote`, persisted
+in `.ge.json` (default `local` — remote, billable work is opt-in), and
+override per command with `--local`/`--remote`. Bare `ge` shows the active
+mode and what the client machine does.
 
-There is a hard **<a href="/ge-agent-factory/reference/glossary/#build-boundary" title="The cutoff point between &quot;building and previewing an agent on your own machine&quot; and &quot;actually deploying it to your Google Cloud project.&quot;">build boundary</a>**: everything up to validate/preview is pure
+There is a hard **<a href="/ge-agent-factory/reference/glossary/#build-boundary" title="The cutoff between building and previewing an agent locally and deploying it to your Google Cloud project.">build boundary</a>**: everything up to validate/preview is pure
 computation (runs anywhere); everything after touches GCP. Local mode does the
 former on your machine and stops at the boundary.
 
@@ -147,7 +155,7 @@ step. Workspaces land in `.ge/factory/workspaces/` and are indexed by
 `.ge/factory/workspaces.json`.
 
 **Hand off to the cloud (`ge handoff agents-cli`).** Build locally, deploy remotely
-without re-generating: the <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act: giving a locally proven workspace to the layer below — agents-cli → ADK Agent Engine → Gemini Enterprise — via ge handoff agents-cli, which runs only the post-boundary stages (load_data → deploy_runtime → register_tools → publish_enterprise).">handoff</a> tars + uploads each prebuilt workspace and
+without re-generating: the <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act — handing a locally proven workspace to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise.">handoff</a> tars + uploads each prebuilt workspace and
 submits a deploy-only run that starts at `load_data` (→ deploy → register →
 publish), consuming the prebuilt archive. So the cloud deploys exactly what you
 validated — no duplicate generation or Antigravity cost.
@@ -176,7 +184,9 @@ workspace set.
 
 ## Local state
 
-The canonical local state root is `.ge/`:
+Everything the factory writes locally lives under one root, `.ge/`, so
+resetting or inspecting state is always the same operation regardless of
+which command produced it:
 
 | Path | Purpose |
 |---|---|

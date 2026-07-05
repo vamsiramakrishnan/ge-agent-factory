@@ -13,8 +13,9 @@ description: Stand up the factory, data, and tool planes in your own Google Clou
 ## Goal
 
 Stand up the cloud planes the remote factory needs — the factory/runtime plane,
-the data plane, and the tool (Model Context Protocol, MCP) plane — and drive them to readiness with the
-doctor. Or use the guided self-service installer for a turnkey deploy.
+the data plane, and the tool (Model Context Protocol, MCP) plane — and drive
+them to a green readiness verdict with the doctor. Or skip the plane-by-plane
+path and run the guided self-service installer instead.
 
 <p align="center">
   <img src="../assets/diagrams/three-planes.svg" alt="The ge CLI or console talks to the factory plane (Cloud Run gateway, Cloud Tasks queue, worker); the worker reaches the data plane (GCS, AlloyDB, Firestore, BigQuery, Bigtable) and the tool plane (Agent Gateway, per-department MCP services, Agent Registry)" width="700">

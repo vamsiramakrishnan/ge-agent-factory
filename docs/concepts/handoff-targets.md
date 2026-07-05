@@ -9,9 +9,10 @@ description: agents-cli, ADK Agent Engine, and Gemini Enterprise — the layer b
 # Handoff Targets
 
 **Definition:** a handoff target is the downstream system that receives the
-factory's output: **agents-cli** (the build/deploy CLI), **ADK Agent
-Engine** (the runtime), and **Gemini Enterprise** (the end-user surface).
-The factory compiles and proves; the targets build, run, and serve.
+factory's output: **agents-cli** (the build/deploy CLI), **ADK (Agent
+Development Kit) Agent Engine** (the runtime), and **Gemini Enterprise** (the
+end-user surface). The factory compiles and proves; the targets build, run,
+and serve.
 
 <p align="center">
   <img src="../assets/diagrams/signature-pipeline-handoff-targets.svg" alt="the signature capture-to-handoff diagram zoomed to hand off, lit; the passport crosses the build boundary via a thick edge into agents-cli, ADK, and Gemini Enterprise, with the rest of the flow shown dimmed for context" width="700">
@@ -70,8 +71,9 @@ cloud instead, `ge agents build` runs the same stages end to end there.
 
 One switch makes the same code work on both sides of the line: the generated
 tools read `GE_DATA_BACKEND` and present identical tool names and result
-envelopes whether backed by local fixtures or the cloud MCP tool services —
-so the agent that was proven is the agent that ships.
+envelopes whether backed by local fixtures or the cloud MCP (Model Context
+Protocol) tool services — so the agent that was proven is the agent that
+ships.
 
 ## What stays out of the factory's scope
 

@@ -13,7 +13,7 @@ surface over the factory. Its server exposes the same JSON the `ge` CLI
 emits, dispatched through the same command registry — so the console and the
 CLI are two views of one engine and can never disagree about state.
 
-The left sidebar has seven entries; three detail surfaces open from them. OKF export now lives inside Spec Review: open a contract, then export its OKF bundle. Driving runs stays in Pipeline, Runs, and agent detail:
+The left sidebar holds seven entries, and three more detail surfaces open from them. OKF export now lives inside Spec Review: open a contract, then export its OKF bundle. Driving a run happens in Pipeline, Runs, and Agent detail:
 
 | View | What it's for | Page |
 |---|---|---|
@@ -32,8 +32,8 @@ The left sidebar has seven entries; three detail surfaces open from them. OKF ex
 
 The landing view pulls the fleet, recent runs, and a best-effort apply plan,
 and surfaces plane cards plus a quick path into the pipeline. Use it to see
-overall state and jump to the next action; bare `ge` in a terminal prints
-the equivalent status board.
+where things stand and jump straight to the next action; running bare `ge`
+in a terminal prints the same status board.
 
 <p align="center">
   <img src="../assets/screenshots/overview.png" alt="Console Overview view showing the build-to-deploy pipeline rail (362 in Build, 1 in Ship), a Next step card recommending ge init, and Pipeline / Fleet summary cards with 0 deployed, 1 submitted, 1 failed" width="820">
@@ -44,7 +44,7 @@ the equivalent status board.
 Everything live in the console is built on the durable run record (the
 *ledger* — the event log every status surface reads):
 
-- The **Now pulse** in the top bar polls it on a calm cadence and shows a
+- The **Now pulse** in the top bar polls it in the background and shows a
   compact `▶running ⏸blocked ✕failed ✓done` cluster; clicking it opens
   **Runs**.
 - **Follow** on any run subscribes the **Run Drawer** — a right-side panel

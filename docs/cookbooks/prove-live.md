@@ -12,12 +12,12 @@ description: Run evalset cases through the deployed agent's assist surface (or a
 `ge prove`, and cost caps are in your hands. With `--cassette` the whole run
 is local-only, zero cloud.
 
-Local proof shows the agent you *built* behaves;
-[live proof](../concepts/live-proof.html) shows the agent you *shipped* still
-does — through the same streaming assist surface real users hit. `ge prove
---live` replays an evalset's conversations against the deployed agent (or a
-recorded cassette), grades each case with the GE-owned metric grid, compares
-behavior against stored baselines, and produces a gate-ready verdict.
+`ge prove --live` replays an evalset's conversations against the deployed
+agent (or a recorded cassette), grades each case with the GE-owned metric
+grid, compares behavior against stored baselines, and produces a gate-ready
+verdict. Local proof shows the agent you *built* behaves;
+[live proof](../concepts/live-proof.html) shows the agent you *shipped*
+still does — through the same streaming assist surface real users hit.
 
 ## When to use this
 

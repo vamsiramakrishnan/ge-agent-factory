@@ -53,8 +53,9 @@ not a flag.
 | `maxConcurrency` | `8` | Cap on the highest level in a `--concurrency` sweep. |
 | `maxDurationSeconds` | `120` | Wall-clock deadline; a run that reaches it stops early (reported as `stopped at deadline`). |
 
-Live runs additionally require `--yes` (`confirm=true` over MCP — the Model
-Context Protocol) regardless of guards; cassette replays need neither.
+Live runs also require `--yes` (`confirm=true` over MCP — the Model Context
+Protocol) no matter what the guards allow; cassette replays need neither the
+guard check nor the confirmation.
 
 ## `promotion.gates.live` — gate policy
 
