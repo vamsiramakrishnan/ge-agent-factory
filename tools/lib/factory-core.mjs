@@ -254,8 +254,13 @@ const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
 // wires them into the plane modules.
 export const { workspaceDoctor, workspaceRepair } = createWorkspaceDoctorOps({ run, genDir: GEN_DIR });
 
-export function infra(cfg, { sub, gatewayImage, workerImage, yes = false, log = noop } = {}) {
-  return factoryPlane.infra(cfg, { sub, gatewayImage, workerImage, yes, log });
+export function infra(cfg, { sub, gatewayImage, workerImage, consoleImage, yes = false, log = noop } = {}) {
+  return factoryPlane.infra(cfg, { sub, gatewayImage, workerImage, consoleImage, yes, log });
+}
+
+// Console doctor (read-only; never throws — see factory-plane.mjs's consoleDoctor).
+export function consoleDoctor(cfg) {
+  return factoryPlane.consoleDoctor(cfg);
 }
 
 const factoryPlane = createFactoryPlane({
@@ -360,8 +365,8 @@ export const { capture, prove, handoff, goldenPathPosition } = goldenPathOps;
 // run at call time, once every plane below is composed.
 export const { applyPlan, applyApply } = createApplyOps({ statusBoard, up, dataUp, mcpDeploy, provisionOps });
 
-export function build(cfg, { target, log = noop } = {}) {
-  return factoryPlane.build(cfg, { target, log });
+export function build(cfg, { target, tag, log = noop } = {}) {
+  return factoryPlane.build(cfg, { target, tag, log });
 }
 
 // Adopt a hand-managed project into Terraform (the cracked way): generate

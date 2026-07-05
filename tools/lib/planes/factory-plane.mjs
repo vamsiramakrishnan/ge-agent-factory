@@ -1,8 +1,14 @@
 import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { createCheckCollector } from "../doctor/report.mjs";
 import { assertRemoteAuthorized } from "../remote-guard.mjs";
 
 const noop = () => {};
+
+// Hardcoded to match installer/terraform/ui_services.tf's `name = "ge-agent-factory-console"`
+// (the console Cloud Run service, unlike gateway/worker, has no configurable
+// *_service_name terraform var/output — so there's no cfg.consoleService to read).
+export const CONSOLE_SERVICE = "ge-agent-factory-console";
 
 export function serviceUrl(service) {
   return service?.status?.url || null;
@@ -78,12 +84,13 @@ export function createFactoryPlane({
     return `${resolveRepo(cfg)}/ge-agent-factory-builder:latest`;
   }
 
-  function infra(cfg, { sub, gatewayImage, workerImage, yes = false, log = noop } = {}) {
+  function infra(cfg, { sub, gatewayImage, workerImage, consoleImage, yes = false, log = noop } = {}) {
     ensureTerraform();
     const chdir = `-chdir=${terraformDir}`;
     const imageVars = {};
     if (gatewayImage) imageVars.gateway_image = gatewayImage;
     if (workerImage) imageVars.worker_image = workerImage;
+    if (consoleImage) imageVars.console_image = consoleImage;
     if (["apply", "plan"].includes(sub)) {
       if (!cfg.project || !cfg.projectNumber) throw new Error("project & projectNumber required (run `ge init`).");
       if (!cfg.geAppId) throw new Error("geAppId required.");
@@ -124,7 +131,7 @@ export function createFactoryPlane({
     }
   }
 
-  function build(cfg, { target, log = noop } = {}) {
+  function build(cfg, { target, tag: tagOverride, log = noop } = {}) {
     ensureGcloud();
     if (!cfg.project) throw new Error("No project. Run `ge init`.");
     if (target === "builder") {
@@ -135,8 +142,25 @@ export function createFactoryPlane({
       run("gcloud", ["builds", "submit", "apps/factory", "--project", cfg.project, "--config", "apps/factory/cloudbuild.builder.yaml", "--substitutions", `_IMAGE=${image}`], { capture: false });
       return { builderImage: image };
     }
+    if (target === "console") {
+      const repo = resolveRepo(cfg);
+      const arRepoId = repo.split("/").pop();
+      const tag = tagOverride || gitShortSha();
+      const consoleImage = `${repo}/${CONSOLE_SERVICE}:${tag}`;
+      log(`building console → ${consoleImage}`);
+      // Console's Dockerfile needs tools/ + the generator (outside apps/console), and its
+      // cloudbuild.yaml (unlike the worker's) takes discrete _REGION/_AR_REPO/_SERVICE_NAME/
+      // _TAG substitutions rather than one _IMAGE — mirrors installer/build-and-deploy.sh's
+      // console build step exactly, so `ge images build console` and the installer produce
+      // the same Cloud Build invocation shape. Positional source = repoRoot, same reason as
+      // the worker build below.
+      run("gcloud", ["builds", "submit", repoRoot, "--project", cfg.project, "--region", cfg.region,
+        "--config", "apps/console/cloudbuild.yaml",
+        "--substitutions", `_REGION=${cfg.region},_AR_REPO=${arRepoId},_SERVICE_NAME=${CONSOLE_SERVICE},_TAG=${tag}`], { capture: false });
+      return { consoleImage };
+    }
     const repo = resolveRepo(cfg);
-    const tag = gitShortSha();
+    const tag = tagOverride || gitShortSha();
     const gatewayImage = `${repo}/${cfg.gatewayService}:${tag}`;
     const workerImage = `${repo}/${cfg.workerService}:${tag}`;
     log(`building gateway → ${gatewayImage}`);
@@ -209,5 +233,48 @@ export function createFactoryPlane({
     return collector.report({ project: cfg.project, region: cfg.region });
   }
 
-  return { build, builderImageTag, deploy, describeRun, doctor, infra, resolveRepo };
+  // Read-only console checks (image-gated Cloud Run service — installer/terraform/
+  // ui_services.tf only creates it once console_image is non-empty). Deliberately
+  // never throws: unlike doctor() above (which asserts cfg.project up front for the
+  // mutating gateway/worker plane), a missing project/undeployed console is just
+  // another failed check here, not a hard stop — `ge console doctor` should always
+  // return a report, even against a project that has never run `ge console deploy`.
+  function consoleDoctor(cfg) {
+    const collector = createCheckCollector();
+    const { add } = collector;
+
+    add("project configured", cfg.project ? "pass" : "fail", cfg.project || "no project (run `ge init`)", "ge init --project <id>");
+
+    const gcloudCheck = gcloud(["--version"], { allowFail: true });
+    add("gcloud installed", gcloudCheck.ok ? "pass" : "warn", gcloudCheck.ok ? "available" : "not found on PATH", "mise run setup");
+
+    add("terraform root present", existsSync(terraformDir) ? "pass" : "fail", existsSync(terraformDir) ? terraformDir : `${terraformDir} not found`, "check out installer/terraform");
+
+    const outputs = tfOutputs();
+    add("console_image bound", outputs.console_url ? "pass" : "warn",
+      outputs.console_url || "console_url terraform output is empty — console_image var not set, service not created",
+      "ge console deploy");
+
+    add("gatewayUrl configured", cfg.gatewayUrl ? "pass" : "warn",
+      cfg.gatewayUrl || "empty — the deployed console reaches the gateway directly (API_GATEWAY_URL), independent of this, but local `ge` needs it too",
+      "ge init");
+
+    const service = cfg.project ? describeRun(cfg, CONSOLE_SERVICE) : null;
+    if (!service) {
+      add("console service", "warn", `${CONSOLE_SERVICE} not found (not deployed, or --project/region mismatch)`, "ge console deploy");
+    } else {
+      const ready = (service.status?.conditions || []).find((condition) => condition.type === "Ready");
+      add("console ready", ready?.status === "True" ? "pass" : "fail", `${CONSOLE_SERVICE}: ${ready?.status || "?"} ${ready?.message || ""}`, `ge logs --service ${CONSOLE_SERVICE}`);
+      if (serviceIapEnabled(service)) add("console IAP", "warn", "platform IAP enabled — blocks programmatic calls", `gcloud run services update ${CONSOLE_SERVICE} --project ${cfg.project} --region ${cfg.region} --no-iap`);
+      const readonly = serviceEnv(service, "GE_CONSOLE_READONLY");
+      add("console GE_CONSOLE_READONLY", /^(1|true|yes|on)$/i.test(String(readonly || "")) ? "pass" : "warn",
+        readonly || "unset — a deployed console should be read-only (mutating POSTs go through the gateway, not a local daemon)",
+        "terraform apply (ui_services.tf hardcodes GE_CONSOLE_READONLY=true)");
+    }
+
+    const report = collector.report({ project: cfg.project, region: cfg.region, service: CONSOLE_SERVICE });
+    return { ok: report.fails === 0, ...report };
+  }
+
+  return { build, builderImageTag, deploy, describeRun, doctor, consoleDoctor, infra, resolveRepo };
 }

@@ -23,6 +23,7 @@ import {
   interviewOkfBundle,
 } from "./interview-docs.mjs";
 import { listKnownSystems, synthesizeSystem } from "./systems.mjs";
+import { handleLibraryRequest } from "./library.mjs";
 import { firebaseAuthMode, bearerFrom, verifyFirebaseIdToken } from "./firebase-auth.mjs";
 
 // Opt-in Firebase auth gate for /api/*. Inert unless GE_AUTH_MODE=firebase: when
@@ -507,6 +508,8 @@ export async function handleGeFetchRequest(req, { headers = {} } = {}) {
     if (interviewResponse) return interviewResponse;
     const systemsResponse = await handleSystemsRequest(req, responder);
     if (systemsResponse) return systemsResponse;
+    const libraryResponse = await handleLibraryRequest(req, responder);
+    if (libraryResponse) return libraryResponse;
     const apiReq = await toApiReq(req.method, req.url, await req.text());
     const result = await handleGeApi(apiReq, core);
     return await dispatchGeApiResult(result, responder);
@@ -578,6 +581,8 @@ export async function handleGeNodeRequest(req, res, next) {
     if (interviewResponse) return;
     const systemsResponse = await handleSystemsRequest(req, responder);
     if (systemsResponse) return;
+    const libraryResponse = await handleLibraryRequest(req, responder);
+    if (libraryResponse) return;
     const bodyText = await readNodeBody(req);
     const apiReq = await toApiReq(req.method || "GET", req.url || "/", bodyText);
     const result = await handleGeApi(apiReq, core);

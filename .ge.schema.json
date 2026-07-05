@@ -90,6 +90,45 @@
       ],
       "description": "Flag: --agentsRepo. Env: GE_AGENTS_REPO. Default: \"\".",
       "default": ""
+    },
+    "dataBackend": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --dataBackend. Env: GE_DATA_BACKEND. Default: \"fixtures\".",
+      "default": "fixtures"
+    },
+    "consoleReadonly": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --consoleReadonly. Env: GE_CONSOLE_READONLY. Default: \"false\".",
+      "default": "false"
+    },
+    "harnessPythonPath": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --harnessPythonPath. Env: GE_HARNESS_PYTHON."
+    },
+    "allowUnpromoted": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --allowUnpromoted. Env: GE_ALLOW_UNPROMOTED. Default: \"false\".",
+      "default": "false"
+    },
+    "simulatorOverlayBackend": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --simulatorOverlayBackend. Env: GE_SIMULATOR_OVERLAY_BACKEND. Default: \"memory\".",
+      "default": "memory"
     }
   }
 }

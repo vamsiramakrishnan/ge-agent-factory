@@ -82,6 +82,53 @@ export const CONFIG_FIELDS = {
     file: "agentsRepo",
     default: "",
   },
+  // "fixtures" (local) vs "mcp" (cloud) tool backend for generated agents.
+  // Consumed only by the generated Python tool backend, which reads the env
+  // var directly (never .ge.json) — this entry exists so the knob shows up
+  // in `ge config explain` / .ge.schema.json, not to change how it resolves.
+  dataBackend: {
+    flag: "dataBackend",
+    env: ["GE_DATA_BACKEND"],
+    file: "dataBackend",
+    default: "fixtures",
+  },
+  // Read-only production console (apps/console/src/server/ge-api.mjs parses
+  // GE_CONSOLE_READONLY straight off process.env per request — the console
+  // never reads .ge.json for this). Documented here for discoverability only.
+  consoleReadonly: {
+    flag: "consoleReadonly",
+    env: ["GE_CONSOLE_READONLY"],
+    file: "consoleReadonly",
+    default: "false",
+  },
+  // Override the harness's Python interpreter. Resolved directly from
+  // GE_HARNESS_PYTHON by tools/lib/doctor/engine.mjs (which also writes the
+  // discovered venv path back into the env var) — no .ge.json consumer today.
+  harnessPythonPath: {
+    flag: "harnessPythonPath",
+    env: ["GE_HARNESS_PYTHON"],
+    file: "harnessPythonPath",
+  },
+  // Override the promotion gate (visible, deliberate — see --force). Read via
+  // envOff("GE_ALLOW_UNPROMOTED") in apps/factory/scripts/factory.mjs; not
+  // threaded through cfg.
+  allowUnpromoted: {
+    flag: "allowUnpromoted",
+    env: ["GE_ALLOW_UNPROMOTED"],
+    file: "allowUnpromoted",
+    default: "false",
+  },
+  // Durable backend for BYO-twin simulator overlays across Cloud Run
+  // instances ("memory" | "firestore" | "alloydb" — matches the Python
+  // default in packages/simulator-runtime/simulator_runtime/overlay.py).
+  // Python readers honor only the env form; buildFactoryConfig() below also
+  // carries it onto cfg so tools/lib/planes/mcp-plane.mjs can deploy it.
+  simulatorOverlayBackend: {
+    flag: "simulatorOverlayBackend",
+    env: ["GE_SIMULATOR_OVERLAY_BACKEND"],
+    file: "simulatorOverlayBackend",
+    default: "memory",
+  },
 };
 
 const has = (obj, key) => obj != null && obj[key] !== undefined && obj[key] !== null && obj[key] !== "";
@@ -166,6 +213,10 @@ export function buildFactoryConfig({ flags = {}, env = {}, file: rawFile = {} } 
     bigtableInstance: env.GE_AGENT_BIGTABLE_INSTANCE || file.bigtableInstance || "ge-agent-data",
     bqLocation: env.GE_AGENT_BQ_LOCATION || file.bqLocation || "US",
     mode: scalars.mode,
+    // Threaded through so tools/lib/planes/mcp-plane.mjs can forward a
+    // configured durable overlay backend to deployed MCP services; the
+    // Python readers themselves only ever look at the env var.
+    simulatorOverlayBackend: scalars.simulatorOverlayBackend,
     mcpServices: file.mcpServices || {},
     agentIdentityOrgId: scalars.agentIdentityOrgId,
     agentIdentityPrincipalSet: env.GE_AGENT_IDENTITY_PRINCIPALSET || file.agentIdentityPrincipalSet ||

@@ -152,6 +152,75 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  "handoff.plan": {
+    id: "handoff.plan",
+    method: null,
+    path: null,
+    cli: "ge handoff plan",
+    label: "Plan a handoff (dry run)",
+    summary: "Report content digests and the admission verdict for a handoff, without uploading, submitting, or recording anything",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_handoff_plan",
+      description: "Local, deterministic, zero cloud calls: report exactly what `ge handoff` would submit for the requested workspace(s) — content digests (workspace + contract) and the admission verdict each would get, evaluated against the same policy `ge handoff` consults but never recorded. No upload, no gateway call, no ledger write.",
+      params: {
+        ids: { type: "string", optional: true, description: "Comma-separated local workspace ids (default: all built locally)" },
+        target: { type: "string", optional: true, description: "Deploy target the plan is for (default agents-cli)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["handoff", "plan", "--json"];
+      if (body.ids) argv.push("--ids", String(body.ids));
+      if (body.target) argv.push("--target", String(body.target));
+      return argv;
+    },
+  },
+  "handoff.package": {
+    id: "handoff.package",
+    method: null,
+    path: null,
+    cli: "ge handoff package",
+    label: "Package a handoff",
+    summary: "Build the same archive `ge handoff` uploads, to a local path, with a manifest of content digests — no upload, no cloud call",
+    risk: "starts-local-workloads",
+    expectedDuration: "under 30s",
+    requirements: { bins: ["tar"], config: [] },
+    mcp: {
+      tool: "factory_handoff_package",
+      description: "Local, deterministic: build the exact tar `ge handoff` uploads (same exclude list) for the requested workspace(s), to a local path instead of GCS, plus a manifest.json of content digests. Feed the output to factory_handoff_verify_package to check it for tamper/corruption before handing it off.",
+      params: {
+        ids: { type: "string", optional: true, description: "Comma-separated local workspace ids (default: all built locally)" },
+        out: { type: "string", optional: true, description: "Output path (default ./handoff-package.tar.gz for one workspace, a directory for several)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["handoff", "package", "--json"];
+      if (body.ids) argv.push("--ids", String(body.ids));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "handoff.verifyPackage": {
+    id: "handoff.verifyPackage",
+    method: null,
+    path: null,
+    cli: "ge handoff verify-package",
+    label: "Verify a handoff package",
+    summary: "Re-extract a handoff package and compare its content digests against the manifest written at package time",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: ["tar"], config: [] },
+    mcp: {
+      tool: "factory_handoff_verify_package",
+      description: "Local, deterministic: extract every archive a handoff package's manifest.json lists, recompute its content digest, and compare against what was recorded at package time. Reports ok:false (never throws) on a digest mismatch; throws a structured error if the manifest is missing or malformed.",
+      params: {
+        archive: { type: "string", description: "Path to the packaged archive (single workspace) or directory (several workspaces)" },
+      },
+    },
+    argv: (body = {}) => ["handoff", "verify-package", String(body.archive || ""), "--json"],
+  },
   // ── release admission (the passport + its gate) ─────────────────────────────
   // Contractual checks operationalized as an admission controller: the proof
   // pack becomes a signed, digest-bound Agent Passport (emit), integrity is
@@ -389,6 +458,57 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  "evals.import": {
+    id: "evals.import",
+    method: "POST",
+    path: "/api/ge/evals/import",
+    cli: "ge evals import",
+    label: "Import an evalset",
+    summary: "Import a bring-your-own ADK-compatible evalset into .ge/behavioral, alongside compiled suites, so it is discoverable by coverage/prove",
+    risk: "starts-local-workloads",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_evals_import",
+      description: "Import a bring-your-own ADK-compatible evalset file into .ge/behavioral/<id>.evalset.json (same location/naming `ge evals compile` uses), validating it via the shared ADK evalset loader. Returns {id, out, cases, turns, source}.",
+      params: {
+        evalset: { type: "string", description: "Path to an external ADK-compatible evalset JSON file" },
+        id: { type: "string", optional: true, description: "Id to store the evalset under (default: the file's own evalSetId, or a filename slug)" },
+        force: { type: "boolean", optional: true, description: "Overwrite an existing evalset with the same id" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["evals", "import", "--json"];
+      if (body.evalset) argv.push("--evalset", String(body.evalset));
+      if (body.id) argv.push("--id", String(body.id));
+      if (body.force) argv.push("--force");
+      return argv;
+    },
+  },
+  "evals.coverage": {
+    id: "evals.coverage",
+    method: null,
+    path: null,
+    cli: "ge evals coverage",
+    label: "Eval coverage report",
+    summary: "Report per-dimension coverage (required/covered/gaps) from the last `ge evals compile`, optionally scoped to one evalset id",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_evals_coverage",
+      description: "Read the coverage.json a prior `ge evals compile` wrote and return it plus a derived summary: per-dimension {required,covered,gapCount}, overall totals, and a flattened gap list. If id is given, also requires and returns {evalset:{path,cases}} for that id's <id>.evalset.json (compiled or imported).",
+      params: {
+        id: { type: "string", optional: true, description: "Evalset id to also report case counts for (compiled or imported)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["evals", "coverage", "--json"];
+      if (body.id) argv.push("--id", String(body.id));
+      return argv;
+    },
+  },
   "up": {
     id: "up",
     method: "POST",
@@ -531,6 +651,82 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  "create.fromLibrary": {
+    id: "create.fromLibrary",
+    method: "POST",
+    path: "/api/ge/create",
+    cli: "ge create",
+    label: "Create from Agent Library",
+    summary: "Materialize a receipt-backed agent workspace from a resolved Agent Library blueprint (OKF contract copy, stub app/twins/evals/proof scaffolding, ge.lock.json)",
+    guide: {
+      when: "a library blueprint (from library.search/inspect) is ready to become a working local agent workspace",
+      next: ["ge prove", "ge library status <slug>"],
+    },
+    risk: "writes-repo",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_library_create",
+      description: "Mutating (repo): resolve a library blueprint and materialize a new agent workspace from it — copies the OKF contract, writes stub app/twins/evals/proof scaffolding, runs a smoke proof unless noSmoke, and writes ge.lock.json. Fails with GE-CREATE-EXISTS if outDir already exists and force is not set. Same core as `ge create --from-library`.",
+      params: {
+        slug: { type: "string", description: "Library blueprint slug to create from" },
+        out: { type: "string", optional: true, description: "Output workspace directory (default: the blueprint's leaf name)" },
+        overlay: { type: "string", optional: true, description: "Path to a policy-overlay file to attach to the lock" },
+        target: { type: "string", optional: true, description: "Build target (default adk)" },
+        dryRun: { type: "boolean", optional: true, description: "Report the plan without writing files" },
+        noSmoke: { type: "boolean", optional: true, description: "Skip the smoke proof pass" },
+        force: { type: "boolean", optional: true, description: "Overwrite an existing output directory" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["create", "--json"];
+      if (body.slug) argv.push("--from-library", String(body.slug));
+      if (body.out) argv.push("--out", String(body.out));
+      if (body.overlay) argv.push("--overlay", String(body.overlay));
+      if (body.target) argv.push("--target", String(body.target));
+      if (body.dryRun) argv.push("--dry-run");
+      if (body.noSmoke) argv.push("--no-smoke");
+      if (body.force) argv.push("--force");
+      return argv;
+    },
+  },
+  "systems.synth": {
+    id: "systems.synth",
+    // No console route yet -- the console keeps its bespoke POST
+    // /api/systems/synthesize route (apps/console/src/server/ge-api-router.mjs),
+    // now bound onto the same @ge/byo-systems core as this CLI/MCP surface.
+    // Unifying the console route onto this registry entry is a future step,
+    // not part of this pass.
+    method: null,
+    path: null,
+    cli: "ge systems synth",
+    label: "Synthesize a BYO system",
+    summary: "Synthesize a brand-new live simulator system from a natural-language description, samples, or an OpenAPI spec, by spawning the generator's synthesize_cli.py",
+    risk: "writes-repo",
+    expectedDuration: "under 2m",
+    requirements: { bins: ["node"], config: [], dataGenerationRuntime: true },
+    mcp: {
+      tool: "factory_systems_synth",
+      description: "Mutating (repo, only with promote:true): synthesize a brand-new live simulator system from a natural-language description, samples, or an OpenAPI spec by spawning the generator's synthesize_cli.py. Without promote, the result lives only in the spawned process's in-process overlay and is not durable. Provide description (mode: nl, default), or fromOpenapi, or fromSamples.",
+      params: {
+        name: { type: "string", optional: true, description: "Display name for the synthesized system" },
+        description: { type: "string", optional: true, description: "Natural-language description (mode: nl, the default)" },
+        fromOpenapi: { type: "string", optional: true, description: "Path to an OpenAPI/Swagger JSON spec (mode: openapi)" },
+        fromSamples: { type: "string", optional: true, description: "Path to a JSON file of {collection: [rows]} (mode: samples)" },
+        promote: { type: "boolean", optional: true, description: "Also persist the result into the curated corpus (registry.json + per-section files)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "synth", "--json"];
+      if (body.name) argv.push("--name", String(body.name));
+      if (body.description) argv.push("--description", String(body.description));
+      if (body.fromOpenapi) argv.push("--from-openapi", String(body.fromOpenapi));
+      if (body.fromSamples) argv.push("--from-samples", String(body.fromSamples));
+      if (body.promote) argv.push("--promote");
+      return argv;
+    },
+  },
   "mcp.deploy": {
     id: "mcp.deploy",
     method: "POST",
@@ -552,6 +748,31 @@ export const GE_COMMANDS = {
       params: {},
     },
     argv: () => ["mcp", "deploy"],
+  },
+  "console.deploy": {
+    id: "console.deploy",
+    method: "POST",
+    path: "/api/ge/console/deploy",
+    cli: "ge console deploy",
+    label: "Deploy the console UI",
+    summary: "Build the operator console image (Cloud Build) and bind it via terraform apply (Terraform owns Cloud Run config; installer/terraform/ui_services.tf)",
+    risk: "mutates-cloud",
+    expectedDuration: "5-15m",
+    requirements: {
+      bins: ["gcloud", "terraform"],
+      config: ["project", "geAppId"],
+      cloudAuth: true,
+      terraformRoot: true,
+      configWritable: true,
+    },
+    // No `mcp` block: widening the MCP tool surface to a cloud build+deploy is a
+    // deliberate follow-up, not bundled with this wiring — see docsNotes.
+    argv: (body = {}) => {
+      const argv = ["console", "deploy", "--json"];
+      if (body.tag) argv.push("--tag", String(body.tag));
+      if (body.noApply) argv.push("--no-apply");
+      return argv;
+    },
   },
   "agents.build": {
     id: "agents.build",
@@ -734,6 +955,129 @@ export const GE_COMMANDS = {
     },
     argv: () => ["list-usecases"],
   },
+  "library.stats": {
+    id: "library.stats",
+    method: null,
+    path: null,
+    cli: "ge library stats",
+    label: "Agent Library stats",
+    summary: "Show Agent Library inventory counts (blueprints, verticals, buildable, proven) from the generated index",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_library_stats",
+      description: "Read the generated Agent Library index (okf/library/index.json, regenerated on first read if missing) and return its inventory counts: total blueprints, distinct verticals/departments, and buildable/proven counts.",
+      params: {},
+    },
+    argv: () => ["library", "stats", "--json"],
+  },
+  "library.search": {
+    id: "library.search",
+    method: null,
+    path: null,
+    cli: "ge library search",
+    label: "Search Agent Library",
+    summary: "Search Agent Library blueprints by free-text query, optionally filtered by department, capped at a result limit",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_library_search",
+      description: "Free-text search over the generated Agent Library index (matches across the whole blueprint record — title, taxonomy, behavior, inventory), optionally filtered to an exact department match, capped at limit results (default: every match). Same core as `ge library search`.",
+      params: {
+        query: { type: "string", optional: true, description: "Free-text search query" },
+        department: { type: "string", optional: true, description: "Filter to an exact taxonomy.department match" },
+        limit: { type: "number", optional: true, description: "Cap the number of returned blueprints" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["library", "search", "--json"];
+      if (body.query) argv.push(String(body.query));
+      if (body.department) argv.push("--department", String(body.department));
+      return argv;
+    },
+  },
+  "library.inspect": {
+    id: "library.inspect",
+    method: null,
+    path: null,
+    cli: "ge library inspect",
+    label: "Inspect a blueprint",
+    summary: "Inspect a single Agent Library blueprint's full metadata (taxonomy, behavior contract, inventory, targets, commands)",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_library_inspect",
+      description: "Resolve one Agent Library blueprint by slug, id, or leaf name (via the generated index) and return its full AgentBlueprint record. Throws a GE-LIB-404-coded error for an unknown slug — same core as `ge library inspect`.",
+      params: {
+        slug: { type: "string", description: "Blueprint slug (e.g. banking/aml-alert-investigation-agent), id, or leaf name" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["library", "inspect", "--json"];
+      if (body.slug) argv.push(String(body.slug));
+      return argv;
+    },
+  },
+  "library.status": {
+    id: "library.status",
+    method: null,
+    path: null,
+    cli: "ge library status",
+    label: "Blueprint readiness",
+    summary: "Show a blueprint's computed lifecycle readiness state and next command",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_library_status",
+      description: "Compute a blueprint's lifecycle readiness state (one of READINESS_STATES, e.g. contract_valid/evals_ready) plus its next recommended command. Same core as `ge library status`.",
+      params: {
+        slug: { type: "string", description: "Blueprint slug, id, or leaf name" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["library", "status", "--json"];
+      if (body.slug) argv.push(String(body.slug));
+      return argv;
+    },
+  },
+  "systems.list": {
+    id: "systems.list",
+    method: null,
+    path: null,
+    cli: "ge systems list",
+    label: "List BYO systems",
+    summary: "List the built-in simulated systems known to the generator's registry.json (id/displayName/maturity/family)",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_systems_list",
+      description: "Read-only: list the built-in simulated systems known to the generator's registry.json (id/displayName/maturity/family).",
+      params: {},
+    },
+    argv: () => ["systems", "list", "--json"],
+  },
+  "systems.doctor": {
+    id: "systems.doctor",
+    method: null,
+    path: null,
+    cli: "ge systems doctor",
+    label: "BYO-systems doctor",
+    summary: "Check the BYO-systems toolchain: python interpreter, synthesize_cli.py presence, registry.json parseability, and the overlay-backend durability setting",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_systems_doctor",
+      description: "Read-only: check the BYO-systems toolchain (python interpreter resolvable + runnable, synthesize_cli.py present, registry.json parseable + system count, GE_SIMULATOR_OVERLAY_BACKEND value/durability note). Never throws on a failed check; returns {ok, checks[]}.",
+      params: {},
+    },
+    argv: () => ["systems", "doctor", "--json"],
+  },
   "doctor": {
     id: "doctor",
     method: null,
@@ -844,6 +1188,23 @@ export const GE_COMMANDS = {
       params: {},
     },
     argv: () => ["mcp", "doctor"],
+  },
+  "console.doctor": {
+    id: "console.doctor",
+    method: null,
+    path: null,
+    cli: "ge console doctor",
+    label: "Console doctor",
+    summary: "Check the console Cloud Run service readiness + config (read-only)",
+    risk: "read-only",
+    expectedDuration: "under 30s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_console_doctor",
+      description: "Check the operator console's Cloud Run service (readiness, IAP, GE_CONSOLE_READONLY) plus config (console_image binding via terraform output, terraform root present, gatewayUrl configured). Read-only; never throws — always returns a report, even against an undeployed console or missing project. Returns {ok, checks[]}.",
+      params: {},
+    },
+    argv: () => ["console", "doctor"],
   },
 };
 
