@@ -48,6 +48,25 @@ describe("readPromotionGate", () => {
     expect(gate.blockers).toContain("refine spec-to-code fidelity: partial");
   });
 
+
+  test("blocks when an existing promotion packet proof binding is stale", async () => {
+    const dir = workspace();
+    writeFileSync(join(dir, "artifacts", "promotion-packet.json"), JSON.stringify({
+      proofBinding: {
+        ok: true,
+        okf: { hex: "00" },
+        evals: { hex: "00" },
+        fixtures: { hex: "00" },
+        generator: { hex: "00" },
+        workspace: { hex: "00" },
+        proofPolicy: { hex: "00" },
+      },
+    }));
+    const gate = await readPromotionGate(dir);
+    expect(gate.ok).toBe(false);
+    expect(gate.blockers.some((b) => b.includes("proof binding stale") || b.includes("proof binding missing"))).toBe(true);
+  });
+
   test("does not over-block when refine artifact is absent (refine skipped)", async () => {
     const gate = await readPromotionGate(workspace({ refine: null }));
     expect(gate.ok).toBe(true);

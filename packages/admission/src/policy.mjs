@@ -21,6 +21,7 @@ export const DEFAULT_ADMISSION_POLICY = Object.freeze({
   required: false,
   maxAgeDays: 30,
   requireLiveProof: false,
+  requireFreshProofBinding: true,
 });
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -97,6 +98,10 @@ export function evaluateAdmission({
     if (gate?.ok !== true) {
       const detail = (gate?.blockers || []).slice(0, 3).join("; ") || "promotion gate verdict missing";
       blockers.push(blocker("GEADM006", `attested promotion gate is not passing: ${detail}`, "ge prove"));
+    }
+    const proofBinding = promotion.predicate?.proofBinding;
+    if (effective.requireFreshProofBinding && proofBinding?.ok !== true) {
+      blockers.push(blocker("GEADM009", proofBinding ? "attested proof binding is stale" : "attested promotion packet has no proof binding", "ge prove, then emit a new passport"));
     }
   }
 
