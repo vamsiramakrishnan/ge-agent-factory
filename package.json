@@ -43,7 +43,6 @@
     "docs:skill-matrix:check": "node apps/factory/scripts/gen-skill-matrix.mjs --check",
     "docs:shots": "bun tools/docs-shots/capture.mjs && bun tools/docs-shots/capture-presentation.mjs",
     "docs:shots:seed": "bun tools/docs-shots/seed.mjs",
-    "docs:build": "cd docs && BUNDLE_PATH=vendor/bundle bundle exec jekyll build --config _config.yml,_config.local.yml",
     "docs:tokens": "node packages/design/scripts/gen-tokens.mjs",
     "docs:tokens:check": "node packages/design/scripts/gen-tokens.mjs --check",
     "lang:gate": "node tools/lang-gate.mjs",

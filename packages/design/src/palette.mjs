@@ -5,8 +5,6 @@
 // Every other copy is generated or imports this file directly:
 //   - packages/design/src/tokens.css   (--color-* @theme block — GENERATED
 //     region, run `bun run docs:tokens` after editing values here)
-//   - docs/_sass/color_schemes/ge.scss (Jekyll Sass variables — GENERATED)
-//   - docs/_sass/custom/setup.scss     (just-the-docs swatch ramp — GENERATED)
 //   - tools/lib/docs-diagram-theme.mjs (Mermaid diagram theme, imports PALETTE)
 // The name↔value pairing lives in packages/design/scripts/gen-tokens.mjs's
 // TOKEN_TABLE; tools/check-design-tokens.mjs byte-compares the generated
@@ -82,17 +80,15 @@ export const PALETTE = {
 
   // Not a --color-* custom property: a literal "secondary ink" text color
   // used directly in tokens.css's .use-case-detail contrast guardrails
-  // (kept AA-contrast on white without going all the way to --color-secondary)
-  // and reused verbatim in ge.scss for $body-text-color / $nav-child-link-color
-  // / $search-result-preview-color. Kept alongside `secondary` above.
+  // (kept AA-contrast on white without going all the way to --color-secondary).
+  // Kept alongside `secondary` above.
   secondaryInk: "#383e47",
 
   // Derived swatches: NOT literal --color-* custom properties in tokens.css.
-  // docs/_sass/custom/setup.scss re-tints just-the-docs' built-in blue/green
-  // swatch ramps to this palette; these are hand-picked shades along the
-  // primary/tertiary hue that only exist in that file. primaryContainer above
-  // doubles as $blue-000; the remaining rungs are listed here so the whole
-  // ramp traces to one source instead of living only in Sass.
+  // Hand-picked shades along the primary/tertiary hue — the darker/lighter
+  // rungs the chrome reaches for beyond the base --color-* set (e.g.
+  // primaryDark is the accent hover/active rung the apps/docs annotated
+  // anchors pin to). Kept here so the whole ramp traces to one source.
 
   // $blue-100 — mid-light blue swatch, one step darker than primaryContainer.
   primaryContainerDark: "#004493",
