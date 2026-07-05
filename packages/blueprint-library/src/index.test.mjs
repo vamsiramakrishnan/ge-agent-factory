@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { generateLibraryIndex, searchBlueprints, resolveBlueprint, createFromLibrary, blueprintStatus } from "./agent-library.mjs";
+import { generateLibraryIndex, searchBlueprints, resolveBlueprint, createFromLibrary, blueprintStatus } from "./index.mjs";
 
 describe("agent library", () => {
   test("generates a searchable index with AML blueprint metadata", async () => {

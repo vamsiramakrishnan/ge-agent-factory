@@ -45,6 +45,23 @@ core fields:
 | `geLocation` | *(env / file only)* | `GEMINI_ENTERPRISE_LOCATION` | `global` |
 | `agentIdentityOrgId` | `--agentIdentityOrgId` (every command) | `GE_AGENT_IDENTITY_ORG_ID` | — |
 | `agentsRepo` | `--remote <git-url>` (on `ge agents sync`) | `GE_AGENTS_REPO` | `""` (falls back to `generated-agents/` in-repo) |
+| `dataBackend` | *(env / file only)* | `GE_DATA_BACKEND` | `fixtures` — `fixtures` (local) vs `mcp` (cloud) tool backend in generated agents; the generated Python tool backend reads the env var directly and never `.ge.json` |
+| `consoleReadonly` | *(env / file only)* | `GE_CONSOLE_READONLY` | `false` — read-only production console; read per-request straight off the env var by the console server, not through `.ge.json` |
+| `harnessPythonPath` | *(env / file only)* | `GE_HARNESS_PYTHON` | — (falls back to a discovered venv, then `python3`) — override the harness interpreter; resolved from the env var only |
+| `allowUnpromoted` | `--force` (on `ge handoff`) | `GE_ALLOW_UNPROMOTED` | `false` — override the promotion gate (visible, deliberate); resolved from the env var only |
+| `simulatorOverlayBackend` | *(env / file only)* | `GE_SIMULATOR_OVERLAY_BACKEND` | `memory` — durable backend (`firestore`/`alloydb`) for BYO-twin overlays shared across Cloud Run instances; a configured value flows to deployed MCP services via `ge mcp deploy`, but the simulator's own Python reader honors only the env var |
+
+> `.ge.json` remains an available spelling for every field above per the flag →
+> env → file → default precedence, but `dataBackend`, `consoleReadonly`,
+> `harnessPythonPath`, and `allowUnpromoted` currently have **no JS reader that
+> consumes the resolved config value** — only the env var is actually read at
+> the point of use (Python tool backend, console server, harness doctor,
+> promotion gate). Setting them in `.ge.json` will show up in `ge config
+> explain` for visibility, but won't itself change behavior; use the env var
+> to actually change behavior. `simulatorOverlayBackend` is the one field in
+> this group that *does* flow from `.ge.json`/flag through to a JS consumer
+> (`ge mcp deploy`'s env-var forwarding).
+{: .note }
 
 > `.ge.schema.json` is the operator config schema — it is **not** the
 > Enterprise Agent Contract's schema. The contract's schema lives in
@@ -58,14 +75,15 @@ A few behaviors are environment-only, documented where they're used:
 
 | Env | Effect | Documented in |
 |---|---|---|
-| `GE_DATA_BACKEND` | `fixtures` (local) vs `mcp` (cloud) tool backend in generated agents | [Generated artifacts](./agent-generation.html) |
 | `GE_DAEMON_PORT` | local daemon port (default 17654) | [CLI](./cli.html) |
 | `GE_STATE_ROOT` | relocate the `.ge/` state root | [Run and observe](../operations/run-and-observe.html) |
-| `GE_CONSOLE_READONLY` | read-only production console | [Operations](../OPERATIONS.html) |
-| `GE_HARNESS_PYTHON` | override the harness interpreter | [Operations](../OPERATIONS.html) |
-| `GE_ALLOW_UNPROMOTED` | override the promotion gate (visible, deliberate) | [Evals as proof](../concepts/evals-as-proof.html) |
 | `GE_ADMISSION_BREAK_GLASS` | release despite a denied admission decision — a recorded override, same as `ge handoff --force` | [Admission gate & Agent Passport](./admission.html) |
-| `GE_SIMULATOR_OVERLAY_BACKEND` | share BYO twin overlays across instances (`firestore`/`alloydb`) | [Simulator systems](./simulator-systems.html) |
+
+`GE_DATA_BACKEND`, `GE_CONSOLE_READONLY`, `GE_HARNESS_PYTHON`,
+`GE_ALLOW_UNPROMOTED`, and `GE_SIMULATOR_OVERLAY_BACKEND` moved into the
+[Fields](#fields) table above — they're now in `CONFIG_FIELDS` /
+`.ge.schema.json`, even though most of them still resolve only from the env
+var at the point of use (see the note under that table).
 
 ## Where config is read
 

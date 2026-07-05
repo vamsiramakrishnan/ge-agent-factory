@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@ge/agent-resolver": "workspace:*",
+    "@ge/blueprint-library": "workspace:*",
+    "@ge/byo-systems": "workspace:*",
     "@ge/capability-registry": "workspace:*",
     "@ge/contracts": "workspace:*",
     "@ge/design": "workspace:*",

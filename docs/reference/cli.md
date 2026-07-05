@@ -108,17 +108,61 @@ Prove the current contracts end to end: fresh machine → health check + first a
 
 ### `ge handoff`
 
-Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)
+Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise); plan/package/verify-package inspect a handoff with zero cloud calls
 
 | Flag | Type | Description |
 |---|---|---|
-| `<target>` | positional | Deploy target (default agents-cli) |
+| `--ids` | string | (agents-cli/plan/package) comma-separated local workspace ids |
+| `--start-stage` | string | (agents-cli/plan) stage to start at remotely |
+| `--target-stage` | string | (agents-cli/plan) stage to stop at |
+| `--concurrency` | string | (agents-cli) parallel remote submissions |
+| `--out` | string | (package) output path |
+| `--archive` | string | (verify-package) path to the packaged archive/directory |
+| `--no-proxy` | boolean | (agents-cli) call the gateway directly, no proxy tunnel |
+| `--force` | boolean | (agents-cli/plan) break-glass override |
+
+### `ge handoff agents-cli`
+
+Hand off proven agents through agents-cli deploy → Agent Engine → Gemini Enterprise (the default target)
+
+| Flag | Type | Description |
+|---|---|---|
 | `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
 | `--start-stage` | string | Stage to start at remotely (default load_data) |
 | `--target-stage` | string | Stage to stop at (default publish_enterprise) |
 | `--concurrency` | string | Parallel remote submissions (default 2) |
 | `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
 | `--force` | boolean | Break-glass: release despite a denied admission decision (the override is recorded in the decision log) |
+
+### `ge handoff plan`
+
+Dry run: report content digests and the admission verdict for a handoff, without uploading, submitting, or recording anything
+
+| Flag | Type | Description |
+|---|---|---|
+| `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
+| `--target` | string | Deploy target the plan is for (default agents-cli) |
+| `--start-stage` | string | Stage the real handoff would start at remotely (default load_data) |
+| `--target-stage` | string | Stage the real handoff would stop at (default publish_enterprise) |
+| `--force` | boolean | Preview the plan as if --force (break-glass) were used on the real handoff |
+
+### `ge handoff package`
+
+Build the same archive `ge handoff` uploads, to a local path, with a manifest of content digests — no upload, no cloud call
+
+| Flag | Type | Description |
+|---|---|---|
+| `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
+| `--out` | string | Output path (default ./handoff-package.tar.gz for one workspace, a directory of <id>.tar.gz for several) |
+| `--target` | string | Deploy target recorded in the manifest (default agents-cli) |
+
+### `ge handoff verify-package`
+
+Re-extract a handoff package and compare its content digests against the manifest written at package time
+
+| Flag | Type | Description |
+|---|---|---|
+| `<archive>` | positional (required) | Path to the packaged archive (single workspace) or directory (several workspaces) |
 
 ### `ge status`
 
@@ -174,6 +218,24 @@ Compile an agent contract into executable behavior: graph, coverage, selected ca
 | `--perturb` | string | Linguistic perturbation variants per selected case (default 0 — off; variants mirror selected cases) |
 | `--adversarial` | boolean | Add adversarial/safety cases (prompt injection, spoofing, exfiltration, …) to the pool and require adversarial coverage |
 | `--out` | string | Output directory (default .ge/behavioral) |
+
+### `ge evals import`
+
+Import a bring-your-own ADK-compatible evalset into .ge/behavioral, alongside compiled suites
+
+| Flag | Type | Description |
+|---|---|---|
+| `--evalset` | string | Path to an external ADK-compatible evalset JSON file |
+| `--id` | string | Id to store the evalset under (default: the file's own evalSetId, or a filename slug) |
+| `--force` | boolean | Overwrite an existing evalset with the same id |
+
+### `ge evals coverage`
+
+Report per-dimension coverage from the last `ge evals compile` (required/covered/gaps), optionally scoped to one evalset id
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Evalset id to also report case counts for (compiled or imported) |
 
 ### `ge evals applicability`
 
@@ -905,6 +967,47 @@ Check the generated Agent Library index
 ### `ge library refresh-index`
 
 Regenerate okf/library/index.json from OKF bundles
+
+### `ge systems`
+
+Bring-Your-Own-System: list built-in simulators (list) · synthesize a new one (synth) · check the toolchain (doctor)
+
+### `ge systems list`
+
+List the built-in simulated systems known to the generator registry
+
+### `ge systems synth`
+
+Synthesize a brand-new live simulator system from an NL description, samples, or an OpenAPI spec
+
+| Flag | Type | Description |
+|---|---|---|
+| `--name` | string | Display name for the synthesized system |
+| `--description` | string | Natural-language description (mode: nl, the default) |
+| `--from-openapi` | string | Path to an OpenAPI/Swagger JSON spec (mode: openapi) |
+| `--from-samples` | string | Path to a JSON file of {collection: [rows]} (mode: samples) |
+| `--promote` | boolean | Also persist the result into the curated corpus (registry.json + per-section files) |
+
+### `ge systems doctor`
+
+Check the BYO-systems toolchain: python, synthesize_cli.py, registry.json, overlay backend
+
+### `ge console`
+
+Operator console UI (Cloud Run service): deploy · doctor
+
+### `ge console deploy`
+
+Build the console image + bind it via terraform apply (Terraform owns Cloud Run config)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--tag` | string | Explicit image tag (default: git short SHA) |
+| `--no-apply` | boolean | Build + push only — skip terraform apply (bind later with a plain `ge console deploy` or `ge infra apply`) |
+
+### `ge console doctor`
+
+Check the console Cloud Run service + config (read-only; never fails hard — see `ge doctor` for the mutating gateway/worker plane)
 
 ### `ge apply`
 

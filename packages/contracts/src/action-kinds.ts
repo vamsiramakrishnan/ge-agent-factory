@@ -84,6 +84,26 @@ export const GeCommandIdSchema = z.enum([
   "passport.emit",
   "passport.verify",
   "passport.admit",
+  // Handoff packaging (local plan / package / verify-package):
+  "handoff.plan",
+  "handoff.package",
+  "handoff.verifyPackage",
+  // Eval packs (bring-your-own import + coverage reporting):
+  "evals.import",
+  "evals.coverage",
+  // Agent Library (blueprint-library surfaces + create-from-library):
+  "library.stats",
+  "library.search",
+  "library.inspect",
+  "library.status",
+  "create.fromLibrary",
+  // BYO source systems (byo-systems surfaces):
+  "systems.list",
+  "systems.synth",
+  "systems.doctor",
+  // Console UI packaging (deploy + doctor):
+  "console.deploy",
+  "console.doctor",
 ]);
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 
