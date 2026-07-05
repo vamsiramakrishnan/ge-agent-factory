@@ -30,9 +30,9 @@ credentials, no side effects.
    ge init                      # discover config, write .ge.json
    ```
 
-   Bare `ge` now prints a status board — mode, platform state, and the next
-   step. Mode defaults to **local**: nothing touches Google Cloud until you
-   opt in.
+   Bare `ge` now prints a status board — local or cloud, platform state, and
+   the next step. It defaults to **local**: nothing touches Google Cloud
+   until you opt in.
 
 3. **Compile and prove one contract** (~5 min).
 
@@ -65,8 +65,8 @@ credentials, no side effects.
    agents-cli eval run --all
    ```
 
-   The proof chain (evals, spec-to-code trace, harness verdicts, promotion
-   gate) is what stands between this workspace and a deploy:
+   The proof chain (evals, spec-to-code trace, verify-stage verdicts,
+   promotion gate) is what stands between this workspace and a deploy:
    [Evals as proof](/ge-agent-factory/concepts/evals-as-proof/).
 
 6. **Watch a compile live in the console.**

@@ -6,13 +6,13 @@ layout: default
 
 # GE Agent Factory — Operations
 
-The canonical runbook for deploying the factory and shipping agents. Everything
-is driven by `bun tools/ge.mjs` (`ge`). Config resolves: flags > env >
-`.ge.json` > terraform outputs > gcloud discovery.
+This is the runbook for deploying the factory and shipping agents. Every
+command in it runs through `bun tools/ge.mjs` (`ge`), which resolves config in
+this order: flags > env > `.ge.json` > terraform outputs > gcloud discovery.
 
-Use this page when the question is operational: how to stand up the platform,
+Reach for this page for operational questions: how to stand up the platform,
 what each cloud component owns, which stage failed, how local and remote mode
-split responsibility, and how to recover without inventing a one-off path.
+split responsibility, and how to recover without inventing a one-off fix.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -23,6 +23,9 @@ split responsibility, and how to recover without inventing a one-off path.
 ---
 
 ## Components
+
+Three components divide the work: a gateway that scaffolds and enqueues, a
+worker that runs the pipeline, and a shared image both build from.
 
 | Component | Cloud Run service | Role |
 |---|---|---|
@@ -42,17 +45,20 @@ Supporting: Cloud Tasks queue `ge-agent-factory-stages`, Pub/Sub topic
 </p>
 
 Release stages (`validate`, `preview`, `deploy_runtime`, `poll_runtime`,
-`publish_enterprise`) run in Cloud Build via `cloudbuild.factory-stage.yaml`;
-the rest run on the worker. `validate` runs the pytest smoke test and (default
-on) `agents-cli eval` with an achievable, reference-free `eval_config.json`.
+`publish_enterprise`) run in Cloud Build via `cloudbuild.factory-stage.yaml`.
+Every other stage runs on the worker. `validate` runs the pytest smoke test
+and, by default, `agents-cli eval` against an achievable, reference-free
+`eval_config.json`.
 
-`harness_refine` runs **Antigravity review+refine** (with the best ADK skills) on
-the generated workspace — the same pass local builds run — so cloud and local
-produce identically-refined code, then re-gated by `validate`. It runs with
-`--soft`, so a Vertex outage or harness error degrades to the deterministic code
-instead of failing the run; it is never a hard dependency. On by default for all
-363; opt out per run with `ge agents build --no-refine` (or `REFINE=0`).
-`ge handoff agents-cli` resumes at `load_data` (already refined locally) and skips it.
+`harness_refine` runs **Antigravity review+refine** with ADK (Agent
+Development Kit) skills on the generated workspace — the same pass local
+builds run, so cloud and local produce identically-refined code. `validate`
+re-gates the result afterward. The stage runs with `--soft`: a Vertex outage
+or harness error degrades to the deterministic code instead of failing the
+run, so it's never a hard dependency. It's on by default for all 363 agents;
+opt out per run with `ge agents build --no-refine` (or `REFINE=0`).
+`ge handoff agents-cli` resumes at `load_data`, since the workspace is already
+refined locally, and skips this stage.
 
 ## Lifecycle
 
@@ -88,8 +94,9 @@ All commands accept `--json` for scripting/CI; `agents build`/`status` accept
 
 ## Data + tool planes
 
-Agents operate on real Google Cloud stores via two layers provisioned alongside
-the factory. Run these once per project, before/with the fleet provision:
+Agents read and write real Google Cloud stores through two layers provisioned
+alongside the factory. Run both once per project, before or alongside the
+fleet provision:
 
 ```bash
 # Data plane — shared stores + per-agent IAM (GCS, BigQuery, AlloyDB, Bigtable, Firestore).
@@ -111,9 +118,10 @@ stage. Each agent registers against its department MCP URL (`?agent=<id>`) in th
 
 ## Modes: local vs remote
 
-`ge` has two first-class modes, set once with `ge mode local|remote` (persisted in
-`.ge.json`, default `local` — remote, billable work is opt-in) and overridable per command with `--local`/`--remote`.
-Bare `ge` shows the active mode and what the client machine does.
+`ge` has two first-class modes. Set one with `ge mode local|remote`, persisted
+in `.ge.json` (default `local` — remote, billable work is opt-in), and
+override per command with `--local`/`--remote`. Bare `ge` shows the active
+mode and what the client machine does.
 
 There is a hard **build boundary**: everything up to validate/preview is pure
 computation (runs anywhere); everything after touches GCP. Local mode does the
@@ -183,7 +191,9 @@ workspace set.
 
 ## Local state
 
-The canonical local state root is `.ge/`:
+Everything the factory writes locally lives under one root, `.ge/`, so
+resetting or inspecting state is always the same operation regardless of
+which command produced it:
 
 | Path | Purpose |
 |---|---|

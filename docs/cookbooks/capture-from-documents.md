@@ -12,12 +12,12 @@ description: Ground the console interview in a BRD or policy documents so the ca
 
 ## When to use this
 
-The requirements already exist as documents — a BRD, a policy handbook, a
-schema export, sample data — and you don't want the interview to start from a
-blank slate. Uploading the documents first grounds the interview: the
-extracted text is injected into the interview prompt, the agent asks fewer and
-better questions, and the captured contract cites real requirements instead of
-reconstructed ones.
+Uploading documents before the interview grounds it: the extracted text feeds
+the interview prompt, the agent asks fewer and better questions, and the
+captured contract cites real requirements instead of reconstructed ones. Use
+this when the requirements already exist as documents — a BRD, a policy
+handbook, a schema export, sample data — and you don't want the interview to
+start from a blank slate.
 
 This guide covers only the document path; the interview itself is
 [Capture a contract in the interview](capture-from-interview.html).

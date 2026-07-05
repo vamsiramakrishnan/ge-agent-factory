@@ -12,9 +12,9 @@ Google Cloud project.
 
 ## Goal
 
-Run an agent build through the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a>, local on your machine or remote in the
-cloud factory. Watch it live in the console (Run Drawer / Activity), and resume a
-run that has blocked.
+Run an agent build through the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a> — locally on your machine or remotely
+in the cloud factory — watch it live in the console (Run Drawer / Activity),
+and resume a run that's blocked.
 
 <p align="center">
   <img src="/ge-agent-factory/assets/diagrams/factory-line.svg" alt="The factory line: Author and Build stages, then Validate and Refine ending at preview (the local build boundary), then the Release stages that touch your GCP project — the part only a remote run performs" width="700" />
@@ -25,7 +25,7 @@ run that has blocked.
 - Local toolchain installed (`mise run setup`); the <a href="/ge-agent-factory/reference/glossary/#daemon" title="The local background process (ge daemon start, HTTP on port 17654 / GE_DAEMON_PORT) that runs long factory work — pipeline runs, repair runs, generic jobs — as durable runtime tasks, so a run survives your terminal closing and can be resumed.">daemon</a> running
   (`ge daemon status`).
 - Console running for the live views: `mise run console` → http://localhost:18260.
-- For remote runs, the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> provisioned. See
+- For remote runs, the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project: the factory plane, the data plane, and the tool plane.">planes</a> provisioned. See
   [Provision the platform](/ge-agent-factory/operations/provision-the-platform/).
 
 ## Steps
@@ -85,7 +85,7 @@ run that has blocked.
    ```
 
    This POSTs `/api/tasks/<id>/resume` with a deterministic resume plan.
-   (`ge pipeline resume <id>` does the same for <a href="/ge-agent-factory/reference/glossary/#pipeline-run" title="One orchestrated, resumable run of the pipeline for a use case, executed as a DAG of daemon child tasks — data readiness, simulator checks, optionally the factory build itself, the Antigravity review node, and convergence to a target stage.">pipeline runs</a>.)
+   (`ge pipeline resume <id>` does the same for <a href="/ge-agent-factory/reference/glossary/#pipeline-run" title="One orchestrated, resumable run of the pipeline for a use case, executed as a DAG of daemon child tasks — data readiness, simulator checks, optionally the factory build, the Antigravity review node, and convergence to a target stage.">pipeline runs</a>.)
 
 6. **Inspect the durable run ledger** (remote runs, history):
 

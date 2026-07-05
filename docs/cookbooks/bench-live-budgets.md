@@ -13,11 +13,11 @@ without `--yes`; hard guard rails cap what any run can spend. With
 `--cassette` the whole run is local-only, zero cloud, and needs no
 confirmation.
 
-`ge bench` turns latency into a verdict: N sessions × M turns against the
-deployed assist surface (optionally swept across concurrency levels),
-measured per turn (time to first text, full response, inter-chunk stalls,
-errors, responder identity) and judged pass/fail against the budgets in
-`.ge.json`. Charts are derived; the verdict is the deliverable.
+`ge bench` sends N sessions × M turns at the deployed assist surface
+(optionally swept across concurrency levels), measures each turn (time to
+first text, full response, inter-chunk stalls, errors, responder identity),
+and judges the result pass/fail against the budgets in `.ge.json`. The
+verdict is the deliverable; charts are derived from it.
 
 ## When to use this
 

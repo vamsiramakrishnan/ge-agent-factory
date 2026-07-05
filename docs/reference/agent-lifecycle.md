@@ -8,17 +8,17 @@ description: How an agent moves through its OKF-bundle lifecycle — customize a
 
 # Agent lifecycle
 
-An agent's source of truth is its [OKF bundle](okf.html): one directory per
-agent under the corpus root (`okf/<agent-id>/`, or `GE_OKF_ROOT` when set),
-whose root `index.md` frontmatter carries the bundle's **provenance** — where
-it came from and where it stands. Everything downstream (the generated
-use-case catalog, the compiled JSON spec, the built agent) is a compiled
-artifact of that bundle.
+An agent's source of truth is its [OKF bundle](okf.html) (OKF: Open
+Knowledge Format): one directory per agent under the corpus root
+(`okf/<agent-id>/`, or `GE_OKF_ROOT` when set), whose root `index.md`
+frontmatter carries the bundle's **provenance** — where it came from and
+where it stands. Everything downstream (the generated use-case catalog, the
+compiled JSON spec, the built agent) is a compiled artifact of that bundle.
 
 Three verbs move an agent through the lifecycle, and all three run the same
 core (`tools/lib/okf-lifecycle.mjs`) from the CLI, the console registry, and
-the MCP server (`factory_okf_customize`, `factory_agents_register`,
-`factory_agents_track`):
+the MCP (Model Context Protocol) server (`factory_okf_customize`,
+`factory_agents_register`, `factory_agents_track`):
 
 ```bash
 ge okf customize --base <agent-id> --id <new-agent-id>   # produce a variant bundle from a base agent

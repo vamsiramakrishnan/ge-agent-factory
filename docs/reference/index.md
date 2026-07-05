@@ -7,11 +7,12 @@ has_children: true
 
 # Reference
 
-Ground-truth reference for the contract layer — the commands, contracts, and
-APIs behind capture → compile → simulate → prove → hand off. Every command,
-flag, field, and endpoint on these pages exists in the source tree; the CLI
-command tree, the contract schema tables, and the console route table are
-**generated from source** and drift-gated in CI, so they cannot lie.
+This is the ground-truth reference for the contract layer: the commands,
+contracts, and APIs behind capture → compile → simulate → prove → hand off.
+Every command, flag, field, and endpoint on these pages exists in the source
+tree — the CLI command tree, the contract schema tables, and the console
+route table are **generated from source** and drift-gated in CI, so they
+cannot fall out of sync with the code.
 
 Use Reference after you know what you are trying to do and need the exact
 command, field, endpoint, file, stage, or schema. For task order, use the
@@ -60,8 +61,7 @@ use [Core Concepts](../concepts/).
 
 ## JSON output and error surfaces
 
-Two contracts are deliberately *not* separate pages yet, to avoid
-hand-maintained drift:
+Two contracts don't have separate pages yet, to avoid hand-maintained drift:
 
 - **JSON output:** every `ge` command accepts `--json` and emits one
   structured result object on stdout (progress goes to stderr); the shapes

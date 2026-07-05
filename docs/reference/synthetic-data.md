@@ -118,9 +118,10 @@ Data — synthesized seed — servicenow
 per-collection `rows`, `totalRows`, `fkClosureOk`); `--stdout` puts the seed
 JSON itself on stdout and the summary on stderr, so the seed pipes cleanly.
 The full flag table is in the [CLI reference](cli.html#ge-data-synth). The
-same command is a console route (`POST /api/ge/data/synth`) and an MCP tool
-(`factory_data_synth`) via the shared command registry — see
-[Console &amp; APIs](console-and-apis.html) and [MCP tools](../MCP.html).
+same command is a console route (`POST /api/ge/data/synth`) and an MCP
+(Model Context Protocol) tool (`factory_data_synth`) via the shared command
+registry — see [Console &amp; APIs](console-and-apis.html) and
+[MCP tools](../MCP.html).
 
 > An unresolved foreign key fails the command (with the validator as the
 > suggested fix) rather than writing a quietly broken seed — FK closure is

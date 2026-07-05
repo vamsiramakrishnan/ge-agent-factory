@@ -15,7 +15,7 @@ A simulation — a [source-system twin](../concepts/source-system-twins.html) �
 is a stateful stand-in for an enterprise backend, realistic enough that a
 compiled agent behaves as if it were wired into the real system. This guide
 creates a new twin from natural language, an OpenAPI spec, or sample rows,
-and mounts it into the running MCP (Model Context Protocol) service — the
+then mounts it into the running MCP (Model Context Protocol) service — the
 layer generated agents call through to reach source systems. It can also
 promote the twin into the curated corpus so it loads as a built-in.
 
@@ -83,8 +83,8 @@ uses Vertex; pass `--no-llm` to force the offline heuristic tier.
    The CLI prints a JSON result (`id`, `displayName`, `tools`, `collections`,
    `valid`, `validationErrors`, `repairs`, `registered`, `ok: true`).
 
-4. **Alternative: scaffold a pack from an archetype** if you'd rather
-   hand-author from a template:
+4. **Alternative: scaffold a pack from an archetype** to hand-author from a
+   template:
 
    ```bash
    node apps/factory/scripts/scaffold-simulator-pack.mjs --id partsledger --archetype procurement

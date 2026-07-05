@@ -27,8 +27,8 @@ the bulk actions.
 ## Repair Queue — converge to a target
 
 A targeted queue for driving agents to a goal stage (`preview`, `promote`,
-`deploy:plan`, `publish:plan`) with optional auto-repair: pick a
-department/status scope and a target, run it, and the queue tracks the
+`deploy:plan`, `publish:plan`) with optional auto-repair. Pick a
+department/status scope and a target, then run it — the queue tracks the
 resulting repair runs as they observe blockers, fix what they can, and
 retry. This is the console face of
 [repairing a failed proof](../cookbooks/repair-failed-proof.html); the CLI

@@ -12,12 +12,12 @@ description: Talk to the deployed agent through the same streaming assist surfac
 application default credentials. Replay with `--cassette` is local-only, zero
 cloud.
 
-`ge drive` is the conversation end of [live proof](../concepts/live-proof.html):
-you talk to the *deployed* agent through the same streaming assist surface real
-users hit, and every answer arrives with an instrumentation footer — time to
-first text, full response time, chunk count, worst stall, session, responder
-identity, tool invocations. The interview captures intent into contracts;
-drive captures behavior into evalsets.
+`ge drive` talks to the *deployed* agent through the same streaming assist
+surface real users hit, and every answer arrives with an instrumentation
+footer — time to first text, full response time, chunk count, worst stall,
+session, responder identity, tool invocations. It is the conversation end of
+[live proof](../concepts/live-proof.html): the interview captures intent
+into contracts, and drive captures behavior into evalsets.
 
 ## When to use this
 
@@ -103,8 +103,8 @@ ttft 412ms · full 1.4s · chunks 5 · max gap 610ms · session …/sessions/abc
 | `responder` | The identity assertion when `--target-agent` was given: `matched`, `mismatched`, or `unknown ⚠` when the stream carried no identity evidence. Absent when no expected agent is configured. |
 | `tools` | Number of tool invocations the stream surfaced for this turn (absent when none). |
 
-These are the same numbers `ge bench` later holds against budgets — the
-footer is the single-conversation view of the same measurements.
+`ge bench` later holds these same numbers against budgets — the footer is
+the single-conversation view.
 
 ## Expected output
 

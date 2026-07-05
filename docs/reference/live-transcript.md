@@ -10,11 +10,11 @@ description: The LiveTranscript artifact — the one behavioral record every liv
 
 The **LiveTranscript** is the one behavioral artifact shared by every live
 surface. `ge drive`, `ge prove --live`, `ge bench`, cassette replay, the
-console's live views, and the MCP live tools all produce and consume this
-shape (schema: `tools/lib/live/transcript.mjs`, `apiVersion: ge.dev/v1`,
-`kind: LiveTranscript`). If two live features ever needed different
-transcript shapes, the abstraction would be wrong — the design rule is to
-extend this one.
+console's live views, and the MCP (Model Context Protocol) live tools all
+produce and consume this shape (schema: `tools/lib/live/transcript.mjs`,
+`apiVersion: ge.dev/v1`, `kind: LiveTranscript`). If two live features ever
+needed different transcript shapes, the abstraction would be wrong — the
+design rule is to extend this one.
 
 The wire shape mirrors what the Discovery Engine AssistantService streams:
 each chunk is a `StreamAssistResponse`, answer text accumulates from

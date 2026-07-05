@@ -6,11 +6,11 @@ layout: default
 
 # Developer Guide
 
-This guide is the fastest way to understand why the repo exists, where the code
-lives, and how to make a change without guessing.
+This guide explains why the repo is shaped this way, where the code lives, and
+how to make a change without guessing.
 
 Unfamiliar term? See the [Glossary](./GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, pipelines, …).
+definitions of harness, OKF, canary, planes, pipelines, and other jargon.
 
 ## Purpose first
 
@@ -20,12 +20,11 @@ around one principle: **the spec is the contract**. Business intent, source
 systems, data entities, tool bindings, workflows, eval mechanisms, generated code,
 and cloud release stages all trace back to that contract.
 
-That is why the repo has more than an app shell. It has a generator, local
-fixtures, simulator packs, an operator CLI, a console, an MCP (Model Context Protocol) server, Terraform,
+That's why the repo holds a generator, local fixtures, simulator packs, an
+operator CLI, a console, an MCP (Model Context Protocol) server, Terraform,
 run [ledgers](./GLOSSARY.html#ledger) (durable run records), evals, and
-generated-agent workspaces. Those pieces exist so a
-developer can reproduce the agent locally and an operator can release the same
-artifact into a governed project.
+generated-agent workspaces — pieces that let a developer reproduce an agent
+locally and an operator release the same artifact into a governed project.
 
 ## What to run first
 

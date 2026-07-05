@@ -5,12 +5,12 @@ editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/s
 sidebar:
   order: 5
 ---
-Short answer: **they are not alternatives.** `agents-cli` (with ADK under it)
-is the build-and-deploy layer for one Google agent project. GE Agent Factory
-is the contract layer above it — it decides *what* that project must contain,
-generates it, <a href="/ge-agent-factory/reference/glossary/#prove" title="The golden path's middle verb — compiling contracts into working agents and running their evidence: evals, the spec-to-code trace, and verify verdicts, all up to the build boundary (pure local computation).">proves</a> it, and then drives `agents-cli` to ship it. Every
-<a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> the factory emits **is** an `agents-cli` project; you can `cd` into
-one and use `agents-cli` directly.
+Short answer: **they are not alternatives.** `agents-cli` (with ADK — the
+Agent Development Kit — under it) is the build-and-deploy layer for one
+Google agent project. GE Agent Factory is the contract layer above it — it
+decides *what* that project must contain, generates it, <a href="/ge-agent-factory/reference/glossary/#prove" title="The golden path's middle verb — compiling contracts into working agents and running their evidence: evals, the spec-to-code trace, and verify verdicts, all up to the build boundary (pure local computation).">proves</a> it, and then
+drives `agents-cli` to ship it. Every <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> the factory emits **is** an
+`agents-cli` project; you can `cd` into one and use `agents-cli` directly.
 
 ## Layer by layer
 
@@ -20,9 +20,9 @@ one and use `agents-cli` directly.
 
 | Layer | Owned by | Artifacts |
 |---|---|---|
-| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable OKF twin](/ge-agent-factory/concepts/enterprise-agent-contract/#the-contracts-portable-form-okf) |
-| Simulation, evals, proof | **GE Agent Factory** | <a href="/ge-agent-factory/reference/glossary/#source-system-twin" title="The docs' name for a simulated enterprise backend — a scenario/simulator pack executed by the generic simulator engine — realistic enough (state machines, approval gates, idempotency) that agents are tested against it before any real integration exists.">source-system twins</a>, fixtures, <a href="/ge-agent-factory/reference/glossary/#evalset" title="The generated evaluation suite for one agent — prompts plus expected behavior in agents-cli's eval format — that scores whether the agent actually behaves as the spec's behavior contract says.">evalsets</a>, <a href="/ge-agent-factory/reference/glossary/#spec-to-code-trace" title="The automated check that verifies the code the factory generated actually matches what the spec asked for; one of the inputs the Promotion Gate reads.">spec-to-code trace</a>, verify-stage verdicts, <a href="/ge-agent-factory/reference/glossary/#promotion-gate" title="An automated pass/fail check that runs right before deploy and refuses to ship a workspace whose validation report, spec-to-code trace, or harness verdicts (review/refine) haven't cleared their bar.">promotion gate</a> |
-| Agent project scaffold & code | **ADK / <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a>** (generated and driven by the factory) | `app/agent.py`, `app/tools.py`, `pyproject.toml`, `agents-cli-manifest.yaml` |
+| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable OKF (Open Knowledge Format) twin](/ge-agent-factory/concepts/enterprise-agent-contract/#the-contracts-portable-form-okf) |
+| Simulation, evals, proof | **GE Agent Factory** | <a href="/ge-agent-factory/reference/glossary/#source-system-twin" title="A simulated enterprise backend — a scenario/simulator pack run by the generic simulator engine — realistic enough (state machines, approval gates, idempotency) to test agents against before any real integration exists.">source-system twins</a>, fixtures, <a href="/ge-agent-factory/reference/glossary/#evalset" title="The generated evaluation suite for one agent — prompts plus expected behavior in agents-cli's eval format — that scores whether the agent behaves as the spec's behavior contract says.">evalsets</a>, <a href="/ge-agent-factory/reference/glossary/#spec-to-code-trace" title="The automated check that verifies the code the factory generated matches what the spec asked for; one of the inputs the Promotion Gate reads.">spec-to-code trace</a>, verify-stage verdicts, <a href="/ge-agent-factory/reference/glossary/#promotion-gate" title="An automated pass/fail check that runs right before deploy and refuses to ship a workspace whose validation report, spec-to-code trace, or harness verdicts (review/refine) haven't cleared their bar.">promotion gate</a> |
+| Agent project scaffold & code | **ADK / <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a>** (generated and driven by the factory) | `app/agent.py`, `app/tools.py`, `pyproject.toml`, `agents-cli-manifest.yaml` |
 | Deploy & runtime | **agents-cli → Agent Engine** | deployed Agent Runtime, Agent Registry entry |
 | End-user surface | **Gemini Enterprise** | the published agent your business users talk to |
 

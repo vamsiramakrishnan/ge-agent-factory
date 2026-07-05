@@ -13,8 +13,8 @@ boundary on this machine; no cloud credentials touched.
 
 A failed proof — a validation report that isn't passing, a harness verdict
 that refused promotion, an eval that missed its trajectory — is a work item,
-not a dead end. This guide runs the repair loop: observe the blockers, let
-the repair runner fix and retry each blocked workspace, and re-prove.
+not a dead end. This guide runs the repair loop: observe the blockers, run
+the repair runner against each blocked workspace, and re-prove.
 
 <p align="center">
   <img src="../assets/diagrams/repair-loop.svg" alt="ge fleet status surveys blockers, then ge agents logs reads the failing stage, then ge fleet repair observes, repairs, and retries; a converged item goes to re-prove, an exhausted item is blocked and loops back to reading logs after a manual fix; an interrupted (not blocked) item resumes directly to re-prove" width="500">
@@ -34,8 +34,8 @@ the repair runner fix and retry each blocked workspace, and re-prove.
 A blocked workspace (or several) and its run history:
 
 - run ids from `ge agents status` or `ge runs list`;
-- blocker descriptions from `ge fleet status` — *fleet* here is the set of
-  all agent workspaces the factory tracks;
+- blocker descriptions from `ge fleet status` (fleet: the set of all agent
+  workspaces the factory tracks);
 - the failing stage's logs (step 2 below).
 
 The repair runner executes through the local daemon (the background process

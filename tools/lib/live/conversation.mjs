@@ -67,7 +67,7 @@ export function createConversationSession(runner, {
         blockers.push(liveError("GELIVE005", `session threading broke at turn(s) ${breaks.join(", ")}`, {
           where: `transcript ${id}`,
           why: "a follow-up turn was not sent with the session the previous final response returned",
-          fix: "retry the run; if it persists the assist surface is not continuing sessions",
+          fix: "ge drive --record-cassette <path> to capture a reproducible transcript, then file it",
         }));
       }
       const failedTurn = transcriptTurns.find((turn) => turn.assistant.state === "FAILED");
@@ -75,7 +75,7 @@ export function createConversationSession(runner, {
         blockers.push(liveError("GELIVE004", `assist call failed at turn ${failedTurn.index} (state FAILED)`, {
           where: `transcript ${id}, turn ${failedTurn.index}`,
           why: "the assist surface reported a terminal FAILED state for the answer",
-          fix: "retry the turn; check the engine's logs if the failure repeats",
+          fix: "retry the turn; if it keeps failing, ge doctor to check the live target",
           retryable: true,
         }));
       }

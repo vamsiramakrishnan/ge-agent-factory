@@ -45,10 +45,9 @@ webhooks — keyed per agent/system/scenario so two agents never collide.
 
 ## Example — synthesize a twin you don't have
 
-The headline capability is **bring your own system**: describe a backend in
-natural language, upload sample payloads, or hand over an OpenAPI spec, and
-the factory compiles it into a live twin and mounts it immediately — no
-redeploy, no new code:
+Bring your own system: describe a backend in natural language, upload
+sample payloads, or hand over an OpenAPI spec. The factory compiles it into
+a live twin and mounts it immediately — no redeploy, no new code:
 
 <p align="center">
   <img src="../assets/diagrams/byo-synthesis.svg" alt="description, samples, or OpenAPI to sketch to contract to seed to overlay" width="320">
@@ -66,9 +65,10 @@ corpus as a normal pack. Walkthrough:
 
 ## Twins are shaped for governance, not just data
 
-In the cloud, the per-department MCP service resolves each tool's binding to
-an operation over the agent's per-agent store — and wraps every result in a
-**source-system envelope**: source system id, evidence kind, audit trail.
+In the cloud, the per-department MCP (Model Context Protocol) service
+resolves each tool's binding to an operation over the agent's per-agent
+store, and wraps every result in a **source-system envelope**: source
+system id, evidence kind, audit trail.
 
 <p align="center">
   <img src="../assets/diagrams/simulator-backend-flow.svg" alt="agent switches between local fixture files and the MCP tool services, which wrap results in a source-system envelope" width="800">

@@ -494,7 +494,7 @@ Run a ge command as a background run; pass args after --
 
 ### `ge infra`
 
-Drive the terraform module (init|plan|apply|output|destroy)
+Stand up or tear down the cloud infrastructure this factory needs
 
 | Flag | Type | Description |
 |---|---|---|
@@ -658,7 +658,7 @@ Generated agent code → generated-agents/ → git (cloud: GCS; --local: harness
 
 ### `ge daemon`
 
-Local GE runtime daemon: start · status · tasks · task · stop
+Keep long factory work running after your terminal closes
 
 ### `ge daemon start`
 
@@ -728,7 +728,7 @@ Clear local GE runtime/factory/pipeline/interview state
 
 ### `ge ledger`
 
-Durable run ledger (ADR 0001): backfill · runs · fleet · plan
+See every run the factory has ever done, and rebuild the record if it drifts
 
 ### `ge ledger backfill`
 

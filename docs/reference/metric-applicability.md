@@ -14,12 +14,12 @@ Two rails run a compiled eval suite:
   of the loop: reference answers, tool-call interception, deterministic
   fixtures.
 - **Live stream-assist** — the deployed agent through its real assist
-  surface. GE owns transport-level facts the local rail cannot see (real
-  latency, session threading, responder identity), but stream-assist can
-  only observe what the stream exposes.
+  surface. GE (Gemini Enterprise) owns transport-level facts the local rail
+  cannot see — real latency, session threading, responder identity — but
+  stream-assist can only observe what the stream exposes.
 
-Not every metric can grade both rails. This matrix is the single answer to
-"can metric X grade rail Y" — kept as data
+Not every metric can grade both rails. This matrix is the single source of
+truth for "can metric X grade rail Y" — kept as data
 (`packages/evalkit/src/metric-applicability.mjs`) so docs, the CLI,
 and gating code all read the same source. `ge evals compile` also writes it
 to `.ge/proof/metric-applicability.json` alongside every compiled suite.
