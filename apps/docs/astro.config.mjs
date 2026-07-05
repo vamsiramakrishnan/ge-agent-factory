@@ -21,6 +21,11 @@ export default defineConfig({
       description: SITE_DESCRIPTION,
       favicon: "/favicon.svg",
       customCss: ["./src/styles/custom.css"],
+      components: {
+        // Adds a breadcrumb above the page title, built from Starlight's own
+        // sidebar data — see the component for why this is safe to override.
+        PageTitle: "./src/components/PageTitle.astro",
+      },
       social: [
         { icon: "github", label: "GitHub", href: "https://github.com/vamsiramakrishnan/ge-agent-factory" },
       ],

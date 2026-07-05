@@ -33,6 +33,36 @@
   --ge-radius-md: 0.375rem;
   --ge-radius-lg: 0.5rem;
   --ge-radius-xl: 0.75rem;
+
+  /* Baseline grid — a single 4px module. Every margin, padding, and gap this
+   * file sets (the bespoke landing-page chrome; Starlight's own component
+   * spacing is out of scope) is one of these rungs, never an arbitrary
+   * value — an engineered layout reads as measured, not decorated. */
+  --ge-space-1: 0.25rem; /* 4px */
+  --ge-space-2: 0.5rem; /* 8px */
+  --ge-space-3: 0.75rem; /* 12px */
+  --ge-space-4: 1rem; /* 16px */
+  --ge-space-5: 1.5rem; /* 24px */
+  --ge-space-6: 2rem; /* 32px */
+  --ge-space-7: 3rem; /* 48px */
+
+  /* Industrial micro-label — the register for machine metadata (stage
+   * indices, refs, ids), kept visually distinct from human-readable prose:
+   * tiny, uppercase, wide-tracked, monospace. Never used for content a
+   * reader is meant to read as a sentence. */
+  --ge-label-size: 0.625rem; /* 10px */
+  --ge-label-tracking: 0.1em;
+}
+
+.ge-label {
+  display: inline-block;
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
+  font-weight: 600;
+  line-height: 1rem;
+  text-transform: uppercase;
+  letter-spacing: var(--ge-label-tracking);
+  color: var(--sl-color-gray-3);
 }
 
 /* ── Status ramp (status-ramp.mjs) — one status→color vocabulary from TTY to
@@ -181,27 +211,66 @@ h3 {
   font-weight: 700;
 }
 
-/* Sidebar group labels and top-level links carry the display face too, like
- * the product's nav chrome. */
+/* Sidebar group labels are engraved captions — the same industrial-label
+ * register as .ge-label (mono, tiny, uppercase, wide-tracked): machine
+ * navigation chrome, not prose. Same treatment for the right-rail "On this
+ * page" caption, so both wayfinding panels read as one system. */
 nav.sidebar .top-level > li > details > summary .group-label > span {
-  font-family: var(--ge-display-font);
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
 }
 
-/* Current-page marker: the product's "blue means live" applied to nav. */
+.right-sidebar-panel h2 {
+  font-size: var(--ge-label-size);
+  font-weight: 600;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+}
+
+/* Current-page marker: a quiet recessed surface plus one lit dot ahead of
+ * the label — the product's "blue means live" as a single indicator lamp,
+ * not a flood tint. Functional color logic: the page you're on is the one
+ * interactive thing here, so it earns the one dot, not a wash of accent
+ * behind it. */
 nav.sidebar a[aria-current="page"],
 nav.sidebar a[aria-current="page"]:hover,
 nav.sidebar a[aria-current="page"]:focus {
-  background-color: var(--sl-color-accent-low);
-  color: var(--sl-color-text-accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
   font-weight: 600;
 }
 
-:root[data-theme="light"] nav.sidebar a[aria-current="page"],
-:root[data-theme="light"] nav.sidebar a[aria-current="page"]:hover,
-:root[data-theme="light"] nav.sidebar a[aria-current="page"]:focus {
-  color: var(--sl-color-accent-high);
+nav.sidebar a[aria-current="page"]::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--sl-color-accent);
+}
+
+/* Group disclosure marks are mono +/− (a switch position), never a rotating
+ * chevron — an icon that spins is decoration; a mark that flips is a state. */
+nav.sidebar .caret {
+  display: none;
+}
+
+nav.sidebar summary::after {
+  content: "+";
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}
+
+nav.sidebar details[open] > summary::after {
+  content: "\2212";
 }
 
 /* Focus ring matches the product (tokens.css :focus-visible). */
@@ -210,11 +279,119 @@ nav.sidebar a[aria-current="page"]:focus {
   outline-offset: 2px;
 }
 
+/* ── Header search: a rule, not a box. Starlight's default search trigger
+ * is a bordered pill on desktop; flatten it to a bottom hairline that only
+ * turns accent on focus/hover, so blue stays reserved for the moment you're
+ * actually about to type. ────────────────────────────────────────────────── */
+@media (min-width: 50rem) {
+  button[data-open-modal] {
+    border: none;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  button[data-open-modal]:hover {
+    border-bottom-color: var(--sl-color-white);
+  }
+
+  :focus-visible > button[data-open-modal],
+  button[data-open-modal]:focus-visible {
+    border-bottom-color: var(--sl-color-accent);
+  }
+}
+
+button > kbd {
+  border: 1px solid var(--sl-color-gray-5);
+  background-color: transparent;
+}
+
+/* ── Buttons (per the gaf-ui-002 interface spec): one primary action per
+ * view, everything else hairline or text. States shift tone only — no
+ * shadow, no size change, no movement; a button doesn't announce itself
+ * with light and depth, it just gets one shade darker when you touch it.
+ * Starlight's own .sl-link-button defaults to a bare 999rem pill; flatten
+ * to the site's small geometric radius instead. ─────────────────────────── */
+.sl-link-button {
+  border-radius: var(--ge-radius);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.sl-link-button.primary:hover {
+  background: var(--sl-color-accent-high);
+  border-color: var(--sl-color-accent-high);
+}
+
+/* .minimal stays Starlight's plain text-link treatment (that's how this
+ * site's hero uses it, next to one solid .primary action) — only .secondary
+ * gets the hairline-box look, for whenever a page wants two real buttons. */
+.sl-link-button.secondary {
+  border-color: var(--sl-color-white);
+  background: transparent;
+}
+
+.sl-link-button.secondary:hover {
+  background: var(--sl-color-gray-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-link-button {
+    transition: none;
+  }
+}
+
 /* ── Asides — replace Starlight's thick side-stripe with a full hairline
  * border + tint, matching the product's callout treatment. ──────────────── */
 .starlight-aside {
   border: 1px solid color-mix(in srgb, var(--sl-color-asides-border) 55%, transparent);
   border-radius: var(--ge-radius-md);
+}
+
+/* ── Code: the terminal window, not a syntax-highlighted box. The astro
+ * config pins one dark theme in BOTH site themes (code is terminal content,
+ * not prose) — this chrome makes the frame read as an instrument's dark
+ * readout glass, and gives the title bar of a ```bash frame the same
+ * industrial-label register as everywhere else. ─────────────────────────── */
+.expressive-code .frame {
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.expressive-code .frame.is-terminal .header {
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
+  font-weight: 600;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+}
+
+/* Inline code stays a quiet chassis chip (readable in running prose, not a
+ * code block treatment). */
+.sl-markdown-content code:not(pre code) {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  border-radius: var(--ge-radius-sm);
+}
+
+/* Horizontal rules are measuring scales, not blank lines. */
+.sl-markdown-content hr {
+  height: 7px;
+  border: 0;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 35%, transparent);
+}
+
+/* Section joints: h2 sits on a module seam. */
+.sl-markdown-content h2 {
+  padding-bottom: var(--ge-space-2);
+  border-bottom: 1px solid var(--sl-color-gray-6);
 }
 
 /* ── Tables — this site leans heavily on wide reference tables ──────────── */
@@ -225,9 +402,23 @@ nav.sidebar a[aria-current="page"]:focus {
 
 .sl-markdown-content thead th {
   background-color: var(--sl-color-gray-6);
-  font-family: var(--ge-display-font);
+  font-family: var(--sl-font-mono);
+  font-size: var(--ge-label-size);
   font-weight: 600;
+  letter-spacing: var(--ge-label-tracking);
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
   text-align: left;
+}
+
+/* A row you're reading is a row that's "live" — the one place a wide
+ * reference table earns a hover cue. */
+.sl-markdown-content tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.sl-markdown-content tbody tr:hover {
+  background-color: var(--sl-color-gray-6);
 }
 
 /* Tabular numerals for the many duration/count columns, like the console. */
@@ -252,11 +443,62 @@ nav.sidebar a[aria-current="page"]:focus {
 .card {
   border-radius: var(--ge-radius-md);
   transition: border-color 120ms ease, background-color 120ms ease;
+
+  /* Starlight's own default cycles each card's icon swatch through
+   * purple/orange/green/red/blue by nth-child position — decoration with no
+   * meaning, the opposite of "color is semantics." Flatten the whole
+   * rotation to one neutral hairline + tonal fill; a card only earns color
+   * when it is genuinely interactive (hover, below) or status-bearing. */
+  --sl-card-border: var(--sl-color-gray-5);
+  --sl-card-bg: var(--sl-color-gray-6);
 }
 
 .card:hover {
   border-color: var(--sl-color-accent);
   background-color: color-mix(in srgb, var(--sl-color-accent-low) 40%, transparent);
+}
+
+/* Starlight's own components carry a few default drop shadows on in-flow
+ * (non-overlay) chrome — LinkCard, the prev/next page footer, and the
+ * announcement banner. Flatten all three so every card on the site keeps
+ * the same hairline-only rule; a floating overlay (the search modal, the
+ * mobile TOC popover) legitimately earns a shadow to read as above the
+ * page, so those are left alone. */
+.sl-link-card,
+.pagination-links a,
+.sl-banner {
+  box-shadow: none;
+}
+
+/* Pagination cards: hairline sharpens to full ink on hover, not a color —
+ * Starlight's own default lightens toward gray-2, a half-step short. */
+.pagination-links a:hover {
+  border-color: var(--sl-color-white);
+}
+
+/* ── Tabs (per the gaf-ui-002 spec): state is a rule and a weight, not a
+ * fill or a color. Starlight's default marks the active tab with blue text
+ * + a blue rule — color standing in for state, which the button rule above
+ * just spent a paragraph arguing against. Ink underline + font-weight only. */
+[role="tablist"] {
+  border-bottom: 1px solid var(--sl-color-gray-5);
+}
+
+.tab {
+  margin-bottom: -1px;
+}
+
+.tab > [role="tab"] {
+  padding-block: var(--ge-space-2);
+  border-bottom: 2px solid transparent;
+  color: var(--sl-color-gray-3);
+  font-weight: 400;
+}
+
+.tab [role="tab"][aria-selected="true"] {
+  border-bottom-color: var(--sl-color-white);
+  color: var(--sl-color-white);
+  font-weight: 600;
 }
 
 /* ── Landing page: the three-step first-run journey ─────────────────────── */
@@ -267,14 +509,14 @@ nav.sidebar a[aria-current="page"]:focus {
   display: inline-block;
   font-family: var(--sl-font-mono);
   font-size: var(--sl-text-xs);
-  line-height: 1.6;
+  line-height: 1.25rem; /* 20px: on-grid, not the 19.2px a 1.6 ratio gives */
   text-transform: lowercase;
   letter-spacing: 0.02em;
   color: var(--sl-color-gray-3);
   background: var(--sl-color-gray-6);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius);
-  padding: 0 0.6rem;
+  padding-inline: var(--ge-space-2);
 }
 
 :root[data-theme="light"] .ge-eta {
@@ -299,10 +541,15 @@ nav.sidebar a[aria-current="page"]:focus {
 }
 
 /* ── High-polish docs landing page ──────────────────────────────────────── */
+/* Functional color logic: blue is reserved for what you can touch (links,
+ * hover, focus, the current nav item) or a critical/live state (running).
+ * The hero divider and the panel/chip frames below are pure decoration —
+ * informational, not interactive — so they read in neutral hairline gray,
+ * never a blue tint, however faint. */
 .hero {
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid color-mix(in srgb, var(--sl-color-accent) 16%, transparent);
+  border-bottom: 1px solid var(--sl-color-gray-5);
 }
 
 /* Instrument-panel wash: a faint dot-grid (the Braun "ventilation grille"
@@ -321,6 +568,23 @@ nav.sidebar a[aria-current="page"]:focus {
   z-index: -1;
 }
 
+/* The hero closes on a measuring scale — the tuning-dial tick strip, same
+ * device as the hr/h2 seams above. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 8px;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 38%, transparent);
+}
+
 .hero h1 {
   max-width: 11ch;
   margin-inline: auto;
@@ -335,9 +599,9 @@ nav.sidebar a[aria-current="page"]:focus {
 
 .ge-hero-panel {
   position: relative;
-  margin: 1.5rem auto 2rem;
-  padding: clamp(0.8rem, 2vw, 1.25rem);
-  border: 1px solid var(--sl-color-accent);
+  margin: var(--ge-space-5) auto var(--ge-space-6);
+  padding: clamp(var(--ge-space-3), 2vw, var(--ge-space-4));
+  border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-xl);
   background: var(--sl-color-black);
 }
@@ -354,20 +618,23 @@ nav.sidebar a[aria-current="page"]:focus {
 .ge-screenshot-wall,
 .ge-tape-grid {
   display: grid;
-  gap: 1rem;
+  gap: var(--ge-space-4);
 }
 
 .ge-proof-strip {
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  margin-bottom: 1rem;
+  margin-bottom: var(--ge-space-4);
 }
 
 .ge-proof-strip span {
-  padding: 0.55rem 0.75rem;
+  padding: var(--ge-space-2) var(--ge-space-3);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius);
   color: var(--sl-color-gray-2);
-  background: color-mix(in srgb, var(--sl-color-accent-low) 32%, transparent);
+  /* Output labels, not links — informational, so the fill is a neutral ink
+   * recess (the same duotone the tab switches use), never the blue tint a
+   * touchable element would carry. */
+  background: color-mix(in srgb, var(--sl-color-white) 6%, transparent);
   font-family: var(--sl-font-mono);
   font-size: var(--sl-text-sm);
   text-transform: lowercase;
@@ -381,7 +648,7 @@ nav.sidebar a[aria-current="page"]:focus {
 
 .ge-value-grid {
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  margin: 2rem 0 3rem;
+  margin: var(--ge-space-6) 0 var(--ge-space-7);
 }
 
 .ge-value-card {
@@ -389,8 +656,8 @@ nav.sidebar a[aria-current="page"]:focus {
   min-height: 9rem;
   flex-direction: column;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.1rem;
+  gap: var(--ge-space-4);
+  padding: var(--ge-space-4);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-lg);
   color: inherit;
@@ -407,7 +674,7 @@ nav.sidebar a[aria-current="page"]:focus {
 .ge-value-card strong {
   color: var(--sl-color-white);
   font-family: var(--ge-display-font);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 
 .ge-value-card span {
@@ -424,7 +691,7 @@ nav.sidebar a[aria-current="page"]:focus {
   height: 3.5rem;
   width: 100%;
   object-fit: contain;
-  padding: 0.7rem;
+  padding: var(--ge-space-3);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-md);
   background: var(--sl-color-gray-6);
@@ -460,7 +727,7 @@ nav.sidebar a[aria-current="page"]:focus {
 }
 
 .ge-tape-grid figcaption {
-  margin-top: 0.55rem;
+  margin-top: var(--ge-space-2);
   color: var(--sl-color-gray-3);
   font-size: var(--sl-text-sm);
 }
@@ -479,4 +746,17 @@ nav.sidebar a[aria-current="page"]:focus {
   .ge-screenshot-wall img:first-child {
     grid-row: auto;
   }
+}
+
+/* ── Steps: a numbered sequence you're actively doing (install, configure,
+ * verify), not a bullet list — the one place a solid primary fill on a
+ * small badge is earned outside a real interactive control: it marks "the
+ * live step," the same semantic as the status ramp's running-is-primary
+ * rule. Starlight ships the vertical guideline already; only the badge
+ * shape (round -> the site's small geometric radius) changes. ──────────── */
+.sl-steps > li::before {
+  color: var(--sl-color-black);
+  background-color: var(--sl-color-accent);
+  border-radius: var(--ge-radius-sm);
+  box-shadow: none;
 }
