@@ -15,7 +15,7 @@ geClient.ts -> ge-api.mjs -> transport.mjs -> factory-core.mjs
 
 ## Mutating Command Pattern
 
-1. Add command metadata to `tools/lib/ge-command-registry.mjs`.
+1. Add command metadata to `packages/capability-registry/src/registry.mjs`.
 2. Expose route through `commandForRoute`.
 3. Return `{ job, command, cfg }` from `ge-api.mjs`.
 4. Start via `startGeJob` in `transport.mjs`.

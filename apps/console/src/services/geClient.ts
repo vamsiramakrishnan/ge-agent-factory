@@ -36,6 +36,11 @@ import { authEnabled, getToken } from "../auth/firebase";
 import type { LedgerEvent } from "@ge/run-ledger/frames";
 // A known built-in simulated system (from the generator registry) or, once
 // synthesized, a brand-new LIVE simulator bound to the interview.
+// Agent Library blueprint records are schema'd in @ge/blueprint-library
+// (AgentBlueprintJsonSchema); the console treats them as open records and
+// types only the keys it dereferences.
+export type LibraryBlueprint = { slug: string; id: string } & Record<string, unknown>;
+
 export interface SystemOption {
   id: string;
   displayName: string;
@@ -613,6 +618,25 @@ export const ge = {
     seed?: number;
     useLlm?: boolean;
   }) => post("/api/systems/synthesize", body) as Promise<SynthesizedSystem>,
+  // Agent Library: read-only projections over the generated blueprint index
+  // (@ge/blueprint-library via apps/console/src/server/library.mjs), plus
+  // create-from-library which dispatches through the generic registry job
+  // path (create.fromLibrary -> POST /api/ge/create).
+  libraryStats: () => j<{ schemaVersion: string; counts: Record<string, number>; blueprints: LibraryBlueprint[] }>("/api/ge/library/stats"),
+  librarySearch: (params: { query?: string; department?: string; limit?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.query) qs.set("q", params.query);
+    if (params.department) qs.set("department", params.department);
+    if (params.limit !== undefined) qs.set("limit", String(params.limit));
+    const q = qs.toString();
+    return j<{ ok: boolean; query: string; count: number; blueprints: LibraryBlueprint[] }>(`/api/ge/library/search${q ? `?${q}` : ""}`);
+  },
+  libraryBlueprint: (slug: string) =>
+    j<{ blueprint: LibraryBlueprint; status: { id: string; state: string; nextCommand?: string; blockers?: string[] } }>(
+      `/api/ge/library/${slug.split("/").map(encodeURIComponent).join("/")}`,
+    ),
+  createFromLibrary: (body: { slug: string; out?: string; overlay?: string; target?: string; dryRun?: boolean; noSmoke?: boolean; force?: boolean }) =>
+    post("/api/ge/create", body),
   runtimeStatus: () => j<RuntimeStatus>("/api/runtime/status"),
   runtimeTasks: (limit = 25, full = false) =>
     j<{ tasks: RuntimeTaskSummary[] }>(`/api/runtime/tasks?limit=${encodeURIComponent(String(limit))}${full ? "&full=true" : ""}`),

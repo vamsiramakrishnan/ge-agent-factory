@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { createFactoryPlane, serviceEnv, serviceIapEnabled, serviceMemory, serviceUrl, terraformVarArgs } from "./factory-plane.mjs";
+import { CONSOLE_SERVICE, createFactoryPlane, serviceEnv, serviceIapEnabled, serviceMemory, serviceUrl, terraformVarArgs } from "./factory-plane.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -25,7 +25,7 @@ function makePlane(overrides = {}) {
   const calls = [];
   const plane = createFactoryPlane({
     repoRoot: "/repo",
-    terraformDir: "/repo/installer/terraform",
+    terraformDir: overrides.terraformDir ?? "/repo/installer/terraform",
     ensureGcloud: () => calls.push(["ensureGcloud"]),
     ensureTerraform: () => calls.push(["ensureTerraform"]),
     ensureAgentIdentityConfig: (cfg) => { cfg.agentIdentityOrgId ||= "456"; },
@@ -116,6 +116,86 @@ test("build returns gateway and worker image tags", () => {
   // positional source = repo root (build context is the whole repo), and NOT --tag.
   expect(workerBuild[2]).toContain("/repo");
   expect(workerBuild[2]).not.toContain("--tag");
+});
+
+test("build console target submits the console cloudbuild config with discrete substitutions", () => {
+  const { calls, plane } = makePlane();
+
+  const result = plane.build({
+    project: "demo",
+    region: "us-central1",
+  }, { target: "console" });
+
+  expect(result).toEqual({
+    consoleImage: `us-docker.pkg.dev/demo/ge-agent-factory/${CONSOLE_SERVICE}:abc123`,
+  });
+  const builds = calls.filter((call) => call[0] === "run" && call[2][0] === "builds");
+  expect(builds).toHaveLength(1);
+  const [, , argv] = builds[0];
+  expect(argv).toContain("/repo"); // positional source = repo root, same reason as the worker build
+  expect(argv).toContain("--config");
+  expect(argv).toContain("apps/console/cloudbuild.yaml");
+  expect(argv).not.toContain("--tag");
+  const subsIdx = argv.indexOf("--substitutions");
+  expect(subsIdx).toBeGreaterThan(-1);
+  expect(argv[subsIdx + 1]).toBe(`_REGION=us-central1,_AR_REPO=ge-agent-factory,_SERVICE_NAME=${CONSOLE_SERVICE},_TAG=abc123`);
+});
+
+test("build console target honors an explicit tag override", () => {
+  const { plane } = makePlane();
+  const result = plane.build({ project: "demo", region: "us-central1" }, { target: "console", tag: "v2" });
+  expect(result.consoleImage).toBe(`us-docker.pkg.dev/demo/ge-agent-factory/${CONSOLE_SERVICE}:v2`);
+});
+
+test("infra plumbs console_image through terraform apply the same way as gateway/worker", () => {
+  const { calls, plane } = makePlane();
+
+  plane.infra({
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    region: "us-central1",
+    geLocation: "global",
+  }, { sub: "apply", consoleImage: "console:tag" });
+
+  expect(calls.at(-1)[2]).toContain("console_image=console:tag");
+});
+
+test("consoleDoctor never throws and reports fail/warn/pass checks without a project", () => {
+  const { plane } = makePlane();
+  const report = plane.consoleDoctor({});
+  expect(report.ok).toBe(false);
+  expect(report.fails).toBeGreaterThan(0);
+  expect(report.checks.find((check) => check.name === "project configured").status).toBe("fail");
+  // No project → console service lookup is skipped, not attempted with an empty project.
+  expect(report.checks.find((check) => check.name === "console service").status).toBe("warn");
+});
+
+test("consoleDoctor reports a healthy console service", () => {
+  const { plane } = makePlane({
+    terraformDir: join(HERE, "..", "..", "..", "installer", "terraform"),
+    tfOutputs: () => ({ artifact_repository: "us-docker.pkg.dev/demo/ge-agent-factory", console_url: "https://console.example" }),
+    gcloud: (args) => {
+      const joined = args.join(" ");
+      if (joined.includes("run services describe")) {
+        return {
+          ok: true,
+          out: JSON.stringify({
+            metadata: { annotations: { "run.googleapis.com/iap-enabled": "false" } },
+            status: { conditions: [{ type: "Ready", status: "True" }] },
+            spec: { template: { spec: { containers: [{ env: [{ name: "GE_CONSOLE_READONLY", value: "true" }] }] } } },
+          }),
+        };
+      }
+      return { ok: true, out: "" };
+    },
+  });
+
+  const report = plane.consoleDoctor({ project: "demo", region: "us-central1", gatewayUrl: "https://gateway.example" });
+  expect(report.ok).toBe(true);
+  expect(report.checks.find((check) => check.name === "console ready").status).toBe("pass");
+  expect(report.checks.find((check) => check.name === "console GE_CONSOLE_READONLY").status).toBe("pass");
+  expect(report.checks.find((check) => check.name === "console_image bound").status).toBe("pass");
 });
 
 test("worker cloudbuild.worker.yaml is well-formed and uses repo-root context", () => {

@@ -204,6 +204,41 @@ test("classifyReadinessSection produces section repair plan", () => {
   ]);
 });
 
+test("env-only knobs resolve env over file, with their documented defaults", () => {
+  const fields = [
+    ["dataBackend", "GE_DATA_BACKEND", "fixtures"],
+    ["consoleReadonly", "GE_CONSOLE_READONLY", "false"],
+    ["allowUnpromoted", "GE_ALLOW_UNPROMOTED", "false"],
+    ["simulatorOverlayBackend", "GE_SIMULATOR_OVERLAY_BACKEND", "memory"],
+  ];
+  for (const [field, envName, def] of fields) {
+    expect(resolveConfigField(field, {})).toEqual({ value: def, source: "default" });
+    expect(resolveConfigField(field, { file: { [field]: "from-file" } })).toEqual({ value: "from-file", source: "file" });
+    expect(resolveConfigField(field, {
+      env: { [envName]: "from-env" },
+      file: { [field]: "from-file" },
+    })).toEqual({ value: "from-env", source: `env:${envName}` });
+  }
+  // harnessPythonPath has no config default — its runtime fallback (python3 /
+  // discovered venv) lives in tools/lib/doctor/engine.mjs, not CONFIG_FIELDS.
+  expect(resolveConfigField("harnessPythonPath", {})).toEqual({ value: undefined, source: "unset" });
+  expect(resolveConfigField("harnessPythonPath", { env: { GE_HARNESS_PYTHON: "/opt/venv/bin/python3" } }))
+    .toEqual({ value: "/opt/venv/bin/python3", source: "env:GE_HARNESS_PYTHON" });
+});
+
+test("buildFactoryConfig carries simulatorOverlayBackend (mcp-plane's deploy consumer) but not the env-first-only knobs", () => {
+  expect(buildFactoryConfig({}).simulatorOverlayBackend).toBe("memory");
+  expect(buildFactoryConfig({ env: { GE_SIMULATOR_OVERLAY_BACKEND: "firestore" } }).simulatorOverlayBackend).toBe("firestore");
+  // No JS reader consumes cfg.dataBackend / cfg.consoleReadonly / cfg.harnessPythonPath /
+  // cfg.allowUnpromoted today (Python and process.env read the env var directly) —
+  // buildFactoryConfig deliberately does not carry them, to avoid dead config plumbing.
+  const cfg = buildFactoryConfig({});
+  expect(cfg.dataBackend).toBeUndefined();
+  expect(cfg.consoleReadonly).toBeUndefined();
+  expect(cfg.harnessPythonPath).toBeUndefined();
+  expect(cfg.allowUnpromoted).toBeUndefined();
+});
+
 test("gatewayTransport resolves proxy by default, direct via env/flag/file", () => {
   expect(buildFactoryConfig({}).gatewayTransport).toBe("proxy");
   expect(buildFactoryConfig({ env: { GE_GATEWAY_TRANSPORT: "direct" } }).gatewayTransport).toBe("direct");

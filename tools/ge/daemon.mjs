@@ -2,23 +2,21 @@
 // Leaf commands are defined once and re-used by the `ge runs` group
 // (tools/ge/runs.mjs) via runtimeLeaves. Moved verbatim out of tools/ge.mjs.
 //
-// GE_CLI_PATH must resolve to tools/ge.mjs itself (the daemon re-spawns
-// itself as `node <GE_CLI_PATH> daemon start --foreground ...`), NOT to this
-// file — so it is intentionally resolved relative to this file's known
-// location rather than via `import.meta.url` here.
+// `daemonStart`'s non-foreground path (detect/clear-stale/spawn/poll) is a
+// thin renderer over tools/lib/daemon/ensure-running.mjs's ensureDaemonRunning
+// — the same core tools/lib/daemon/detached-submit.mjs's default ensureDaemon
+// binds, so "make the daemon come up" has exactly one implementation instead
+// of two that could drift.
 import { defineCommand } from "citty";
 import { parseList } from "@ge/std/list";
-import { spawn } from "node:child_process";
-import { closeSync, mkdirSync, openSync, rmSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { rmSync } from "node:fs";
 import { daemonPaths, getDaemonStatus, startDaemonServer } from "../lib/runtime-daemon.mjs";
+import { ensureDaemonRunning } from "../lib/daemon/ensure-running.mjs";
 import {
   guarded, emit, out, pc, ui, core,
   readPidFile, processAlive, processLooksLikeDaemon, daemonStatusSnapshot,
   renderResumePlan, daemonPort, daemonRequest, statusText, followTaskEvents,
 } from "./shared.mjs";
-
-const GE_CLI_PATH = fileURLToPath(new URL("../ge.mjs", import.meta.url));
 
 const daemonStart = defineCommand({
   meta: { name: "start", description: "Start the local GE runtime daemon" },
@@ -26,53 +24,30 @@ const daemonStart = defineCommand({
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const host = args.host || process.env.GE_DAEMON_HOST || "127.0.0.1";
-    const paths = daemonPaths();
     if (args.foreground) {
       startDaemonServer({ host, port, foreground: true });
       return;
     }
-    const existing = await daemonStatusSnapshot(port);
-    if (existing.ok) {
-      out(`${ui.glyph("passed")} ${pc.green(`ge daemon already running pid=${existing.pid} http://127.0.0.1:${port}`)}`);
+    const result = await ensureDaemonRunning({ port, host });
+    if (result.alreadyRunning) {
+      out(`${ui.glyph("passed")} ${pc.green(`ge daemon already running pid=${result.pid} http://127.0.0.1:${port}`)}`);
       return;
     }
-    if (existing.status === "unreachable") {
-      const pid = readPidFile(paths.pidPath);
-      if (pid && processAlive(pid) && processLooksLikeDaemon(pid)) {
-        try { process.kill(pid, "SIGTERM"); } catch { /* best-effort: stale pid may exit between the liveness probe and the kill */ }
-      }
-      rmSync(paths.pidPath, { force: true });
-      out(`${ui.glyph("warning")} ${pc.yellow(`cleared unreachable ge daemon pid=${existing.pid}`)}`);
+    if (result.clearedStale) {
+      out(`${ui.glyph("warning")} ${pc.yellow(`cleared unreachable ge daemon pid=${result.clearedPid}`)}`);
     }
-    mkdirSync(paths.dir, { recursive: true });
-    const logFd = openSync(paths.logPath, "a");
-    const child = spawn(process.execPath, [GE_CLI_PATH, "daemon", "start", "--foreground", "--port", String(port), "--host", host], {
-      cwd: core.REPO_ROOT,
-      detached: true,
-      stdio: ["ignore", logFd, logFd],
-      env: { ...process.env, GE_DAEMON_PORT: String(port), GE_DAEMON_HOST: host, GE_DAEMON_BACKGROUND: "1" },
-    });
-    closeSync(logFd);
-    child.unref();
-    const deadline = Date.now() + 5000;
-    while (Date.now() < deadline) {
-      try {
-        const current = await getDaemonStatus({ port });
-        out(`${ui.glyph("passed")} ${pc.green(`ge daemon started pid=${current.pid} http://127.0.0.1:${port}`)}`);
-        return;
-      } catch {
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
+    if (result.ok) {
+      out(`${ui.glyph("passed")} ${pc.green(`ge daemon started pid=${result.pid} http://127.0.0.1:${port}`)}`);
+      return;
     }
-    const fallback = await daemonStatusSnapshot(port);
-    if (fallback.status === "unreachable") {
-      out(`${ui.glyph("warning")} ${pc.yellow(`ge daemon process started pid=${fallback.pid}, but health is not reachable yet`)}`);
-      out(pc.dim(`  log: ${paths.logPath}`));
+    if (result.status === "unreachable") {
+      out(`${ui.glyph("warning")} ${pc.yellow(`ge daemon process started pid=${result.pid}, but health is not reachable yet`)}`);
+      out(pc.dim(`  log: ${result.logPath}`));
       out(ui.next("ge daemon status"));
       return;
     }
     out(`${ui.glyph("warning")} ${pc.yellow("ge daemon did not become healthy within 5s")}`);
-    out(pc.dim(`  log: ${paths.logPath}`));
+    out(pc.dim(`  log: ${result.logPath}`));
     out(pc.dim("  fallback: console and ge doctor will run without the daemon"));
   }),
 });

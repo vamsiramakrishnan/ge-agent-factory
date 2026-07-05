@@ -14,7 +14,7 @@ import { cliForCommand } from "../lib/cliEquivalent";
 // crash.
 
 export interface CliEquivalentProps {
-  /** Registry command id (tools/lib/ge-command-registry.mjs), e.g. "agents.build". */
+  /** Registry command id (@ge/capability-registry), e.g. "agents.build". */
   commandId: string;
   className?: string;
 }

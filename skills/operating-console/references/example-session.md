@@ -15,11 +15,11 @@ you're deciding where the logic belongs.
 ## Step 1 — registry first, never a bespoke route
 
 The console, CLI, and MCP server share one command registry
-(`tools/lib/ge-command-registry.mjs`). Before writing any route logic,
+(`packages/capability-registry/src/registry.mjs`). Before writing any route logic,
 check whether the command is already registered:
 
 ```console
-$ grep -n '"ledger' tools/lib/ge-command-registry.mjs
+$ grep -n '"ledger' packages/capability-registry/src/registry.mjs
 (no output — not registered yet)
 ```
 
@@ -45,7 +45,7 @@ invent flags the CLI doesn't have.
 
 ## Step 3 — one registry entry (route/CLI/risk triple)
 
-Added to `tools/lib/ge-command-registry.mjs` (shape mirrors the
+Added to `packages/capability-registry/src/registry.mjs` (shape mirrors the
 `daemon.start` entry — the canonical recent example):
 
 ```js

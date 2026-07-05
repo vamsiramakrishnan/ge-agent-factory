@@ -1,0 +1,14 @@
+{
+  "name": "@ge/core-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The capability kernel every GE surface renders: the shared vocabularies (risk levels, preflight requirement keys, observability modes, MCP param types), the capability-metadata projection, and the structural validator that keeps a capability table well-formed. Dependency-free leaf — no apps, tools, or third-party imports.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./capability": "./src/capability.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  }
+}

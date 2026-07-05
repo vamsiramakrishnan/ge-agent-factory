@@ -25,8 +25,15 @@ const END = "<!-- END GENERATED: ge-command-tree -->";
 // ── tree walking ─────────────────────────────────────────────────────────────
 
 // citty allows lazy subcommands (`() => import(...)`); resolve either shape.
+// Unwrap `.default` ONLY for module-namespace wrappers: a command object may
+// itself carry citty's default-SUBCOMMAND key (a string naming the subcommand
+// a bare invocation dispatches to — see tools/ge/handoff.mjs), which must not
+// be mistaken for the command.
 async function resolveCommand(cmd) {
   const resolved = typeof cmd === "function" ? await cmd() : await cmd;
+  if (resolved && typeof resolved === "object" && (resolved.meta || resolved.args || resolved.run || resolved.subCommands)) {
+    return resolved;
+  }
   return resolved?.default ?? resolved;
 }
 

@@ -10,7 +10,11 @@
         "@ge/agent-resolver": "workspace:*",
         "@ge/agent-spec": "workspace:*",
         "@ge/agent-workspace": "workspace:*",
+        "@ge/blueprint-library": "workspace:*",
+        "@ge/byo-systems": "workspace:*",
+        "@ge/capability-registry": "workspace:*",
         "@ge/contracts": "workspace:*",
+        "@ge/core-api": "workspace:*",
         "@ge/design": "workspace:*",
         "@ge/evalkit": "workspace:*",
         "@ge/run-ledger": "workspace:*",
@@ -42,6 +46,9 @@
       "version": "0.0.0",
       "dependencies": {
         "@ge/agent-resolver": "workspace:*",
+        "@ge/blueprint-library": "workspace:*",
+        "@ge/byo-systems": "workspace:*",
+        "@ge/capability-registry": "workspace:*",
         "@ge/contracts": "workspace:*",
         "@ge/design": "workspace:*",
         "@ge/run-ledger": "workspace:*",
@@ -81,6 +88,7 @@
         "@astrojs/starlight": "^0.34",
         "@fontsource/hanken-grotesk": "^5",
         "@fontsource/jetbrains-mono": "^5",
+        "@ge/capability-registry": "workspace:*",
         "astro": "^5",
         "sharp": "^0.33",
         "tinyglobby": "^0.2.17",
@@ -162,12 +170,34 @@
       "name": "@ge/agent-workspace",
       "version": "0.1.0",
     },
+    "packages/blueprint-library": {
+      "name": "@ge/blueprint-library",
+      "version": "0.1.0",
+      "dependencies": {
+        "yaml": "^2.9.0",
+      },
+    },
+    "packages/byo-systems": {
+      "name": "@ge/byo-systems",
+      "version": "0.1.0",
+    },
+    "packages/capability-registry": {
+      "name": "@ge/capability-registry",
+      "version": "0.1.0",
+      "dependencies": {
+        "@ge/core-api": "workspace:*",
+      },
+    },
     "packages/contracts": {
       "name": "@ge/contracts",
       "version": "0.1.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
+    },
+    "packages/core-api": {
+      "name": "@ge/core-api",
+      "version": "0.1.0",
     },
     "packages/create-ge-agent-factory": {
       "name": "create-ge-agent-factory",
@@ -480,7 +510,15 @@
 
     "@ge/agent-workspace": ["@ge/agent-workspace@workspace:packages/agent-workspace"],
 
+    "@ge/blueprint-library": ["@ge/blueprint-library@workspace:packages/blueprint-library"],
+
+    "@ge/byo-systems": ["@ge/byo-systems@workspace:packages/byo-systems"],
+
+    "@ge/capability-registry": ["@ge/capability-registry@workspace:packages/capability-registry"],
+
     "@ge/contracts": ["@ge/contracts@workspace:packages/contracts"],
+
+    "@ge/core-api": ["@ge/core-api@workspace:packages/core-api"],
 
     "@ge/design": ["@ge/design@workspace:packages/design"],
 
@@ -2505,10 +2543,6 @@
     "cliui/wrap-ansi": ["wrap-ansi@7.0.0", "", { "dependencies": { "ansi-styles": "^4.0.0", "string-width": "^4.1.0", "strip-ansi": "^6.0.0" } }, "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q=="],
 
     "clone-response/mimic-response": ["mimic-response@1.0.1", "", {}, "sha512-j5EctnkH7amfV/q5Hgmoal1g2QHFJRraOtmx0JpIqkxhBhI/lJSl1nMpQ45hVarwNETOoWEimndZ4QK0RHxuxQ=="],
-
-    "console/react": ["react@19.2.6", "", {}, "sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q=="],
-
-    "console/react-dom": ["react-dom@19.2.6", "", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.6" } }, "sha512-0prMI+hvBbPjsWnxDLxlCGyM8PN6UuWjEUCYmZhO67xIV9Xasa/r/vDnq+Xyq4Lo27g8QSbO5YzARu0D1Sps3g=="],
 
     "csso/css-tree": ["css-tree@2.2.1", "", { "dependencies": { "mdn-data": "2.0.28", "source-map-js": "^1.0.1" } }, "sha512-OA0mILzGc1kCOCSJerOeqDxDQ4HOh+G8NbOJFOTgOCzpw7fCBubk0fEyxp8AgOL/jvLgYA/uV0cMbe43ElF1JA=="],
 

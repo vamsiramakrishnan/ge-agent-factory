@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { GE_COMMANDS, commandIds, commandMeta } from "./ge-command-registry.mjs";
+import { GE_COMMANDS, commandIds, commandMeta } from "./registry.mjs";
 
 describe("GE command registry contracts", () => {
   test("every command exposes requirements and observability metadata", () => {

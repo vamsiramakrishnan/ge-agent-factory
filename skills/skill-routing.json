@@ -506,9 +506,6 @@
         "okf.enrich.shard",
         "okf.eval.verify"
       ],
-      "engines": [
-        "tools/lib/okf-quality.mjs"
-      ],
       "docs": [
         "skills/okf-blueprint-enrichment/references/enrichment-rules.md"
       ]

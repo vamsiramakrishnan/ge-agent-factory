@@ -21,7 +21,7 @@ capabilities**, each with the same four faces:
   AI assistants and agent harnesses (see [MCP tools](../MCP.html) and
   [`skills/`](https://github.com/vamsiramakrishnan/ge-agent-factory/tree/main/skills)).
 
-One command registry (`tools/lib/ge-command-registry.mjs`) wires all four, so
+One command registry (`packages/capability-registry/src/registry.mjs`) wires all four, so
 a capability's route, CLI invocation, and MCP schema cannot drift apart. The
 consequence is the point of this page: **every capability is independently
 drivable** — you can plug in your own inputs and use any one of them without
