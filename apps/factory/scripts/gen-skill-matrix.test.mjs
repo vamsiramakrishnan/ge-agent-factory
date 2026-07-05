@@ -82,7 +82,7 @@ test("validation catches a command id that is not a registry key", () => {
   const violations = violationsFor(root);
   expect(violations.length).toBe(1);
   expect(violations[0]).toContain("no.such.command");
-  expect(violations[0]).toContain("ge-command-registry");
+  expect(violations[0]).toContain("capability-registry");
 });
 
 test("validation catches a docs path that does not exist", () => {

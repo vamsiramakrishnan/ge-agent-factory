@@ -1,0 +1,14 @@
+{
+  "name": "@ge/byo-systems",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bring-Your-Own-System core: list the generator's known simulated systems, validate + spawn LLM/heuristic synthesis of a brand-new system from an NL description, samples, or an OpenAPI spec. Every path is injected ({repoRoot} or explicit registryPath/synthesizeScript/python) — no apps/*/tools/* imports, no assumption about where this package itself lives on disk.",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  }
+}

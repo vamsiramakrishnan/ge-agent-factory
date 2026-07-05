@@ -101,6 +101,33 @@ test("mcpDeploy builds via Cloud Build with the repo root context, then deploys 
   expect(commands.filter((entry) => Array.isArray(entry[0]) && entry[0].includes("add-iam-policy-binding")).length).toBe(2);
 });
 
+test("mcpDeploy omits GE_SIMULATOR_OVERLAY_BACKEND when unset or memory (the default)", () => {
+  const { plane: unset, commands: unsetCommands } = makePlane();
+  unset.mcpDeploy({ project: "demo", region: "us-central1", serviceAccount: "runner@demo.iam.gserviceaccount.com" }, { depts: ["hr"] });
+  const unsetDeploy = unsetCommands.find((entry) => Array.isArray(entry[0]) && entry[0][0] === "run" && entry[0][1] === "deploy");
+  const unsetVars = unsetDeploy[0][unsetDeploy[0].indexOf("--update-env-vars") + 1];
+  expect(unsetVars).not.toContain("GE_SIMULATOR_OVERLAY_BACKEND");
+
+  const { plane: memory, commands: memoryCommands } = makePlane();
+  memory.mcpDeploy({ project: "demo", region: "us-central1", serviceAccount: "runner@demo.iam.gserviceaccount.com", simulatorOverlayBackend: "memory" }, { depts: ["hr"] });
+  const memoryDeploy = memoryCommands.find((entry) => Array.isArray(entry[0]) && entry[0][0] === "run" && entry[0][1] === "deploy");
+  const memoryVars = memoryDeploy[0][memoryDeploy[0].indexOf("--update-env-vars") + 1];
+  expect(memoryVars).not.toContain("GE_SIMULATOR_OVERLAY_BACKEND");
+});
+
+test("mcpDeploy forwards cfg.simulatorOverlayBackend when a durable backend is configured", () => {
+  const { plane, commands } = makePlane();
+  plane.mcpDeploy({
+    project: "demo",
+    region: "us-central1",
+    serviceAccount: "runner@demo.iam.gserviceaccount.com",
+    simulatorOverlayBackend: "firestore",
+  }, { depts: ["hr"] });
+  const deploy = commands.find((entry) => Array.isArray(entry[0]) && entry[0][0] === "run" && entry[0][1] === "deploy");
+  const envVars = deploy[0][deploy[0].indexOf("--update-env-vars") + 1];
+  expect(envVars).toContain("GE_SIMULATOR_OVERLAY_BACKEND=firestore");
+});
+
 test("mcpDeploy honors a custom imageTag", () => {
   const { plane, commands } = makePlane();
   plane.mcpDeploy({ project: "demo", region: "us-central1", serviceAccount: "runner@demo.iam.gserviceaccount.com" },

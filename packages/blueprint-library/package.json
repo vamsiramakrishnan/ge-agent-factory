@@ -1,0 +1,16 @@
+{
+  "name": "@ge/blueprint-library",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The Agent Library package manager core: derives searchable AgentBlueprint metadata from OKF bundles under okf/, maintains the generated okf/library/index.json search index, and materializes a buildable agent workspace from a blueprint (`ge create --from-library`). Dependency-free besides `yaml`; no apps, tools, or console imports.",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
+  }
+}

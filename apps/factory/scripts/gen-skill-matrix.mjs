@@ -48,7 +48,7 @@ const TARGETS = [
 // ── source loading ───────────────────────────────────────────────────────────
 
 export async function loadRegistry(root = ROOT) {
-  const url = pathToFileURL(join(root, "tools", "lib", "ge-command-registry.mjs")).href;
+  const url = pathToFileURL(join(root, "packages", "capability-registry", "src", "registry.mjs")).href;
   return (await import(url)).GE_COMMANDS;
 }
 
@@ -99,7 +99,7 @@ export function validateSources({ root, routing, registryIds, packagesByName, pa
     for (const commandId of entry.commands ?? []) {
       if (!registryIds.has(commandId)) {
         violations.push(
-          `skills/skill-routing.json: "${id}".commands lists "${commandId}" — not a GE_COMMANDS key in the command registry (tools/lib/ge-command-registry.mjs)`,
+          `skills/skill-routing.json: "${id}".commands lists "${commandId}" — not a GE_COMMANDS key in the command registry (packages/capability-registry/src/registry.mjs)`,
         );
       }
     }

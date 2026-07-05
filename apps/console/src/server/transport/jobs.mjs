@@ -8,7 +8,6 @@
 // its NDJSON-shaped output over SSE so the console stays responsive.
 
 import * as core from "../../../../../tools/lib/factory-core.mjs";
-import { execStream } from "../../../../../tools/lib/exec-stream.mjs";
 import {
   appendJobEvent,
   createJobRecord,
@@ -18,11 +17,54 @@ import {
   listJobRecords,
 } from "../job-store.mjs";
 import { makeSseWriter } from "./sse.mjs";
-import { daemonBaseUrl } from "./daemon.mjs";
+import { daemonBaseUrl, daemonClient } from "./daemon.mjs";
 import { GE_CLI } from "./paths.mjs";
 
 const jobs = new Map(); // id -> { id, argv, status, events[], code, listeners:Set }
 let jobSeq = 0;
+
+// The daemon-first/fallback ordering (tools/lib/ge-job-runner.mjs's
+// createLocalJobSubmit, reached via factory-core.mjs — jobs.mjs may not
+// import ge-job-runner.mjs directly, per the frozen apps/* -> tools/lib/*
+// import surface). Every console-specific piece — the 600ms daemon submit,
+// the "bun" spawn target with no cwd override, the SQLite job-store, the
+// in-memory buffer/listener fan-out, and the jobSeq id counter — is injected
+// here and stays in this file; the shared module owns only the ordering.
+const submitLocalJob = core.createLocalJobSubmit({
+  daemonSubmit: submitGeJobToDaemon,
+  mintId: () => `job-${Date.now()}-${++jobSeq}`,
+  spawnBinding: {
+    cmd: "bun",
+    stage: "job",
+    announceLine: (argv) => `$ ge ${argv.join(" ")}`,
+    args: (argv) => [GE_CLI, ...argv],
+    cwd: undefined,
+    env: undefined,
+  },
+  sinks: {
+    create: (id, argv, command) => createJobRecord({ id, argv, command }),
+    registerLocal: (id, argv, command) => {
+      const job = { id, argv, command, status: "running", events: [], code: null, listeners: new Set() };
+      jobs.set(id, job);
+      return job;
+    },
+    push: (job, ev) => {
+      job.events.push(ev);
+      if (job.events.length > 5000) job.events.shift();
+      appendJobEvent(job.id, ev).catch((e) => warnJobPersistFailure(job.id, "appendJobEvent", e));
+      for (const l of job.listeners) { try { l(ev); } catch { /* best-effort: one throwing listener must not break fan-out to the rest */ } }
+    },
+    finish: (job, id, status, info) => {
+      job.status = status;
+      // Match the original .then/.catch split exactly: job.code is only ever
+      // updated on the resolve path (info.error undefined) — a rejected
+      // execStream promise leaves job.code at its initial null, even though
+      // the persisted record below still gets code:1.
+      if (info.error === undefined) job.code = info.code;
+      return finishJobRecord(id, { status, code: info.code, lastLine: info.line }).catch((e) => warnJobPersistFailure(id, "finishJobRecord", e));
+    },
+  },
+});
 
 // Job records/events are a best-effort mirror of the live stream; a failing
 // store must not break the stream, but the operator should learn (once per
@@ -44,15 +86,15 @@ function terminalJobStatusFromEvent(ev) {
   return "failed";
 }
 
+// Thin binding over the shared daemon HTTP client (tools/lib/daemon/client.mjs,
+// via daemon.mjs's daemonClient()) — same URL, same body, same 600ms budget
+// as the hand-rolled fetch this replaced. createLocalJobSubmit (ge-job-runner.mjs)
+// falls back to local execution on ANY rejection here regardless of type, so
+// the client's typed DaemonConnectionError/DaemonHttpError distinction doesn't
+// change this call site's observable behavior — it's still "one Error, any
+// failure triggers fallback" from this function's caller's point of view.
 async function submitGeJobToDaemon(argv, command = null) {
-  const response = await fetch(`${daemonBaseUrl()}/api/tasks`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ kind: "ge.command", argv, command }),
-    signal: AbortSignal.timeout(600),
-  });
-  if (!response.ok) throw new Error(`daemon task start failed: ${response.status}`);
-  return await response.json();
+  return daemonClient({ timeoutMs: 600 }).submitTask({ kind: "ge.command", argv, command });
 }
 
 async function streamDaemonTask(id, writeSSE, isClosed, onEnd = () => {}, { mirrorJobEvents = false } = {}) {
@@ -98,14 +140,8 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
     await appendJobEvent(id, ev);
   };
 
-  // When the daemon submit fails we fall through to local execution. Capture the
-  // reason so the local job carries a "fell back to local" trace instead of the
-  // submit error vanishing into a silent catch (the DB may already mark the run
-  // daemon-bound, so a silent fallback desyncs the UI with no way to see why).
-  let daemonSubmitError = null;
-
+  let preflightResult = null;
   if (command?.id) {
-    let preflightResult;
     try {
       preflightResult = typeof preflight === "function"
         ? preflight(command.id)
@@ -126,64 +162,35 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
       await finishJobRecord(id, { status: "blocked", code: null, lastLine: line, checks: preflightResult.checks });
       return id;
     }
-    try {
-      const run = await submitGeJobToDaemon(argv, command);
-      await createJobRecord({ id: run.id, argv, command });
-      await pushPreflightOnly(run.id, { type: "stage_started", stage: "preflight", line: `doctor readiness: ${command.id}`, ts: new Date().toISOString() });
-      await pushPreflightOnly(run.id, { type: "stage_done", stage: "preflight", level: "info", line: "readiness passed", data: { checks: preflightResult.checks } });
-      return run.id;
-    } catch (error) {
-      daemonSubmitError = error;
-    }
   }
 
-  if (!command?.id) {
-    try {
-      const run = await submitGeJobToDaemon(argv, command);
-      await createJobRecord({ id: run.id, argv, command });
-      return run.id;
-    } catch (error) {
-      daemonSubmitError = error;
-    }
+  // Daemon-first, local-fallback: one attempt regardless of whether `command`
+  // carries a preflight-gated id (the two used to be two near-identical
+  // try/catch blocks around the same submitGeJobToDaemon call — unified here,
+  // see tools/lib/ge-job-runner.mjs's createLocalJobSubmit). The only thing
+  // that differs by command?.id is which preflight-trace pair gets pushed
+  // afterward, and by which mechanism (the SQLite-direct pushPreflightOnly on
+  // daemon success vs. the buffered `push` — via extraLocalTrace — on local
+  // fallback), exactly as before.
+  const result = await submitLocalJob(argv, command, {
+    extraLocalTrace: command?.id
+      ? (push) => {
+        push({ type: "stage_started", stage: "preflight", line: `doctor readiness: ${command.id}`, ts: new Date().toISOString() });
+        push({ type: "stage_done", stage: "preflight", level: "info", line: "readiness passed" });
+      }
+      : null,
+    onFallback: (error, id) => {
+      const reason = error?.message || String(error);
+      console.warn(`[transport] job ${id}: daemon submit failed, running locally — ${reason}`);
+    },
+  });
+
+  if (result.daemon && command?.id) {
+    await pushPreflightOnly(result.id, { type: "stage_started", stage: "preflight", line: `doctor readiness: ${command.id}`, ts: new Date().toISOString() });
+    await pushPreflightOnly(result.id, { type: "stage_done", stage: "preflight", level: "info", line: "readiness passed", data: { checks: preflightResult.checks } });
   }
 
-  const id = `job-${Date.now()}-${++jobSeq}`;
-  const job = { id, argv, command, status: "running", events: [], code: null, listeners: new Set() };
-  jobs.set(id, job);
-  await createJobRecord({ id, argv, command });
-  const push = (ev) => {
-    job.events.push(ev);
-    if (job.events.length > 5000) job.events.shift();
-    appendJobEvent(id, ev).catch((e) => warnJobPersistFailure(id, "appendJobEvent", e));
-    for (const l of job.listeners) { try { l(ev); } catch { /* best-effort: one throwing listener must not break fan-out to the rest */ } }
-  };
-  push({ type: "stage_started", stage: "job", line: `$ ge ${argv.join(" ")}`, ts: new Date().toISOString() });
-  if (daemonSubmitError) {
-    const reason = daemonSubmitError?.message || String(daemonSubmitError);
-    console.warn(`[transport] job ${id}: daemon submit failed, running locally — ${reason}`);
-    push({ type: "log", level: "warn", line: `Daemon unavailable; running this job locally instead — ${reason}`, data: { fellBackToLocal: true } });
-  }
-
-  if (command?.id) {
-    push({ type: "stage_started", stage: "preflight", line: `doctor readiness: ${command.id}`, ts: new Date().toISOString() });
-    push({ type: "stage_done", stage: "preflight", level: "info", line: "readiness passed" });
-  }
-
-  execStream("bun", [GE_CLI, ...argv], { onEvent: push, meta: { runId: id, stage: "job" } })
-    .then((r) => {
-      job.status = r.code === 0 ? "done" : "failed";
-      job.code = r.code;
-      const line = `exit ${r.code}`;
-      push({ type: r.code === 0 ? "stage_done" : "stage_failed", stage: "job", level: r.code === 0 ? "info" : "error", line });
-      finishJobRecord(id, { status: job.status, code: r.code, lastLine: line }).catch((e) => warnJobPersistFailure(id, "finishJobRecord", e));
-    })
-    .catch((e) => {
-      const line = String(e?.message || e);
-      job.status = "failed";
-      push({ type: "stage_failed", stage: "job", level: "error", line });
-      finishJobRecord(id, { status: "failed", code: 1, lastLine: line }).catch((e) => warnJobPersistFailure(id, "finishJobRecord", e));
-    });
-  return id;
+  return result.id;
 }
 
 export async function getJob(id) {

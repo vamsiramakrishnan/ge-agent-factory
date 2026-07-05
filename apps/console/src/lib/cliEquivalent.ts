@@ -1,7 +1,7 @@
 // Registry-derived CLI strings for console actions ("the console teaches the
 // CLI"). Every suggested `ge …` invocation next to a registry-backed button
 // must DERIVE from the command registry's `cli` field (served by
-// GET /api/ge/commands, i.e. tools/lib/ge-command-registry.mjs) — never a
+// GET /api/ge/commands, i.e. @ge/capability-registry) — never a
 // hardcoded literal in a view. These pure lookups keep that derivation
 // testable without React.
 import type { GeCommand } from "../services/geClient";

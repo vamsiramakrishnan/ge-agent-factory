@@ -148,7 +148,7 @@ Every station skill maps to the `ge` commands it drives, the engine packages
 behind those commands, and the reference docs that describe them. The table is
 rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 (`apps/factory/src/skill-registry.js`), and the shared command registry
-(`tools/lib/ge-command-registry.mjs`), so it cannot drift from those sources:
+(`packages/capability-registry/src/registry.mjs`), so it cannot drift from those sources:
 
 <!-- BEGIN GENERATED: skill-matrix — do not edit; run `bun run docs:skill-matrix` -->
 | Station skill | Capability | `ge` commands | Engine packages | Reference docs |
@@ -173,6 +173,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`triaging-runs`](../../skills/triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](../../skills/guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](../../skills/authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../../packages/okf/) | [`okf.md`](okf.md), [`agent-lifecycle.md`](agent-lifecycle.md) |
+| [`okf-blueprint-enrichment`](../../skills/okf-blueprint-enrichment/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](../../skills/okf-blueprint-enrichment/references/enrichment-rules.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ---

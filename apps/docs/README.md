@@ -46,7 +46,7 @@ excluded: `runbooks/`, `adr/`, `plans/`, …) and, per page:
 
 Because pages are MDX, generated and curated content can use the components
 in `src/components/` — e.g. `CommandCard.astro`, which renders a command's
-label/CLI/risk/requirements straight from `tools/lib/ge-command-registry.mjs`
+label/CLI/risk/requirements straight from `packages/capability-registry/src/registry.mjs`
 at build time (via the `src/lib/ge-commands.mjs` shim), so command docs can
 never drift from the registry.
 

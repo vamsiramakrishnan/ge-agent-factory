@@ -12,7 +12,7 @@ const checks = [
   ["apps/console/src/server/job-store.mjs", ["autopilot_runs", "autopilot_items", "autopilot_events"]],
   ["apps/console/src/services/geClient.ts", ["mission:", "startAutopilot", "workspaceDoctor"]],
   ["apps/console/src/views/Autopilot.tsx", ["Mission Contract", "Mode Contract", "Start Autopilot"]],
-  ["tools/lib/ge-command-registry.mjs", ["agents.build", "agents.ship", "data.up"]],
+  ["packages/capability-registry/src/registry.mjs", ["agents.build", "handoff", "data.up"]],
 ];
 
 const results = checks.map(([path, needles]) => {

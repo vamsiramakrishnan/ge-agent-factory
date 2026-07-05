@@ -179,8 +179,9 @@ Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
 ## Adding a `ge` command / console action
 
 The console, CLI, and MCP server bind mutating operator commands through one
-registry (`tools/lib/ge-command-registry.mjs` — its header JSDoc is the field
-contract). One entry gives a command its `/api/ge/*` route, its `factory_*`
+registry (`packages/capability-registry/src/registry.mjs`; the field contract —
+risk levels, requirement keys, observability modes — lives in `@ge/core-api`,
+which validates the table at import time). One entry gives a command its `/api/ge/*` route, its `factory_*`
 MCP tool, preflight gating, risk label, and live job streaming; don't add
 bespoke console route logic for something a registry entry covers.
 

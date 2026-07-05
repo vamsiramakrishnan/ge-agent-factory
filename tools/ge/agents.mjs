@@ -5,6 +5,8 @@
 import { defineCommand } from "citty";
 import { groupResumeActions } from "../lib/agents-resume.mjs";
 import { registerBundle, trackAgent } from "../lib/okf-lifecycle.mjs";
+import { submitDetached } from "../lib/daemon/detached-submit.mjs";
+import { DxError } from "../lib/errors/dx-error.mjs";
 import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
 
 // One render + poll loop shared by `ge agents status --watch` and
@@ -35,15 +37,61 @@ async function watchStatusUntilTerminal(cfg, { noProxy } = {}) {
   }
 }
 
+// Rebuild the exact `ge agents build --local ...` argv for a detached
+// re-submission to the daemon (tools/lib/daemon/detached-submit.mjs), built
+// explicitly from the already-parsed flags rather than by filtering raw
+// process.argv — citty has already normalized aliases/negation for us here,
+// so this is the one place that has to stay in sync with the flag table
+// above. --detach is intentionally never included: submitDetached rejects it
+// anyway (recursion guard), but the point is this function never produces it
+// in the first place — the daemon spawns `node tools/ge.mjs <argv>` verbatim,
+// and a re-included --detach would have that spawned `ge` try to detach
+// itself again into the very daemon it's already running inside.
+function localBuildResubmitArgv(args, { target, vertex }) {
+  const argv = ["agents", "build", "--local"];
+  if (args.canary) argv.push("--canary");
+  if (args.all) argv.push("--all");
+  if (args.dept) argv.push("--dept", String(args.dept));
+  if (args.ids) argv.push("--ids", String(args.ids));
+  if (args.force) argv.push("--force");
+  if (args.limit) argv.push("--limit", String(args.limit));
+  argv.push("--target", String(target));
+  argv.push(vertex ? "--vertex" : "--no-vertex");
+  if (args.location) argv.push("--location", String(args.location));
+  if (args.model) argv.push("--model", String(args.model));
+  if (args["max-output-tokens"]) argv.push("--max-output-tokens", String(args["max-output-tokens"]));
+  if (args.warm) argv.push("--warm");
+  return argv;
+}
+
 const agentsBuild = defineCommand({
   meta: { name: "build", description: "Build agents. Uses the active mode (ge mode); --local/--remote override" },
-  args: { ...common, canary: { type: "boolean", description: "Scope: one canary agent" }, all: { type: "boolean", description: "Scope: the whole fleet" }, dept: { type: "string", description: "Scope: one department" }, ids: { type: "string", description: "Scope: comma-separated agent/workspace ids" }, concurrency: { type: "string", description: "Parallel remote submissions (default 2)" }, force: { type: "boolean", description: "Rebuild/resubmit even if already completed (local: wipes the selected workspaces first)" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string", description: "Max workspaces to build (local)" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean", description: "Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" }, watch: { type: "boolean", description: "Remote: after submitting, watch run status until all runs are terminal" } },
+  args: { ...common, canary: { type: "boolean", description: "Scope: one canary agent" }, all: { type: "boolean", description: "Scope: the whole fleet" }, dept: { type: "string", description: "Scope: one department" }, ids: { type: "string", description: "Scope: comma-separated agent/workspace ids" }, concurrency: { type: "string", description: "Parallel remote submissions (default 2)" }, force: { type: "boolean", description: "Rebuild/resubmit even if already completed (local: wipes the selected workspaces first)" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string", description: "Max workspaces to build (local)" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean", description: "Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" }, watch: { type: "boolean", description: "Remote: after submitting, watch run status until all runs are terminal" }, detach: { type: "boolean", description: "Local only: submit to the runtime daemon and return immediately with a run id (close-your-laptop)" } },
   run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const scope = args.canary ? "canary" : args.all ? "all" : undefined;
-    if (modeOf(args, cfg) === "local") {
+    const mode = modeOf(args, cfg);
+    if (args.detach && mode !== "local") {
+      throw new DxError("--detach only applies to local builds", {
+        where: "--detach",
+        why: "a remote build submission is already asynchronous — it returns as soon as the cloud factory accepts the job",
+        fix: "ge agents status --watch",
+      });
+    }
+    if (mode === "local") {
       const target = args.target || LOCAL_BUILD_BOUNDARY; // stop at the build boundary by default
       const vertex = args.vertex === false || args["no-vertex"] === true ? false : true;
+      if (args.detach) {
+        const result = await submitDetached({ argv: localBuildResubmitArgv(args, { target, vertex }) });
+        emit(args, result, (r) => {
+          out(`\n${ui.glyph("passed")} ${pc.green(`submitted detached local build → run ${r.runId}`)}`);
+          out("\n" + ui.nextList([
+            { command: r.statusHint, note: "check status" },
+            { command: r.followHint, note: "follow live output" },
+          ]));
+        });
+        return;
+      }
       const res = await core.provisionLocal(cfg, { scope, ids: args.ids, dept: args.dept, limit: args.limit, target, vertex, location: args.location, model: args.model, maxOutputTokens: args["max-output-tokens"], warm: args.warm, force: args.force, log: elog });
       emit(args, res, (r) => {
         out(`\n${ui.glyph("passed")} ${pc.green(`local build → ${r.target} (build boundary)`)}`);
