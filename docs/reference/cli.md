@@ -827,7 +827,7 @@ Next action per work item from the ledger + pipeline state machine
 
 ### `ge okf`
 
-OKF knowledge substrate: compile · customize · audit · graph · explain · diff · repair
+OKF knowledge substrate: compile · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair
 
 ### `ge okf audit`
 
@@ -837,6 +837,130 @@ Audit an OKF bundle across base conformance, navigability, semantics, behavior, 
 |---|---|---|
 | `<bundle>` | positional (required) |  |
 | `--strict` | boolean |  |
+
+### `ge okf quality`
+
+Quality status, scoring, and deterministic audit for OKF blueprints
+
+### `ge okf quality audit`
+
+Compute deterministic L0-L5 OKF blueprint quality reports
+
+| Flag | Type | Description |
+|---|---|---|
+| `--all` | boolean |  |
+| `--spec` | string |  |
+| `--changed` | boolean |  |
+| `--root` | string |  |
+| `--fail-under` | string | Fail if any audited spec score is below this threshold |
+| `--write` | string | Write JSON report to this path |
+| `--markdown` | string | Write Markdown report to this path |
+
+### `ge okf domain-packs`
+
+Reusable enrichment invariant and eval seed packs
+
+### `ge okf domain-packs list`
+
+List reusable OKF enrichment domain packs
+
+| Flag | Type | Description |
+|---|---|---|
+| `--root` | string |  |
+
+### `ge okf domain-packs inspect`
+
+Inspect one OKF enrichment domain pack
+
+| Flag | Type | Description |
+|---|---|---|
+| `<id>` | positional (required) |  |
+| `--root` | string |  |
+
+### `ge okf domain-packs match`
+
+Match a spec to deterministic domain packs
+
+| Flag | Type | Description |
+|---|---|---|
+| `--spec` | string |  |
+| `--root` | string |  |
+| `--pack-root` | string |  |
+
+### `ge okf enrich`
+
+Plan and shard OKF blueprint enrichment work
+
+### `ge okf enrich plan`
+
+Generate coverage obligations for OKF blueprint enrichment
+
+| Flag | Type | Description |
+|---|---|---|
+| `--all` | boolean |  |
+| `--spec` | string |  |
+| `--target` | string |  |
+| `--root` | string |  |
+| `--pack-root` | string |  |
+| `--write` | string | Write plan JSON to this path |
+
+### `ge okf enrich generate`
+
+Generate a reviewable OKF enrichment patch without mutating source specs
+
+| Flag | Type | Description |
+|---|---|---|
+| `--spec` | string |  |
+| `--target` | string |  |
+| `--root` | string |  |
+| `--pack-root` | string |  |
+| `--out` | string | Write patch JSON to this path |
+| `--max-evals` | string |  |
+
+### `ge okf enrich apply`
+
+Apply or dry-run a structured OKF enrichment patch
+
+| Flag | Type | Description |
+|---|---|---|
+| `--patch` | string |  |
+| `--root` | string |  |
+| `--write` | boolean |  |
+| `--force` | boolean |  |
+
+### `ge okf enrich shard`
+
+Group an enrichment plan into bounded parallel shard manifests
+
+| Flag | Type | Description |
+|---|---|---|
+| `--plan` | string |  |
+| `--out` | string |  |
+
+### `ge okf enrich prompt`
+
+Render a Codex/Claude/Antigravity shard prompt from an enrichment manifest
+
+| Flag | Type | Description |
+|---|---|---|
+| `--shard` | string |  |
+| `--harness` | string |  |
+| `--out` | string |  |
+
+### `ge okf eval`
+
+Static OKF eval verification
+
+### `ge okf eval verify`
+
+Static verification for OKF eval references, fixtures, assertions, and action-tool state coverage
+
+| Flag | Type | Description |
+|---|---|---|
+| `--all` | boolean |  |
+| `--spec` | string |  |
+| `--changed` | boolean |  |
+| `--root` | string |  |
 
 ### `ge okf graph`
 
