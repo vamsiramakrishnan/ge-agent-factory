@@ -122,12 +122,10 @@ async function driveBothBackends() {
   for (const event of EVENTS) {
     ledger.applyFactoryEvent(RUN_ID, event, { mode: MODE });
     await mirror.applyFactoryEvent(RUN_ID, event, { mode: MODE });
-    // Firestore's event-doc id is `String(event.seq ?? Date.now())` (recordEvent
-    // in firestore.mjs) — raw factory-events.jsonl events never carry `.seq`, so
-    // two events landing in the same millisecond get the SAME doc id and the
-    // second silently overwrites the first (see the dedicated collision test in
-    // KNOWN DIVERGENCE below). A 2ms spacer here isolates THIS test's intent
-    // (field-shape parity) from THAT bug so one failure doesn't mask the other.
+    // recordEvent's per-run seq allocator (max(Date.now(), last + 1)) keeps
+    // same-millisecond events distinct — the dedicated collision test below
+    // asserts that guarantee. The 2ms spacer here keeps THIS test's seqs
+    // wall-clock-shaped so field-shape parity stays isolated from ordering.
     await sleep(2);
   }
   return { ledger, reader };
@@ -227,7 +225,7 @@ describe("adapter parity: SQLite ledger vs Firestore (fake client)", () => {
       expect(fsRun.results[0].stages).toEqual([]);
     });
 
-    test("event-doc-id collision: two applyFactoryEvent calls in the same millisecond silently drop one event on the Firestore side (SQLite never drops)", async () => {
+    test("event-doc-id collision is FIXED: same-millisecond events get distinct doc ids on both sides", async () => {
       const runId = "local-collision-test";
       const ledger = createRunLedger(await sqliteAdapter(":memory:")).migrate();
       const fakeDb = createFakeFirestoreDb();
@@ -239,11 +237,13 @@ describe("adapter parity: SQLite ledger vs Firestore (fake client)", () => {
         { type: "stage_started", ts: "2026-07-05T00:00:01.000Z", useCaseId: "uc1", stage: "created" },
         { type: "stage_done", ts: "2026-07-05T00:00:01.001Z", useCaseId: "uc1", stage: "created" },
       ];
-      // Deliberately NO delay between these two transition events — this is the
+      // Deliberately NO delay between these two transition events — the
       // realistic case (a fast build emits stage_started/stage_done within the
-      // same ms) that recordEvent's `event.seq ?? Date.now()` doc-id strategy
-      // cannot handle: same Date.now() ms → same doc id → the second .set()
-      // (merge:true) collapses onto the first instead of creating a new event.
+      // same ms) that used to collide: recordEvent's old `event.seq ?? Date.now()`
+      // doc-id strategy gave both events the same doc id and the second
+      // .set(merge:true) silently collapsed onto the first. recordEvent's
+      // per-run monotonic allocator (max(Date.now(), last + 1)) now guarantees
+      // distinct, time-ordered ids, so both adapters keep both events.
       for (const event of back2back) {
         ledger.applyFactoryEvent(runId, event);
         await mirror.applyFactoryEvent(runId, event);
@@ -252,16 +252,10 @@ describe("adapter parity: SQLite ledger vs Firestore (fake client)", () => {
       const sqlEvents = ledger.events(runId);
       const fsEvents = await reader.events(runId);
       expect(sqlEvents.length).toBe(2); // SQLite: idempotency key is (workItemId,stage,status) — both distinct, both kept.
-      // Firestore: if Date.now() happened to tick between the two calls this
-      // environment wouldn't reproduce the collision — only assert the bug when
-      // it actually manifested, so the test stays honest under either timing.
-      const collided = fsEvents.length < sqlEvents.length;
-      if (collided) {
-        expect(fsEvents.length).toBe(1);
-      } else {
-        // eslint-disable-next-line no-console
-        console.warn("[adapter-parity] event-doc-id collision did not reproduce this run (Date.now() ticked between calls) — the bug is still real, just timing-dependent; see the finding in the task report.");
-      }
+      expect(fsEvents.length).toBe(2); // Firestore: the seq allocator makes this a hard guarantee, timing-independent.
+      const seqs = fsEvents.map((event) => event.seq);
+      expect(new Set(seqs).size).toBe(2);
+      expect(seqs[0]).toBeLessThan(seqs[1]);
     });
   });
 });

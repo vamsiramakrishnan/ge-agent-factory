@@ -242,6 +242,23 @@ export async function createFirestoreEventMirror({
   const runDoc = (runId) => db.collection(collection).doc(runId);
   const nowIso = () => new Date().toISOString();
 
+  // Per-run monotonic seq allocator. The event doc id is String(seq), so a
+  // wall-clock fallback alone loses events: two events landing in the same
+  // millisecond get the same doc id and the second silently overwrites the
+  // first via set(merge:true) — the SQLite adapter never drops (its
+  // idempotency key is workItemId:stage:status). Allocating
+  // max(Date.now(), last + 1) keeps ids time-ordered AND unique for the
+  // single-writer-per-run mirror; an explicit event.seq (already unique by
+  // contract) passes through and advances the floor. Restart-safe: wall
+  // clock moves past any seq a previous writer issued.
+  const lastSeqByRun = new Map();
+  const nextSeq = (runId, explicit) => {
+    const last = lastSeqByRun.get(runId) ?? 0;
+    const seq = explicit ?? Math.max(Date.now(), last + 1);
+    lastSeqByRun.set(runId, Math.max(seq, last));
+    return seq;
+  };
+
   const startRun = ({ id, mode = "remote", targetStage = null, total = 0, startedAt = nowIso() }) =>
     runDoc(id).set({ mode, targetStage, total, status: "running", startedAt, updatedAt: startedAt }, { merge: true });
 
@@ -249,7 +266,7 @@ export async function createFirestoreEventMirror({
     runDoc(runId).set({ status: ok ? "done" : "failed", ok, finishedAt, updatedAt: finishedAt }, { merge: true });
 
   const recordEvent = async (runId, event) => {
-    const seq = event.seq ?? Date.now();
+    const seq = nextSeq(runId, event.seq);
     const ts = event.ts || nowIso();
     await runDoc(runId).collection("events").doc(String(seq)).set({ ...event, seq, ts }, { merge: true });
     if (event.workItemId) {
