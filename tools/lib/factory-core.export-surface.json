@@ -57,6 +57,7 @@
   "remoteLedgerCheck",
   "resolveCatalogId",
   "resolveRepo",
+  "resolveRunLedger",
   "reviewSpec",
   "run",
   "runLedger",

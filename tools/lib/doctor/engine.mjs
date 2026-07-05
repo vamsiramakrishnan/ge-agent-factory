@@ -15,11 +15,11 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { readJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
-import { createFirestoreLedgerReader } from "@ge/run-ledger/firestore";
 import { buildDoctorReport, createCheckCollector, runDoctorSection } from "./report.mjs";
 import { STATE_PATHS, REPO_ROOT, displayStatePath } from "../state-paths.mjs";
 import { workspaceStoreItems, LOCAL_PROJECTS, LOCAL_PROJECT_STORE } from "../local-workspaces.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck } from "../planes/tool-plane-checks.mjs";
+import { resolveRunLedger } from "../planes/run-plane.mjs";
 
 const noop = () => {};
 const UV_CACHE = STATE_PATHS.cache.uv;
@@ -52,10 +52,11 @@ export function harnessVenvPython(dir = HARNESS_VENV_DIR) {
 // in this file (localPreflight/commandDoctor above all report checks, they
 // don't propagate exceptions to the caller).
 //
-// `createReader` is injectable (default: the real createFirestoreLedgerReader)
+// `createReader` is injectable (default: resolveRunLedger's real remote
+// adapter, the run OBSERVATION plane's resolver in ../planes/run-plane.mjs)
 // so this is unit-testable against a fake transport, exactly like the other
 // pure check helpers in ../planes/tool-plane-checks.mjs.
-export async function remoteLedgerCheck(cfg, { createReader = createFirestoreLedgerReader } = {}) {
+export async function remoteLedgerCheck(cfg, { createReader = (opts) => resolveRunLedger({ source: "remote", cfg: { project: opts.projectId } }) } = {}) {
   const name = "remote ledger (Firestore)";
   const projectId = cfg?.project || resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT", "GCP_PROJECT_ID"] });
   if (!projectId) {
