@@ -12,12 +12,13 @@ import { fileURLToPath } from "node:url";
 import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
-import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
+import { commandMeta, commandRequirements } from "@ge/capability-registry";
 import { runDoctorSection } from "./doctor/report.mjs";
 import { runCommand } from "./factory-exec.mjs";
 import { createDataPlane } from "./planes/data-plane.mjs";
 import { createMcpPlane } from "./planes/mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./planes/factory-plane.mjs";
+import { resolveRunLedger } from "./planes/run-plane.mjs";
 import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
@@ -54,8 +55,29 @@ export {
   bigQueryApiCheck,
   selectWorkspacesForRegen,
 } from "./planes/tool-plane-checks.mjs";
-export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor/engine.mjs";
+export { HARNESS_VENV_DIR, harnessVenvPython, remoteLedgerCheck } from "./doctor/engine.mjs";
+// The local-execution spawn-and-emit primitive + the daemon-first/fallback
+// ordering it backs (see ge-job-runner.mjs's header) — re-exported so
+// apps/console/src/server/transport/jobs.mjs can reach them through the
+// frozen jobs.mjs -> factory-core.mjs seam instead of importing
+// tools/lib/ge-job-runner.mjs directly (not on the allowlist in
+// tools/check-app-import-surface.mjs).
+export { runSpawnedJob, createLocalJobSubmit } from "./ge-job-runner.mjs";
+// The daemon HTTP client (tools/lib/daemon/client.mjs) — re-exported so
+// apps/console/src/server/transport/daemon.mjs (and jobs.mjs's daemonSubmit
+// binding, through daemon.mjs) can reach it through the frozen
+// transport/*.mjs -> factory-core.mjs seam instead of importing
+// tools/lib/daemon/client.mjs directly (not on the allowlist in
+// tools/check-app-import-surface.mjs).
+export { createDaemonClient } from "./daemon/client.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./ledger/factory-ledger.mjs";
+// The run OBSERVATION plane's one resolver (tools/lib/planes/run-plane.mjs) —
+// re-exported so apps/console/src/server/transport/ledger.mjs can construct
+// both the local SQLite ledger and the remote Firestore reader through the
+// frozen transport/*.mjs -> factory-core.mjs seam instead of reaching into
+// tools/lib/ledger/run-ledger-firestore.mjs directly (not on the allowlist in
+// tools/check-app-import-surface.mjs).
+export { resolveRunLedger } from "./planes/run-plane.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
 export { reviewSpec } from "./spec-review.mjs";
@@ -254,8 +276,13 @@ const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
 // wires them into the plane modules.
 export const { workspaceDoctor, workspaceRepair } = createWorkspaceDoctorOps({ run, genDir: GEN_DIR });
 
-export function infra(cfg, { sub, gatewayImage, workerImage, yes = false, log = noop } = {}) {
-  return factoryPlane.infra(cfg, { sub, gatewayImage, workerImage, yes, log });
+export function infra(cfg, { sub, gatewayImage, workerImage, consoleImage, yes = false, log = noop } = {}) {
+  return factoryPlane.infra(cfg, { sub, gatewayImage, workerImage, consoleImage, yes, log });
+}
+
+// Console doctor (read-only; never throws — see factory-plane.mjs's consoleDoctor).
+export function consoleDoctor(cfg) {
+  return factoryPlane.consoleDoctor(cfg);
 }
 
 const factoryPlane = createFactoryPlane({
@@ -360,8 +387,8 @@ export const { capture, prove, handoff, goldenPathPosition } = goldenPathOps;
 // run at call time, once every plane below is composed.
 export const { applyPlan, applyApply } = createApplyOps({ statusBoard, up, dataUp, mcpDeploy, provisionOps });
 
-export function build(cfg, { target, log = noop } = {}) {
-  return factoryPlane.build(cfg, { target, log });
+export function build(cfg, { target, tag, log = noop } = {}) {
+  return factoryPlane.build(cfg, { target, tag, log });
 }
 
 // Adopt a hand-managed project into Terraform (the cracked way): generate

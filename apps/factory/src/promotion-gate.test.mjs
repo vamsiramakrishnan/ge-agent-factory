@@ -42,7 +42,7 @@ describe("readPromotionGate", () => {
     writeFileSync(join(dir, "app", "agent.py"), "print(\"changed\")\n");
     const gate = await readPromotionGate(dir);
     expect(gate.ok).toBe(false);
-    expect(gate.blockers).toContain("proof binding is missing or stale");
+    expect(gate.blockers.some((b) => b.startsWith("proof binding stale:"))).toBe(true);
   });
 
   test("blocks when validation is not passing", async () => {
@@ -61,6 +61,25 @@ describe("readPromotionGate", () => {
     const gate = await readPromotionGate(workspace({ refine: { spec_to_code_fidelity: "partial" } }));
     expect(gate.ok).toBe(false);
     expect(gate.blockers).toContain("refine spec-to-code fidelity: partial");
+  });
+
+
+  test("blocks when an existing promotion packet proof binding is stale", async () => {
+    const dir = workspace();
+    writeFileSync(join(dir, "artifacts", "promotion-packet.json"), JSON.stringify({
+      proofBinding: {
+        ok: true,
+        okf: { hex: "00" },
+        evals: { hex: "00" },
+        fixtures: { hex: "00" },
+        generator: { hex: "00" },
+        workspace: { hex: "00" },
+        proofPolicy: { hex: "00" },
+      },
+    }));
+    const gate = await readPromotionGate(dir);
+    expect(gate.ok).toBe(false);
+    expect(gate.blockers.some((b) => b.includes("proof binding stale") || b.includes("proof binding missing"))).toBe(true);
   });
 
   test("does not over-block when refine artifact is absent (refine skipped)", async () => {

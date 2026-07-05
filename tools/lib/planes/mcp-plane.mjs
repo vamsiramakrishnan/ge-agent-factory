@@ -36,6 +36,14 @@ function deployEnvVars(cfg) {
     const dsn = cfg.alloydbDsn || process.env.GE_AGENT_ALLOYDB_DSN;
     if (dsn) vars.push(`GE_AGENT_ALLOYDB_DSN=${dsn}`);
   }
+  // BYO-twin overlay backend (docs/reference/simulator-systems.mdx). cfg.simulatorOverlayBackend
+  // is a CONFIG_FIELDS scalar (flag → env → file → "memory" default), so it already reflects env
+  // precedence; process.env is only a fallback for callers passing a bare cfg. "memory" is the
+  // no-op default everywhere, so only forward the var when a durable backend is configured.
+  const overlayBackend = cfg.simulatorOverlayBackend || process.env.GE_SIMULATOR_OVERLAY_BACKEND;
+  if (overlayBackend && overlayBackend !== "memory") {
+    vars.push(`GE_SIMULATOR_OVERLAY_BACKEND=${overlayBackend}`);
+  }
   return vars.join(",");
 }
 

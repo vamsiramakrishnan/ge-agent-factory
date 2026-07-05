@@ -78,7 +78,15 @@ function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback
   // the SDK-validated field the refine harness now emits — it finally gates here.
   const specToCodeFidelity = refineResult?.spec_to_code_fidelity || null;
   if (specToCodeFidelity && specToCodeFidelity !== "pass") blockers.push(`refine spec-to-code fidelity: ${specToCodeFidelity}`);
-  if (proofBinding?.ok !== true) blockers.push("proof binding is missing or stale");
+  // Precise blocker per state — an absent binding and a drifted one have
+  // different fixes (re-prove vs re-emit), and the gate tests assert the
+  // "proof binding missing" / "proof binding stale" distinction.
+  if (proofBinding?.ok !== true) {
+    const reason = (proofBinding?.reason || "").replace(/^stale proof binding:\s*/i, "");
+    blockers.push(/missing/i.test(reason) || !reason
+      ? "proof binding missing from the promotion packet"
+      : `proof binding stale: ${reason}`);
+  }
   return {
     ok: blockers.length === 0,
     policy: PROMOTION_POLICY,

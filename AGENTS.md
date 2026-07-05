@@ -144,8 +144,9 @@ composable in-process instead of forced through a subprocess.
 ## Don't invent new backend endpoints casually
 
 The console, CLI, and MCP server share one command registry
-(`tools/lib/ge-command-registry.mjs`) — a route/CLI-invocation/risk-level
-triple per command, dispatched through one job-runner. Before adding a new
+(`@ge/capability-registry`, validated against the `@ge/core-api` capability
+contract at import time) — a route/CLI-invocation/risk-level triple per
+command, dispatched through one job-runner. Before adding a new
 `/api/*` route for a console action, check whether the underlying `ge`/
 `factory` command already exists and just needs a registry entry (see
 `daemon.start` for a recent example) rather than bespoke route logic.

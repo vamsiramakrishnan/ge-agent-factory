@@ -14,6 +14,7 @@
     "@astrojs/starlight": "^0.34",
     "@fontsource/hanken-grotesk": "^5",
     "@fontsource/jetbrains-mono": "^5",
+    "@ge/capability-registry": "workspace:*",
     "astro": "^5",
     "sharp": "^0.33",
     "tinyglobby": "^0.2.17"

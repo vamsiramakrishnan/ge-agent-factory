@@ -107,4 +107,5 @@ export declare function createFirestoreEventMirror(opts?: {
   projectId?: string | null;
   databaseId?: string;
   collection?: string;
+  db?: FirestoreDatabaseLike | null;
 }): Promise<FirestoreEventMirror>;

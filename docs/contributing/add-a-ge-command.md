@@ -12,7 +12,7 @@ layout: default
 ## Goal
 
 Wire an existing `ge` CLI command into the shared command registry
-(`tools/lib/ge-command-registry.mjs`) so the console gets a `/api/ge/*` route,
+(`packages/capability-registry/src/registry.mjs`) so the console gets a `/api/ge/*` route,
 preflight gating, risk labeling, and live job streaming for it — without
 writing any bespoke route or process-spawning logic.
 
@@ -29,10 +29,11 @@ points to.
   `emit()` boundary in `tools/ge/shared.mjs` renders JSON for non-TTY callers
   — see AGENTS.md's "return/throw, don't print/exit" convention). For
   `daemon.start` that is `daemonStart` in `tools/ge/daemon.mjs`.
-- Read the **field-contract JSDoc at the top of
-  `tools/lib/ge-command-registry.mjs`** — it is the source of truth for the
-  `risk` vocabulary, every `requirements` key, and the `observability.mode`
-  vocabulary.
+- Read the **capability contract in `@ge/core-api`
+  (`packages/core-api/src/capability.mjs`)** — it is the source of truth for
+  the `risk` vocabulary, every `requirements` key, and the
+  `observability.mode` vocabulary, and the registry validates every entry
+  against it at import time (a malformed entry fails every surface at load).
 
 > Before adding a new `/api/*` route for a console action, check whether the
 > underlying `ge`/`factory` command already exists and needs only a registry
@@ -48,7 +49,7 @@ points to.
 
 One registry entry is consumed at five places. All paths are real and current:
 
-1. **Registry** — `tools/lib/ge-command-registry.mjs` defines
+1. **Registry** — `packages/capability-registry/src/registry.mjs` defines
    `GE_COMMANDS["<id>"]` with `{ method, path, cli, label, summary, risk,
    expectedDuration, requirements, observability, argv(body) }`, and exposes
    `commandForRoute` / `commandMeta` / `commandRequirements` /
@@ -87,24 +88,26 @@ One registry entry is consumed at five places. All paths are real and current:
    shows the same stream from the CLI.
 5. **Console client + doctor** — `GET /api/ge/commands` returns
    `GE_COMMAND_LIST`, typed as `GeCommand` in
-   `apps/console/src/services/geClient.ts` (its `risk` union must stay in
-   sync with the registry — the registry JSDoc says so explicitly). The same
+   `apps/console/src/services/geClient.ts` (its `risk` union comes from
+   `@ge/contracts`, which the parity test holds equal to `@ge/core-api`'s
+   `RISK_LEVELS`). The same
    `requirements` also power on-demand readiness:
    `ge doctor --command <id>` and `/api/ge/doctor?command=<id>` both route to
    `commandDoctor`.
 
-> The MCP server (`tools/mcp-server.mjs`) does **not** read this registry. It
-> exposes `tools/lib/factory-core.mjs` verbs directly as typed MCP tools —
-> the "one core, three surfaces" sharing happens at factory-core, while the
-> registry is specifically the console-route ↔ CLI-argv ↔ risk/preflight
-> bridge. If your command should also be model-callable, add a `server.tool`
-> in `tools/mcp-server.mjs` calling the same core function.
+> The MCP server (`tools/mcp-server.mjs`) reads this registry too: it derives
+> its tool surface (names, descriptions, param schemas) from each entry's
+> `mcp` block — never hand-write a tool there. If your command should also be
+> model-callable, add an `mcp` block to the entry and an in-process handler
+> (keyed by registry id, calling the same core function) to `HANDLERS` in
+> `tools/mcp-server.mjs`; `tools/mcp-registry-parity.test.mjs` fails if the
+> declared blocks and the handler map drift apart.
 {: .note }
 
 ## Steps
 
 1. **Add the registry entry.** The real `daemon.start` entry in
-   `tools/lib/ge-command-registry.mjs`:
+   `packages/capability-registry/src/registry.mjs`:
 
    ```js
    "daemon.start": {
@@ -129,9 +132,11 @@ One registry entry is consumed at five places. All paths are real and current:
    ```
 
    - `risk` is one of `mutates-cloud` · `starts-workloads` (cloud) ·
-     `starts-local-workloads` · `writes-repo` — pick per the JSDoc; a new
-     value also means widening `GeCommand.risk` in
-     `apps/console/src/services/geClient.ts`.
+     `starts-local-workloads` · `writes-repo` · `read-only` — pick per
+     `@ge/core-api`'s `RISK_LEVELS`; a new value also means extending
+     `RiskLevelSchema` in `@ge/contracts` (the zod twin the console types
+     `GeCommand.risk` from — `tools/contracts-registry-parity.test.mjs` holds
+     the two vocabularies equal).
    - `requirements` keys become the preflight checks listed above — declare
      only what the command truly needs (over-declaring blocks users
      spuriously; `daemon.start` needs nothing but `node`).
@@ -169,8 +174,9 @@ One registry entry is consumed at five places. All paths are real and current:
    `startJob` hands the returned `jobId` to the shared job toast, which
    subscribes to `/api/ge/jobs/:id/logs`.
 
-4. **Tests.** The contract tests in `tools/lib/ge-command-registry.test.mjs`
-   iterate **every** entry (requirements present, observability shaped,
+4. **Tests.** The contract tests in
+   `packages/capability-registry/src/registry.test.mjs` (plus the
+   surface-parity suite beside it) iterate **every** entry (requirements present, observability shaped,
    `argv({})` returns a concrete string array) — a malformed entry fails
    without you writing anything. Add targeted tests there when your `argv`
    does body mapping, and a route test in
@@ -184,7 +190,7 @@ One registry entry is consumed at five places. All paths are real and current:
 ge daemon start
 
 # registry + route contracts
-bun test tools/lib/ge-command-registry.test.mjs apps/console/src/server/ge-api.test.mjs
+bun test packages/capability-registry/src apps/console/src/server/ge-api.test.mjs
 
 # end-to-end through the console server (mise run console, default port 18260)
 curl -s -X POST http://localhost:18260/api/ge/daemon/start | head -5   # → { "jobId": ..., "command": { "id": "daemon.start", ... } }
@@ -213,9 +219,10 @@ tools/check-design-tokens.mjs`) and `bun run test:gated`.
   events from the daemon's run store; if the daemon is down the job falls
   back to a local spawn (look for the "Daemon unavailable" warning event).
   `ge daemon status` / `ge runs list` to inspect.
-- **TypeScript error on `risk`** — you introduced a new risk value; widen the
-  union in `apps/console/src/services/geClient.ts` (and keep the registry
-  JSDoc's vocabulary list current in the same change).
+- **TypeScript error on `risk`** — you introduced a new risk value; extend
+  `RISK_LEVELS` in `@ge/core-api` **and** `RiskLevelSchema` in `@ge/contracts`
+  in the same change (the parity test holds them equal, and the console types
+  `GeCommand.risk` from the contracts enum).
 
 ## See also
 

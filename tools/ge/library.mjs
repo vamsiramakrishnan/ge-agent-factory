@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import pc from "picocolors";
 import { common, emit, guarded, out, ui } from "./shared.mjs";
-import { generateLibraryIndex, readLibraryIndex, searchBlueprints, resolveBlueprint, blueprintStatus, relatedBlueprints } from "../lib/agent-library.mjs";
+import { generateLibraryIndex, readLibraryIndex, searchBlueprints, resolveBlueprint, blueprintStatus, relatedBlueprints } from "@ge/blueprint-library";
 
 function renderStats(r){ out(ui.title("Agent Library")); out(ui.kv([["blueprints", String(r.counts.blueprints)], ["verticals", String(r.counts.verticals)], ["buildable", String(r.counts.buildable)], ["proven", String(r.counts.proven)]])); }
 function renderRows(rows){ for (const b of rows) out(`${pc.bold(b.title)}\n  ${pc.cyan(b.slug)}\n  ${[b.taxonomy.vertical,b.taxonomy.domain].filter(Boolean).join(" · ")}\n  ${b.inventory.sourceSystems} systems · ${b.inventory.toolIntents} tools · ${b.inventory.evals} evals · ${b.behavior.humanApprovalPoints} approval gates\n  Status: ${b.status}\n  Create: ${pc.cyan(b.commands.create)}\n`); }

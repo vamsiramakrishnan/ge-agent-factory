@@ -104,7 +104,7 @@ test("ge drive --turns drives inline turns (the programmatic transport)", async 
 }, 30000);
 
 test("the registry argv serializes body.turns so the console dispatch transports them", async () => {
-  const { GE_COMMANDS } = await import("../lib/ge-command-registry.mjs");
+  const { GE_COMMANDS } = await import("@ge/capability-registry");
   const argv = GE_COMMANDS.drive.argv({ turns: "hello\nworld" });
   expect(argv).toContain("--turns");
   expect(argv[argv.indexOf("--turns") + 1]).toBe("hello\nworld");
