@@ -150,7 +150,42 @@ describe("planHandoff", () => {
 });
 
 describe("HANDOFF_TAR_EXCLUDES", () => {
-  test("matches the exclude list handoff()'s tar invocation uses (tools/lib/provision.mjs)", () => {
-    expect(HANDOFF_TAR_EXCLUDES).toEqual([".venv", "node_modules", "__pycache__", ".pytest_cache", "runs", "versions", ".ge-harness"]);
+  test("is the canonical list — includes the base excludes plus the ADK/agents-cli scratch dirs", () => {
+    expect(HANDOFF_TAR_EXCLUDES).toEqual([
+      ".venv",
+      "node_modules",
+      "__pycache__",
+      "*.pyc",
+      ".pytest_cache",
+      ".adk",
+      ".google-agents-cli",
+      "runs",
+      "versions",
+      ".ge-harness",
+    ]);
+  });
+});
+
+describe("tar-exclude consolidation (3a)", () => {
+  // Structural test: provision.mjs's two exclude-list call sites (copyWorkspaces's
+  // rsync call and handoff()'s tar invocation) must import HANDOFF_TAR_EXCLUDES
+  // rather than re-declaring their own copy of the string set. Revert the import
+  // in provision.mjs and this test fails (negative-test check).
+  const provisionSrc = readFileSync(new URL("./provision.mjs", import.meta.url), "utf8");
+
+  test("provision.mjs imports HANDOFF_TAR_EXCLUDES from handoff-package.mjs", () => {
+    expect(provisionSrc).toMatch(/import\s*\{\s*HANDOFF_TAR_EXCLUDES\s*\}\s*from\s*["']\.\/handoff-package\.mjs["']/);
+  });
+
+  test("provision.mjs's rsync and tar call sites use the imported constant, not a sibling inline copy", () => {
+    // The rsync call site (copyWorkspaces) and the tar call site (handoff())
+    // both derive their exclude args from HANDOFF_TAR_EXCLUDES.
+    expect(provisionSrc).toMatch(/HANDOFF_TAR_EXCLUDES\.flatMap/);
+    expect(provisionSrc).toMatch(/HANDOFF_TAR_EXCLUDES\.map\(\(dir\)\s*=>\s*`--exclude=\$\{dir\}`\)/);
+    // No sibling literal re-declaration of the full base exclude set as an
+    // inline array/arg sequence (the old three-copy shape this test guards
+    // against: repeated "--exclude", ".venv" / "--exclude=.venv" pairs).
+    expect(provisionSrc).not.toMatch(/"--exclude",\s*"\.venv"/);
+    expect(provisionSrc).not.toMatch(/"--exclude=\.venv"/);
   });
 });
