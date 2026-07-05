@@ -31,6 +31,7 @@ import {
 } from "./local-workspaces.mjs";
 import { selectWorkspacesForRegen } from "./planes/tool-plane-checks.mjs";
 import { admitForHandoff } from "./admission/admission-ops.mjs";
+import { HANDOFF_TAR_EXCLUDES } from "./handoff-package.mjs";
 
 const noop = () => {};
 
@@ -59,16 +60,7 @@ function copyWorkspaces(run, ids, baseDir, log) {
     rmSync(dest, { recursive: true, force: true }); mkdirSync(dest, { recursive: true });
     const r = run("rsync", [
       "-a",
-      "--exclude", ".venv",
-      "--exclude", "node_modules",
-      "--exclude", "__pycache__",
-      "--exclude", "*.pyc",
-      "--exclude", ".pytest_cache",
-      "--exclude", ".adk",
-      "--exclude", ".google-agents-cli",
-      "--exclude", "runs",
-      "--exclude", "versions",
-      "--exclude", ".ge-harness",
+      ...HANDOFF_TAR_EXCLUDES.flatMap((dir) => ["--exclude", dir]),
       `${join(LOCAL_PROJECTS, id)}/`,
       `${dest}/`,
     ], { capture: true, allowFail: true });
@@ -539,7 +531,7 @@ export function createProvisionOps({
 
           // tar (pruning heavy/generated dirs) → upload to the prebuilt staging path.
           const tmp = join("/tmp", `ge-handoff-${id}.tar.gz`);
-          const tar = run("tar", ["-czf", tmp, "--exclude=.venv", "--exclude=node_modules", "--exclude=__pycache__", "--exclude=.pytest_cache", "--exclude=runs", "--exclude=versions", "--exclude=.ge-harness", "-C", wsDir, "."], { allowFail: true });
+          const tar = run("tar", ["-czf", tmp, ...HANDOFF_TAR_EXCLUDES.map((dir) => `--exclude=${dir}`), "-C", wsDir, "."], { allowFail: true });
           if (!tar.ok) throw new Error(`tar failed: ${tar.err?.split("\n")[0] || "?"}`);
           const prebuiltArchive = `gs://${cfg.bucket}/prebuilt/${id}/workspace.tar.gz`;
           const cp = gcloud(["storage", "cp", tmp, prebuiltArchive], { allowFail: true });

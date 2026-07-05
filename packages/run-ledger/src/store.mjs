@@ -9,6 +9,8 @@
 // available the caller gets null and can fall back to legacy file stores —
 // wiring this in never breaks an install.
 
+import { STATUS_MAP } from "./status.mjs";
+
 // Canonical pipeline stages, ordered. Mirrors FACTORY_STAGES in the generator
 // (kept here to avoid importing the harness just for a constant). If the harness
 // changes stages, update both.
@@ -191,17 +193,17 @@ export function createRunLedger(adapter) {
     for (const r of rows) {
       const prev = byStage.get(r.stage);
       // failed > done > started for display
-      const rank = (s) => (s === "failed" ? 3 : s === "done" ? 2 : 1);
+      const rank = (s) => (s === STATUS_MAP.failed ? 3 : s === STATUS_MAP.done ? 2 : 1);
       if (!prev || rank(r.status) > rank(prev)) byStage.set(r.stage, r.status);
     }
     return LEDGER_STAGES
       .filter((s) => byStage.has(s))
-      .map((s) => ({ name: s, status: byStage.get(s) === "started" ? "running" : byStage.get(s) }));
+      .map((s) => ({ name: s, status: byStage.get(s) === "started" ? STATUS_MAP.running : byStage.get(s) }));
   };
 
   const summarizeRun = (run) => {
     const items = adapter.all(`SELECT * FROM ledger_work_items WHERE run_id = ? ORDER BY id`, [run.id]);
-    const failed = items.filter((i) => i.status === "failed").length;
+    const failed = items.filter((i) => i.status === STATUS_MAP.failed).length;
     return {
       id: run.id,
       kind: run.kind || "build",
@@ -232,7 +234,7 @@ export function createRunLedger(adapter) {
       recentEvents: adapter
         .all(`SELECT ts, status, stage, error FROM ledger_events WHERE run_id = ? ORDER BY seq DESC`, [run.id])
         .slice(0, 8)
-        .map((e) => ({ ts: e.ts, type: e.stage ? `stage_${e.status}` : e.status, stage: e.stage, level: e.status === "failed" ? "error" : "info", line: e.error || `${e.stage || "run"} ${e.status}` })),
+        .map((e) => ({ ts: e.ts, type: e.stage ? `stage_${e.status}` : e.status, stage: e.stage, level: e.status === STATUS_MAP.failed ? "error" : "info", line: e.error || `${e.stage || "run"} ${e.status}` })),
     };
   };
 
@@ -314,7 +316,7 @@ export function createRunLedger(adapter) {
         workspaceId: result.workspaceId,
       };
       for (const stage of result.stages || []) {
-        recordTransition({ ...base, stage: stage.name, status: stage.status === "done" ? "done" : stage.status === "failed" ? "failed" : "started", ts: run.finishedAt || run.startedAt || nowIso(), error: stage.status === "failed" ? result.error : null });
+        recordTransition({ ...base, stage: stage.name, status: stage.status === STATUS_MAP.done ? STATUS_MAP.done : stage.status === STATUS_MAP.failed ? STATUS_MAP.failed : "started", ts: run.finishedAt || run.startedAt || nowIso(), error: stage.status === STATUS_MAP.failed ? result.error : null });
       }
       // Final materialised status for the work item.
       recordTransition({ ...base, stage: result.status, status: result.error ? "failed" : "done", error: result.error || null, ts: run.finishedAt || nowIso() });

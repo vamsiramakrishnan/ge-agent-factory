@@ -33,19 +33,25 @@ import { checkAdmission as evaluateAdmissionDecision, shouldAdmit } from "./admi
 
 export const HANDOFF_PACKAGE_SCHEMA_VERSION = "ge.handoff-package.v1";
 
-// The exact exclude list `handoff()`'s tar invocation uses today
-// (tools/lib/provision.mjs, ~line 542). Kept here as the shared constant so
-// `packageHandoff` builds byte-identical archives to the live path; NOTE —
-// provision.mjs still carries its own inline copy of this list rather than
-// importing it from here (that refactor is integration's call: this module
-// is additive/local-only and does not touch provision.mjs's handoff() body),
-// so the two lists must be kept in sync by hand until that reconciliation
-// happens.
+// The canonical exclude list for every tar/rsync call that packages or ships
+// a local agent workspace: `handoff()`'s tar invocation (tools/lib/
+// provision.mjs, ~line 542) and `copyWorkspaces`'s rsync call (tools/lib/
+// provision.mjs, ~line 60) both import this constant rather than carrying
+// their own inline copy — `packageHandoff` (below) builds byte-identical
+// archives to the live `handoff()` path as a result. `.adk` and
+// `.google-agents-cli` are scratch/cache directories the `google-agents-cli`/
+// ADK tooling writes inside a workspace (the same kind of tool-local litter
+// as `.venv`/`node_modules`/`__pycache__`) — they can appear in any workspace
+// tree regardless of which of these codepaths ships it, so they belong here
+// in the shared list rather than as a copy-only addendum on the rsync call.
 export const HANDOFF_TAR_EXCLUDES = Object.freeze([
   ".venv",
   "node_modules",
   "__pycache__",
+  "*.pyc",
   ".pytest_cache",
+  ".adk",
+  ".google-agents-cli",
   "runs",
   "versions",
   ".ge-harness",
