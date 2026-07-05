@@ -54,7 +54,7 @@ export {
   bigQueryApiCheck,
   selectWorkspacesForRegen,
 } from "./planes/tool-plane-checks.mjs";
-export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor/engine.mjs";
+export { HARNESS_VENV_DIR, harnessVenvPython, remoteLedgerCheck } from "./doctor/engine.mjs";
 // The local-execution spawn-and-emit primitive + the daemon-first/fallback
 // ordering it backs (see ge-job-runner.mjs's header) — re-exported so
 // apps/console/src/server/transport/jobs.mjs can reach them through the

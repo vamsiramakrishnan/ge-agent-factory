@@ -808,6 +808,7 @@ export const GE_COMMANDS = {
         vertex: { type: "boolean", optional: true },
         target: { type: "string", optional: true },
         limit: { type: "string", optional: true },
+        detach: { type: "boolean", optional: true, description: "Local mode only: submit to the runtime daemon and return the run id immediately" },
       },
     },
     argv: (body = {}) => {
@@ -818,6 +819,7 @@ export const GE_COMMANDS = {
       if (body.dept) argv.push("--dept", String(body.dept));
       if (body.local) argv.push("--local");
       if (body.force) argv.push("--force");
+      if (body.detach && body.local) argv.push("--detach");
       return argv;
     },
   },

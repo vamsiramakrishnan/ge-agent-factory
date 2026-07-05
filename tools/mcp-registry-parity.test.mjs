@@ -30,7 +30,7 @@ const EXPECTED_TOOLS = {
   // provision/provision-local tasks), while apps/factory/src/cli.js's own
   // `factory provision` meant something unrelated (infra/control-plane
   // apply) -- renamed to match its registry id "agents.build".
-  factory_agents_build: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?"],
+  factory_agents_build: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?", "detach?"],
   factory_sync: ["force?", "push?", "commit?", "local?", "remote?", "create?"],
   factory_mcp_deploy: [],
   factory_mcp_doctor: [],

@@ -62,9 +62,18 @@ const HANDLERS = {
   "doctor":        () => core.doctor(cfg()),
   "status":        (a) => core.status(cfg(), { noProxy: a.noProxy }),
   "logs":          (a) => core.logs(cfg(), a),
-  "agents.build":  (a) => a.local
-    ? core.provisionLocal(cfg(), { scope: a.scope, ids: a.ids, dept: a.dept, limit: a.limit, target: a.target, vertex: a.vertex !== false })
-    : core.provision(cfg(), a),
+  "agents.build":  async (a) => {
+    if (a.local && a.detach) {
+      // Detached local build: hand the exact CLI argv to the runtime daemon
+      // and return the run id immediately instead of blocking the tool call
+      // for the whole build (same core as `ge agents build --local --detach`).
+      const { submitDetached } = await import("./lib/daemon/detached-submit.mjs");
+      return submitDetached({ argv: GE_COMMANDS["agents.build.local"].argv({ ...a, detach: false }) });
+    }
+    return a.local
+      ? core.provisionLocal(cfg(), { scope: a.scope, ids: a.ids, dept: a.dept, limit: a.limit, target: a.target, vertex: a.vertex !== false })
+      : core.provision(cfg(), a);
+  },
   "agents.sync":   (a) => a.local
     ? core.syncLocal(cfg(), { remote: a.remote, push: a.push, commit: a.commit !== false, create: a.create })
     : core.sync(cfg(), a),
