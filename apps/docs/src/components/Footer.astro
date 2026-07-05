@@ -1,0 +1,29 @@
+---
+import EditLink from 'virtual:starlight/components/EditLink';
+import LastUpdated from 'virtual:starlight/components/LastUpdated';
+import Pagination from 'virtual:starlight/components/Pagination';
+---
+
+<footer class="ge-footer">
+  <div class="ge-footer-measure" aria-hidden="true"></div>
+  <Pagination />
+  <div class="ge-footer-meta">
+    <EditLink />
+    <LastUpdated />
+  </div>
+  <div class="ge-footer-main">
+    <div class="ge-footer-brand">
+      <a href="/ge-agent-factory/" class="ge-wordmark" translate="no" aria-label="GE Agent Factory home">
+        <span class="ge-monogram" aria-hidden="true">af</span>
+        <span class="ge-wordmark-text">ge agent factory</span>
+      </a>
+      <p>the contract-and-proof layer for enterprise agents.</p>
+    </div>
+    <nav aria-label="Footer" class="ge-footer-nav">
+      <div><span>start</span><a href="/ge-agent-factory/start/quickstart/">quickstart</a><a href="/ge-agent-factory/start/mental-model/">mental model</a><a href="/ge-agent-factory/start/vs-agents-cli/">vs agents-cli</a></div>
+      <div><span>console</span><a href="/ge-agent-factory/console/pipeline-and-runs/">pipeline</a><a href="/ge-agent-factory/console/readiness/">readiness</a><a href="/ge-agent-factory/concepts/evals-as-proof/">proof</a></div>
+      <div><span>reference</span><a href="/ge-agent-factory/reference/cli/">cli</a><a href="/ge-agent-factory/reference/spec-schema/">schema</a><a href="/ge-agent-factory/reference/mcp/">mcp</a></div>
+    </nav>
+  </div>
+  <div class="ge-footer-bottom"><span>© 2026 · apache-2.0 · built with starlight</span><span><i></i> v0.34.8 · operational</span></div>
+</footer>
