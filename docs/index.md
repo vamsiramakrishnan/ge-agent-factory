@@ -10,7 +10,10 @@ description: GE Agent Factory generates enterprise agents from a spec — an Ent
 **An agent is a contract with the external world.** It reads your systems,
 acts on your data, and speaks to your users — so the factory builds it
 from one: not hand-assembled, not trusted on faith, but compiled from a
-canonical spec and admitted to production on verifiable evidence.
+canonical spec and admitted to production on verifiable evidence. What you
+walk away with is a contract you can read, a simulation you can test
+against, and proof you can show a reviewer — before the agent touches
+anything real.
 
 Hand-writing an agent from a business requirements document works for one
 demo — one person can hold the whole intent in their head while wiring up
@@ -53,9 +56,9 @@ Binary Authorization — can verify the same evidence downstream. See
 
 Everything below the handoff line — scaffolding the ADK project, deploying to
 Agent Engine, publishing into Gemini Enterprise — is done *by* those tools.
-The factory's job is to make sure that what reaches them is a contract you
-can read, a simulation you can test against, and proof you can show a
-reviewer.
+The factory owns everything above it: turning intent into that readable
+contract, exercising it against simulated systems, and sealing the evidence
+that it holds.
 
 <p align="center">
   <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
