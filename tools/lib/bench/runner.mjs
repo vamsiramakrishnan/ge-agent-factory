@@ -189,7 +189,7 @@ export async function runBench(cfg, {
         code: "GELIVE008",
         what: `budget ${verdict.budget}: observed ${verdict.observed} vs limit ${verdict.limit}`,
         retryable: false,
-        fix: "investigate the regression, or raise the budget in .ge.json live.budgets deliberately",
+        fix: "ge bench --cassette <recording> to reproduce locally, or raise the budget in .ge.json live.budgets deliberately",
       })),
     },
   };

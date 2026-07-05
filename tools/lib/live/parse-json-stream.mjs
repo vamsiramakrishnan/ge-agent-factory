@@ -60,7 +60,7 @@ export function createJsonStreamParser({ onObject } = {}) {
           throw liveError("GELIVE004", "unbalanced braces in stream", {
             where: `at byte ${i}`,
             why: "a closing brace arrived with no matching open — the stream is corrupt or not JSON",
-            fix: "retry the call; if it persists, check the endpoint and API version",
+            fix: "retry the call; if it persists, ge config explain (check geAppId / geLocation match the live engine)",
           });
         }
       }
