@@ -5,6 +5,9 @@ export {
   sha256Hex,
   computeWorkspaceDigest,
   computeFileDigest,
+  computeTreeDigest,
+  computeProofBinding,
+  validateProofBinding,
 } from "./digest.mjs";
 export {
   SIGNATURE_ALGORITHM,
