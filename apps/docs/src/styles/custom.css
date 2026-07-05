@@ -3,8 +3,7 @@
  * (chrome) and packages/design/src/status-ramp.mjs (semantic status hues).
  * Those two files are THE canonical source; every hex below is either
  * copied from them verbatim or is a documented light/dark rung along one of
- * their hues (same contract as docs/_sass/custom/setup.scss's derived
- * swatches). If the palette changes, change palette.mjs first and
+ * their hues. If the palette changes, change palette.mjs first and
  * re-derive here.
  *
  * Visual language is Braun/Dieter Rams industrial functionalism: hairlines

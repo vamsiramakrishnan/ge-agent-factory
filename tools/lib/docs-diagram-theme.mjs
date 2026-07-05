@@ -5,8 +5,8 @@
 //
 // Values come from packages/design/src/palette.mjs (the single JS source of
 // truth for the brand palette) rather than hardcoded hex literals, so this
-// file can't silently drift from tokens.css / ge.scss — see
-// tools/check-design-tokens.mjs, which cross-checks all three.
+// file can't silently drift from tokens.css — see
+// tools/check-design-tokens.mjs, which cross-checks them.
 import { PALETTE } from "../../packages/design/src/palette.mjs";
 
 export const DIAGRAM_THEME = {
