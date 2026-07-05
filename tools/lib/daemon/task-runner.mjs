@@ -13,6 +13,18 @@
 // Behavior is preserved byte-for-byte at the event level: the same event
 // types, stages, lines (including the " (resume)" suffix), data payloads,
 // resume-attempt records, and output-merge semantics the clones produced.
+//
+// SCOPE NOTE (local-execution unification): ge.command is the one run-kind
+// carved back OUT of this skeleton — command-run.mjs's startGeCommandTask/
+// resumeGeCommandTask now bind tools/lib/ge-job-runner.mjs's runSpawnedJob
+// instead, so the same primitive also backs the console's daemon-fallback
+// local job submission (apps/console/src/server/transport/jobs.mjs, via
+// factory-core.mjs). process.command, harness.run, pipeline-node-command, and
+// doctor keep this module unchanged: none of them have direct test coverage
+// (no test file imports/exercises run-store.mjs, task-runner.mjs, or
+// command-run.mjs's process.command path in isolation), so they were left on
+// the existing, already-proven skeleton rather than rebound without a safety
+// net.
 import { execStream } from "../exec-stream.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
 import {

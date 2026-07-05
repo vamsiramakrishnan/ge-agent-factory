@@ -27,7 +27,6 @@ const ALLOWED_PAIRS = new Set([
   "apps/console/src/server/transport/repair.mjs -> tools/lib/repair-runner.mjs",
   "apps/console/src/server/transport/repair.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/doctor.mjs -> tools/lib/factory-core.mjs",
-  "apps/console/src/server/transport/jobs.mjs -> tools/lib/exec-stream.mjs",
   "apps/console/src/server/transport/jobs.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/ledger.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/ledger.mjs -> tools/lib/ledger/run-ledger-firestore.mjs",
