@@ -778,14 +778,32 @@ button > kbd {
   margin: 1.25rem 0;
 }
 
-.ge-logo-row img {
+/* The "works with" shelf — real assistant marks (Claude, Gemini, Codex,
+ * Antigravity, MCP), tonally unified into one ink so a row of five brands
+ * reads as one system instead of five competing color logos (color is
+ * reserved for semantics here, not decoration). Each mark is a CSS mask so
+ * its color follows the site theme exactly — the tile carries the hairline
+ * and fill, the mask carries the glyph. The SVGs self-theme as <img> too, so
+ * the same files render correctly in the README on GitHub. */
+.ge-logo {
+  display: grid;
+  place-items: center;
   height: 3.5rem;
-  width: 100%;
-  object-fit: contain;
-  padding: var(--ge-space-3);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-md);
   background: var(--sl-color-gray-6);
+}
+
+.ge-logo-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: var(--sl-color-gray-2);
+  -webkit-mask: var(--m) center / contain no-repeat;
+  mask: var(--m) center / contain no-repeat;
+}
+
+:root[data-theme="light"] .ge-logo-mark {
+  background-color: var(--sl-color-gray-1);
 }
 
 .ge-screenshot-wall {
