@@ -10,3 +10,21 @@ test("action tool without state assertion is flagged", async()=>{ const d=await 
 test("HITL without approval eval is flagged", async()=>{ const d=await fixture({"index.md":fm("Knowledge Bundle","Claims Agent","Requires human checkpoint before settlement."),"tests/t.md":fm("Eval Scenario","Claim happy path","Normal happy path.")}); const r=await auditSpec(d); expect(r.failedRules.map(f=>f.code)).toContain("OKF-HITL-001"); });
 test("unknown tool reference fails", async()=>{ const d=await fixture({"index.md":fm("Knowledge Bundle","Tool Agent"),"tests/t.md":fm("Eval Scenario","Tool eval","## Mechanisms to call\n- [missing_tool](/tools/missing-tool.md)\n")}); const r=await auditSpec(d); expect(r.failedRules.map(f=>f.code)).toContain("OKF-REF-001"); });
 test("status cannot become proven without fresh proof", ()=>{ const report={contractValid:true, inventory:{evals:5}, score:{total:90}, allowedToClaimProven:false}; expect(computeStatus(report)).toBe("L4"); });
+import { generateEnrichmentPlan, loadDomainPacks, matchDomainPacksForSpec, shardEnrichmentPlan } from "./okf-quality.mjs";
+
+test("domain packs load and match by keywords", async()=>{
+  const packs = await loadDomainPacks();
+  expect(packs.map((p)=>p.id)).toContain("pay-equity");
+  const matches = await matchDomainPacksForSpec("eco-impact-analysis-agent");
+  expect(matches.map((m)=>m.id)).toContain("common");
+});
+
+test("enrichment plan creates concrete obligations and bounded shards", async()=>{
+  const plan = await generateEnrichmentPlan({spec:"eco-impact-analysis-agent", target:"L4"});
+  expect(plan.tasks.length).toBe(1);
+  expect(plan.tasks[0].obligations.some((o)=>o.kind === "state_mutation")).toBe(true);
+  expect(plan.tasks[0].obligations.some((o)=>o.kind === "prompt_injection")).toBe(true);
+  const shards = shardEnrichmentPlan(plan);
+  expect(shards.length).toBe(1);
+  expect(shards[0].specs[0].id).toBe("eco-impact-analysis-agent");
+});
