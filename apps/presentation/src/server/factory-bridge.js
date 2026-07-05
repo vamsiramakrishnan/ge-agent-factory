@@ -1,6 +1,7 @@
-import { spawn, execFileSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { parseList } from "@ge/std/list";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdir, readFile } from "node:fs/promises";
 import { join, dirname, resolve } from "node:path";
 import { readJson as baseReadJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
@@ -126,6 +127,22 @@ function readHarnessEnv() {
       })
     ),
   };
+}
+
+// Helper: run a child process to completion WITHOUT blocking the event loop,
+// preserving execFileSync's throw-on-nonzero-exit contract (and, when the caller
+// passes stdio:"inherit", its live log streaming). Replaces the former
+// execFileSync calls in submitFactoryRun's prod path so a full generator +
+// tar run no longer stalls the whole Node process for every submit request.
+function runToCompletion(command, args, options = {}) {
+  return new Promise((resolveRun, rejectRun) => {
+    const child = spawn(command, args, options);
+    child.on("error", rejectRun);
+    child.on("close", (code) => {
+      if (code === 0) resolveRun();
+      else rejectRun(new Error(`${command} exited with code ${code}`));
+    });
+  });
 }
 
 // Helper: run node child process in local mode
@@ -583,7 +600,7 @@ export async function submitFactoryRun(request) {
     if (!prebuiltArchive) {
       // Run the JS CLI generators to output a fully-baked, standard workspace package
       const tempDir = `/tmp/run-${runId}`;
-      mkdirSync(tempDir, { recursive: true });
+      await mkdir(tempDir, { recursive: true });
 
       // Execute the local JS generator command to construct a real, fully compiled workspace (pyproject.toml, smoke tests, fixtures)
       const generatorScript = join(HARNESS_ROOT, "scripts/factory.mjs");
@@ -608,20 +625,22 @@ export async function submitFactoryRun(request) {
         generateEnv.GE_AGENT_MAX_OUTPUT_TOKENS = String(request.maxOutputTokens);
       }
       try {
-        // execFile (no shell): each arg is a discrete argv entry, so values like
+        // spawn (no shell): each arg is a discrete argv entry, so values like
         // --systems "<comma list>" can't be word-split or shell-interpreted.
-        execFileSync("bun", cmdArgs, { stdio: "inherit", cwd: HARNESS_ROOT, env: generateEnv });
+        // Async (runToCompletion) so the generator run no longer blocks the loop;
+        // stdio:"inherit" keeps generator logs streaming to the container.
+        await runToCompletion("bun", cmdArgs, { stdio: "inherit", cwd: HARNESS_ROOT, env: generateEnv });
       } catch (err) {
         throw new Error(`Stateless workspace scaffolding failed: ${err.message}`);
       }
 
       // Compress the fully-baked workspace structure (preserving folders)
       const tarPath = `/tmp/workspace-${runId}.tar.gz`;
-      execFileSync("tar", ["-czf", tarPath, "-C", tempDir, "."]);
+      await runToCompletion("tar", ["-czf", tarPath, "-C", tempDir, "."]);
 
       // Upload archive to GCS target bucket
       const { object: archiveObject } = parseGsUri(workspaceArchive);
-      const tarBuffer = readFileSync(tarPath);
+      const tarBuffer = await readFile(tarPath);
       await writeGcsFile(targetBucket, archiveObject, tarBuffer, token);
     }
 
