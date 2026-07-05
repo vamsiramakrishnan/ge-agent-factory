@@ -89,7 +89,7 @@ config — zero plugin-migration cost because there is nothing to migrate;
 rename today's `lint` scripts to `typecheck` truthfully (WS7 already
 introduced per-package `typecheck`). Gate via `ci`.
 
-### B2. Package manifest hygiene: publint/ATTW + undeclared deps — `S/M`
+### B2. **DONE — struck 2026-07-05.** Package manifest hygiene: publint/ATTW + undeclared deps — `S/M`
 All packages are `private: true` and Bun-consumed, so nothing is *broken*,
 but: `@ge/std` ships no types at all (90 importers); most TS packages export
 `.ts` source directly (Bun-only); `@ge/agent-spec` relies on adjacent
@@ -100,7 +100,8 @@ but: `@ge/std` ships no types at all (90 importers); most TS packages export
 advisory CI step (M); two confirmed-dead exports to delete:
 `toMcpSchema` and `buildCliArgsForConfig` in
 `tools/lib/config-schema.mjs:228,240` — but see B3 before deleting the
-former's idea.
+former's idea. Verified 2026-07-05: `toMcpSchema` and `buildCliArgsForConfig`
+do not exist in config-schema.mjs; deletion already completed.
 
 ### B3. `.ge.json` gets a `$schema` — `S`
 `tools/lib/config-schema.mjs:10-83` `CONFIG_FIELDS` is already a declarative
@@ -118,18 +119,22 @@ editor autocomplete + validation on the file they touch most.
 docs-site deep link (the runbook anchors exist). Registry of codes lives
 beside the error class; docs page generated from it (WS5 pattern).
 
-### B5. Shell completions from the citty tree — `M`
+### B5. **DONE — struck 2026-07-05.** Shell completions from the citty tree — `M`
 citty 0.2.2 has no completion support (verified in dist). But WS5-A's
 `rootCommand` export makes the tree walkable — a `ge completions
 bash|zsh|fish` generator is the same walk as `gen-cli-reference.mjs` with a
-different renderer. No new runtime dependency needed.
+different renderer. No new runtime dependency needed. Verified 2026-07-05:
+`tools/ge/completions.mjs` exists (132 lines), renders bash/zsh/fish, and is
+registered in `tools/ge.mjs:62`.
 
-### B6. `llms.txt` + `llms-full.txt` from the docs site — `S`
+### B6. **DONE — struck 2026-07-05.** `llms.txt` + `llms-full.txt` from the docs site — `S`
 Nothing emits them today. Either the `starlight-llms-txt` community plugin
 (one-line integration in `apps/docs/astro.config.mjs`) or a custom Astro
 endpoint concatenating the synced content — everything already flows through
 `sync-content.mjs`. For a repo whose product is agents, being one-fetch
-legible to agents is table stakes.
+legible to agents is table stakes. Verified 2026-07-05: `apps/docs/src/pages/llms.txt.js`,
+`llms-full.txt.js`, `apps/docs/src/lib/llms.mjs`, and test `apps/docs/tests/llms-txt.test.mjs`
+all exist.
 
 ### B7. Determinism preload — `S`
 `apps/factory/src/source-clock.js` is already the centralized clock (sole
@@ -150,7 +155,7 @@ Hono app (TS conversion, medium) OR keep extending the `@ge/contracts`
 zod-shared-shape pattern that `geClient.ts` already half-uses. Do not start
 with the client.
 
-### B9. Run replay — the flagship experience item — `M`
+### B9. **DONE — struck 2026-07-05.** Run replay — the flagship experience item — `M`
 The console already has the ⌘K palette (hand-rolled,
 `apps/console/src/components/shell/CommandPalette.tsx`, wired in
 `App.tsx:82`) and a single-source tab registry
@@ -159,7 +164,9 @@ missing is `ge run replay <id>` / a console scrubber: the durable ledger
 records everything, SSE already emits `id:` for resume
 (`transport/sse.mjs:7`), and `@ge/run-ledger`'s pure frames→state reducer
 (`reduce.mjs`) is exactly the primitive a timeline scrubber needs. Mostly UI
-work on existing, now-typed foundations.
+work on existing, now-typed foundations. Verified 2026-07-05: `ge runs replay`
+exists (`tools/ge/runs.mjs:215`) and console scrubber (`apps/console/src/hooks/useRunScrubber.ts`)
+is wired in `RunDrawer.tsx:19-95`.
 
 ## Sequencing suggestion
 
