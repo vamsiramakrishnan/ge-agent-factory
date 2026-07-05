@@ -6,7 +6,7 @@
 // optionality — fails here first. Widening the MCP surface is a deliberate
 // act: update this fixture in the same commit, and say so in the subject.
 import { test, expect } from "bun:test";
-import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 
 const EXPECTED_TOOLS = {
   // Golden-path verbs (Language & DX refactor, 2026-07-03): capture/prove/
@@ -96,4 +96,16 @@ test("every registry entry declares one of the known risk values", () => {
   for (const command of Object.values(GE_COMMANDS)) {
     expect(KNOWN_RISKS).toContain(command.risk);
   }
+});
+
+test("every declared mcp tool has an in-process handler in mcp-server.mjs", async () => {
+  // A registry entry may declare an MCP surface only if the server can
+  // execute it — this is what used to fail at server boot (the loop in
+  // tools/mcp-server.mjs throws on a handler-less mcp block); holding the two
+  // maps equal here surfaces the gap in CI instead. The import is safe: the
+  // server module only connects its stdio transport under import.meta.main.
+  const { HANDLERS } = await import("./mcp-server.mjs");
+  const declared = Object.values(GE_COMMANDS).filter((c) => c.mcp).map((c) => c.id).sort();
+  const handled = Object.keys(HANDLERS).sort();
+  expect(handled).toEqual(declared);
 });

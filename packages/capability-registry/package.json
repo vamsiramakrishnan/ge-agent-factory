@@ -1,0 +1,17 @@
+{
+  "name": "@ge/capability-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The single capability table wiring every operator command into its surfaces (console route, CLI invocation, MCP tool, risk, preflight requirements, observability), validated against the @ge/core-api kernel contract at import time. Consumed by the ge CLI, the console server and client, the MCP server, and the docs site.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./registry": "./src/registry.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  },
+  "dependencies": {
+    "@ge/core-api": "workspace:*"
+  }
+}

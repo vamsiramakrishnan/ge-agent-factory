@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
-import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
+import { commandMeta, commandRequirements } from "@ge/capability-registry";
 import { runDoctorSection } from "./doctor/report.mjs";
 import { runCommand } from "./factory-exec.mjs";
 import { createDataPlane } from "./planes/data-plane.mjs";

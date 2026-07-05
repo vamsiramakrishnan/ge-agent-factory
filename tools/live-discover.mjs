@@ -15,7 +15,7 @@ const BINDINGS = {
   cliRoot: "tools/ge.mjs",
   commandGroups: "tools/ge",
   operatorCore: "tools/lib/factory-core.mjs",
-  commandRegistry: "tools/lib/ge-command-registry.mjs",
+  commandRegistry: "packages/capability-registry/src/registry.mjs",
   configSchema: "tools/lib/config-schema.mjs",
   statePaths: "tools/lib/state-paths.mjs",
   errorContract: "tools/lib/errors/dx-error.mjs",

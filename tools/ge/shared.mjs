@@ -15,7 +15,7 @@ import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
 // rule (tools/check-no-app-imports.mjs) does not apply; importing the leaf
 // here is the sanctioned alternative to hand-mirroring the code table.
 import { docsUrlFor, resolveErrorCode } from "../../apps/factory/scripts/factory/core/error-codes.mjs";
-import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 import { isDxError, dxErrorShape } from "../lib/errors/dx-error.mjs";
 
 export { core, pc, ui };
@@ -76,7 +76,7 @@ export function formatDuration(ms) {
 }
 
 // Set-expectations line before a long command starts, sourced from the same
-// registry (tools/lib/ge-command-registry.mjs) the console and MCP server read,
+// registry (packages/capability-registry/src/registry.mjs) the console and MCP server read,
 // so the estimate can't drift per surface. Silent for unknown/"varies" entries.
 export function announceExpectedDuration(commandId) {
   const expected = GE_COMMANDS[commandId]?.expectedDuration;

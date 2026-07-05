@@ -81,7 +81,7 @@ project, bucket, and service identities to work with.
 
 One engine, two surfaces: see
 [`tools/README.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/tools/README.md).
-The `mcp` blocks in `tools/lib/ge-command-registry.mjs` — the same registry
+The `mcp` blocks in `packages/capability-registry/src/registry.mjs` — the same registry
 the CLI and console read — define the tool surface (names, descriptions,
 schemas), and `tools/mcp-registry-parity.test.mjs` freezes it against drift.
 Read-only tools (`list_usecases`, `doctor`, `status`, `logs`, `mcp_doctor`)

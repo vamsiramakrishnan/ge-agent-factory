@@ -56,7 +56,7 @@ in `ge-api.mjs`, `interview-docs.mjs`, `systems.mjs`). `(SSE)` marks a streaming
 endpoint.
 
 Most mutating `/api/ge/*` routes are not bespoke handlers — they come from the
-shared command registry (`tools/lib/ge-command-registry.mjs`), which gives each
+shared command registry (`packages/capability-registry/src/registry.mjs`), which gives each
 one preflight gating, risk labeling, and job streaming for free:
 
 <p align="center">

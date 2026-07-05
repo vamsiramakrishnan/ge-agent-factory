@@ -148,7 +148,7 @@ Every station skill maps to the `ge` commands it drives, the engine packages
 behind those commands, and the reference docs that describe them. The table is
 rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 (`apps/factory/src/skill-registry.js`), and the shared command registry
-(`tools/lib/ge-command-registry.mjs`), so it cannot drift from those sources:
+(`packages/capability-registry/src/registry.mjs`), so it cannot drift from those sources:
 
 <!-- BEGIN GENERATED: skill-matrix — do not edit; run `bun run docs:skill-matrix` -->
 | Station skill | Capability | `ge` commands | Engine packages | Reference docs |
