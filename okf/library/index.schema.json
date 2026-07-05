@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ge.dev/schemas/agent-library-index.schema.json",
+  "title": "AgentLibraryIndex",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "counts",
+    "blueprints"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "agent-library.v1"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "counts": {
+      "type": "object"
+    },
+    "blueprints": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://ge.dev/schemas/agent-blueprint.schema.json",
+        "title": "AgentBlueprint",
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "version",
+          "status",
+          "taxonomy",
+          "okf",
+          "behavior",
+          "inventory",
+          "targets",
+          "commands"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "contract_valid",
+              "buildable",
+              "proven",
+              "promotion_ready"
+            ]
+          },
+          "taxonomy": {
+            "type": "object"
+          },
+          "okf": {
+            "type": "object"
+          },
+          "behavior": {
+            "type": "object"
+          },
+          "inventory": {
+            "type": "object"
+          },
+          "targets": {
+            "type": "object"
+          },
+          "commands": {
+            "type": "object"
+          },
+          "proof": {
+            "type": "object"
+          },
+          "lineage": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

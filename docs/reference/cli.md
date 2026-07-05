@@ -61,6 +61,20 @@ Every `ge` command accepts these shared flags (omitted from the per-command tabl
 
 GE Agent Factory — set up · stand up · run agents. Bare `ge` shows status + next step.
 
+### `ge create`
+
+Create an agent workspace from the Agent Library, workflow, OpenAPI, or blank contract
+
+| Flag | Type | Description |
+|---|---|---|
+| `--from-library` | string | Library blueprint slug |
+| `--out` | string |  |
+| `--overlay` | string |  |
+| `--target` | string |  |
+| `--dry-run` | boolean |  |
+| `--no-smoke` | boolean |  |
+| `--force` | boolean |  |
+
 ### `ge capture`
 
 Capture an agent contract: opens the console Interview (starts the console if needed); --from registers an existing contract file
@@ -820,6 +834,77 @@ Conservatively repair navigability (missing indexes/log); dry-run by default
 |---|---|---|
 | `<bundle>` | positional (required) |  |
 | `--dryRun` | boolean |  |
+
+### `ge library`
+
+Agent Library package manager: stats · list · search · inspect · create
+
+### `ge library stats`
+
+Show Agent Library inventory counts
+
+### `ge library list`
+
+List Agent Library blueprints
+
+| Flag | Type | Description |
+|---|---|---|
+| `--limit` | string |  |
+
+### `ge library search`
+
+Search Agent Library blueprints
+
+| Flag | Type | Description |
+|---|---|---|
+| `<query>` | positional |  |
+| `--vertical` | string |  |
+| `--department` | string |  |
+| `--domain` | string |  |
+| `--system` | string |  |
+| `--target` | string |  |
+| `--status` | string |  |
+| `--authority` | string |  |
+
+### `ge library inspect`
+
+Inspect a blueprint package
+
+| Flag | Type | Description |
+|---|---|---|
+| `<slug>` | positional (required) |  |
+
+### `ge library explain`
+
+Explain a blueprint's behavior contract and next steps
+
+| Flag | Type | Description |
+|---|---|---|
+| `<slug>` | positional (required) |  |
+
+### `ge library status`
+
+Show computed blueprint lifecycle readiness
+
+| Flag | Type | Description |
+|---|---|---|
+| `<slug>` | positional (required) |  |
+
+### `ge library related`
+
+Show related blueprints
+
+| Flag | Type | Description |
+|---|---|---|
+| `<slug>` | positional (required) |  |
+
+### `ge library doctor`
+
+Check the generated Agent Library index
+
+### `ge library refresh-index`
+
+Regenerate okf/library/index.json from OKF bundles
 
 ### `ge apply`
 
