@@ -341,3 +341,4 @@ mise run ci                # the CI gate: hygiene + lint + typecheck + docs gate
 See [`CONTRIBUTING.md`](CONTRIBUTING.md), the
 [Contributor Docs](https://vamsiramakrishnan.github.io/ge-agent-factory/contributing/),
 and [`docs/OPERATIONS.md`](docs/OPERATIONS.md) for the operator runbook.
+
