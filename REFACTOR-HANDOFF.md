@@ -124,7 +124,7 @@ A reviewer should treat these as **intentional**, not oversights:
 
 **Highest value, behavior-sensitive (audit-confirmed):**
 1. ~~**`factory.mjs` god-function split**~~ — **DONE this session (see §9).** `cmdTools` 462→109 lines (thin orchestrator); `deriveSchemaFromUseCase` + `deriveColumnsForEntity` (the latter landed via PR #4) both extracted. 8 renderer/writer modules, all gated by a new byte-exact parity oracle.
-2. **Error-handling tier** — establish DEBUG/WARN/throw discipline over the ~71 silent catches. The first concrete pieces landed this session (transport.mjs daemon→local fallback trace; harness-journal + factory-core silent catches). The broad sweep over the remaining catches is still open.
+2. **Error-handling tier** — establish DEBUG/WARN/throw discipline over the ~71 silent catches. The first concrete pieces landed this session (transport.mjs daemon→local fallback trace; harness-journal + factory-core silent catches). **DONE (2026-07-02):** the broad error-handling sweep completed; `tools/check-silent-catches.mjs` is wired into `package.json`'s `source:hygiene` chain and reports ✓ no undocumented silent catches (9 deploy-path site(s) allowlisted).
 3. **Blocking I/O on HTTP paths** — `factory-bridge.js submitFactoryRun` (sync→job-based; not purely behavior-preserving — flag it).
 
 **Larger / env-gated:**
@@ -141,7 +141,7 @@ A reviewer should treat these as **intentional**, not oversights:
 The god-function split (§9) and the first error-handling pieces are done. The next offline-verifiable slices, in order of value/safety:
 1. ~~`deriveAgentWorkflow` + its instruction helpers (`contractGovernancePreamble`, `sharedAgentGuardrails`, `buildStepInstruction`) → an `agent-workflow` module.~~ **DONE** — see `factory/agents/agent-workflow-derivation.mjs` (`factory.mjs` imports `deriveAgentWorkflow`/`buildStepInstruction`/`sharedAgentGuardrails` from it).
 2. ~~`buildCloudDataArtifacts` → `factory/data/`~~ **DONE** — see `factory/data/build-cloud-data-artifacts.mjs` (plus `factory/data/render-cloud-data-plan.mjs` for the pure renderers).
-3. The broad error-handling sweep over the remaining silent catches.
+3. ~~The broad error-handling sweep over the remaining silent catches.~~ **DONE** — completed 2026-07-02 with `tools/check-silent-catches.mjs` (9 deploy-path allowlisted sites).
 
 **Do NOT** decompose `cmdTest` / `cmdRegister` / `cmdDeploy` offline — they shell out to uv/pytest/gcloud/Agent Registry and can only be parse-checked here, so any change ships without a runtime net.
 

@@ -224,7 +224,8 @@ export function buildStageExecutionPlan(payload) {
     })(),
     plan_deploy: [
       // Promotion gate: block the remote release if validation / spec-code trace /
-      // harness verdicts haven't passed. Override per-run with options.allowUnpromoted.
+      // harness verdicts haven't passed. Override per-run with options.allowUnpromoted
+      // (payload field, distinct from CONFIG_FIELDS.allowUnpromoted in tools/lib/config-schema.mjs).
       ["node", ["scripts/factory.mjs", "promotion-gate", "--dir", workspaceDir,
         ...(payload.options?.allowUnpromoted ? ["--force"] : [])]],
       ["node", [
