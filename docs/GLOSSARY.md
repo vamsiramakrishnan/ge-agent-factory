@@ -71,6 +71,39 @@ exists.
 
 ---
 
+### System Binding
+
+**What it is:** The recorded choice of what a contract's system id actually
+talks to: a simulated [twin](#source-system-twin) (the default — nothing to
+bind), or a live target reached over MCP (Model Context Protocol) or REST.
+`ge systems bind <system> --to <target> --kind twin|mcp|rest --mode
+twin_first|live_first|twin_only` writes one (schema `ge.system-binding.v1`)
+to `.ge/systems/bindings.json`; `mode` decides whether calls try the twin or
+the live target first.
+
+**Where you'll meet it:** `ge systems bind|bindings|unbind|doctor`;
+`packages/byo-systems/src/bindings.mjs`;
+[Bring your own systems](cookbooks/bring-your-own-systems.html).
+
+---
+
+### BYO Manifest
+
+**What it is:** One file (`ge.byo.yaml`, schema `ge.byo.v1`) that packages
+every bring-your-own insertion point an enterprise might set at once —
+system bindings and overlay backend, eval packs, domain packs, model
+choices, admission/promotion policy, the generated-agents repo, cloud
+project/region. `ge byo doctor` validates it and reports a plan (each
+action `appliable`, `planned-only`, or `invalid`) without changing
+anything; `ge byo apply` executes the appliable subset. Not the same file as
+`ge.manifest.json` (the platform/fleet desired state `ge apply` reconciles).
+
+**Where you'll meet it:** `ge.byo.example.yaml` (repo root);
+`ge byo doctor|apply`; `tools/lib/byo-manifest.mjs`;
+[Bring your own systems](cookbooks/bring-your-own-systems.html).
+
+---
+
 ### Capture
 
 **What it is:** The golden path's first verb — turning business intent into an
@@ -224,6 +257,21 @@ Enterprise. `ge handoff agents-cli` runs only the post-boundary stages
 **Where you'll meet it:** `docs/concepts/handoff-targets.md`;
 `docs/cookbooks/handoff-adk-gemini-enterprise.md`; `ge handoff agents-cli`.
 
+---
+
+### Handoff Package
+
+**What it is:** A local, zero-cloud-call copy of exactly what `ge handoff`
+would upload, plus a manifest of content digests. `ge handoff plan` reports
+the digests and the [Admission Gate](#admission-gate) verdict without
+building anything; `ge handoff package` builds the archive to a local path
+instead of GCS; `ge handoff verify-package` re-extracts it and checks the
+digests against the manifest for tamper or corruption. None of the three
+upload, submit, or record a decision — they exist to let you inspect a
+handoff before running it for real.
+
+**Where you'll meet it:** `ge handoff plan|package|verify-package`;
+`tools/lib/handoff-package.mjs`.
 
 ---
 
@@ -233,6 +281,37 @@ The machinery's own names, for people operating the factory day to day. Every
 term below is real, supported, and documented — this register doesn't
 lead: it lives in `Operate` sections, reference pages, and under-the-hood
 disclosures rather than front doors.
+
+### Capability Kernel
+
+**What it is:** The closed vocabulary + validator every operator command's
+entry must satisfy: risk levels, preflight requirement keys, observability
+modes, MCP (Model Context Protocol) parameter types
+(`packages/core-api/src/capability.mjs`), checked by
+`assertCapabilityTable()` at import time. A malformed entry — an unknown
+risk level, a route two commands both claim — fails every surface (CLI,
+console, MCP server) before any of them run, not just the one exercised.
+
+**Where you'll meet it:** `@ge/core-api`; the "capability kernel" section of
+`docs/reference/architecture.md`; [Atomic capabilities](reference/atomic-capabilities.html).
+
+---
+
+### Capability Registry
+
+**What it is:** The single table (`GE_COMMANDS`,
+`packages/capability-registry/src/registry.mjs`, 54 entries) that wires one
+capability to its CLI verb, console route, MCP tool, risk level, and
+preflight requirements at once. The CLI, the console, and the MCP server all
+read this same table, validated against the [Capability
+Kernel](#capability-kernel) — a route, a CLI invocation, and an MCP schema
+cannot drift apart because they're one object rendered three ways.
+
+**Where you'll meet it:** `@ge/capability-registry`; `tools/mcp-server.mjs`;
+`apps/console/src/shared/ge-commands.mjs`;
+[Atomic capabilities](reference/atomic-capabilities.html).
+
+---
 
 ### Harness
 
@@ -305,6 +384,38 @@ simulator packs; `apps/factory/scripts/factory/packs/index.mjs` and the
 
 ---
 
+### Domain Pack
+
+**What it is:** A checked-in bundle of expert knowledge for one regulatory
+or business domain — invariants (e.g. "SAR clock preserved," "no
+customer tipoff" for AML), eval seeds, adversarial seeds, fixture rules, and
+an expert rubric (`domain-packs/<id>/pack.json`, schema
+`okf-domain-pack.v1`). `ge okf quality audit`/`ge okf enrich plan` match a
+spec against every domain pack whose `applies_when` keywords/domains/tools
+fire, so enrichment adds domain-specific coverage instead of generic evals.
+
+**Where you'll meet it:** `domain-packs/` (repo root — `aml`,
+`loan-covenants`, `fnol-claims`, `procure-to-pay`, and others);
+`tools/lib/okf-quality.mjs`; `skills/enriching-okf-blueprints/`.
+
+---
+
+### Overlay Scope
+
+**What it is:** Where a synthesized or bound source-system twin's runtime
+state lives — the in-process, non-durable `memory` backend (lost on
+restart, not shared across replicas) or a durable backend (`firestore`,
+`alloydb`) shared across every Cloud Run instance. `resolveOverlayScope()`
+defaults to `memory` locally but auto-injects `firestore` the moment
+[mode](#planes) is `remote`; an explicit `simulatorOverlayBackend` (config
+field, flag, or BYO manifest section) always wins over either default.
+
+**Where you'll meet it:** `packages/byo-systems/src/index.mjs`;
+`GE_SIMULATOR_OVERLAY_BACKEND`/`simulatorOverlayBackend`;
+[Bring your own systems](cookbooks/bring-your-own-systems.html).
+
+---
+
 ### agents-cli
 
 **What it is:** A lower-level command-line tool (from the `google-agents-cli`
@@ -355,6 +466,21 @@ to it.
 
 ---
 
+### Detach
+
+**What it is:** Submitting a local build to the [daemon](#daemon) and
+getting a run id back immediately, instead of blocking for the whole build —
+`ge agents build --local --detach` (and the `factory_agents_build` MCP tool
+with `local:true, detach:true`). Only applies to local builds; a remote
+build submission is already asynchronous, so `--detach` without `--local` is
+a rejected combination, not a silent no-op.
+
+**Where you'll meet it:** `ge agents build --local --detach`;
+`tools/lib/daemon/detached-submit.mjs`; `ge agents status`/`ge runs events`
+to follow the detached run.
+
+---
+
 ### Ledger
 
 **What it is:** The durable, event-sourced record of every run — one entry
@@ -373,6 +499,23 @@ past-tense states), which are deliberately *not* the same names as the cloud
 line's **stations** (`generate_workspace`, `preview`, `deploy_runtime` —
 verbs). The mapping between the two vocabularies is in "Stations vs.
 milestones" in `docs/reference/architecture.md`.
+
+---
+
+### Observation Plane
+
+**What it is:** The one place a run's state gets read from, regardless of
+whether the run is local or remote — `resolveRunLedger()`
+(`tools/lib/planes/run-plane.mjs`), which picks the local SQLite
+[ledger](#ledger) or the remote Firestore mirror behind one shape
+(`events`, `getRun`, `listRuns`). Deliberately read-only: *submitting* a
+run stays two different shapes (a local `ge` argv line vs. a remote build
+intent), because there's no shared contract to unify those the way this
+module unifies reads.
+
+**Where you'll meet it:** `tools/lib/planes/run-plane.mjs`;
+`ge runs events --remote`; "Observation vs. submission" in
+`docs/reference/architecture.md`.
 
 ---
 
@@ -534,4 +677,22 @@ but only Refine changes code.
 
 **Where you'll meet it:** The `harness_reviewed` and `harness_refined`
 pipeline stages; `factory harness-review` vs. `factory harness-refine`.
+
+---
+
+### Proof Binding
+
+**What it is:** The digest that ties a signed [Agent Passport](#agent-passport)'s
+promotion packet to the exact OKF, evals, fixtures, and generator code it
+was proven against (`computeProofBinding()`, `@ge/admission`) — four scoped
+content digests plus a whole-workspace digest and a digest of the proof
+policy itself. `validateProofBinding()` compares a stored binding against
+what the workspace looks like right now; a mismatch is `GEADM009` — the
+[Admission Gate](#admission-gate)'s way of saying the evidence backing a
+promotion verdict is stale, not just that the verdict itself failed
+(`GEADM006`).
+
+**Where you'll meet it:** `packages/admission/src/digest.mjs`;
+`docs/reference/admission.md`'s `GEADM` blocker-code table;
+`requireFreshProofBinding` in the admission policy.
 

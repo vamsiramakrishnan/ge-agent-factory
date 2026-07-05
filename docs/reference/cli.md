@@ -1098,7 +1098,7 @@ Regenerate okf/library/index.json from OKF bundles
 
 ### `ge systems`
 
-Bring-Your-Own-System: list built-in simulators (list) · synthesize a new one (synth) · check the toolchain (doctor)
+Bring-Your-Own-System: list built-in simulators (list) · synthesize a new one (synth) · bind a system to a live target (bind/bindings/unbind) · check the toolchain (doctor)
 
 ### `ge systems list`
 
@@ -1115,10 +1115,66 @@ Synthesize a brand-new live simulator system from an NL description, samples, or
 | `--from-openapi` | string | Path to an OpenAPI/Swagger JSON spec (mode: openapi) |
 | `--from-samples` | string | Path to a JSON file of {collection: [rows]} (mode: samples) |
 | `--promote` | boolean | Also persist the result into the curated corpus (registry.json + per-section files) |
+| `--local` | boolean | Override: synthesize with the in-process (session-only) overlay (default) |
+| `--remote` | boolean | Override: synthesize as if run remotely — auto-sets a durable overlay backend (firestore) unless one is already configured |
+
+### `ge systems bind`
+
+Bind a contract system to a live twin/mcp/rest target
+
+| Flag | Type | Description |
+|---|---|---|
+| `<system>` | positional (required) | Contract system id to bind (see `ge systems list`) |
+| `--to` | string | Bind target: twin pack id \| MCP endpoint URL \| REST base URL |
+| `--kind` | string | Target kind: twin \| mcp \| rest |
+| `--mode` | string | Twin vs. live precedence: twin_first \| live_first \| twin_only |
+| `--connector` | string | Connector package/module name (informational until a connector SDK exists) |
+| `--config` | string | Inline JSON object, or a path to a JSON file, of connector config |
+
+### `ge systems bindings`
+
+List stored live-system bindings (read-only)
+
+### `ge systems unbind`
+
+Remove a system's live binding
+
+| Flag | Type | Description |
+|---|---|---|
+| `<system>` | positional (required) | Contract system id to unbind |
 
 ### `ge systems doctor`
 
-Check the BYO-systems toolchain: python, synthesize_cli.py, registry.json, overlay backend
+Check the BYO-systems toolchain: python, synthesize_cli.py, registry.json, live bindings, overlay backend
+
+### `ge byo`
+
+BYO manifest (ge.byo.yaml): validate + plan (doctor) · execute the safe subset (apply)
+
+### `ge byo doctor`
+
+Validate a BYO manifest and report the full apply plan (read-only)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--manifest` | string | Path to the ge.byo.yaml manifest |
+
+### `ge byo apply`
+
+Apply the safe (appliable) subset of a BYO manifest; --dry-run reports the plan without executing anything
+
+| Flag | Type | Description |
+|---|---|---|
+| `--manifest` | string | Path to the ge.byo.yaml manifest |
+| `--dry-run` | boolean | Print what would be applied; execute nothing |
+
+### `ge models`
+
+Model provider readiness: doctor
+
+### `ge models doctor`
+
+Structural readiness for model providers: Vertex, harness Python, refinement/judge model config (no network/paid calls)
 
 ### `ge console`
 

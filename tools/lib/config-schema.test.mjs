@@ -245,3 +245,32 @@ test("gatewayTransport resolves proxy by default, direct via env/flag/file", () 
   expect(buildFactoryConfig({ flags: { gatewayTransport: "direct" } }).gatewayTransport).toBe("direct");
   expect(buildFactoryConfig({ file: { gatewayTransport: "direct" } }).gatewayTransport).toBe("direct");
 });
+
+test("refinementModel/judgeModel default to the harness's hardcoded model ids and are carried onto cfg", () => {
+  // Defaults mirror apps/factory/src/known-models.js's DEFAULT_AGENT_MODEL
+  // (the harness review/refine model) and packages/evalkit's hardcoded
+  // judge_model — see the CONFIG_FIELDS comments in config-schema.mjs.
+  expect(resolveConfigField("refinementModel", {})).toEqual({ value: "gemini-3.5-flash", source: "default" });
+  expect(resolveConfigField("judgeModel", {})).toEqual({ value: "gemini-flash-latest", source: "default" });
+  expect(buildFactoryConfig({}).refinementModel).toBe("gemini-3.5-flash");
+  expect(buildFactoryConfig({}).judgeModel).toBe("gemini-flash-latest");
+});
+
+test("refinementModel/judgeModel resolve env over file over default", () => {
+  expect(resolveConfigField("refinementModel", { file: { refinementModel: "from-file" } }))
+    .toEqual({ value: "from-file", source: "file" });
+  expect(resolveConfigField("refinementModel", {
+    env: { GE_REFINEMENT_MODEL: "from-env" },
+    file: { refinementModel: "from-file" },
+  })).toEqual({ value: "from-env", source: "env:GE_REFINEMENT_MODEL" });
+  expect(resolveConfigField("judgeModel", { file: { judgeModel: "from-file" } }))
+    .toEqual({ value: "from-file", source: "file" });
+  expect(resolveConfigField("judgeModel", {
+    env: { GE_JUDGE_MODEL: "from-env" },
+    file: { judgeModel: "from-file" },
+  })).toEqual({ value: "from-env", source: "env:GE_JUDGE_MODEL" });
+  expect(buildFactoryConfig({ env: { GE_REFINEMENT_MODEL: "claude-x", GE_JUDGE_MODEL: "gpt-y" } })).toMatchObject({
+    refinementModel: "claude-x",
+    judgeModel: "gpt-y",
+  });
+});

@@ -185,11 +185,33 @@ describe("adapter parity: SQLite ledger vs Firestore (fake client)", () => {
     expect(sqlRun.ok).toBe(true);
   });
 
-  // ── KNOWN DIVERGENCES (reported, not silently normalized) ──────────────────
-  // Reconciling either of these requires changing the real reader's/writer's
-  // output (summarizeRunDoc's algorithm, or the Firestore mirror's seq
-  // strategy), which is exactly the class of change the task called out as a
-  // FINDING rather than something to fix inside this oracle.
+  test("getRun().results[].stages: a completed item retains its LAST recorded stage — the Firestore mirror's forward-only guard now matches the SQLite reader's non-empty stages[] (no longer a divergence)", async () => {
+    const { ledger, reader } = await driveBothBackends();
+    const sqlRun = ledger.getRun(RUN_ID);
+    const fsRun = await reader.getRun(RUN_ID);
+
+    // SQLite: itemStages() replays ledger_events history — both stages recorded, both "done".
+    expect(sqlRun.results[0].stages).toEqual([
+      { name: "created", status: "done" },
+      { name: "validated", status: "done" },
+    ]);
+
+    // Firestore: summarizeRunDoc reads the single materialised `item.stage`/
+    // `item.currentStage` field. recordEvent now carries a forward-only stage
+    // guard (mirroring the SQLite ledger's recordTransition): the final
+    // item_done transition carries no `stage`, so it no longer overwrites the
+    // item doc's stage to null. The item doc keeps its last recorded stage
+    // ("validated") and getRun() surfaces it instead of an empty []. Full
+    // multi-stage history parity with SQLite's itemStages() array remains a
+    // separate, larger change to summarizeRunDoc's per-item shape — this only
+    // stops the regression to empty.
+    expect(fsRun.results[0].stages).toEqual([{ name: "validated", status: "done" }]);
+  });
+
+  // ── KNOWN DIVERGENCE (reported, not silently normalized) ───────────────────
+  // Reconciling this requires changing the real reader's/writer's output (the
+  // Firestore mirror's seq strategy), which is exactly the class of change the
+  // task called out as a FINDING rather than something to fix inside this oracle.
   describe("KNOWN DIVERGENCE", () => {
     test("seq VALUES differ: SQLite is a monotonic 1,2,3… per-run counter; Firestore falls back to Date.now() ms when the driving event carries no .seq (raw factory-events.jsonl events never do)", async () => {
       const { ledger, reader } = await driveBothBackends();
@@ -202,27 +224,6 @@ describe("adapter parity: SQLite ledger vs Firestore (fake client)", () => {
       // this test (and the finding) deliberately, not by accident.
       expect(fsEvents.map((e) => e.seq)).not.toEqual([1, 2, 3, 4, 5, 6]);
       for (const e of fsEvents) expect(e.seq).toBeGreaterThan(1_000_000_000_000); // looks like Date.now(), not a small counter
-    });
-
-    test("getRun().results[].stages: SQLite keeps the FULL per-item stage timeline; Firestore's item doc only ever holds the CURRENT stage, and a stage-less item-level event (item_done) blanks it to null — so the Firestore side ends with an EMPTY stages[] where SQLite has the full history", async () => {
-      const { ledger, reader } = await driveBothBackends();
-      const sqlRun = ledger.getRun(RUN_ID);
-      const fsRun = await reader.getRun(RUN_ID);
-
-      // SQLite: itemStages() replays ledger_events history — both stages recorded, both "done".
-      expect(sqlRun.results[0].stages).toEqual([
-        { name: "created", status: "done" },
-        { name: "validated", status: "done" },
-      ]);
-
-      // Firestore: summarizeRunDoc reads the single materialised `item.stage`/
-      // `item.currentStage` field. The mirror's recordEvent (unlike the SQLite
-      // ledger's recordTransition) has NO forward-only stage guard, so the
-      // final item_done transition (which carries no `stage`) overwrites the
-      // item doc's stage to null, and the getRun() view loses the timeline
-      // entirely. This is real and load-bearing: any remote-mode console/CLI
-      // reader of getRun().results[].stages sees far less than the SQLite path.
-      expect(fsRun.results[0].stages).toEqual([]);
     });
 
     test("event-doc-id collision is FIXED: same-millisecond events get distinct doc ids on both sides", async () => {

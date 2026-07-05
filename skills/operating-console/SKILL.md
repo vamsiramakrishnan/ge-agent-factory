@@ -52,11 +52,16 @@ Use this skill when the question is “how should the console expose this factor
 
 ## Scripts
 
-Audit that key console routes and operators are still wired:
-
-```bash
-node skills/operating-console/scripts/audit-console-surface.mjs
-```
+There is no longer a hand-maintained needle-grep audit script here — the
+console/CLI/MCP route surface this used to spot-check by string-matching
+`autopilot`/`mission` needles against files (including
+`apps/console/src/views/Autopilot.tsx`, which no longer exists) is generated
+truth now: `bun run docs:console-api` (`node
+tools/gen-console-api-reference.mjs --check`) diffs the registry-backed
+route table in `docs/reference/console-and-apis.md` against
+`packages/capability-registry/src/registry.mjs` directly, so a route drifting
+from what's registered fails the docs gate instead of a separate audit
+script that can silently pass or fail against a surface that moved on.
 
 ## Local/Remote UX Rules
 

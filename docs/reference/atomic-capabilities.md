@@ -27,6 +27,16 @@ consequence is the point of this page: **every capability is independently
 drivable** — you can plug in your own inputs and use any one of them without
 the others.
 
+The registry holds 54 capabilities today, each validated against the closed
+vocabularies in `@ge/core-api` (`packages/core-api/src/capability.mjs` —
+risk levels, preflight requirement keys, observability modes, MCP parameter
+types) via `assertCapabilityTable()`, called once at import time. A
+malformed entry — an unknown risk level, a route two commands both claim, an
+MCP tool name two entries share — fails every surface (CLI, console, MCP
+server) before any of them serve a single request, not just the one you
+happened to exercise. See [Architecture — the capability kernel](architecture.html#the-capability-kernel)
+for how the check works.
+
 ## The map
 
 | Capability | CLI verb | `--json` | Console route | MCP tool | Skill |
@@ -43,10 +53,19 @@ the others.
 | Prove live | `ge prove --live` | yes | `POST /api/ge/prove/live` | `factory_prove_live` | `driving-live-proof` |
 | Bench | `ge bench` | yes | `POST /api/ge/bench` | `factory_bench` | `driving-live-proof` |
 
-Supporting operator tools exist alongside these (read-only:
-`factory_usecases_list`, `factory_doctor`, `factory_status`, `factory_logs`,
-`factory_mcp_doctor`; mutating: `factory_sync`, `factory_mcp_deploy`) — the
-authoritative list is the registry itself.
+Supporting operator tools exist alongside these — read-only checks
+(`factory_doctor`, `factory_status`, `factory_logs`, `factory_usecases_list`,
+`factory_mcp_doctor`, `factory_systems_doctor`, `factory_byo_doctor`,
+`factory_models_doctor`, `factory_console_doctor`, `factory_quality_audit`,
+`factory_evals_verify`, `factory_evals_coverage`, and the Agent Library reads
+`factory_library_stats/search/inspect/status`), local-only compiles and
+imports (`factory_evals_import`, `factory_enrich_plan`, `factory_handoff_plan`,
+`factory_handoff_package`, `factory_handoff_verify_package`), and mutating
+operator actions (`factory_sync`, `factory_mcp_deploy`,
+`factory_systems_bind`/`unbind`, `factory_byo_apply`,
+`factory_library_create`) — the authoritative list is the registry itself
+(54 entries as of this writing); see [MCP tools](../MCP.html) for the full
+tool-by-tool breakdown.
 
 ## Using each capability standalone
 

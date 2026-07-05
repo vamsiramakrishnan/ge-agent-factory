@@ -231,6 +231,39 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
   const legacyDir = { type: "string", description: "Workspace directory", default: "." };
   const legacyJson = { type: "boolean", description: "Force JSON output even at an interactive terminal" };
 
+  // `mcp` — citty subCommands (plan|list|enable|disable), replacing the old
+  // single legacy command's `--action <verb>` flag dispatch. Each leaf is a
+  // real typed command (real --help per subcommand, per the DoD) whose `run`
+  // hardcodes `action` to the subcommand's own name — cmdMcp (handlers.mcp)
+  // is untouched and still branches on `flags.action` internally, so this is
+  // purely a dispatch-shape conversion, not a rewrite of cmdMcp itself.
+  // `default: "list"` (not a `run` on the parent) is citty's documented
+  // mechanism for "no subcommand given -> run this one"; giving the parent
+  // BOTH a `run` and `subCommands` double-fires (verified empirically against
+  // citty 0.2.2: the parent's `run` executes in addition to, not instead of,
+  // the matched leaf) — `default` is the only shape that doesn't.
+  const mcpAction = (name, description, extraArgs) =>
+    typed(name, description, withJsonFlag({ dir: legacyDir, ...extraArgs }),
+      ({ args }) => dispatch(`mcp ${name}`, handlers.mcp(resolveDir(args.dir), { ...args, action: name }), { json: args.json }));
+
+  const mcpPlanCmd = mcpAction("plan", "Plan source-system integration for MCP tool registration (delegates to source-integration-plan)", {
+    project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+    region: str("Alias for --location"),
+    location: str("Vertex/GenAI location (default: --region / GOOGLE_CLOUD_LOCATION, or 'global')"),
+  });
+  const mcpListCmd = mcpAction("list", "List managed MCP services and Agent Registry status", {
+    project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+    region: str("GCP region for Agent Registry checks (default us-central1)"),
+  });
+  const mcpEnableCmd = mcpAction("enable", "Enable a managed MCP service (Agent Registry auto-discovers it once the API is enabled)", {
+    project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+    service: str("MCP service id (e.g. bigquery, maps, spanner) — required"),
+  });
+  const mcpDisableCmd = mcpAction("disable", "Disable a managed MCP service", {
+    project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+    service: str("MCP service id — required"),
+  });
+
   return {
     // ── Typed (flags-only handlers) ──────────────────────────────────────────
     status: typed("status", "Status board for a generated workspace",
@@ -393,13 +426,10 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
       soft: bool("Degrade gracefully (keep the deterministic generated code) instead of failing when the harness run fails"),
       json: legacyJson,
     }),
-    mcp: legacy("mcp", "MCP tool-plane operations", handlers.mcp, true, {
-      dir: legacyDir,
-      action: str("Sub-action: plan|list|enable|disable (default 'list'; the first positional word also works, e.g. `factory mcp enable`)"),
-      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
-      region: str("GCP region for Agent Registry checks (default us-central1)"),
-      service: str("MCP service id for --action enable|disable (e.g. bigquery, maps, spanner)"),
-      json: legacyJson,
+    mcp: defineCommand({
+      meta: { name: "mcp", description: "MCP tool-plane operations: plan · list · enable · disable" },
+      subCommands: { plan: mcpPlanCmd, list: mcpListCmd, ls: mcpListCmd, enable: mcpEnableCmd, disable: mcpDisableCmd },
+      default: "list",
     }),
     deploy: legacy("deploy", "Deploy the agent (Cloud Run / Agent Runtime)", handlers.deploy, true, {
       dir: legacyDir,

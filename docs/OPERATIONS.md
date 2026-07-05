@@ -282,8 +282,14 @@ The console's views are documented in [Console](./console/); operationally:
   workers tee stage events to GCS, local runs write
   `.ge/factory/factory-events.jsonl`, and daemon tasks write streams under
   `.ge/runtime`; the API server fans them out as SSE.
-- A production container image for the console is still pending — current
-  dev-only mode doesn't ship to Cloud Run yet.
+- `ge console deploy` builds the console image (Cloud Build) and binds it to
+  Cloud Run via `terraform apply` (Terraform owns the Cloud Run config,
+  `installer/terraform/ui_services.tf`); `--no-apply` builds and pushes only.
+  `ge console doctor` checks the deployed service (readiness, IAP,
+  `GE_CONSOLE_READONLY`) read-only, and `ge images build console` builds the
+  image alone. Whether a given project has actually cut over its production
+  console to this path is still an operator decision, not a gap in the
+  tooling.
 
 ## More
 

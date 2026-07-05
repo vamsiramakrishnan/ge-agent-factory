@@ -56,6 +56,7 @@ import {
 import { createCatalogRoutes } from "./routes/catalog.mjs";
 import { createWorkspaceRoutes } from "./routes/workspaces.mjs";
 import { createRunRoutes } from "./routes/runs.mjs";
+import { createAdkRoutes } from "./routes/adk.mjs";
 import { materializeWorkspaceCommandShims } from "./runtime/workspace-command-shims.js";
 import { buildRunPrompt } from "./runtime/build-run-prompt.js";
 import { spawnAndStreamAgentSubprocess } from "./runtime/run-agent-subprocess.js";
@@ -1215,6 +1216,15 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
     uniqueAgentDirName,
   }));
   apiApp.route("/", createRunRoutes({ runs, terminateChild }));
+  apiApp.route("/", createAdkRoutes({
+    previews,
+    startAdkPreview,
+    waitForPreviewRunning,
+    serializePreview,
+    refreshPreviewStatus,
+    runAdkAgent,
+    terminateChild,
+  }));
   // Distinguish "no converted route matched this path" (→ fall through to the
   // legacy handler) from "a converted route matched and legitimately
   // responded 404" (e.g. { error: "workspace not found" }) — both are status
@@ -1229,7 +1239,6 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
 
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    const workspacePathname = url.pathname;
     try {
       // Hono first. A 404 with the NO_ROUTE_MATCHED sentinel means no
       // converted route matched this path/method → fall through to the
@@ -1255,29 +1264,22 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
       }
       // NOTE: /api/health, /api/daemon/status, auth/*, /api/systems,
       // /api/departments, /api/domains, /api/use-cases, /api/agents,
-      // /api/runtime/*, and the full /api/workspaces/* CRUD/tasks/secrets/
-      // wakeups/files/terminal surface now live in the Hono apiApp above
-      // (server.js apiApp.route() + apps/factory/src/routes/catalog.mjs and
-      // routes/workspaces.mjs). Only the ADK preview/adk-run/adk-proxy
-      // routes below remain here — see the file-header comment in
-      // routes/workspaces.mjs for why they're deferred.
-      const projectPreviewMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/previews\/adk-web$/);
-      if (projectPreviewMatch) {
-        if (req.method === "POST") return json(res, 200, { preview: serializePreview(await waitForPreviewRunning(await startAdkPreview(projectPreviewMatch[1]))) });
-        if (req.method === "GET") return json(res, 200, { preview: serializePreview(await refreshPreviewStatus(previews.get(projectPreviewMatch[1]))) });
-        if (req.method === "DELETE") {
-          const preview = previews.get(projectPreviewMatch[1]);
-          terminateChild(preview?.child, "SIGTERM");
-          return json(res, 200, { ok: true });
-        }
-      }
-      const adkRunMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/adk-run$/);
-      if (adkRunMatch && req.method === "POST") {
-        const body = await readBody(req);
-        const result = await runAdkAgent(decodeURIComponent(adkRunMatch[1]), body.prompt || body.message || "hello");
-        if (result.blocked) return json(res, 422, result);
-        return json(res, 200, { result });
-      }
+      // /api/runtime/*, the full /api/workspaces/* CRUD/tasks/secrets/
+      // wakeups/files/terminal surface, AND the ADK preview lifecycle +
+      // one-shot adk-run routes now live in the Hono apiApp above (server.js
+      // apiApp.route() + apps/factory/src/routes/{catalog,workspaces,adk}.mjs).
+      //
+      // Only genuinely-streaming routes remain on this raw-http handler, each
+      // with the SAME concrete blocker: the Hono→raw bridge above buffers a
+      // converted response in full (await honoResp.arrayBuffer()) before
+      // writing it, so a route that must stream over a long-lived connection
+      // (SSE, upstream proxy pass-through) can't be expressed through it yet.
+      // Converting them needs the bridge itself to stream Hono ReadableStream
+      // bodies instead of buffering — a separate change to the bridge, not the
+      // routes. The remaining branches are: adk-proxy (upstream ADK-web
+      // proxy + SSE pass-through), /api/chat (agent-run SSE), and
+      // /api/runs/:id/events (run-event SSE), plus the static-file fallback
+      // (the intentional final GET catch-all, not a pending conversion).
       const adkProxyMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/adk-proxy(\/.*)?$/);
       if (adkProxyMatch) {
         const proxyProjectId = decodeURIComponent(adkProxyMatch[1]);

@@ -50,6 +50,8 @@ core fields:
 | `harnessPythonPath` | *(env / file only)* | `GE_HARNESS_PYTHON` | — (falls back to a discovered venv, then `python3`) — override the harness interpreter; resolved from the env var only |
 | `allowUnpromoted` | `--force` (on `ge handoff`) | `GE_ALLOW_UNPROMOTED` | `false` — override the promotion gate (visible, deliberate); resolved from the env var only |
 | `simulatorOverlayBackend` | *(env / file only)* | `GE_SIMULATOR_OVERLAY_BACKEND` | `memory` — durable backend (`firestore`/`alloydb`) for BYO-twin overlays shared across Cloud Run instances; a configured value flows to deployed MCP services via `ge mcp deploy`, but the simulator's own Python reader honors only the env var |
+| `refinementModel` | *(env / file only)* | `GE_REFINEMENT_MODEL` | `gemini-3.5-flash` — the model family `ge models doctor` reports as the harness's refinement model |
+| `judgeModel` | *(env / file only)* | `GE_JUDGE_MODEL` | `gemini-flash-latest` — the model family `ge models doctor` reports as the eval judge's model |
 
 > `.ge.json` remains an available spelling for every field above per the flag →
 > env → file → default precedence, but `dataBackend`, `consoleReadonly`,
@@ -61,6 +63,20 @@ core fields:
 > to actually change behavior. `simulatorOverlayBackend` is the one field in
 > this group that *does* flow from `.ge.json`/flag through to a JS consumer
 > (`ge mcp deploy`'s env-var forwarding).
+{: .note }
+
+> `refinementModel` and `judgeModel` are a different case: `buildFactoryConfig()`
+> (`tools/lib/config-schema.mjs`) does carry the resolved value onto `cfg`, and
+> `ge models doctor` reads both — `model.refinement`/`model.judge` checks warn
+> if the value doesn't match a known family (`gemini-*`, `claude-*`, `gpt-*`).
+> `ge byo apply` also writes them: a manifest's `models.refinement`/
+> `models.judge` section merges straight into these two `.ge.json` fields.
+> Neither field yet changes which model actually runs, though — the harness
+> review/refine step pins `DEFAULT_AGENT_MODEL`
+> (`apps/factory/src/known-models.js`) directly, and the eval-judge emitter
+> (`packages/evalkit/src/emitters/agents-cli-eval-config.mjs`) hardcodes
+> `judge_model: "gemini-flash-latest"` literally. Set them to keep `ge models
+> doctor` and a BYO manifest accurate; the actual model selection is roadmap.
 {: .note }
 
 > `.ge.schema.json` is the operator config schema — it is **not** the

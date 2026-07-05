@@ -129,6 +129,31 @@ export const CONFIG_FIELDS = {
     file: "simulatorOverlayBackend",
     default: "memory",
   },
+  // Model the Antigravity harness's review+refine steps run against
+  // (apps/factory/scripts/factory/harness/harness.mjs cmdHarnessReview/
+  // cmdHarnessRefine, invoked via apps/factory/scripts/antigravity-sdk-agent.py
+  // --model). Default mirrors DEFAULT_AGENT_MODEL, the one hardcoded model id
+  // this pipeline already pins everywhere else (apps/factory/src/known-models.js;
+  // see also tools/lib/provision.mjs's provision()/provisionLocal(), which
+  // document "the same model (default gemini-3.5-flash) ... as local"). Carried
+  // onto cfg so tools/lib/models-doctor.mjs can report the resolved value.
+  refinementModel: {
+    flag: "refinementModel",
+    env: ["GE_REFINEMENT_MODEL"],
+    file: "refinementModel",
+    default: "gemini-3.5-flash",
+  },
+  // Model the eval judge metric samples (packages/evalkit/src/emitters/
+  // agents-cli-eval-config.mjs's ge_behavior_contract_judge custom_metric,
+  // rendered into each generated agent's eval_config.yaml as judge_model).
+  // Default mirrors that emitter's hardcoded judge_model. Carried onto cfg so
+  // tools/lib/models-doctor.mjs can report the resolved value.
+  judgeModel: {
+    flag: "judgeModel",
+    env: ["GE_JUDGE_MODEL"],
+    file: "judgeModel",
+    default: "gemini-flash-latest",
+  },
 };
 
 const has = (obj, key) => obj != null && obj[key] !== undefined && obj[key] !== null && obj[key] !== "";
@@ -217,6 +242,10 @@ export function buildFactoryConfig({ flags = {}, env = {}, file: rawFile = {} } 
     // configured durable overlay backend to deployed MCP services; the
     // Python readers themselves only ever look at the env var.
     simulatorOverlayBackend: scalars.simulatorOverlayBackend,
+    // Carried so tools/lib/models-doctor.mjs (`ge models doctor`) can report
+    // the resolved refinement/judge model ids and flag unrecognized families.
+    refinementModel: scalars.refinementModel,
+    judgeModel: scalars.judgeModel,
     mcpServices: file.mcpServices || {},
     agentIdentityOrgId: scalars.agentIdentityOrgId,
     agentIdentityPrincipalSet: env.GE_AGENT_IDENTITY_PRINCIPALSET || file.agentIdentityPrincipalSet ||

@@ -87,6 +87,14 @@ export const GeCommandIdSchema = z.enum([
   "okf.enrich.apply",
   "okf.enrich.shard",
   "okf.eval.verify",
+  "systems.bind",
+  "systems.bindings",
+  "systems.unbind",
+  // BYO manifest (bring-your-own customization package: ge.byo.yaml):
+  "byo.doctor",
+  "byo.apply",
+  // Model provider readiness:
+  "models.doctor",
   // Release admission (Agent Passport + its gate):
   "passport.emit",
   "passport.verify",
