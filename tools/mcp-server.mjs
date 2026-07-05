@@ -269,6 +269,38 @@ const HANDLERS = {
     const { generateEnrichmentPlan } = await import("./lib/okf-quality.mjs");
     return generateEnrichmentPlan({ all: Boolean(a.all), spec: a.spec, target: a.target || "L4" });
   },
+  "okf.enrich.generate": async (a) => {
+    const { generateEnrichmentPatch } = await import("./lib/okf-quality.mjs");
+    return generateEnrichmentPatch({
+      spec: a.spec,
+      root: a.root || "okf",
+      packRoot: a.packRoot || "domain-packs",
+      target: a.target || "L4",
+      maxEvals: Number(a.maxEvals || 5),
+    });
+  },
+  "okf.enrich.apply": async (a) => {
+    const { applyEnrichmentPatch } = await import("./lib/okf-quality.mjs");
+    return applyEnrichmentPatch({
+      patchPath: a.patch,
+      root: a.root || "okf",
+      write: Boolean(a.write),
+      force: Boolean(a.force),
+    });
+  },
+  "okf.enrich.shard": async (a) => {
+    const { shardEnrichmentPlan } = await import("./lib/okf-quality.mjs");
+    const { readJson, writeJson } = await import("@ge/std/json-io");
+    const { join } = await import("node:path");
+    const plan = readJson(a.plan);
+    if (!plan) throw new DxError(`enrichment plan not found or unreadable: ${a.plan}`, {
+      where: "factory_enrich_shard", why: "shard reads a plan JSON file written by ge okf enrich plan --write",
+      fix: "pass plan as a path to an existing plan JSON file",
+    });
+    const shards = shardEnrichmentPlan(plan);
+    for (const shard of shards) writeJson(join(a.out, `${shard.id}.json`), shard);
+    return { schemaVersion: "okf-enrichment-shards.v1", out: a.out, shards };
+  },
   "okf.eval.verify": async (a) => {
     const { verifyOkfEvals } = await import("./lib/okf-quality.mjs");
     return verifyOkfEvals({ all: Boolean(a.all), spec: a.spec });

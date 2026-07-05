@@ -23,6 +23,13 @@ const core = {
   tailLog: (_c, opts) => ({ found: true, runId: opts.runId, lines: [] }),
   readArtifact: (_c, opts) => ({ found: true, name: opts.name, content: "" }),
   resolveCatalogId: async () => null,
+  // audit-fix-wave WS2: the three read-only wrappers factory-core.mjs added
+  // for the generic GET catch-all route — same contract as
+  // tools/mcp-server.mjs's systems.bindings/byo.doctor/evals.coverage
+  // handlers.
+  systemsBindings: async () => ({ bindings: [{ system: "workday", boundTo: "https://example.com/mcp", kind: "mcp", mode: "twin_first" }] }),
+  byoDoctor: async ({ manifest } = {}) => ({ ok: true, schemaVersion: "ge.byo.v1", problems: [], actions: [], manifest }),
+  evalsCoverage: ({ id } = {}) => ({ dimensions: {}, id: id || null }),
   // Same contract as tools/lib/golden-path.mjs's goldenPathPosition (re-exported
   // by factory-core): three fixed stages + current/blocker/next.
   goldenPathPosition: async (_cfg, { haveConfig = true, operateNext = null } = {}) => ({
@@ -401,6 +408,39 @@ test("POST agents/sync passes selected ids and target repo to CLI job", async ()
   ]);
   expect(r.command.id).toBe("agents.sync");
 });
+// --- audit-fix-wave WS2: five registry-only routes now wired through the
+// generic POST job-sentinel / GET direct-return catch-alls -----------------
+test("POST systems/bind dispatches via the registry command's argv builder", async () => {
+  const r = await handleGeApi({
+    method: "POST",
+    path: "/api/ge/systems/bind",
+    query: {},
+    body: { system: "workday", to: "https://example.com/mcp", kind: "mcp", mode: "twin_first" },
+  }, core);
+  expect(r.job).toEqual(["systems", "bind", "workday", "--to", "https://example.com/mcp", "--kind", "mcp", "--mode", "twin_first", "--json"]);
+  expect(r.command.id).toBe("systems.bind");
+});
+test("POST systems/unbind dispatches via the registry command's argv builder", async () => {
+  const r = await handleGeApi({ method: "POST", path: "/api/ge/systems/unbind", query: {}, body: { system: "workday" } }, core);
+  expect(r.job).toEqual(["systems", "unbind", "workday", "--json"]);
+  expect(r.command.id).toBe("systems.unbind");
+});
+test("GET systems/bindings returns stored live-system bindings", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/systems/bindings", query: {}, body: null }, core);
+  expect(r.status).toBe(200);
+  expect(r.json.bindings).toEqual([{ system: "workday", boundTo: "https://example.com/mcp", kind: "mcp", mode: "twin_first" }]);
+});
+test("GET byo/doctor validates a manifest and reports the apply plan", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/byo/doctor", query: { manifest: "ge.byo.yaml" }, body: null }, core);
+  expect(r.status).toBe(200);
+  expect(r.json).toMatchObject({ ok: true, schemaVersion: "ge.byo.v1", manifest: "ge.byo.yaml" });
+});
+test("GET evals/coverage reports per-dimension coverage", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/evals/coverage", query: { id: "e1" }, body: null }, core);
+  expect(r.status).toBe(200);
+  expect(r.json.id).toBe("e1");
+});
+
 test("readonly gate blocks POST", async () => {
   process.env.GE_CONSOLE_READONLY = "1";
   const r = await handleGeApi({ method: "POST", path: "/api/ge/handoff", query: {}, body: { ids: "x" } }, core);
@@ -467,6 +507,20 @@ const ROUTE_MATRIX = [
   { method: "POST", path: "/api/ge/prove", known: true },
   { method: "POST", path: "/api/ge/handoff", known: true },
   { method: "POST", path: "/api/ge/position", known: false },
+  // audit-fix-wave WS2: the five registry-only routes (2 POST job-sentinel,
+  // 3 GET direct-return via the new generic GET catch-all).
+  { method: "POST", path: "/api/ge/systems/bind", known: true },
+  { method: "POST", path: "/api/ge/systems/unbind", known: true },
+  { method: "GET", path: "/api/ge/systems/bindings", known: true },
+  { method: "GET", path: "/api/ge/byo/doctor", known: true },
+  { method: "GET", path: "/api/ge/evals/coverage", known: true },
+  // wrong method for each of the five above — same route table, no cross-
+  // method fallthrough.
+  { method: "GET", path: "/api/ge/systems/bind", known: false },
+  { method: "GET", path: "/api/ge/systems/unbind", known: false },
+  { method: "POST", path: "/api/ge/systems/bindings", known: false },
+  { method: "POST", path: "/api/ge/byo/doctor", known: false },
+  { method: "POST", path: "/api/ge/evals/coverage", known: false },
   // unknown — 404, exactly as the old if-chain + isKnownRoute pair behaved
   { method: "GET", path: "/api/ge/nope", known: false },
   { method: "GET", path: "/api/ge/mode", known: false },

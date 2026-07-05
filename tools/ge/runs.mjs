@@ -23,8 +23,6 @@ import {
 import { resolveRunLedger } from "../lib/planes/run-plane.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
 
-export const runsResumeCmd = runtimeLeaves.resume;
-
 // ── remote (Firestore) run events — CLI counterpart to the console's
 // streamLedger firestore branch (apps/console/src/server/transport/ledger.mjs).
 // Resolves the SAME reader wiring — the run OBSERVATION plane's one resolver,
