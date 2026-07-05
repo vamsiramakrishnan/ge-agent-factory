@@ -18,6 +18,7 @@ import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core } from "./share
 import { prepareDrive, runDrive, saveTranscript, recordTranscriptAsEvalCase } from "../lib/live/drive-session.mjs";
 import { createConversationSession, nextTranscriptId } from "../lib/live/conversation.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
+import { sourceTimestamp } from "../../apps/factory/src/source-clock.js";
 
 export function fmtMs(ms) {
   if (ms === null || ms === undefined) return "—";
@@ -113,7 +114,7 @@ async function interactiveDrive(cfg, args) {
     target,
     id: nextTranscriptId("drive"),
     strictResponder: args.strictResponder,
-    startedAt: new Date().toISOString(),
+    startedAt: sourceTimestamp(),
   });
   const readline = await import("node:readline/promises");
   const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
