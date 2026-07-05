@@ -356,6 +356,26 @@ export const ROUTES = [
       return { job: effectiveCommand.argv(body), command: meta, cfg, selection };
     },
   },
+  // Read-only, fast (expectedDuration "under 10s") commands with no bespoke
+  // GET row above: dispatch in-process to the same core.* functions
+  // tools/mcp-server.mjs calls for their mcp tools — never spawn `ge <argv>`
+  // for these, there's no job to run. Extend GET_HANDLERS as more
+  // GET-routed registry entries are added; do not special-case paths here.
+  {
+    method: "GET",
+    match: (p) => commandForRoute("GET", p) ? {} : null,
+    handle: async ({ core, req, parts }) => {
+      const command = commandForRoute("GET", parts);
+      const GET_HANDLERS = {
+        "systems.bindings": () => core.systemsBindings(),
+        "byo.doctor": (q) => core.byoDoctor(q),
+        "evals.coverage": (q) => core.evalsCoverage(q),
+      };
+      const fn = GET_HANDLERS[command.id];
+      if (!fn) return { status: 501, json: { error: `no GET handler wired for ${command.id}` } };
+      return { status: 200, json: await fn(req.query || {}) };
+    },
+  },
 ];
 
 /**

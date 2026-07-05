@@ -284,7 +284,8 @@
         "which skill",
         "next station",
         "station map",
-        "line overview"
+        "line overview",
+        "capability binding"
       ],
       "composes": [],
       "commands": [],
@@ -297,6 +298,7 @@
     "operating-console": {
       "triggers": [
         "console command registry",
+        "capability registry",
         "persisted jobs",
         "activity stream",
         "run drawer",
@@ -414,6 +416,9 @@
         "release the agent",
         "deploy the agent",
         "handoff",
+        "handoff plan",
+        "handoff package",
+        "verify a handoff package",
         "publish the agent",
         "gemini enterprise",
         "load data",
@@ -426,11 +431,16 @@
       ],
       "commands": [
         "handoff",
+        "handoff.plan",
+        "handoff.package",
+        "handoff.verifyPackage",
         "status",
         "logs"
       ],
       "engines": [],
-      "docs": []
+      "docs": [
+        "docs/reference/cli.md"
+      ]
     },
     "standing-up-the-platform": {
       "triggers": [
@@ -483,7 +493,7 @@
       "engines": [],
       "docs": []
     },
-    "okf-blueprint-enrichment": {
+    "enriching-okf-blueprints": {
       "triggers": [
         "okf enrichment",
         "blueprint enrichment",
@@ -507,7 +517,77 @@
         "okf.eval.verify"
       ],
       "docs": [
-        "skills/okf-blueprint-enrichment/references/enrichment-rules.md"
+        "skills/enriching-okf-blueprints/references/enrichment-rules.md"
+      ]
+    },
+    "bringing-your-own": {
+      "triggers": [
+        "byo",
+        "bring your own",
+        "bring-your-own",
+        "ge.byo.yaml",
+        "byo manifest",
+        "byo.doctor",
+        "byo.apply",
+        "bind a system",
+        "system binding",
+        "live twin",
+        "synthesize a system",
+        "import an evalset",
+        "models doctor",
+        "enterprise customization"
+      ],
+      "composes": [
+        "building-simulators",
+        "driving-live-proof",
+        "guarding-the-factory"
+      ],
+      "commands": [
+        "byo.doctor",
+        "byo.apply",
+        "systems.bind",
+        "systems.bindings",
+        "systems.unbind",
+        "systems.synth",
+        "evals.import",
+        "models.doctor"
+      ],
+      "engines": [
+        "@ge/byo-systems"
+      ],
+      "docs": [
+        "docs/cookbooks/bring-your-own-systems.md",
+        "docs/reference/cli.md"
+      ]
+    },
+    "observing-runs": {
+      "triggers": [
+        "run status",
+        "poll the run",
+        "fetch logs",
+        "agents track",
+        "detached run",
+        "close-your-laptop",
+        "eval coverage",
+        "is the run healthy",
+        "background run"
+      ],
+      "composes": [
+        "triaging-runs",
+        "recording-evidence"
+      ],
+      "commands": [
+        "status",
+        "logs",
+        "agents.track",
+        "evals.coverage",
+        "doctor",
+        "daemon.start"
+      ],
+      "engines": [],
+      "docs": [
+        "docs/reference/agent-operability.md",
+        "docs/reference/cli.md"
       ]
     }
   }

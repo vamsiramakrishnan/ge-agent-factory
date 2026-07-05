@@ -136,6 +136,16 @@ export const FACTORY_SKILL_BINDINGS = [
     stages: ["okf", "export_spec", "knowledge_bundle", "brd_authoring", "okf_export"],
     skill: "authoring-okf-specs",
   },
+  {
+    capability: "byo_customization",
+    stages: ["byo", "bring_your_own", "byo_manifest", "systems_bind", "systems_synth", "evals_import", "models_doctor"],
+    skill: "bringing-your-own",
+  },
+  {
+    capability: "run_observation",
+    stages: ["status", "logs", "track_agent", "runs_detach", "evals_coverage", "observe_runs"],
+    skill: "observing-runs",
+  },
 ];
 
 export const DEFAULT_SKILL_BINDINGS = [

@@ -1,0 +1,85 @@
+# ge.byo.yaml (schemaVersion ge.byo.v1) — an example BYO manifest packaging
+# one enterprise's customizations onto GE Agent Factory.
+#
+# NOT to be confused with ge.manifest.json (schema: ge.manifest.schema.json,
+# engine: tools/lib/reconcile.mjs) — that file is `ge apply`'s desired
+# platform/fleet state (which planes should be up, which agents should reach
+# which stage). This file is customization/config: which blueprint libraries
+# an enterprise draws from, its source-system overlay/bindings, its fixture
+# and eval packs, its preferred models, its admission/promotion policy, where
+# its generated agent code lives, and which cloud project/region it targets.
+#
+# Validate + see the full plan (read-only):
+#   ge byo doctor --manifest ge.byo.example.yaml
+# Dry-run the plan (nothing executed):
+#   ge byo apply --manifest ge.byo.example.yaml --dry-run
+# Apply the safe (appliable) subset for real:
+#   ge byo apply --manifest ge.byo.example.yaml
+schemaVersion: ge.byo.v1
+_comment: >
+  Example manifest exercising every section, with values pointing at real
+  artifacts already in this repo where possible.
+
+blueprints:
+  # Planned-only, informational: is the path a readable OKF bundle
+  # (directory exists + index.md present)?
+  libraries:
+    - okf/aml-alert-investigation-agent
+
+systems:
+  # Appliable: merges 1:1 onto .ge.json's simulatorOverlayBackend scalar
+  # (memory | firestore | alloydb — tools/lib/config-schema.mjs).
+  overlays:
+    backend: firestore
+  # Appliable once @ge/byo-systems exposes writeBinding/validateBinding
+  # (packages/byo-systems/src/bindings.mjs); planned-only otherwise. Shape
+  # matches BINDING_KINDS/BINDING_MODES there: system + boundTo + kind + mode.
+  bindings:
+    crm:
+      system: crm
+      kind: rest
+      boundTo: https://crm.internal.example.com
+      mode: twin_first
+      connector: salesforce
+
+fixtures:
+  # Existence check only, planned-only — a later enrichment/synth stage
+  # consumes these; this manifest only reports what it will need.
+  packs:
+    - apps/factory/tests/fixtures/cloud-data-golden
+
+evals:
+  # Appliable: each entry is a bring-your-own ADK-compatible evalset file,
+  # imported into .ge/behavioral via `ge evals import`.
+  packs:
+    - generated-agents/ap-aging-analyzer/tests/eval/evalsets/ge_behavior_contract.evalset.json
+  # Planned-only: checked against the domain-packs/ root
+  # (tools/lib/okf-quality.mjs's loadDomainPacks convention).
+  domainPacks:
+    - aml
+
+models:
+  # Appliable once .ge.json carries refinementModel/judgeModel
+  # (tools/lib/config-schema.mjs); planned-only until then.
+  refinement: gemini-3.5-flash
+  judge: gemini-flash-latest
+
+policies:
+  # Appliable: merged into .ge.json's promotion.gates.admission /
+  # promotion.gates.promotion free-form blocks (same convention
+  # tools/lib/admission/admission-ops.mjs and tools/lib/gates/live-gate.mjs
+  # already read from).
+  admission:
+    required: true
+    maxAgeDays: 14
+  promotion:
+    requireLiveProof: true
+
+code:
+  # Appliable: .ge.json's agentsRepo scalar.
+  generatedAgentsRepo: git@github.com:example-enterprise/generated-agents.git
+
+cloud:
+  # Appliable: .ge.json scalars.
+  project: example-enterprise-prod
+  region: us-central1

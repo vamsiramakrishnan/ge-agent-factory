@@ -106,27 +106,19 @@ $ node --check apps/console/src/server/ge-api.mjs && node --check apps/console/s
 > route logic in `ge-api.mjs`; execution/persistence stays in
 > `transport.mjs`. Read-only surfaces unchanged."
 
-## Failure variant — the surface audit reports missing operators
+## Failure variant — the generated route table drifts from the registry
 
 ```console
-$ node skills/operating-console/scripts/audit-console-surface.mjs
-{
-  "ok": false,
-  "results": [
-    { "path": "apps/console/src/server/ge-api.mjs",
-      "ok": false,
-      "missing": ["/api/ge/mission", "autopilotStart"] },
-    { "path": "apps/console/src/server/transport.mjs",
-      "ok": false,
-      "missing": ["startAutopilotRun", "resumeAutopilotRun", "missionPlan"] },
-    …
-  ]
-}
+$ bun run docs:console-api:check
+✗ docs/reference/console-and-apis.md ge-console-commands region is stale vs packages/capability-registry/src/registry.mjs
+  line 12:
+    expected: | `POST /api/ge/ledger/backfill` | `ge ledger backfill` | Import legacy run state into the durable ledger | `writes-repo` | `node` on PATH |
+    actual:   <missing>
+Run: bun run docs:console-api
 ```
 
-React: each `missing` entry is a wired surface the audit expects in that
-file. If your change renamed or moved it, restore the wiring (or route it
-through the layer that now owns it) — don't edit the audit's expectations
-to make it green unless the surface was deliberately retired, and say so in
-the run record. A failure that predates your change is not yours to fix
-silently: report it, don't absorb it.
+React: a stale row means a registry entry (route/CLI/risk/preflight) changed
+without regenerating the doc — run `bun run docs:console-api` to regenerate
+the marked region, then re-check the diff is exactly your intended change
+before committing it. Don't hand-edit the generated region; the registry is
+the only place a route's shape is decided.

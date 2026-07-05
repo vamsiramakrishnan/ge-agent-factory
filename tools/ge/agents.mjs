@@ -8,6 +8,7 @@ import { registerBundle, trackAgent } from "../lib/okf-lifecycle.mjs";
 import { submitDetached } from "../lib/daemon/detached-submit.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
 import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
+import { sourceTimestamp } from "../../apps/factory/src/source-clock.js";
 
 // One render + poll loop shared by `ge agents status --watch` and
 // `ge agents build --watch`, so kicking off a remote build and watching it
@@ -18,7 +19,7 @@ import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_
 function renderStatusBoard(r, { live = false } = {}) {
   if (live && ui.isInteractive()) process.stdout.write("\x1bc");
   else if (live) out("");
-  out(pc.bold(`Status — ${r.total} runs`) + pc.dim(`  ${new Date().toISOString()}`));
+  out(pc.bold(`Status — ${r.total} runs`) + pc.dim(`  ${sourceTimestamp()}`));
   const t = r.tally;
   out(`  ${ui.glyph("passed")} ${pc.green("done")} ${t.done}   ${ui.glyph("running")} ${pc.cyan("running")} ${t.running}   ${ui.glyph("queued")} ${pc.cyan("queued")} ${t.queued}   ${ui.glyph("failed")} ${pc.red("failed")} ${t.failed}   unknown ${t.unknown}`);
   out(pc.dim("  by stage: " + Object.entries(r.stages).map(([k, v]) => `${k}:${v}`).join("  ")));

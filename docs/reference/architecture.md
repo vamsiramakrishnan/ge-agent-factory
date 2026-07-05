@@ -160,7 +160,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`running-factory`](../../skills/running-factory/) | `factory_run` | `ge pipeline run`, `ge daemon start`, `ge prove`, `ge agents build`, `ge agents build --local`, `ge agents sync`, `ge evals compile` | [`@ge/evalkit`](../../packages/evalkit/) | [`agent-generation.md`](agent-generation.md), [`evaluation-generation.md`](evaluation-generation.md) |
 | [`building-simulators`](../../skills/building-simulators/) | `simulator_build` | `ge data synth`, `ge pipeline run`, `ge daemon start` | [`@ge/synthkit`](../../packages/synthkit/) | [`synthetic-data.md`](synthetic-data.md), [`simulator-systems.md`](simulator-systems.md) |
 | [`checking-workspaces`](../../skills/checking-workspaces/) | `workspace_check` | — | [`@ge/agent-workspace`](../../packages/agent-workspace/) | — |
-| [`running-release`](../../skills/running-release/) | `release_run` | `ge handoff`, `ge agents status`, `ge agents logs` | — | — |
+| [`running-release`](../../skills/running-release/) | `release_run` | `ge handoff`, `ge handoff plan`, `ge handoff package`, `ge handoff verify-package`, `ge agents status`, `ge agents logs` | — | [`cli.md`](cli.md) |
 | [`admitting-agents`](../../skills/admitting-agents/) | `release_admission` | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../../packages/admission/) | [`admission.md`](admission.md), [`admit-an-agent.md`](../cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../concepts/agent-passport-and-proof-pack.md) |
 | [`driving-live-proof`](../../skills/driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../../packages/evalkit/) | [`evaluation-generation.md`](evaluation-generation.md), [`metric-applicability.md`](metric-applicability.md), [`live-transcript.md`](live-transcript.md), [`live-budgets.md`](live-budgets.md) |
 | [`operating-console`](../../skills/operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](console-and-apis.md) |
@@ -173,8 +173,46 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`triaging-runs`](../../skills/triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](../../skills/guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](../../skills/authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../../packages/okf/) | [`okf.md`](okf.md), [`agent-lifecycle.md`](agent-lifecycle.md) |
-| [`okf-blueprint-enrichment`](../../skills/okf-blueprint-enrichment/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](../../skills/okf-blueprint-enrichment/references/enrichment-rules.md) |
+| [`bringing-your-own`](../../skills/bringing-your-own/) | `byo_customization` | `ge byo doctor`, `ge byo apply`, `ge systems bind`, `ge systems bindings`, `ge systems unbind`, `ge systems synth`, `ge evals import`, `ge models doctor` | [`@ge/byo-systems`](../../packages/byo-systems/) | [`bring-your-own-systems.md`](../cookbooks/bring-your-own-systems.md), [`cli.md`](cli.md) |
+| [`observing-runs`](../../skills/observing-runs/) | `run_observation` | `ge agents status`, `ge agents logs`, `ge agents track`, `ge evals coverage`, `ge doctor`, `ge daemon start` | — | [`agent-operability.md`](agent-operability.md), [`cli.md`](cli.md) |
+| [`enriching-okf-blueprints`](../../skills/enriching-okf-blueprints/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](../../skills/enriching-okf-blueprints/references/enrichment-rules.md) |
 <!-- END GENERATED: skill-matrix -->
+
+---
+
+## The capability kernel
+
+Every operator command in this repo is one typed entry in a single table —
+`GE_COMMANDS` in
+[`packages/capability-registry/src/registry.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory)
+(54 entries at last count). Each entry describes one capability once: its CLI
+invocation, its console route (`null` if it doesn't have one yet), its MCP
+tool schema (`null` if it doesn't have one yet), its risk level, its
+preflight requirements, and its observability shape. The `ge` CLI, the
+console (`apps/console/src/shared/ge-commands.mjs` re-exports the table
+unchanged so the seam stays one file wide), and the MCP server
+(`tools/mcp-server.mjs` registers one tool per entry carrying an `mcp`
+block) all read this same object — a route, a CLI verb, and an MCP tool
+cannot drift apart, because they are one operation rendered three ways, not
+three hand-kept lists.
+
+The vocabulary an entry can use is closed and dependency-free:
+[`@ge/core-api`](https://github.com/vamsiramakrishnan/ge-agent-factory)
+(`packages/core-api/src/capability.mjs`) defines the risk levels
+(`mutates-cloud`, `starts-workloads`, `starts-local-workloads`,
+`writes-repo`, `read-only`), the preflight requirement keys, the
+observability modes, and the MCP parameter types, then exports
+`validateCapability()` (checks one entry's shape against that vocabulary)
+and `assertCapabilityTable()` (runs `validateCapability` over every entry,
+plus cross-entry invariants — one owner per console route, one owner per MCP
+tool name). `registry.mjs` calls `assertCapabilityTable(GE_COMMANDS)`
+immediately after the table literal closes, at module load — so a malformed
+entry (an unknown risk level, a route two commands both claim, an MCP tool
+name two entries share) fails every surface at import time, before any of
+them serve a single request, rather than surfacing later as a runtime 404 or
+a silently missing MCP tool. See
+[Atomic capabilities](atomic-capabilities.html) for the operator-facing view
+of the same table.
 
 ---
 
@@ -200,6 +238,62 @@ by `ge ledger *`, `ge fleet`, and the console.
   `.ge-state.json` / `factory-run-*.json` / `factory-events.jsonl`.
 
 `ge ledger backfill` imports legacy on-disk state into the ledger.
+
+### Observation vs. submission — the run plane split
+
+Reading a run's state and submitting a new run are different problems, and
+the run-observation code keeps them apart on purpose.
+`resolveRunLedger()` (`tools/lib/planes/run-plane.mjs`) is the one place that
+picks a ledger reader — the local SQLite ledger
+(`tools/lib/ledger/factory-ledger.mjs`) or the remote Firestore mirror
+(`@ge/run-ledger`'s `createFirestoreLedgerReader`) — behind one shape:
+`events(runId, {afterSeq})`, `getRun(runId)`, `listRuns({limit})`. Both the
+console's ledger stream (`apps/console/src/server/transport/ledger.mjs`) and
+`ge runs events --remote` call through it, so there is exactly one switch
+between "read locally" and "read remotely," not two hand-rolled ones — and
+the SQLite↔Firestore adapter-parity oracle
+(`packages/run-ledger/src/adapter-parity.test.mjs`) proves both readers
+satisfy that shape field-for-field.
+
+Submission deliberately stays two shapes. Local submission
+(`tools/lib/daemon/detached-submit.mjs`, behind `ge agents build --local
+--detach`) hands the runtime daemon a `ge` argv array to run as a background
+job; remote submission (`tools/lib/provision.mjs`'s `createProvisionOps`,
+driven through the gateway) hands Cloud Tasks a build intent — selected use
+cases and a target stage, not an argv line. There is no shared contract to
+unify those two input shapes the way the adapter-parity oracle unifies reads,
+so `run-plane.mjs` stays read-only and submission stays wherever it already
+lived — an honest asymmetry rather than a forced one.
+
+---
+
+## BYO insertion points
+
+Bring-your-own (BYO) is not one command — it is a set of points where an
+enterprise's own systems, evals, models, and policies enter the factory line
+without forking it. On the system side,
+[`@ge/byo-systems`](https://github.com/vamsiramakrishnan/ge-agent-factory)
+(`packages/byo-systems/`) backs `ge systems bind <system> --to <target>
+--kind twin|mcp|rest --mode twin_first|live_first|twin_only`, which records
+a `SystemBinding` (`ge.system-binding.v1`) to `.ge/systems/bindings.json`;
+`ge systems doctor` cross-checks stored bindings against the known-simulator
+registry and the resolved Python toolchain. `ge byo doctor|apply` reads one
+manifest (`ge.byo.yaml`, `ge.byo.v1`) that packages every insertion point at
+once — system overlays and bindings, eval packs, domain packs, model
+choices, admission and promotion policy, the generated-agents repo, and
+cloud project/region — and reports, per section, whether it is `appliable`
+(writes real config today), `planned-only` (checked but not yet wired), or
+`invalid`. See [Bring your own systems](../cookbooks/bring-your-own-systems.html)
+for the full walkthrough.
+
+The one BYO knob that changes cloud topology on its own is the simulator
+overlay backend. `resolveOverlayScope()` (`packages/byo-systems/src/index.mjs`)
+defaults a synthesized or bound twin to the in-process, non-durable `memory`
+store when running locally, but auto-injects the durable `firestore` backend
+the moment mode is `remote` — so a twin survives a Cloud Run instance recycle
+without an operator having to remember to set `simulatorOverlayBackend`
+themselves. An explicit `GE_SIMULATOR_OVERLAY_BACKEND` (or a manifest-applied
+`simulatorOverlayBackend`) always wins over both defaults.
 
 ---
 

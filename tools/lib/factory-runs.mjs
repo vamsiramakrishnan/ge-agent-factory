@@ -279,5 +279,14 @@ function siblingMarkdownPath(runPath) {
 }
 
 function safeTimestamp(value) {
+  // NOT routed through apps/factory/src/source-clock.js's sourceTimestamp(): this
+  // file lives under tools/lib/, and tools/check-no-app-imports.mjs's Rule 1 hard-bans
+  // tools/lib/* -> apps/factory imports (only factory-catalog.mjs/factory-local-ops.mjs
+  // are allowlisted cycle-break exceptions, and this file isn't one of them). value is
+  // almost always present (a real event.ts from factory-events.jsonl); Date.now() here
+  // is only a defensive fallback for a malformed/missing timestamp, never observed in
+  // practice and not covered by any golden/byte-exact test. Fixing this properly needs
+  // either adding this file to that allowlist or hoisting sourceTimestamp() into the
+  // dependency-free @ge/std leaf package — both out of this workstream's write-set.
   return String(value || Date.now()).replace(/[^0-9A-Za-z]+/g, "-").replace(/^-|-$/g, "");
 }

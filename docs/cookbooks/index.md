@@ -38,6 +38,7 @@ and the [Glossary](../GLOSSARY.html).
 | 13 | [Compile behavioral evals](compile-behavioral-evals.html) | An executable behavior suite derived from the contract — evalset, coverage, grading dataset, and load profile |
 | 14 | [Prove the shipped agent live](prove-live.html) | Evalset cases run through the deployed assist surface — metric grid, conformance baselines, and the live gate verdict |
 | 15 | [Bench against live budgets](bench-live-budgets.html) | Latency and error budgets verdicted against the live surface, with cassette replay for CI |
+| 16 | [Bring your own systems](bring-your-own-systems.html) | A live system bound to a contract, or a whole set of customizations — bindings, eval packs, model/policy choices — packaged into one validated `ge.byo.yaml` manifest |
 
 > Where a path or flag differs from what you'd expect, the guide calls it out
 > explicitly.

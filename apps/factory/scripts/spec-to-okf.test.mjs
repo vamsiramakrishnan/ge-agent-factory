@@ -122,9 +122,9 @@ test("round-trip recovers tool names, systems, and workflow step order", async (
   expect(recoveredOrder.length).toBe(originalOrder.length);
   // Original (underscore) step ids are recovered losslessly via `source_id`.
   expect(recoveredOrder).toEqual(originalOrder);
-  expect(recoveredOrder[0]).toBe("balance__document__pull");
+  expect(recoveredOrder[0]).toBe("balance_document_pull");
   // First and last stage align with the original sequence.
-  expect(recoveredOrder.at(-1)).toBe("workpaper__generation");
+  expect(recoveredOrder.at(-1)).toBe("workpaper_generation");
 
   // Per-step tools recovered (back to original tool names).
   const firstStepTools = bc.workflow.steps[0].tools;
@@ -176,7 +176,7 @@ test("capability spine: queries/, tests/, documents/ concepts emitted + round-tr
   expect(balance.tools).toContain("query_sap_s_4hana_fi_gl_entries");
   // The stage cross-ref resolves to the ORIGINAL (underscore) workflow step id,
   // so it matches a recovered workflow step.
-  expect(balance.stage).toBe("balance__document__pull");
+  expect(balance.stage).toBe("balance_document_pull");
   expect(bc.workflow.steps.some((s) => s.id === balance.stage)).toBe(true);
 
   const recoveredEval = (bc.goldenEvals || []).find((e) => e.id === "account-reconciliation-agent-end-to-end");

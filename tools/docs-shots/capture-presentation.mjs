@@ -37,6 +37,10 @@ function run(cmd, args, opts = {}) {
 }
 
 async function waitForServer(url, timeoutMs = 30_000) {
+  // See the identical comment in capture.mjs's waitForServer: this is a real poll-timeout
+  // budget, not a generated-artifact timestamp, so it deliberately stays off
+  // apps/factory/src/source-clock.js's sourceTimestamp() (which would misinterpret a
+  // GE_SOURCE_DATE pin as "freeze this deadline in the past").
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {

@@ -5,7 +5,7 @@
 // rendering; it delegates the actual frame→state reduction to the functions here.
 // No React, no DOM.
 
-import { normalizeStatus } from "./status.mjs";
+import { normalizeStatus, STATUS_MAP } from "./status.mjs";
 import { STAGE_LOG_TYPE, RUN_COMPLETE_TYPE, STAGE_ERROR_TYPE } from "./frames.mjs";
 
 // Canonical pipeline order. Any stage the events mention that isn't here is
@@ -39,16 +39,16 @@ export function applyEvent(ev, stages, signals) {
     const existing = stages.get(stageName) || { id: stageName, name: stageName, status: "pending" };
     switch (ev.type) {
       case "stage_planned":
-        if (existing.status === "pending") existing.status = "pending";
+        if (existing.status === STATUS_MAP.pending) existing.status = STATUS_MAP.pending;
         break;
       case "stage_started":
-        existing.status = "running";
+        existing.status = STATUS_MAP.running;
         existing.startedAt = existing.startedAt ?? ts;
         signals.active = stageName;
-        if (signals.status !== "failed" && signals.status !== "blocked") signals.status = "running";
+        if (signals.status !== STATUS_MAP.failed && signals.status !== STATUS_MAP.blocked) signals.status = STATUS_MAP.running;
         break;
       case "stage_done":
-        existing.status = "done";
+        existing.status = STATUS_MAP.done;
         existing.endedAt = ts;
         if (signals.active === stageName) signals.active = null;
         break;
@@ -60,13 +60,21 @@ export function applyEvent(ev, stages, signals) {
         // blocked state so Resume is offered, falling back to failed. stage_error
         // is the worker's real-throw frame (message in `error`, full stack/cmd in
         // `data`) and renders through the identical "failed" path.
-        existing.status = ev.status === "blocked" || ev.status === "pending_approval" ? "blocked" : "failed";
+        // NOTE: the "blocked" input check below is intentionally narrower than
+        // STATUS_MAP (which also maps "paused" -> "blocked") — this branch only
+        // ever sees stage_failed/stage_error frames, and widening it to every
+        // STATUS_MAP synonym of "blocked" would change which failures get
+        // treated as resumable vs. terminal; that's a behavior call outside
+        // this workstream's mandate (WS3 routes callers through the existing
+        // vocabulary, it does not redesign it), so the input-side literals stay
+        // as-is and only the canonical OUTPUT values route through STATUS_MAP.
+        existing.status = ev.status === "blocked" || ev.status === "pending_approval" ? STATUS_MAP.blocked : STATUS_MAP.failed;
         existing.endedAt = ts;
-        if (existing.status === "blocked") {
-          signals.status = "blocked";
+        if (existing.status === STATUS_MAP.blocked) {
+          signals.status = STATUS_MAP.blocked;
           signals.blockedReason = ev.error || existing.lastLine || "Run is blocked and needs attention.";
         } else {
-          signals.status = "failed";
+          signals.status = STATUS_MAP.failed;
           signals.blockedReason = ev.error || ev.data?.message || signals.blockedReason;
         }
         break;
@@ -83,9 +91,9 @@ export function applyEvent(ev, stages, signals) {
     signals.complete = true;
     signals.active = null;
     // Trust the terminal frame for overall status.
-    if (ev.ok === false || ev.status === "failed") signals.status = "failed";
+    if (ev.ok === false || ev.status === STATUS_MAP.failed) signals.status = STATUS_MAP.failed;
     else if (ev.status) signals.status = normalizeStatus(ev.status);
-    else if (signals.status !== "failed" && signals.status !== "blocked") signals.status = "done";
+    else if (signals.status !== STATUS_MAP.failed && signals.status !== STATUS_MAP.blocked) signals.status = STATUS_MAP.done;
   }
 
   return { tailLine };
@@ -100,7 +108,7 @@ export function orderStages(stages, firstSeen, now = Date.now()) {
   for (const name of firstSeen) if (seen.has(name) && !ordered.includes(name)) ordered.push(name);
   return ordered.map((name) => {
     const s = stages.get(name);
-    const elapsedMs = s.startedAt ? (s.endedAt ?? (s.status === "running" ? now : s.startedAt)) - s.startedAt : 0;
+    const elapsedMs = s.startedAt ? (s.endedAt ?? (s.status === STATUS_MAP.running ? now : s.startedAt)) - s.startedAt : 0;
     return { id: s.id, name: s.name, status: s.status, startedAt: s.startedAt, endedAt: s.endedAt, elapsedMs: Math.max(0, elapsedMs), lastLine: s.lastLine };
   });
 }

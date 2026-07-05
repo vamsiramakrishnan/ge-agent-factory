@@ -488,8 +488,8 @@ export const GE_COMMANDS = {
   },
   "evals.coverage": {
     id: "evals.coverage",
-    method: null,
-    path: null,
+    method: "GET",
+    path: "/api/ge/evals/coverage",
     cli: "ge evals coverage",
     label: "Eval coverage report",
     summary: "Report per-dimension coverage (required/covered/gaps) from the last `ge evals compile`, optionally scoped to one evalset id",
@@ -622,10 +622,114 @@ export const GE_COMMANDS = {
     },
   },
   // ── OKF blueprint quality + enrichment (merged from main 2026-07-05) ──────
-  // The okf-blueprint-enrichment skill routes through these six verbs; the
+  // The enriching-okf-blueprints skill routes through these six verbs; the
   // skill-matrix gate requires every routed command to be a registry key.
-  // CLI-only for now (method/path null, no mcp blocks — widening MCP is a
-  // separate deliberate act per tools/mcp-registry-parity.test.mjs).
+  // Most of these already have mcp blocks; okf.enrich.generate/apply/shard
+  // did not until audit-fix-wave WS2 added them (see
+  // docs/plans/audit-fix-wave/02-registry-mcp-completion.md) — now every
+  // entry in this block has one. systems.bind/unbind route through the
+  // generic POST job-sentinel in ge-api.mjs; systems.bindings/byo.doctor/
+  // evals.coverage route through the generic GET direct-return added in the
+  // same change (both in apps/console/src/server/ge-api.mjs).
+  "systems.bind": {
+    id: "systems.bind", method: "POST", path: "/api/ge/systems/bind",
+    cli: "ge systems bind",
+    label: "Bind a live system",
+    summary: "Bind a contract system to a live twin/mcp/rest target, validating the binding and persisting it under .ge/systems/bindings.json",
+    risk: "starts-local-workloads", expectedDuration: "under 10s",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_systems_bind",
+      description: "Mutating (local .ge state only): bind a contract system to a live twin/mcp/rest target. Validates kind (twin|mcp|rest), mode (twin_first|live_first|twin_only), and an http(s) URL shape for mcp/rest targets, then persists the binding to .ge/systems/bindings.json. Returns {ok, binding}.",
+      params: {
+        system: { type: "string", description: "Contract system id to bind (see ge systems list)" },
+        to: { type: "string", description: "Bind target: twin pack id | MCP endpoint URL | REST base URL" },
+        kind: { type: "string", enum: ["twin", "mcp", "rest"], description: "Target kind" },
+        mode: { type: "string", enum: ["twin_first", "live_first", "twin_only"], description: "Twin vs. live precedence" },
+        connector: { type: "string", optional: true, description: "Connector package/module name (informational until a connector SDK exists)" },
+        config: { type: "string", optional: true, description: "Connector config as a JSON object string" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "bind", String(body.system), "--to", String(body.to), "--kind", String(body.kind), "--mode", String(body.mode), "--json"];
+      if (body.connector) argv.push("--connector", String(body.connector));
+      if (body.config !== undefined) argv.push("--config", typeof body.config === "string" ? body.config : JSON.stringify(body.config));
+      return argv;
+    },
+  },
+  "systems.bindings": {
+    id: "systems.bindings", method: "GET", path: "/api/ge/systems/bindings",
+    cli: "ge systems bindings",
+    label: "List live system bindings",
+    summary: "List stored live-system bindings (.ge/systems/bindings.json)",
+    risk: "read-only", expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_systems_bindings",
+      description: "Read-only: list stored live-system bindings (system/boundTo/kind/mode/connector/config/updatedAt).",
+      params: {},
+    },
+    argv: () => ["systems", "bindings", "--json"],
+  },
+  "systems.unbind": {
+    id: "systems.unbind", method: "POST", path: "/api/ge/systems/unbind",
+    cli: "ge systems unbind",
+    label: "Unbind a live system",
+    summary: "Remove a system's live binding from .ge/systems/bindings.json",
+    risk: "starts-local-workloads", expectedDuration: "under 10s",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_systems_unbind",
+      description: "Mutating (local .ge state only): remove a system's live binding. Returns {ok, system, removed} — removed:false if it wasn't bound (not an error).",
+      params: { system: { type: "string", description: "Contract system id to unbind" } },
+    },
+    argv: (body = {}) => ["systems", "unbind", String(body.system), "--json"],
+  },
+  "byo.doctor": {
+    id: "byo.doctor", method: "GET", path: "/api/ge/byo/doctor",
+    cli: "ge byo doctor",
+    label: "Validate a BYO manifest",
+    summary: "Validate a BYO manifest (ge.byo.yaml) and report the full apply plan — appliable vs planned-only vs invalid",
+    risk: "read-only", expectedDuration: "under 10s",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_byo_doctor",
+      description: "Read-only: validate a BYO manifest (ge.byo.yaml, schemaVersion ge.byo.v1) and compute its full apply plan without executing anything: every action classified appliable/planned-only/invalid. Distinct from ge.manifest.json (platform/fleet desired state) — this is enterprise customization packaging.",
+      params: { manifest: { type: "string", description: "Path to the ge.byo.yaml manifest" } },
+    },
+    argv: (body = {}) => { const argv = ["byo", "doctor", "--json"]; if (body.manifest) argv.push("--manifest", String(body.manifest)); return argv; },
+  },
+  "byo.apply": {
+    id: "byo.apply", method: null, path: null,
+    cli: "ge byo apply",
+    label: "Apply a BYO manifest",
+    summary: "Execute the safe (appliable) subset of a BYO manifest: .ge.json merges, bring-your-own evalset imports, system bindings",
+    risk: "writes-repo", expectedDuration: "under 30s",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_byo_apply",
+      description: "Mutating (repo): execute the appliable subset of a BYO manifest — merges scalars/policy blocks into .ge.json, imports bring-your-own evalsets, writes BYO-system bindings. Every action lands in applied/planned/invalid — nothing silently dropped. dryRun classifies without executing.",
+      params: {
+        manifest: { type: "string", description: "Path to the ge.byo.yaml manifest" },
+        dryRun: { type: "boolean", optional: true, description: "Report the plan; execute nothing" },
+      },
+    },
+    argv: (body = {}) => { const argv = ["byo", "apply", "--json"]; if (body.manifest) argv.push("--manifest", String(body.manifest)); if (body.dryRun) argv.push("--dry-run"); return argv; },
+  },
+  "models.doctor": {
+    id: "models.doctor", method: null, path: null,
+    cli: "ge models doctor",
+    label: "Models doctor",
+    summary: "Check structural readiness of model providers: Vertex, harness Python, refinement/judge model config (no network/paid calls)",
+    risk: "read-only", expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_models_doctor",
+      description: "Read-only, no network/paid calls: structural readiness for model providers — Vertex (project + gcloud on PATH), the harness Python driver (GE_HARNESS_PYTHON → repo .venv → python3), the resolved refinementModel/judgeModel config values and whether they match a known family (gemini-*/claude-*/gpt-*), and ADC presence.",
+      params: {},
+    },
+    argv: () => ["models", "doctor", "--json"],
+  },
   "okf.quality.audit": {
     id: "okf.quality.audit",
     method: null,
@@ -636,6 +740,14 @@ export const GE_COMMANDS = {
     risk: "read-only",
     expectedDuration: "under 1m",
     requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_quality_audit",
+      description: "Read-only (unless write flags used via CLI): compute deterministic L0-L5 OKF blueprint quality reports — contract validity, inventory, score, maturity status per spec.",
+      params: {
+        spec: { type: "string", optional: true, description: "Audit one spec (slug or bundle dir)" },
+        all: { type: "boolean", optional: true, description: "Audit every bundle under the OKF root" },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["okf", "quality", "audit", "--json"];
       if (body.spec) argv.push("--spec", String(body.spec));
@@ -653,6 +765,15 @@ export const GE_COMMANDS = {
     risk: "read-only",
     expectedDuration: "under 1m",
     requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_enrich_plan",
+      description: "Read-only: generate coverage obligations for OKF blueprint enrichment against a target quality level (default L4), matched against the domain-pack corpus.",
+      params: {
+        spec: { type: "string", optional: true, description: "Plan one spec" },
+        all: { type: "boolean", optional: true, description: "Plan every bundle" },
+        target: { type: "string", optional: true, description: "Target quality level (default L4)" },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["okf", "enrich", "plan", "--json"];
       if (body.spec) argv.push("--spec", String(body.spec));
@@ -671,11 +792,26 @@ export const GE_COMMANDS = {
     risk: "read-only",
     expectedDuration: "under 1m",
     requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_enrich_generate",
+      description: "Read-only: generate a reviewable OKF enrichment patch (proposed inventory/content additions) against a target quality level, without mutating source specs. Pair with factory_enrich_apply (write:true) to actually land it.",
+      params: {
+        spec: { type: "string", description: "Spec (slug or bundle dir) to generate a patch for" },
+        target: { type: "string", optional: true, description: "Target quality level (default L4)" },
+        root: { type: "string", optional: true, description: "OKF corpus root (default okf)" },
+        packRoot: { type: "string", optional: true, description: "Domain-pack root (default domain-packs)" },
+        out: { type: "string", optional: true, description: "Write patch JSON here" },
+        maxEvals: { type: "string", optional: true, description: "Max eval cases to propose (default 5)" },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["okf", "enrich", "generate", "--json"];
       if (body.spec) argv.push("--spec", String(body.spec));
       if (body.target) argv.push("--target", String(body.target));
+      if (body.root) argv.push("--root", String(body.root));
+      if (body.packRoot) argv.push("--pack-root", String(body.packRoot));
       if (body.out) argv.push("--out", String(body.out));
+      if (body.maxEvals) argv.push("--max-evals", String(body.maxEvals));
       return argv;
     },
   },
@@ -689,9 +825,20 @@ export const GE_COMMANDS = {
     risk: "writes-repo",
     expectedDuration: "under 1m",
     requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_enrich_apply",
+      description: "Mutating (repo) when write:true, otherwise a dry run: classify every action in a structured OKF enrichment patch (from factory_enrich_generate) as applied/planned/invalid. write defaults to falsy — the same dry-run-by-default the CLI's --write flag gives, carried across the MCP boundary unchanged.",
+      params: {
+        patch: { type: "string", description: "Path to the enrichment patch JSON" },
+        root: { type: "string", optional: true, description: "OKF corpus root (default okf)" },
+        write: { type: "boolean", optional: true, description: "Actually apply the patch (default: dry run)" },
+        force: { type: "boolean", optional: true, description: "Force-apply despite conflicts" },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["okf", "enrich", "apply", "--json"];
       if (body.patch) argv.push("--patch", String(body.patch));
+      if (body.root) argv.push("--root", String(body.root));
       if (body.write) argv.push("--write");
       if (body.force) argv.push("--force");
       return argv;
@@ -707,6 +854,14 @@ export const GE_COMMANDS = {
     risk: "writes-repo",
     expectedDuration: "under 30s",
     requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_enrich_shard",
+      description: "Mutating (repo): group an enrichment plan (from ge okf enrich plan) into bounded parallel shard manifests, writing one JSON file per shard under out.",
+      params: {
+        plan: { type: "string", description: "Path to the enrichment plan JSON" },
+        out: { type: "string", description: "Directory to write shard manifest files into" },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["okf", "enrich", "shard", "--json"];
       if (body.plan) argv.push("--plan", String(body.plan));
@@ -724,6 +879,14 @@ export const GE_COMMANDS = {
     risk: "read-only",
     expectedDuration: "under 1m",
     requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_evals_verify",
+      description: "Read-only: static verification for OKF eval references, fixtures, assertions, and action-tool state coverage — the OKF-EVAL/OKF-REF/OKF-ASSERT error taxonomy.",
+      params: {
+        spec: { type: "string", optional: true, description: "Verify one spec" },
+        all: { type: "boolean", optional: true, description: "Verify every bundle" },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["okf", "eval", "verify", "--json"];
       if (body.spec) argv.push("--spec", String(body.spec));
@@ -963,6 +1126,30 @@ export const GE_COMMANDS = {
       return argv.includes("--local") ? argv : [...argv, "--local"];
     },
   },
+  // DECISION (audit-fix-wave WS2, 2026-07-05, see
+  // docs/plans/audit-fix-wave/02-registry-mcp-completion.md §2d): deliberately
+  // CLI + daemon-task-API-only, no registry mcp/path pair — not silence.
+  // `ge pipeline run` (tools/ge/pipeline.mjs) is NOT a meta-command that
+  // dispatches to already-exposed sub-commands (verified: it POSTs a
+  // `pipeline.run` task kind straight to a live `ge daemon` via
+  // requireDaemon()/daemonRequest(), then the daemon runs the resumable
+  // orchestration graph itself — nothing here reduces to calling
+  // agents.build/etc. through the registry). Two facts follow:
+  //  1. It already has a genuine remote surface: the console's
+  //     POST /api/runtime/tasks (apps/console/src/server/ge-api-router.mjs),
+  //     a generic proxy that forwards { kind, ...body } straight to the
+  //     daemon for ANY task kind, not just this one — giving it a registry
+  //     `path`/`argv` pair too would be a second, divergent way to start the
+  //     same daemon task (the exact "no parallel re-implementation" this
+  //     workstream's Forbidden list rules out elsewhere).
+  //  2. Every MCP handler in tools/mcp-server.mjs is a strictly in-process
+  //     core-library call today — none depend on a running daemon. Adding an
+  //     mcp block here would require the MCP server to become daemon-aware
+  //     (dial `ge daemon start`'s HTTP API), a new capability class with no
+  //     existing pattern to mirror — out of scope for an additive-only wave.
+  // If the MCP server later grows daemon-proxying for some other reason,
+  // revisit this decision then; until it does, `ge pipeline run` +
+  // `POST /api/runtime/tasks` is the complete, honest remote surface.
   "pipeline.run": {
     id: "pipeline.run",
     method: null,

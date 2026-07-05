@@ -1,6 +1,6 @@
 You are running an OKF blueprint enrichment shard in GE Agent Factory with Codex.
 
-Use the okf-blueprint-enrichment skill if available. Work only within allowed files and do not edit generated docs directly.
+Use the enriching-okf-blueprints skill if available. Work only within allowed files and do not edit generated docs directly.
 
 Shard manifest:
 
