@@ -241,7 +241,7 @@ export const GE_COMMANDS = {
     requirements: { bins: ["bun"], config: [] },
     mcp: {
       tool: "factory_passport_admit",
-      description: "Local: run the admission gate for one workspace and return the AdmissionDecision — verified passport + recomputed digests + policy (.ge.json promotion.gates.admission: required, maxAgeDays, requireLiveProof) → allowed true/false with stable GEADM001–GEADM008 blockers, each naming its fix command. The decision is recorded to the workspace's artifacts/admission-decision.json and the append-only .ge/admission/decisions.jsonl audit log. Audit-mode by default (required=false): denials are recorded, only a required gate refuses.",
+      description: "Local: run the admission gate for one workspace and return the AdmissionDecision — verified passport + recomputed digests + policy (.ge.json promotion.gates.admission: required, maxAgeDays, requireLiveProof, requireFreshProofBinding) → allowed true/false with stable GEADM001–GEADM009 blockers, each naming its fix command. The decision is recorded to the workspace's artifacts/admission-decision.json and the append-only .ge/admission/decisions.jsonl audit log. Audit-mode by default (required=false): denials are recorded, only a required gate refuses.",
       params: {
         id: { type: "string", description: "Local workspace id (or use-case id)" },
         stage: { type: "string", optional: true, description: "Stage the decision is for (default handoff)" },

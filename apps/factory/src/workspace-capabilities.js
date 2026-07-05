@@ -94,6 +94,7 @@ function qualityFromReadiness(readiness) {
     specCodeTrace: readiness.specCodeTrace?.status || "missing",
     localPreview: readiness.localPreview?.status || "missing",
     dataPackage: readiness.dataPackage?.status || "missing",
+    proofBinding: readiness.proofBinding?.status || "missing",
   };
 }
 
@@ -119,6 +120,7 @@ export async function buildReadiness(workspaceDir) {
   const cloudDataPlan = await readJson(join(workspaceDir, DATA_PATHS.cloudDataManifest), null);
   const cloudTopology = await readJson(join(workspaceDir, ARTIFACT_PATHS.cloudTopology), null);
   const publishPlan = await readJson(join(workspaceDir, ARTIFACT_PATHS.publishPlan), null);
+  const promotionPacket = await readJson(join(workspaceDir, ARTIFACT_PATHS.promotionPacket), null);
   const deploymentMeta = await readJson(join(workspaceDir, "deployment_metadata.json"), null);
   const registration = await readJson(join(workspaceDir, "gemini_enterprise_registration.json"), null);
 
@@ -179,6 +181,12 @@ export async function buildReadiness(workspaceDir) {
     publishPlan: status(Boolean(publishPlan), {
       path: publishPlan ? ARTIFACT_PATHS.publishPlan : null,
     }),
+    proofBinding: {
+      status: promotionPacket?.proofBinding?.ok === true ? "fresh" : promotionPacket?.proofBinding ? "stale" : "missing",
+      path: promotionPacket ? ARTIFACT_PATHS.promotionPacket : null,
+      workspaceHash: promotionPacket?.proofBinding?.workspace?.hex || null,
+      policyHash: promotionPacket?.proofBinding?.proofPolicy?.hex || null,
+    },
     published: status(Boolean(registration || pipeline.steps?.publish?.status === "done"), {
       appId: pipeline.steps?.publish?.appId || registration?.appId || null,
     }),

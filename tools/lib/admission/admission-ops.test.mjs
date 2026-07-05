@@ -21,6 +21,7 @@ describe("admissionGatePolicy", () => {
     expect(policy.required).toBe(true);
     expect(policy.maxAgeDays).toBe(7);
     expect(policy.requireLiveProof).toBe(false);
+    expect(policy.requireFreshProofBinding).toBe(true);
   });
 });
 
@@ -52,7 +53,7 @@ describe("passport loop via the CLI", () => {
     mkdirSync(join(workspace, "artifacts"), { recursive: true });
     mkdirSync(join(workspace, "app"), { recursive: true });
     writeFileSync(join(workspace, "mock_systems", "usecase-spec.json"), JSON.stringify({ behaviorContract: { role: "demo" } }));
-    writeFileSync(join(workspace, "artifacts", "promotion-packet.json"), JSON.stringify({ workspace: { useCaseId: "demo" }, promotionGate: { ok: true, blockers: [] } }));
+    writeFileSync(join(workspace, "artifacts", "promotion-packet.json"), JSON.stringify({ workspace: { useCaseId: "demo" }, promotionGate: { ok: true, blockers: [] }, proofBinding: { ok: true, workspace: { hex: "a".repeat(64) }, proofPolicy: { hex: "b".repeat(64) } } }));
     writeFileSync(join(workspace, "app", "agent.py"), "print('hi')\n");
 
     const emitted = runGe(["passport", "emit", "demo-agent"]);
