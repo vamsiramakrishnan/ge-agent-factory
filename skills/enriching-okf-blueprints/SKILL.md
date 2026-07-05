@@ -1,8 +1,8 @@
 ---
-name: okf-blueprint-enrichment
+name: enriching-okf-blueprints
 description: Improve GE Agent Factory OKF blueprints after quality classification by adding serious evals, fixtures, multi-turn coverage, trajectory assertions, state assertions, adversarial tests, and domain invariant coverage. Use when working on OKF catalog specs, eval coverage, blueprint maturity, or enrichment shards.
 ---
-# OKF Blueprint Enrichment Skill
+# Enriching OKF Blueprints
 
 You improve OKF blueprints through a classification-driven, patch-first enrichment workflow.
 

@@ -117,6 +117,9 @@ returns `202 { jobId, command }`; stream progress via
 | `GET /api/ge/ledger/runs/:id` | One ledger run |
 | `GET /api/ge/ledger/runs/:id/events` | Live ledger events (SSE) — backs the Run Drawer |
 | `GET /api/ge/apply/plan` | Declarative reconcile plan |
+| `GET /api/ge/library/stats` | Agent Library inventory counts (blueprints, verticals, buildable, proven) |
+| `GET /api/ge/library/search` | Search Agent Library blueprints (`q`, `department`, `limit`) |
+| `GET /api/ge/library/:slug` | One blueprint's full record plus its computed readiness status |
 | `GET /api/ge/agents/:id` | One agent's detail |
 | `GET /api/ge/workspaces/:id/doctor` | Workspace health (`stage`) |
 | `POST /api/ge/workspaces/:id/repair` | Local repair loop (`stage`, `attempts`, `agent`, `runPreview`) |
