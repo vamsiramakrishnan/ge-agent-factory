@@ -621,6 +621,116 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  // ── OKF blueprint quality + enrichment (merged from main 2026-07-05) ──────
+  // The okf-blueprint-enrichment skill routes through these six verbs; the
+  // skill-matrix gate requires every routed command to be a registry key.
+  // CLI-only for now (method/path null, no mcp blocks — widening MCP is a
+  // separate deliberate act per tools/mcp-registry-parity.test.mjs).
+  "okf.quality.audit": {
+    id: "okf.quality.audit",
+    method: null,
+    path: null,
+    cli: "ge okf quality audit",
+    label: "Audit OKF blueprint quality",
+    summary: "Compute deterministic L0-L5 quality reports for OKF blueprints (read-only unless --write/--markdown)",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [] },
+    argv: (body = {}) => {
+      const argv = ["okf", "quality", "audit", "--json"];
+      if (body.spec) argv.push("--spec", String(body.spec));
+      if (body.all) argv.push("--all");
+      return argv;
+    },
+  },
+  "okf.enrich.plan": {
+    id: "okf.enrich.plan",
+    method: null,
+    path: null,
+    cli: "ge okf enrich plan",
+    label: "Plan OKF enrichment",
+    summary: "Generate coverage obligations for OKF blueprint enrichment against a target quality level",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [] },
+    argv: (body = {}) => {
+      const argv = ["okf", "enrich", "plan", "--json"];
+      if (body.spec) argv.push("--spec", String(body.spec));
+      if (body.all) argv.push("--all");
+      if (body.target) argv.push("--target", String(body.target));
+      return argv;
+    },
+  },
+  "okf.enrich.generate": {
+    id: "okf.enrich.generate",
+    method: null,
+    path: null,
+    cli: "ge okf enrich generate",
+    label: "Generate an enrichment patch",
+    summary: "Generate a reviewable OKF enrichment patch without mutating source specs",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [] },
+    argv: (body = {}) => {
+      const argv = ["okf", "enrich", "generate", "--json"];
+      if (body.spec) argv.push("--spec", String(body.spec));
+      if (body.target) argv.push("--target", String(body.target));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "okf.enrich.apply": {
+    id: "okf.enrich.apply",
+    method: null,
+    path: null,
+    cli: "ge okf enrich apply",
+    label: "Apply an enrichment patch",
+    summary: "Apply (or dry-run) a structured OKF enrichment patch to blueprint bundles",
+    risk: "writes-repo",
+    expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [] },
+    argv: (body = {}) => {
+      const argv = ["okf", "enrich", "apply", "--json"];
+      if (body.patch) argv.push("--patch", String(body.patch));
+      if (body.write) argv.push("--write");
+      if (body.force) argv.push("--force");
+      return argv;
+    },
+  },
+  "okf.enrich.shard": {
+    id: "okf.enrich.shard",
+    method: null,
+    path: null,
+    cli: "ge okf enrich shard",
+    label: "Shard an enrichment plan",
+    summary: "Group an enrichment plan into bounded parallel shard manifests",
+    risk: "writes-repo",
+    expectedDuration: "under 30s",
+    requirements: { bins: ["node"], config: [] },
+    argv: (body = {}) => {
+      const argv = ["okf", "enrich", "shard", "--json"];
+      if (body.plan) argv.push("--plan", String(body.plan));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "okf.eval.verify": {
+    id: "okf.eval.verify",
+    method: null,
+    path: null,
+    cli: "ge okf eval verify",
+    label: "Verify OKF evals statically",
+    summary: "Static verification for OKF eval references, fixtures, assertions, and action-tool state coverage",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [] },
+    argv: (body = {}) => {
+      const argv = ["okf", "eval", "verify", "--json"];
+      if (body.spec) argv.push("--spec", String(body.spec));
+      if (body.all) argv.push("--all");
+      return argv;
+    },
+  },
   "agents.register": {
     id: "agents.register",
     method: "POST",

@@ -80,6 +80,13 @@ export const GeCommandIdSchema = z.enum([
   "okf.customize",
   "agents.register",
   "agents.track",
+  // OKF quality + enrichment (blueprint upgrade factory, merged 2026-07-05):
+  "okf.quality.audit",
+  "okf.enrich.plan",
+  "okf.enrich.generate",
+  "okf.enrich.apply",
+  "okf.enrich.shard",
+  "okf.eval.verify",
   // Release admission (Agent Passport + its gate):
   "passport.emit",
   "passport.verify",
