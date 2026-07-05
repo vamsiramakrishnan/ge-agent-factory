@@ -24,6 +24,7 @@ import {
   buildStatement,
   computeFileDigest,
   computeWorkspaceDigest,
+  computeProofBinding,
   createLocalSigner,
   evaluateAdmission,
   generateAdmissionKeypair,
@@ -120,6 +121,7 @@ function subjectDigests(dir) {
   return {
     workspaceDigest: computeWorkspaceDigest(dir),
     contractDigest: computeFileDigest(workspacePath(dir, WORKSPACE_PATHS.useCaseSpec)),
+    proofBinding: computeProofBinding(dir),
   };
 }
 
@@ -155,13 +157,15 @@ export function emitPassport({ id } = {}) {
   const keys = ensureAdmissionKeys();
   const signer = createLocalSigner(keys.privateKeyPem, keys.publicKeyPem);
   const digests = subjectDigests(workspace.dir);
+  const proofBinding = computeProofBinding(workspace.dir);
+  const boundPacket = { ...packet, proofBinding, promotionGate: packet.promotionGate || { ok: true, blockers: [] } };
 
   const attestations = [
     signStatement(buildStatement({
       subjectName: workspace.id,
       subjectDigest: digests.workspaceDigest,
       predicateType: PREDICATE_TYPES.promotionPacket,
-      predicate: packet,
+      predicate: boundPacket,
     }), signer),
   ];
   const liveProof = readJson(statePath("proof", "live-proof-result.json"), null);
@@ -182,8 +186,8 @@ export function emitPassport({ id } = {}) {
     attestations,
     workspace: {
       id: workspace.id,
-      useCaseId: packet.workspace?.useCaseId || null,
-      mode: packet.workspace?.mode || null,
+      useCaseId: boundPacket.workspace?.useCaseId || null,
+      mode: boundPacket.workspace?.mode || null,
     },
   });
   const path = writeWorkspaceJsonSync(workspace.dir, ARTIFACT_PATHS.agentPassport, passport);
