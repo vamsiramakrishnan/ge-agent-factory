@@ -9,6 +9,7 @@
   "capture",
   "commandDoctor",
   "consoleDoctor",
+  "createDaemonClient",
   "createLocalJobSubmit",
   "cutover",
   "dataDoctor",
