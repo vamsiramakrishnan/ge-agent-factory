@@ -231,29 +231,46 @@ nav.sidebar .top-level > li > details > summary .group-label > span {
   text-transform: uppercase;
 }
 
-/* Current-page marker: a quiet recessed surface plus one lit dot — the
- * product's "blue means live" as a single indicator light, not a flood
- * tint. Functional color logic: the page you're on is the one interactive
- * thing here, so it earns the one dot, not a wash of accent behind it. */
+/* Current-page marker: a quiet recessed surface plus one lit dot ahead of
+ * the label — the product's "blue means live" as a single indicator lamp,
+ * not a flood tint. Functional color logic: the page you're on is the one
+ * interactive thing here, so it earns the one dot, not a wash of accent
+ * behind it. */
 nav.sidebar a[aria-current="page"],
 nav.sidebar a[aria-current="page"]:hover,
 nav.sidebar a[aria-current="page"]:focus {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background-color: var(--sl-color-gray-6);
   color: var(--sl-color-white);
   font-weight: 600;
 }
 
-nav.sidebar a[aria-current="page"]::after {
+nav.sidebar a[aria-current="page"]::before {
   content: "";
-  position: absolute;
-  top: 50%;
-  right: 0.6rem;
-  width: 0.375rem;
-  height: 0.375rem;
-  margin-top: -0.1875rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
   border-radius: 999px;
   background: var(--sl-color-accent);
+}
+
+/* Group disclosure marks are mono +/− (a switch position), never a rotating
+ * chevron — an icon that spins is decoration; a mark that flips is a state. */
+nav.sidebar .caret {
+  display: none;
+}
+
+nav.sidebar summary::after {
+  content: "+";
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}
+
+nav.sidebar details[open] > summary::after {
+  content: "\2212";
 }
 
 /* Focus ring matches the product (tokens.css :focus-visible). */
@@ -262,46 +279,64 @@ nav.sidebar a[aria-current="page"]::after {
   outline-offset: 2px;
 }
 
-/* ── Buttons: a machined key, not a web pill. Starlight's own
- * .sl-link-button defaults to border-radius: 999rem with no press feedback
- * at all — flatten it to the site's small geometric radius, add a hairline
- * top/bottom bevel, and give it real travel on press (honest component
- * anatomy: the state change is structural, not just a color swap). ──────── */
-.sl-link-button {
-  border-radius: var(--ge-radius);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
-  transition: transform 120ms ease, box-shadow 120ms ease;
+/* ── Header search: a rule, not a box. Starlight's default search trigger
+ * is a bordered pill on desktop; flatten it to a bottom hairline that only
+ * turns accent on focus/hover, so blue stays reserved for the moment you're
+ * actually about to type. ────────────────────────────────────────────────── */
+@media (min-width: 50rem) {
+  button[data-open-modal] {
+    border: none;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  button[data-open-modal]:hover {
+    border-bottom-color: var(--sl-color-white);
+  }
+
+  :focus-visible > button[data-open-modal],
+  button[data-open-modal]:focus-visible {
+    border-bottom-color: var(--sl-color-accent);
+  }
 }
 
-.sl-link-button:active {
-  transform: translateY(1px);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
+button > kbd {
+  border: 1px solid var(--sl-color-gray-5);
+  background-color: transparent;
+}
+
+/* ── Buttons (per the gaf-ui-002 interface spec): one primary action per
+ * view, everything else hairline or text. States shift tone only — no
+ * shadow, no size change, no movement; a button doesn't announce itself
+ * with light and depth, it just gets one shade darker when you touch it.
+ * Starlight's own .sl-link-button defaults to a bare 999rem pill; flatten
+ * to the site's small geometric radius instead. ─────────────────────────── */
+.sl-link-button {
+  border-radius: var(--ge-radius);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.sl-link-button.primary:hover {
+  background: var(--sl-color-accent-high);
+  border-color: var(--sl-color-accent-high);
 }
 
 /* .minimal stays Starlight's plain text-link treatment (that's how this
  * site's hero uses it, next to one solid .primary action) — only .secondary
- * gets the boxed-key look, for whenever a page wants two real buttons. */
+ * gets the hairline-box look, for whenever a page wants two real buttons. */
 .sl-link-button.secondary {
-  border: 1px solid var(--sl-color-gray-5);
-  background: var(--sl-color-gray-6);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  border-color: var(--sl-color-white);
+  background: transparent;
 }
 
-:root:not([data-theme="light"]) .sl-link-button.secondary {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+.sl-link-button.secondary:hover {
+  background: var(--sl-color-gray-6);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sl-link-button,
-  .sl-link-button:active {
+  .sl-link-button {
     transition: none;
-    transform: none;
   }
 }
 
@@ -435,37 +470,35 @@ nav.sidebar a[aria-current="page"]::after {
   box-shadow: none;
 }
 
-/* ── Tabs: a bank of switches, not a web underline. Starlight's default marks
- * the active tab with blue text + a blue rule — color standing in for state.
- * A Braun rocker switch shows "on" structurally: the key itself inverts.
- * Hairline dividers separate each key; the active one is a solid ink fill
- * (the same duotone the rest of the page already uses), never blue. ─────── */
+/* Pagination cards: hairline sharpens to full ink on hover, not a color —
+ * Starlight's own default lightens toward gray-2, a half-step short. */
+.pagination-links a:hover {
+  border-color: var(--sl-color-white);
+}
+
+/* ── Tabs (per the gaf-ui-002 spec): state is a rule and a weight, not a
+ * fill or a color. Starlight's default marks the active tab with blue text
+ * + a blue rule — color standing in for state, which the button rule above
+ * just spent a paragraph arguing against. Ink underline + font-weight only. */
 [role="tablist"] {
   border-bottom: 1px solid var(--sl-color-gray-5);
 }
 
 .tab {
   margin-bottom: -1px;
-  border-right: 1px solid var(--sl-color-gray-5);
-}
-
-.tab:last-child {
-  border-right: none;
 }
 
 .tab > [role="tab"] {
   padding-block: var(--ge-space-2);
-  border-bottom: 1px solid transparent;
-}
-
-.tab > [role="tab"]:not([aria-selected="true"]):hover {
-  background-color: var(--sl-color-gray-6);
+  border-bottom: 2px solid transparent;
+  color: var(--sl-color-gray-3);
+  font-weight: 400;
 }
 
 .tab [role="tab"][aria-selected="true"] {
-  background-color: var(--sl-color-white);
-  border-bottom: 1px solid var(--sl-color-white);
-  color: var(--sl-color-black);
+  border-bottom-color: var(--sl-color-white);
+  color: var(--sl-color-white);
+  font-weight: 600;
 }
 
 /* ── Landing page: the three-step first-run journey ─────────────────────── */
