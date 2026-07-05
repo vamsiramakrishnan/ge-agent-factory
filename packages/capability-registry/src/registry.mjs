@@ -622,7 +622,7 @@ export const GE_COMMANDS = {
     },
   },
   // ── OKF blueprint quality + enrichment (merged from main 2026-07-05) ──────
-  // The okf-blueprint-enrichment skill routes through these six verbs; the
+  // The enriching-okf-blueprints skill routes through these six verbs; the
   // skill-matrix gate requires every routed command to be a registry key.
   // CLI-only for now (method/path null, no mcp blocks — widening MCP is a
   // separate deliberate act per tools/mcp-registry-parity.test.mjs).

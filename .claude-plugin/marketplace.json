@@ -42,7 +42,10 @@
         "./skills/deploying-the-control-plane",
         "./skills/managing-access",
         "./skills/triaging-runs",
-        "./skills/guarding-the-factory"
+        "./skills/guarding-the-factory",
+        "./skills/enriching-okf-blueprints",
+        "./skills/bringing-your-own",
+        "./skills/observing-runs"
       ]
     }
   ]

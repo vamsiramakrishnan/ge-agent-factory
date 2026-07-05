@@ -11,7 +11,8 @@ Each skill is a directory with a `SKILL.md` (+ optional `references/`, `scripts/
 - **Station skills** own one assembly-line station: `interviewing-specs`,
   `planning-missions`, `running-factory`, `building-simulators`, `checking-workspaces`,
   `running-release`, `admitting-agents`, `driving-live-proof`, `operating-console`,
-  `recording-evidence`, `navigating-factory-line`.
+  `recording-evidence`, `navigating-factory-line`, `authoring-okf-specs`,
+  `enriching-okf-blueprints`, `bringing-your-own`, `observing-runs`.
 - **Operator skills** sit on top and run the *operator's* job end to end:
   `installing-the-factory` (the bootstrap: bare machine → verified install —
   self-contained, so an assistant holding only that skill can install
@@ -37,7 +38,7 @@ registry, so the table cannot drift from those sources:
 | [`running-factory`](running-factory/) | `factory_run` | `ge pipeline run`, `ge daemon start`, `ge prove`, `ge agents build`, `ge agents build --local`, `ge agents sync`, `ge evals compile` | [`@ge/evalkit`](../packages/evalkit/) | [`agent-generation.md`](../docs/reference/agent-generation.md), [`evaluation-generation.md`](../docs/reference/evaluation-generation.md) |
 | [`building-simulators`](building-simulators/) | `simulator_build` | `ge data synth`, `ge pipeline run`, `ge daemon start` | [`@ge/synthkit`](../packages/synthkit/) | [`synthetic-data.md`](../docs/reference/synthetic-data.md), [`simulator-systems.md`](../docs/reference/simulator-systems.md) |
 | [`checking-workspaces`](checking-workspaces/) | `workspace_check` | — | [`@ge/agent-workspace`](../packages/agent-workspace/) | — |
-| [`running-release`](running-release/) | `release_run` | `ge handoff`, `ge agents status`, `ge agents logs` | — | — |
+| [`running-release`](running-release/) | `release_run` | `ge handoff`, `ge handoff plan`, `ge handoff package`, `ge handoff verify-package`, `ge agents status`, `ge agents logs` | — | [`cli.md`](../docs/reference/cli.md) |
 | [`admitting-agents`](admitting-agents/) | `release_admission` | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../packages/admission/) | [`admission.md`](../docs/reference/admission.md), [`admit-an-agent.md`](../docs/cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../docs/concepts/agent-passport-and-proof-pack.md) |
 | [`driving-live-proof`](driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../packages/evalkit/) | [`evaluation-generation.md`](../docs/reference/evaluation-generation.md), [`metric-applicability.md`](../docs/reference/metric-applicability.md), [`live-transcript.md`](../docs/reference/live-transcript.md), [`live-budgets.md`](../docs/reference/live-budgets.md) |
 | [`operating-console`](operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](../docs/reference/console-and-apis.md) |
@@ -50,7 +51,9 @@ registry, so the table cannot drift from those sources:
 | [`triaging-runs`](triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../packages/okf/) | [`okf.md`](../docs/reference/okf.md), [`agent-lifecycle.md`](../docs/reference/agent-lifecycle.md) |
-| [`okf-blueprint-enrichment`](okf-blueprint-enrichment/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](okf-blueprint-enrichment/references/enrichment-rules.md) |
+| [`bringing-your-own`](bringing-your-own/) | `byo_customization` | `ge byo doctor`, `ge byo apply`, `ge systems bind`, `ge systems bindings`, `ge systems unbind`, `ge systems synth`, `ge evals import`, `ge models doctor` | [`@ge/byo-systems`](../packages/byo-systems/) | [`bring-your-own-systems.md`](../docs/cookbooks/bring-your-own-systems.md), [`cli.md`](../docs/reference/cli.md) |
+| [`observing-runs`](observing-runs/) | `run_observation` | `ge agents status`, `ge agents logs`, `ge agents track`, `ge evals coverage`, `ge doctor`, `ge daemon start` | — | [`agent-operability.md`](../docs/reference/agent-operability.md), [`cli.md`](../docs/reference/cli.md) |
+| [`enriching-okf-blueprints`](enriching-okf-blueprints/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](enriching-okf-blueprints/references/enrichment-rules.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ## Composition
