@@ -28,7 +28,7 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..", "..", "..");
 
 export const MAX_DESCRIPTION_BYTES = byoSystems.MAX_DESCRIPTION_BYTES;
 
-/** Resolve the Python interpreter, mirroring resolveHarnessPython(). */
+/** Resolve the Python interpreter, delegating to @ge/byo-systems (which mirrors resolveHarnessPython()). */
 export function resolveSynthesisPython() {
   return byoSystems.resolveSynthesisPython({ repoRoot: REPO_ROOT });
 }

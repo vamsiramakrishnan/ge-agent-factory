@@ -229,6 +229,12 @@ export async function createFirestoreLedgerReader({
   return { events, getRun, listRuns, listenEvents, db, projectId, databaseId, collection };
 }
 
+// Dormant until cloud-worker consumer lands (ADR 0001 lines 132,177). Real, working
+// code with two non-test consumers: a re-export at tools/lib/ledger/run-ledger-firestore.mjs:8
+// and compile-time-only reference in packages/run-ledger/typecheck.ts:40,201. Currently
+// invoked only by its own tests + the re-export + typecheck — not yet called from any
+// running server. WS1 fixes a real bug inside recordEvent; this export documents the
+// intended cloud-wiring, not dead code.
 export async function createFirestoreEventMirror({
   projectId = resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT"] }),
   databaseId = process.env.GE_FIRESTORE_DATABASE || DEFAULT_DATABASE,
@@ -270,10 +276,13 @@ export async function createFirestoreEventMirror({
     const ts = event.ts || nowIso();
     await runDoc(runId).collection("events").doc(String(seq)).set({ ...event, seq, ts }, { merge: true });
     if (event.workItemId) {
-      await runDoc(runId).collection("items").doc(String(event.workItemId)).set(
-        { stage: event.stage ?? null, status: event.status, workspaceId: event.workspaceId ?? null, error: event.error ?? null, updatedAt: ts },
-        { merge: true },
-      );
+      const itemPatch = { status: event.status, workspaceId: event.workspaceId ?? null, error: event.error ?? null, updatedAt: ts };
+      // forward-only: never blank a recorded stage on a stage-less event (e.g. item_done
+      // carries no stage). Writing `stage: null` here would clobber the prior value even
+      // under {merge:true}; omitting the field lets merge preserve it. Mirrors store.mjs's
+      // recordTransition guard.
+      if (event.stage) itemPatch.stage = event.stage;
+      await runDoc(runId).collection("items").doc(String(event.workItemId)).set(itemPatch, { merge: true });
     }
     await runDoc(runId).set({ updatedAt: ts }, { merge: true });
   };

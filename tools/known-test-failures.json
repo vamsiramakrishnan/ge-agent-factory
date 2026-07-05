@@ -44,18 +44,6 @@
       "notes": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above."
     },
     {
-      "name": "round-trip recovers tool names, systems, and workflow step order",
-      "kind": "bug",
-      "addedAt": "2026-07-01",
-      "notes": "Genuine assertion mismatch, not an environment issue: expects the recovered step id 'balance__document__pull' (double underscore) but gets 'balance_document_pull' (single underscore) — an OKF round-trip normalization discrepancy in spec-to-okf.mjs. Tracked as a real bug to fix separately; kept in the known list so it doesn't block unrelated work."
-    },
-    {
-      "name": "capability spine: queries/, tests/, documents/ concepts emitted + round-trip",
-      "kind": "bug",
-      "addedAt": "2026-07-01",
-      "notes": "Same spec-to-okf.mjs round-trip normalization discrepancy as above (same file, same underlying id-mangling behavior)."
-    },
-    {
       "name": "synthesizeSystem returns a live system for an NL description (offline)",
       "kind": "env",
       "addedAt": "2026-07-01",
