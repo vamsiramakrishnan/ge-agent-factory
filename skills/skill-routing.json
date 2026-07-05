@@ -482,6 +482,36 @@
       ],
       "engines": [],
       "docs": []
+    },
+    "okf-blueprint-enrichment": {
+      "triggers": [
+        "okf enrichment",
+        "blueprint enrichment",
+        "quality audit",
+        "enrichment shard",
+        "domain pack",
+        "eval verify",
+        "coverage obligations",
+        "maturity upgrade"
+      ],
+      "composes": [
+        "authoring-okf-specs",
+        "guarding-the-factory"
+      ],
+      "commands": [
+        "okf.quality.audit",
+        "okf.enrich.plan",
+        "okf.enrich.generate",
+        "okf.enrich.apply",
+        "okf.enrich.shard",
+        "okf.eval.verify"
+      ],
+      "engines": [
+        "tools/lib/okf-quality.mjs"
+      ],
+      "docs": [
+        "skills/okf-blueprint-enrichment/references/enrichment-rules.md"
+      ]
     }
   }
 }
