@@ -69,6 +69,7 @@ Lives in `.ge.json`, merged over defaults (extra keys sanctioned, same as
 | `required` | `false` | `false`: audit mode — every decision is recorded, nothing is refused. `true`: `ge handoff` refuses denied workspaces and `ge passport admit` exits non-zero on a denial. |
 | `maxAgeDays` | `30` | a passport older than this is stale (`GEADM007`); `0` disables the freshness check |
 | `requireLiveProof` | `false` | `true`: the passport must carry a *passing* live-proof attestation (`GEADM008`) |
+| `requireFreshProofBinding` | `true` | `true`: the signed promotion packet must carry a fresh proof binding (`GEADM009`) |
 
 The staged rollout follows the same pattern as `promotion.gates.live` (the
 Agent Gateway's DRY_RUN → ENFORCED): run in audit mode, read the decision
@@ -109,6 +110,7 @@ reading a denial acts on `fix` directly, no diagnosis required.
 | `GEADM006` | the *attested* promotion gate is not passing | `ge prove` |
 | `GEADM007` | passport stale (`maxAgeDays`) or unreadable `issuedAt` | `ge passport emit <id>` |
 | `GEADM008` | live proof required but missing or not passing | `ge prove --live`, then re-emit |
+| `GEADM009` | proof binding missing or stale in the attested promotion packet | `ge prove`, then re-emit |
 
 ## Keys
 
