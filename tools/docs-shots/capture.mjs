@@ -67,6 +67,14 @@ function run(cmd, args, opts = {}) {
 }
 
 async function waitForServer(url, timeoutMs = 30_000) {
+  // Deliberately real wall-clock, not apps/factory/src/source-clock.js's sourceTimestamp():
+  // this is a monotonic poll-timeout budget for a real server boot, not a timestamp written
+  // into a generated/committed artifact (source-clock.js's actual determinism concern — see
+  // its header comment). Routing it through sourceTimestamp() would parse an ISO string back
+  // into a number for no benefit, and would be actively wrong if GE_SOURCE_DATE is ever set in
+  // this process (it would freeze `deadline` at the pinned instant, making the loop expire
+  // immediately) — the screenshot-determinism contract above already achieves byte-exact PNGs
+  // via fixed seed data + reduced motion + a fixed viewport, not by freezing wall time.
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
