@@ -503,13 +503,16 @@ Show one local GE runtime daemon task
 
 ### `ge runs events`
 
-Show or follow one local GE runtime task event stream
+Show or follow one run's events — local daemon task stream by default; --remote reads the durable Firestore run ledger
 
 | Flag | Type | Description |
 |---|---|---|
 | `<id>` | positional (required) | Runtime task id |
 | `--port` | string | Daemon port (default 17654) |
 | `--follow` | boolean | Follow the live event stream (SSE) |
+| `--remote` | boolean | Read the durable Firestore run ledger instead of the local daemon task stream |
+| `--project` / `--gcp-project` | string | GCP project id override (with --remote) |
+| `--afterSeq` | string | Only show events with seq greater than this (reconnect/dedup, with --remote) |
 
 ### `ge runs replay`
 
@@ -671,6 +674,7 @@ Build agents. Uses the active mode (ge mode); --local/--remote override
 | `--no-refine` | boolean | Skip the cloud Antigravity refine stage (REFINE=0) |
 | `--warm` | boolean | Pre-warm the shared uv cache before running (local) |
 | `--watch` | boolean | Remote: after submitting, watch run status until all runs are terminal |
+| `--detach` | boolean | Local only: submit to the runtime daemon and return immediately with a run id (close-your-laptop) |
 
 ### `ge agents resume`
 

@@ -4,6 +4,13 @@
 // itself — it's the root command's own `run`, not a noun group.)
 import { defineCommand } from "citty";
 import { guarded, common, cfgFrom, emit, out, pc, ui, core, blog, elog, announceExpectedDuration, renderChecks } from "./shared.mjs";
+// remoteLedgerCheck lives in tools/lib/doctor/engine.mjs (not re-exported
+// through factory-core.mjs's `core` barrel yet — see this task's report for a
+// paste-ready factory-core.mjs wiring spec). Imported directly here, same
+// pattern as report.mjs's runDoctorSection, so `ge doctor`'s remote-mode
+// section is built the identical way core.doctorAll builds its own sections.
+import { remoteLedgerCheck } from "../lib/doctor/engine.mjs";
+import { runDoctorSection } from "../lib/doctor/report.mjs";
 
 export const cutover = defineCommand({
   meta: { name: "cutover", description: "Adopt a hand-managed project into Terraform (plan by default; --apply to run)" },
@@ -49,7 +56,7 @@ export const mode = defineCommand({
 export const doctor = defineCommand({
   meta: { name: "doctor", description: "Unified health: toolchain · factory · data plane · tool plane (--local/--cloud/--data/--mcp to filter). Narrower scoped checks: `ge data doctor` (data plane only), `ge mcp doctor` (tool plane / MCP services only)." },
   args: { ...common, local: { type: "boolean", description: "Include the uv toolchain section" }, cloud: { type: "boolean", description: "Only the factory section" }, data: { type: "boolean", description: "Only the data plane section" }, mcp: { type: "boolean", description: "Only the tool plane section" }, command: { type: "string", description: "Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|handoff|agents.sync|prove)" } },
-  run: guarded(({ args }) => {
+  run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const anyFilter = args.local || args.cloud || args.data || args.mcp;
     // Default sections follow the active mode: local → toolchain-first; remote → factory-first.
@@ -60,6 +67,20 @@ export const doctor = defineCommand({
           ? { local: true, cloud: false, data: true, mcp: true, command: args.command }
           : { local: false, cloud: true, data: true, mcp: true, command: args.command });
     const res = core.doctorAll(cfg, opts);
+    // Remote ledger probe: surfaces beside the other remote-plane sections
+    // (factory/data/tool plane) whenever they do (cloud section shown), i.e.
+    // mode=remote by default or an explicit --cloud filter. core.doctorAll
+    // itself stays synchronous (other call sites, e.g. the console API and
+    // factory-core.mjs's own `up`/`cutover`, read its result without an
+    // await), so this async probe is layered on here rather than inside it —
+    // same section shape (runDoctorSection) core.doctorAll uses internally.
+    if (opts.cloud) {
+      const check = await remoteLedgerCheck(cfg);
+      const section = runDoctorSection("remote ledger", () => ({ checks: [check], fails: check.status === "fail" ? 1 : 0 }));
+      res.sections.push(section);
+      res.fails += section.fails || 0;
+      res.repairPlan.push(...(section.repairPlan || []).map((item) => ({ section: section.name, ...item })));
+    }
     emit(args, res, (r) => {
       out(ui.title("Doctor", `${r.project || "(no project)"} (${r.region})`));
       for (const s of r.sections) {

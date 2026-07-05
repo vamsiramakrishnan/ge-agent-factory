@@ -54,6 +54,7 @@
   "readArtifact",
   "readJson",
   "registerSpec",
+  "remoteLedgerCheck",
   "resolveCatalogId",
   "resolveRepo",
   "reviewSpec",

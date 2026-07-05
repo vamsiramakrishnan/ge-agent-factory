@@ -15,6 +15,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { readJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
+import { createFirestoreLedgerReader } from "@ge/run-ledger/firestore";
 import { buildDoctorReport, createCheckCollector, runDoctorSection } from "./report.mjs";
 import { STATE_PATHS, REPO_ROOT, displayStatePath } from "../state-paths.mjs";
 import { workspaceStoreItems, LOCAL_PROJECTS, LOCAL_PROJECT_STORE } from "../local-workspaces.mjs";
@@ -37,6 +38,49 @@ export function harnessVenvPython(dir = HARNESS_VENV_DIR) {
   return process.platform === "win32"
     ? join(dir, "Scripts", "python.exe")
     : join(dir, "bin", "python");
+}
+
+// Remote ledger probe (ADR 0001 phase 2 verification): the console's Firestore
+// branch (apps/console/src/server/transport/ledger.mjs streamFirestoreLedger)
+// is documented as "parse/unit-verified offline only... runtime-unverified
+// until driven against a hosted project" — this is the one-command live check
+// that closes that gap. With a project configured it reads ONE run from the
+// Firestore ledger mirror (proving the reader is actually wired end to end,
+// not just shape-tested); without a project it's a blocked/skipped check
+// naming the fix, and any read failure (missing ADC, network, permissions) is
+// reported structurally too — this NEVER throws, matching every other check
+// in this file (localPreflight/commandDoctor above all report checks, they
+// don't propagate exceptions to the caller).
+//
+// `createReader` is injectable (default: the real createFirestoreLedgerReader)
+// so this is unit-testable against a fake transport, exactly like the other
+// pure check helpers in ../planes/tool-plane-checks.mjs.
+export async function remoteLedgerCheck(cfg, { createReader = createFirestoreLedgerReader } = {}) {
+  const name = "remote ledger (Firestore)";
+  const projectId = cfg?.project || resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT", "GCP_PROJECT_ID"] });
+  if (!projectId) {
+    return {
+      name,
+      status: "warn",
+      detail: "skipped — no GCP project configured (nothing to connect to)",
+      fix: "ge mode remote  (or: ge init --project <id>)",
+    };
+  }
+  let reader;
+  try {
+    reader = await createReader({ projectId });
+  } catch (error) {
+    return { name, status: "fail", detail: `error — ${error?.message || String(error)}`, fix: "gcloud auth application-default login" };
+  }
+  try {
+    const runs = await reader.listRuns({ limit: 1 });
+    if (!runs.length) {
+      return { name, status: "pass", detail: `ok — connected to ${projectId}, no runs recorded yet (empty)`, fix: null };
+    }
+    return { name, status: "pass", detail: `ok — connected to ${projectId}, latest run ${runs[0].id} (${runs[0].status})`, fix: null };
+  } catch (error) {
+    return { name, status: "fail", detail: `error — ${error?.message || String(error)}`, fix: "gcloud auth login  (or: gcloud auth application-default login)" };
+  }
 }
 
 export function createDoctorPlane({ run, gcloud, ensureBin, binCheck, dataPlane, factoryPlane, commandMeta, commandRequirements, doctor, dataDoctor, mcpDoctor } = {}) {

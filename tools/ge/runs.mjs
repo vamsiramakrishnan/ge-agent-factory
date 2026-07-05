@@ -14,14 +14,121 @@
 // at speed — the events are already durable and sequenced, so a run you
 // missed is a run you can still watch.
 import { defineCommand } from "citty";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { runtimeLeaves } from "./daemon.mjs";
 import {
-  guarded, emit, out, pc, ui, core, statusText,
+  guarded, emit, out, pc, ui, core, statusText, cfgFrom,
   daemonPort, daemonStatusSnapshot, daemonRequest,
 } from "./shared.mjs";
+import { createFirestoreLedgerReader } from "../lib/ledger/run-ledger-firestore.mjs";
+import { DxError } from "../lib/errors/dx-error.mjs";
 
-export const runsEventsCmd = runtimeLeaves.events;
 export const runsResumeCmd = runtimeLeaves.resume;
+
+// ── remote (Firestore) run events — CLI counterpart to the console's
+// streamLedger firestore branch (apps/console/src/server/transport/ledger.mjs).
+// Resolves the SAME reader wiring (tools/lib/ledger/run-ledger-firestore.mjs)
+// so the CLI and the console never disagree about how a remote run's events
+// read back. Never a raw Firestore/ADC stack trace: a missing project/creds
+// renders as a DxError with a literal fix, the same four-field contract every
+// other command in this CLI uses (see guarded() in ./shared.mjs).
+function resolveRemoteProjectId(cfg) {
+  return cfg.project || resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT"] });
+}
+
+// Connect to the durable Firestore run ledger. `createReader` is injectable so
+// tests can drive this against a fake transport instead of real GCP (see
+// packages/run-ledger/src/adapter-parity.test.mjs for the fake's shape).
+export async function connectRemoteLedgerReader(cfg, { createReader = createFirestoreLedgerReader } = {}) {
+  const projectId = resolveRemoteProjectId(cfg);
+  if (!projectId) {
+    throw new DxError("no GCP project configured — cannot read the durable Firestore run ledger", {
+      where: "ge runs events --remote",
+      why: "the Firestore ledger mirror is per-project; without one there is nothing to connect to",
+      fix: "ge mode remote  (or: ge init --project <id>, or gcloud config set project <id>)",
+    });
+  }
+  try {
+    return await createReader({ projectId });
+  } catch (error) {
+    throw new DxError("could not connect to the Firestore run ledger", {
+      where: `project ${projectId}`,
+      why: error?.message || String(error),
+      fix: "gcloud auth application-default login",
+    });
+  }
+}
+
+export async function fetchRemoteRunEvents(cfg, { runId, afterSeq = 0, createReader } = {}) {
+  const reader = await connectRemoteLedgerReader(cfg, { createReader });
+  try {
+    return await reader.events(runId, { afterSeq });
+  } catch (error) {
+    throw new DxError(`could not read remote events for run ${runId}`, {
+      where: `project ${resolveRemoteProjectId(cfg)}`,
+      why: error?.message || String(error),
+      fix: "gcloud auth login  (or: gcloud auth application-default login)",
+    });
+  }
+}
+
+const remoteEventLine = (e) => {
+  const tone = e.status === "failed" ? pc.red(e.type || "") : pc.cyan(e.type || "");
+  return `  ${String(e.seq).padStart(4)} ${pc.dim(e.ts || "")} ${tone} ${e.error || ""}`.trimEnd();
+};
+
+// Poll (never a live subscription — the CLI is one-shot) until the run reaches
+// a terminal state, using the SAME rule as the console's streamLedger:
+// run.status === "done" || run.status === "failed". `maxTicks`/`sleepMs` are
+// injectable so a test can bound the loop without real timers.
+export async function followRemoteRunEvents(cfg, { runId, afterSeq = 0, createReader, json = false, sleepMs = 1000, maxTicks = Infinity, onEvent = null } = {}) {
+  const reader = await connectRemoteLedgerReader(cfg, { createReader });
+  let cursor = afterSeq;
+  for (let tick = 0; tick < maxTicks; tick += 1) {
+    const events = await reader.events(runId, { afterSeq: cursor });
+    for (const ev of events) {
+      cursor = ev.seq;
+      if (onEvent) onEvent(ev);
+      else out(json ? JSON.stringify(ev) : remoteEventLine(ev));
+    }
+    const run = await reader.getRun(runId).catch(() => null); // best-effort: a transient read shouldn't kill the follow loop — same "keep polling" convention as streamLedger's pollStatus.
+    if (run && (run.status === "done" || run.status === "failed")) return { terminal: true, run, cursor };
+    if (tick < maxTicks - 1) await new Promise((resolve) => setTimeout(resolve, sleepMs));
+  }
+  return { terminal: false, run: null, cursor };
+}
+
+// `ge runs events` — local daemon task stream by default (unchanged passthrough
+// to runtimeLeaves.events); `--remote` switches to the durable Firestore run
+// ledger instead (a different id namespace: ledger run ids like
+// local-<ts>/remote-build-<ts>, not daemon task ids).
+export const runsEventsCmd = defineCommand({
+  meta: { name: "events", description: "Show or follow one run's events — local daemon task stream by default; --remote reads the durable Firestore run ledger" },
+  args: {
+    ...runtimeLeaves.events.args,
+    remote: { type: "boolean", description: "Read the durable Firestore run ledger instead of the local daemon task stream" },
+    project: { type: "string", description: "GCP project id override (with --remote)", alias: ["gcp-project"] },
+    afterSeq: { type: "string", description: "Only show events with seq greater than this (reconnect/dedup, with --remote)" },
+  },
+  run: async (ctx) => {
+    if (!ctx.args.remote) return runtimeLeaves.events.run(ctx);
+    return guarded(async ({ args }) => {
+      const cfg = cfgFrom(args);
+      const afterSeq = Number(args.afterSeq) || 0;
+      if (args.follow) {
+        const { terminal, run } = await followRemoteRunEvents(cfg, { runId: args.id, afterSeq, json: args.json });
+        if (!args.json && terminal) out(ui.kv([["run", args.id], ["status", statusText(run.status)]]));
+        return;
+      }
+      const events = await fetchRemoteRunEvents(cfg, { runId: args.id, afterSeq });
+      emit(args, { runId: args.id, events }, (r) => {
+        out(ui.title(`Remote Run Events ${r.runId}`, "source: firestore"));
+        if (!r.events.length) { out(pc.dim(`  no events (yet) after seq ${afterSeq}`)); return; }
+        for (const e of r.events) out(remoteEventLine(e));
+      });
+    })(ctx);
+  },
+});
 
 const runsListCmd = defineCommand({
   meta: { name: "list", description: "One timeline over every run: daemon tasks + durable ledger runs, newest first" },
@@ -181,7 +288,7 @@ export const runs = defineCommand({
   subCommands: {
     list: runsListCmd,
     show: defineCommand({ meta: { name: "show", description: runtimeLeaves.task.meta.description }, args: runtimeLeaves.task.args, run: runtimeLeaves.task.run }),
-    events: runtimeLeaves.events,
+    events: runsEventsCmd,
     replay: runsReplayCmd,
     resume: runtimeLeaves.resume,
     respond: runsRespondCmd,
