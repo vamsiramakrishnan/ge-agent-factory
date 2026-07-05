@@ -12,6 +12,8 @@ import {
   synthesisArgv,
   probeInterpreter,
   checkToolchain,
+  resolveOverlayScope,
+  writeBinding,
 } from "./index.mjs";
 
 function fixtureRepoRoot(registry) {
@@ -171,12 +173,17 @@ test("checkToolchain: all-pass shape with an injected good python + fixture regi
     env: { GE_SIMULATOR_OVERLAY_BACKEND: "firestore" },
   });
   expect(result.ok).toBe(true);
-  expect(result.checks).toHaveLength(4);
+  // python, synthesize_cli.py, registry.json, bindings (none configured),
+  // overlay backend, overlay scope.
+  expect(result.checks).toHaveLength(6);
   const byName = Object.fromEntries(result.checks.map((c) => [c.name, c]));
   expect(byName.python.status).toBe("pass");
   expect(byName["synthesize_cli.py"].status).toBe("pass");
   expect(byName["registry.json"].status).toBe("pass");
+  expect(byName.bindings.status).toBe("pass");
+  expect(byName.bindings.detail).toMatch(/no live system bindings/);
   expect(byName["overlay backend"].detail).toMatch(/firestore/);
+  expect(byName["overlay scope"].detail).toMatch(/durable \(firestore\)/);
 });
 
 test("checkToolchain: never throws — surfaces failures as checks", async () => {
@@ -192,6 +199,63 @@ test("checkToolchain: never throws — surfaces failures as checks", async () =>
   expect(byName["synthesize_cli.py"].status).toBe("fail");
   expect(byName["registry.json"].status).toBe("fail");
   expect(byName["overlay backend"].detail).toMatch(/in-process overlay only/);
+  expect(byName["overlay scope"].detail).toMatch(/session-only \(in-process\)/);
+  expect(byName["overlay scope"].detail).toMatch(/set simulatorOverlayBackend or run in remote mode for durable/);
+});
+
+test("checkToolchain: bindings section validates stored bindings + cross-checks twin targets", async () => {
+  const repoRoot = fixtureRepoRoot({ simulators: [{ id: "workday" }] });
+  const bindingsDir = join(repoRoot, ".ge", "systems");
+  await writeBinding({
+    dir: bindingsDir,
+    binding: { system: "workday", boundTo: "workday", kind: "twin", mode: "twin_first" },
+  });
+  await writeBinding({
+    dir: bindingsDir,
+    binding: { system: "acme", boundTo: "not-a-real-system", kind: "twin", mode: "twin_first" },
+  });
+  await writeBinding({
+    dir: bindingsDir,
+    binding: { system: "billing", boundTo: "https://billing.example.com/mcp", kind: "mcp", mode: "live_first" },
+  });
+  const result = await checkToolchain({
+    repoRoot,
+    python: process.execPath,
+    synthesizeScript: process.execPath,
+    env: {},
+  });
+  const byName = Object.fromEntries(result.checks.map((c) => [c.name, c]));
+  expect(byName["binding:workday"].status).toBe("pass");
+  expect(byName["binding:acme"].status).toBe("fail");
+  expect(byName["binding:acme"].detail).toMatch(/not a known system/);
+  expect(byName["binding:billing"].status).toBe("pass");
+  expect(result.ok).toBe(false); // the bad twin target fails the aggregate
+});
+
+test("resolveOverlayScope: remote + unset env injects the durable default", () => {
+  const scope = resolveOverlayScope({ mode: "remote", env: {} });
+  expect(scope).toEqual({ backend: "firestore", durable: true, injected: true, source: "remote-default" });
+});
+
+test("resolveOverlayScope: local mode leaves the in-process default untouched", () => {
+  const scope = resolveOverlayScope({ mode: "local", env: {} });
+  expect(scope).toEqual({ backend: null, durable: false, injected: false, source: "in-process-default" });
+});
+
+test("resolveOverlayScope: omitted mode behaves like local (untouched)", () => {
+  const scope = resolveOverlayScope({ env: {} });
+  expect(scope.injected).toBe(false);
+  expect(scope.backend).toBeNull();
+});
+
+test("resolveOverlayScope: an already-set env var wins over the remote default", () => {
+  const scope = resolveOverlayScope({ mode: "remote", env: { GE_SIMULATOR_OVERLAY_BACKEND: "alloydb" } });
+  expect(scope).toEqual({ backend: "alloydb", durable: true, injected: false, source: "env" });
+});
+
+test("resolveOverlayScope: an explicit override wins over both env and mode", () => {
+  const scope = resolveOverlayScope({ mode: "remote", overlayBackend: "memory", env: { GE_SIMULATOR_OVERLAY_BACKEND: "alloydb" } });
+  expect(scope).toEqual({ backend: "memory", durable: false, injected: false, source: "override" });
 });
 
 test("default path helpers derive from repoRoot", () => {

@@ -52,12 +52,19 @@ export const buildSynthesisSpec = byoSystems.buildSynthesisSpec;
  * JSON result. Passes through GOOGLE_CLOUD_* env (for the LLM tier) when present.
  * Rejects with a statusCode-tagged error on spawn failure, non-zero exit, or
  * unparseable output.
+ *
+ * `mode` is an optional passthrough to @ge/byo-systems' overlay-durability
+ * resolution (a "remote" mode auto-injects a durable GE_SIMULATOR_OVERLAY_BACKEND
+ * when none is already configured; see resolveOverlayScope in
+ * packages/byo-systems/src/index.mjs). Omitted (the console's current
+ * behavior — no caller here passes it yet), this is a no-op: the in-process
+ * default is unchanged.
  */
-export function runSynthesis(spec, { timeoutMs = 120000 } = {}) {
-  return byoSystems.runSynthesis(spec, { repoRoot: REPO_ROOT, timeoutMs });
+export function runSynthesis(spec, { timeoutMs = 120000, mode } = {}) {
+  return byoSystems.runSynthesis(spec, { repoRoot: REPO_ROOT, timeoutMs, mode });
 }
 
-/** Validate + synthesize. Returns the CLI's parsed JSON result. */
-export async function synthesizeSystem(body = {}) {
-  return byoSystems.synthesizeSystem(body, { repoRoot: REPO_ROOT });
+/** Validate + synthesize. Returns the CLI's parsed JSON result. `mode` is the same optional passthrough as runSynthesis() above. */
+export async function synthesizeSystem(body = {}, { mode } = {}) {
+  return byoSystems.synthesizeSystem(body, { repoRoot: REPO_ROOT, mode });
 }

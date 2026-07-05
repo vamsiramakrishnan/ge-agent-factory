@@ -129,6 +129,22 @@
       ],
       "description": "Flag: --simulatorOverlayBackend. Env: GE_SIMULATOR_OVERLAY_BACKEND. Default: \"memory\".",
       "default": "memory"
+    },
+    "refinementModel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --refinementModel. Env: GE_REFINEMENT_MODEL. Default: \"gemini-3.5-flash\".",
+      "default": "gemini-3.5-flash"
+    },
+    "judgeModel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --judgeModel. Env: GE_JUDGE_MODEL. Default: \"gemini-flash-latest\".",
+      "default": "gemini-flash-latest"
     }
   }
 }
