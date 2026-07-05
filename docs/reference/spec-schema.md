@@ -584,7 +584,8 @@ distinct tools** — otherwise the agent is single-agent and `workflow` is omitt
 
 ### `answerableQueries` and eval `mechanisms`
 
-These are the two **capability concepts OKF cares about**. They may be authored
+These are the two **capability concepts OKF (Open Knowledge Format) cares
+about**. They may be authored
 explicitly on the contract; if absent, they are **derived** by
 [`apps/factory/scripts/lib/okf-capabilities.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 so older specs gain queries/tests without re-authoring:
@@ -649,15 +650,14 @@ each stage's label/description against the tool intents to produce the multi-age
 
 ## Adding a new spec field — the consumer checklist
 
-The spec shape now has a single schema module of record —
+The spec shape has a single schema module of record —
 `packages/agent-spec/src/schema.ts` (`@ge/agent-spec`) — but the shipped
 consumers are still **duck-typed readers**: each reads the fields it knows
-about and silently ignores the rest — so a new field that is added to the
-schema but isn't threaded through the right files doesn't error, it just
-quietly fails to reach the OKF bundle, the generated workspace, or the
-round-trip back to a spec. This checklist is the
-verified consumer set (as of 2026-07). Work through it top to bottom; skip a
-row only when you can say why it doesn't apply.
+about and silently ignores the rest. A new field added to the schema but not
+threaded through the right files doesn't error — it quietly fails to reach
+the OKF bundle, the generated workspace, or the round-trip back to a spec.
+This checklist is the verified consumer set (as of 2026-07). Work through it
+top to bottom; skip a row only when you can say why it doesn't apply.
 
 ### Where a spec is authored and assembled
 
@@ -689,7 +689,8 @@ row only when you can say why it doesn't apply.
 | 13 | `apps/factory/scripts/factory/agents/okf-artifacts.mjs` (`writeOkfArtifacts`) | Rebuilds an `okfSpec` from the workspace manifest with an **explicit field list** (`id, title, subtitle, persona, department, kpis, architecture` + `generationSpec.{behaviorContract, sourceSystems, entities, documents}`) before calling `buildBundle` — a new top-level field is dropped from the deployed agent's `app/knowledge/` bundle unless added here |
 
 A field is **round-trip-critical** when it must survive spec → OKF → spec
-(anything a re-imported BRD or the interview OKF export depends on):
+(anything a re-imported BRD — Business Requirements Document — or the
+interview OKF export depends on):
 `behaviorContract.{role, primaryObjective, inScope, outOfScope, refusalRules,
 toolIntents, workflow, answerableQueries, goldenEvals}` and
 `generationSpec.{sourceSystems, entities, documents}` are the set today. If

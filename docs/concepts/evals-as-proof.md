@@ -34,7 +34,7 @@ Four independent checks, each answering a different way an agent can fail:
 |---|---|---|
 | **Smoke tests** | Does the generated project run at all? | `tests/test_smoke.py` results in the validation report |
 | **Spec-to-code trace** | Does the generated code contain what the contract asked for — every tool, every system, every rule? | the trace artifact listed in `workspace.json` |
-| **Verify-stage review / refine** | Does an independent LLM reviewer judge the code faithful to the contract — and can it fix what isn't? | `artifacts/generator-feedback.json` (review) and the refine verdict file in `artifacts/` (with a `spec_to_code_fidelity` verdict) |
+| **Verify-stage review / refine** | Does an independent LLM (large language model) reviewer judge the code faithful to the contract — and can it fix what isn't? | `artifacts/generator-feedback.json` (review) and the refine verdict file in `artifacts/` (with a `spec_to_code_fidelity` verdict) |
 | **Evals** | Does the running agent behave as the contract's golden evals demand — right tools, right order, grounded answers? | `tests/eval/evalsets/ge_behavior_contract.evalset.json` + scored results |
 
 <details>

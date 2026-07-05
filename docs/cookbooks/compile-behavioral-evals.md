@@ -15,7 +15,7 @@ The [behavioral compiler](../concepts/behavioral-compiler.html) derives an
 eval suite from the contract instead of asking anyone to brainstorm one:
 every capability, evidence rule, and tool intent the contract declares gets
 its scenarios generated, over-produced, and then set-cover-selected down to a
-budget. `ge evals compile` is that compiler as a first-class verb.
+budget. `ge evals compile` runs that compiler directly.
 
 ## When to use this
 

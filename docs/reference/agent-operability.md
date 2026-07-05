@@ -23,8 +23,8 @@ Five mechanisms, one rule each.
   (`goldenPath.next` in JSON).
 - **`ge <command> --help`** ends with an `ORIENTATION` section — use-when,
   expected duration, risk, and the literal next commands — sourced from the
-  same command registry the console and MCP server read, so guidance cannot
-  drift per surface.
+  same command registry the console and the MCP (Model Context Protocol)
+  server read, so guidance cannot drift per surface.
 - **Every result carries `next`.** Live results (`LiveProofResult`,
   `LiveBenchResult`, drive output, `ge evals compile`) return a `next` field
   with a runnable command.

@@ -18,7 +18,7 @@ The view streams the health-check family (`doctor`) for a chosen scope —
 `all`, `local`, `cloud`, `data`, or `mcp` — and optionally for a specific
 target command (e.g. "am I ready to run `agents.build`?"). Every section's
 checks roll up into a single verdict — **READY / NEEDS ATTENTION / NOT
-READY** — and each failing check renders with a copy-able fix you can run
+READY**. Each failing check renders with a copy-able fix you can run
 directly, or follow as a run.
 
 Use it:

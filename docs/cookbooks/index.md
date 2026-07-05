@@ -7,13 +7,13 @@ layout: default
 
 # Guides
 
-Task-oriented guides through the layer this product adds above
-agents-cli, ADK (Agent Development Kit), and Gemini Enterprise: **capture** the contract, **compile**
+These guides walk the layer this product adds above agents-cli, ADK (Agent
+Development Kit), and Gemini Enterprise: **capture** the contract, **compile**
 it into an agent, **simulate** the source systems it touches, **prove** the
 agent against the contract, and **hand off** the result to the runtime your
-organization already operates. Every guide uses only real commands from the
-repo (`mise.toml`, `tools/ge.mjs`, `apps/factory/scripts/*`) and real console
-API routes.
+organization already operates. Every step is a real command from this repo
+(`mise.toml`, `tools/ge.mjs`, `apps/factory/scripts/*`) or a real console API
+route.
 
 Throughout, "the contract" means the enterprise agent contract — concretely,
 the use-case spec (`usecase-spec.json`, or `agent-spec.json` when it comes out
@@ -39,7 +39,7 @@ and the [Glossary](../GLOSSARY.html).
 | 14 | [Prove the shipped agent live](prove-live.html) | Evalset cases run through the deployed assist surface — metric grid, conformance baselines, and the live gate verdict |
 | 15 | [Bench against live budgets](bench-live-budgets.html) | Latency and error budgets verdicted against the live surface, with cassette replay for CI |
 
-> Where a path or flag differs from common assumptions, the guide calls it out
+> Where a path or flag differs from what you'd expect, the guide calls it out
 > explicitly.
 {: .note }
 

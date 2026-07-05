@@ -68,6 +68,6 @@ const ledgerPlanCmd = defineCommand({
   }),
 });
 export const ledger = defineCommand({
-  meta: { name: "ledger", description: "Durable run ledger (ADR 0001): backfill · runs · fleet · plan" },
+  meta: { name: "ledger", description: "See every run the factory has ever done, and rebuild the record if it drifts" },
   subCommands: { backfill: ledgerBackfill, runs: ledgerRunsCmd, fleet: ledgerFleetCmd, plan: ledgerPlanCmd },
 });

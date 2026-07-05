@@ -23,7 +23,7 @@ and streams the contract into the canvas as it firms up — role, scope, tool
 intents, workflow, evidence and escalation rules.
 
 Use it when no contract exists yet. The result feeds straight into the
-**Pipeline** view for compilation. Step-by-step:
+**Pipeline** view for compilation. For step-by-step walkthroughs, see
 [Capture from an interview](../cookbooks/capture-from-interview.html) and
 [Capture from documents](../cookbooks/capture-from-documents.html).
 
@@ -40,9 +40,8 @@ the contract's portable Markdown form is produced: the **Export OKF** action
 and the OKF (Open Knowledge Format) Knowledge Bundle preview
 (`GET /api/interviews/<id>/okf` behind the scenes).
 
-> The OKF export is fully wired at the API level; the canvas's export button
-> coverage is still being finished. `curl` against
-> `/api/interviews/<id>/okf` always works.
+> The OKF export API is fully wired; the canvas's export button is still
+> catching up. `curl` against `/api/interviews/<id>/okf` always works.
 {: .note }
 
 ## What it writes

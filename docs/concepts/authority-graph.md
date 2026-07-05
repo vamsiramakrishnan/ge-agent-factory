@@ -31,9 +31,9 @@ previous one asserted.
 | Layer | Authority artifact | Enforced by | Fails how |
 |---|---|---|---|
 | **1 · Contract** | `inScope[]` / `outOfScope[]`, `toolIntents[]`, `evidenceRequirements[]`, `escalationRules[]`, `refusalRules[]` | Review — a controller can read and sign off on it | A bad contract is visible *before* anything is built |
-| **2 · Generated code** | Tools exist only for declared intents, named `<verb>_<system>_<object>`; write-guard and evidence-capture callbacks | ADK callbacks on every turn, regardless of what the model says | A write without required inputs, idempotency key, or enough evidence returns an error/escalation instead of executing |
-| **3 · Platform identity** | Dedicated service accounts per service; OIDC on every service-to-service call; per-agent runtime identity | Google Cloud IAM in your own project | A service without the bounded role cannot call |
-| **4 · Governed front door** | Agent Registry entries + Agent Gateway authz policy | The managed Agent Gateway (mTLS, policy-enforced egress) | Outbound calls to unregistered tools/hosts are blocked (once enforcement is on) |
+| **2 · Generated code** | Tools exist only for declared intents, named `<verb>_<system>_<object>`; write-guard and evidence-capture callbacks | ADK (Agent Development Kit) callbacks on every turn, regardless of what the model says | A write without required inputs, idempotency key, or enough evidence returns an error/escalation instead of executing |
+| **3 · Platform identity** | Dedicated service accounts per service; OIDC (OpenID Connect) on every service-to-service call; per-agent runtime identity | Google Cloud IAM (Identity and Access Management) in your own project | A service without the bounded role cannot call |
+| **4 · Governed front door** | Agent Registry entries + Agent Gateway authz policy | The managed Agent Gateway (mTLS — mutual TLS — with policy-enforced egress) | Outbound calls to unregistered tools/hosts are blocked (once enforcement is on) |
 
 Read down the table and you have the whole story: the business writes layer
 1, the factory compiles layers 1→2, Terraform and the installer stand up
@@ -76,10 +76,10 @@ runs on the default compute service account:
 
 ## Layer 4: the governed front door
 
-Deployed agents call their tools through the platform's MCP tool services,
-and those can be put behind the **managed Agent Gateway** — one
-mTLS-fronted, policy-enforced endpoint governing tool egress for every
-deployed agent at once.
+Deployed agents call their tools through the platform's MCP (Model Context
+Protocol) tool services, and those can be put behind the **managed Agent
+Gateway** — one mTLS-fronted, policy-enforced endpoint governing tool egress
+for every deployed agent at once.
 *Resolving* a toolset (from the Agent Registry) and *invoking* it are
 separate grants:
 

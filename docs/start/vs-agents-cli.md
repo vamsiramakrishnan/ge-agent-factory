@@ -7,12 +7,12 @@ description: The two tools occupy different layers — agents-cli builds and dep
 
 # GE Agent Factory vs agents-cli
 
-Short answer: **they are not alternatives.** `agents-cli` (with ADK under it)
-is the build-and-deploy layer for one Google agent project. GE Agent Factory
-is the contract layer above it — it decides *what* that project must contain,
-generates it, proves it, and then drives `agents-cli` to ship it. Every
-workspace the factory emits **is** an `agents-cli` project; you can `cd` into
-one and use `agents-cli` directly.
+Short answer: **they are not alternatives.** `agents-cli` (with ADK — the
+Agent Development Kit — under it) is the build-and-deploy layer for one
+Google agent project. GE Agent Factory is the contract layer above it — it
+decides *what* that project must contain, generates it, proves it, and then
+drives `agents-cli` to ship it. Every workspace the factory emits **is** an
+`agents-cli` project; you can `cd` into one and use `agents-cli` directly.
 
 ## Layer by layer
 
@@ -22,7 +22,7 @@ one and use `agents-cli` directly.
 
 | Layer | Owned by | Artifacts |
 |---|---|---|
-| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable OKF twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form-okf) |
+| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable OKF (Open Knowledge Format) twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form-okf) |
 | Simulation, evals, proof | **GE Agent Factory** | source-system twins, fixtures, evalsets, spec-to-code trace, verify-stage verdicts, promotion gate |
 | Agent project scaffold & code | **ADK / agents-cli** (generated and driven by the factory) | `app/agent.py`, `app/tools.py`, `pyproject.toml`, `agents-cli-manifest.yaml` |
 | Deploy & runtime | **agents-cli → Agent Engine** | deployed Agent Runtime, Agent Registry entry |

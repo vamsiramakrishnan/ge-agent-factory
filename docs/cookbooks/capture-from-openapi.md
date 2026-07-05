@@ -12,21 +12,21 @@ description: Synthesize a simulated source-system twin from an OpenAPI document 
 
 ## When to use this
 
-The agent you're building needs to call an internal API, and you have that
-API's OpenAPI document. This guide turns the document into a **source
-system** the platform can work with: a simulated twin — a pack served by the
-simulator engine as a stateful, MCP-shaped backend — that the contract's tool
-intents can bind to and that proofs can run against, without touching the real
-system. See [Source-system twins](../concepts/source-system-twins.html).
+This guide turns an OpenAPI document into a **source system** the platform
+can work with: a simulated twin — a pack served by the simulator engine as a
+stateful backend shaped to MCP (the Model Context Protocol) — that the
+contract's tool intents can bind to and that proofs can run against, without
+touching the real system. Use it when the agent you're building needs to call
+an internal API and you have that API's OpenAPI document. See
+[Source-system twins](../concepts/source-system-twins.html).
 
 <p align="center">
   <img src="../assets/diagrams/byo-synthesis.svg" alt="an OpenAPI document (or description or samples) is sketched into collections, keys, and fields; then contracted into tool bindings and workflows; then seeded with referentially-consistent rows; then registered into an overlay the simulator engine can resolve" width="320">
 </p>
 
-> Be clear about what this captures. An OpenAPI document describes an API's
-> surface, so OpenAPI capture produces a **source-system twin** — collections,
-> tools, seed data. It does not produce a behavior contract; the contract (the
-> use-case spec) is captured separately, via the
+> An OpenAPI document describes an API's surface, so this capture produces a
+> **source-system twin** — collections, tools, seed data — not a behavior
+> contract. The contract (the use-case spec) is captured separately, via the
 > [interview](capture-from-interview.html).
 {: .note }
 

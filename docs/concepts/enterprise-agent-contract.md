@@ -11,8 +11,8 @@ description: The versioned, machine-readable statement of what an agent may do a
 **Definition:** the Enterprise Agent Contract is the versioned, machine-readable
 statement of *what an agent is allowed and expected to do* and *what world it
 operates in* — materialized in this repo as the use-case spec
-(`usecase-spec.json`), with a
-[portable OKF twin](#the-contracts-portable-form-okf).
+(`usecase-spec.json`), with a portable, human-editable twin
+([details below](#the-contracts-portable-form-okf)).
 
 <p align="center">
   <img src="../assets/diagrams/signature-pipeline-enterprise-agent-contract.svg" alt="the signature capture-to-handoff diagram zoomed to the Enterprise Agent Contract stage, lit; capture, generate, source-system twins, prove, passport, handoff, and authority graph shown dimmed for context" width="700">
@@ -22,11 +22,10 @@ operates in* — materialized in this repo as the use-case spec
 
 Without a contract, an enterprise agent is defined by its prompt — and a
 prompt is neither reviewable by the business, nor diffable by engineering,
-nor testable by anyone. The contract fixes that by being the single input
-everything else is compiled from: the tools, the simulations, the evals, and
-the runtime guardrails all *derive* from it. If it is not in the contract, it
-is not in the agent; and any line of generated code traces back to a
-contract intent.
+nor testable by anyone. The contract fixes that: it is the single input
+everything else compiles from. Tools, simulations, evals, and runtime
+guardrails all *derive* from it. If it is not in the contract, it is not in
+the agent, and any line of generated code traces back to a contract intent.
 
 ## The two halves
 
@@ -137,8 +136,8 @@ The JSON contract is precise but awkward for humans to author, diff, or
 exchange. So the same contract also exists in **OKF** — the
 [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 from Google Cloud — as a directory of plain Markdown concept files that a
-person, a reviewer, or another tool can read and edit. The two are two
-forms of one object, and they round-trip: a business requirements document
+person, a reviewer, or another tool can read and edit. The two are one
+object in two forms, and they round-trip: a business requirements document
 authored outside the factory and a contract compiled inside it are the same
 kind of artifact.
 

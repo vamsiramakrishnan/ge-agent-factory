@@ -7,12 +7,13 @@ layout: default
 
 # Simulator systems
 
-The simulator engine serves an agent's enterprise tools (Workday, DocuSign CLM,
-SAP, …) as a stateful, MCP-shaped backend, without the real systems. Each system
-is a **pack** (six JSON files) interpreted by a generic Python runtime — the
+The simulator engine stands in for an agent's enterprise tools — Workday,
+DocuSign CLM, SAP, and more — as a stateful backend shaped like MCP (Model
+Context Protocol), without touching the real systems. Each system is a
+**pack**: six JSON files interpreted by a generic Python runtime, the
 standalone `simulator-runtime` package
 ([`packages/simulator-runtime/README.md`](../../packages/simulator-runtime/README.md)),
-consumed by the per-department MCP service. A lazy layered registry and an
+consumed by the per-department MCP service. A lazy layered registry plus an
 overlay mount bring-your-own (BYO) systems at runtime.
 
 <p align="center">

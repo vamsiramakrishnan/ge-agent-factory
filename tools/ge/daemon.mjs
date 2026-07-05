@@ -256,6 +256,6 @@ const daemonStop = defineCommand({
 });
 
 export const daemon = defineCommand({
-  meta: { name: "daemon", description: "Local GE runtime daemon: start · status · tasks · task · stop" },
+  meta: { name: "daemon", description: "Keep long factory work running after your terminal closes" },
   subCommands: { start: daemonStart, status: daemonStatus, tasks: daemonTasks, task: daemonTask, events: daemonEvents, stop: daemonStop },
 });

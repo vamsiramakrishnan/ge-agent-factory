@@ -7,15 +7,15 @@ layout: default
 
 # OKF — Open Knowledge Format
 
-OKF (Open Knowledge Format) v0.1 is [Google Cloud's open knowledge
-format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md),
-used by the factory as its **portable spec format**: a plaintext *Knowledge
+OKF lets you read, diff, hand-edit, and exchange a rich use-case spec as
+ordinary Markdown, then round-trip it back into a spec. OKF (Open Knowledge
+Format) v0.1 is [Google Cloud's open knowledge
+format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md);
+the factory uses it as its **portable spec format**: a plaintext *Knowledge
 Bundle* of Markdown "Concept" files, each with YAML frontmatter and a
-Markdown body. It lets a rich use-case spec be read, diffed, hand-edited,
-and exchanged as ordinary Markdown, then round-tripped back into a spec.
+Markdown body.
 
-The integration has three pieces, all under
-`apps/factory/scripts/`:
+Three pieces connect a spec to OKF, all under `apps/factory/scripts/`:
 
 - [`spec-to-okf.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory) — spec → OKF bundle (export)
 - [`okf-to-spec.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory) — OKF bundle → partial spec (ingest)
@@ -111,8 +111,8 @@ node apps/factory/scripts/spec-to-okf.mjs --spec <path/to/spec.json> [--out <dir
 - Catalog input: `apps/factory/generated/use-cases.generated.json`.
 - Default output: `artifacts/okf/<id>/`.
 - Output: a conformant OKF v0.1 Knowledge Bundle.
-- Strengthened generation is applied to every generated agent spec: when fields
-  are derivable, the bundle emits **Claim**, **Policy**, and **Proof Obligation**
+- Every generated agent spec gets strengthened generation: when fields are
+  derivable, the bundle emits **Claim**, **Policy**, and **Proof Obligation**
   concepts alongside systems, tools, queries, tests, and documents. These
   concepts carry generated/inferred status metadata, link coverage back to tools
   and eval scenarios, and only cite bundle-local source documents/systems rather
@@ -132,8 +132,8 @@ with ordering) and `generationSpec.{ sourceSystems, entities, documents }`.
 
 `spec → OKF → spec` is deterministic: tool names and system identities stay
 stable, and `source_id` preserves original ids across the boundary. The
-reconstructed spec is then re-enriched and registered through the
-`interviewing-specs` flow before a build.
+`interviewing-specs` flow then re-enriches and registers the reconstructed
+spec before a build.
 
 ---
 
@@ -150,11 +150,11 @@ It moves a spec across the OKF boundary for portable, human-authored exchange an
 - **Next step**: hand the bundle to a consumer/human, or feed an ingested spec
   back through `interviewing-specs`.
 
-## GE OKF Profile and substrate commands
+## The factory's OKF profile and substrate commands
 
-GE treats OKF as the curated knowledge substrate: interview captures knowledge into OKF, OKF compiles into the buildable agent spec, and Live Proof validates the deployed surface against the compiled behavioral contract. The current agent spec remains the normalized build contract; the compiler keeps OKF and spec synchronized and reports drift.
+The factory treats OKF as its curated knowledge substrate: interview captures knowledge into OKF, OKF compiles into the buildable agent spec, and Live Proof validates the deployed surface against the compiled behavioral contract. The current agent spec remains the normalized build contract; the compiler keeps OKF and spec synchronized and reports drift.
 
-Base OKF conformance follows the upstream permissive specification: concept Markdown files use YAML frontmatter with a non-empty `type`, recommended fields are not required, custom keys and unknown concept types are preserved, Markdown links express relationships, `index.md` supports progressive disclosure, `log.md` records update history, and `# Citations` is conventional for backing claims. GE quality gates are stricter but are reported separately from base conformance. See the official OKF ground truth: <https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md>.
+Base OKF conformance follows the upstream permissive specification: concept Markdown files use YAML frontmatter with a non-empty `type`, recommended fields are not required, custom keys and unknown concept types are preserved, Markdown links express relationships, `index.md` supports progressive disclosure, `log.md` records update history, and `# Citations` is conventional for backing claims. The factory's quality gates are stricter, and reported separately from base conformance. See the official OKF ground truth: <https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md>.
 
 The `ge okf` command group adds substrate operations:
 
@@ -167,4 +167,4 @@ The `ge okf` command group adds substrate operations:
 - `ge okf diff <left> <right> [--json]` emits a machine-readable round-trip diff summary.
 - `ge okf repair <bundle> [--dry-run]` conservatively proposes missing indexes/logs without fabricating citations or authority.
 
-GE profile concept types include Agent, Enterprise Agent Contract, Capability, Query Capability, Workflow, Source System, Tool, Entity, Field, Document, Policy, Claim, Evidence, Eval, Synthetic World, Persona, Risk, Reference, Bench Profile, Proof Obligation, and Promotion Gate.
+The factory's OKF profile concept types include Agent, Enterprise Agent Contract, Capability, Query Capability, Workflow, Source System, Tool, Entity, Field, Document, Policy, Claim, Evidence, Eval, Synthetic World, Persona, Risk, Reference, Bench Profile, Proof Obligation, and Promotion Gate.
