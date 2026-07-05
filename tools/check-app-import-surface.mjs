@@ -30,7 +30,6 @@ const ALLOWED_PAIRS = new Set([
   "apps/console/src/server/transport/doctor.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/jobs.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/ledger.mjs -> tools/lib/factory-core.mjs",
-  "apps/console/src/server/transport/ledger.mjs -> tools/lib/ledger/run-ledger-firestore.mjs",
   "apps/console/src/server/transport/logs.mjs -> tools/lib/factory-core.mjs",
   // (The command-registry pairs that used to sit here were retired when the
   // registry moved to @ge/capability-registry — the console/docs shims now

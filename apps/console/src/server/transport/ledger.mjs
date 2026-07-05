@@ -7,7 +7,6 @@
 // runtime-unverified until driven against a hosted project.
 
 import * as core from "../../../../../tools/lib/factory-core.mjs";
-import { createFirestoreLedgerReader } from "../../../../../tools/lib/ledger/run-ledger-firestore.mjs";
 import { makeSseWriter } from "./sse.mjs";
 
 let firestoreLedgerReaderPromise = null;
@@ -21,7 +20,7 @@ function normalizeLedgerSource(source = null) {
 
 async function firestoreLedgerReader() {
   if (firestoreLedgerReaderOverride) return firestoreLedgerReaderOverride;
-  if (!firestoreLedgerReaderPromise) firestoreLedgerReaderPromise = createFirestoreLedgerReader().catch((error) => {
+  if (!firestoreLedgerReaderPromise) firestoreLedgerReaderPromise = core.resolveRunLedger({ source: "remote" }).catch((error) => {
     firestoreLedgerReaderPromise = null;
     throw error;
   });
@@ -55,7 +54,7 @@ export async function streamLedger({ runId, afterSeq = 0, source = null } = {}, 
     await streamFirestoreLedger({ runId, afterSeq }, emitEvent, isClosed, onEnd);
     return;
   }
-  const ledger = await core.runLedger();
+  const ledger = await core.resolveRunLedger({ source: "local" });
   if (!ledger) {
     if (!isClosed()) emitEvent({ type: "ledger_unavailable", level: "warn", line: "run ledger unavailable (no driver)", ts: new Date().toISOString() });
     onEnd();

@@ -20,26 +20,29 @@ import {
   guarded, emit, out, pc, ui, core, statusText, cfgFrom,
   daemonPort, daemonStatusSnapshot, daemonRequest,
 } from "./shared.mjs";
-import { createFirestoreLedgerReader } from "../lib/ledger/run-ledger-firestore.mjs";
+import { resolveRunLedger } from "../lib/planes/run-plane.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
 
 export const runsResumeCmd = runtimeLeaves.resume;
 
 // ── remote (Firestore) run events — CLI counterpart to the console's
 // streamLedger firestore branch (apps/console/src/server/transport/ledger.mjs).
-// Resolves the SAME reader wiring (tools/lib/ledger/run-ledger-firestore.mjs)
-// so the CLI and the console never disagree about how a remote run's events
-// read back. Never a raw Firestore/ADC stack trace: a missing project/creds
-// renders as a DxError with a literal fix, the same four-field contract every
-// other command in this CLI uses (see guarded() in ./shared.mjs).
+// Resolves the SAME reader wiring — the run OBSERVATION plane's one resolver,
+// tools/lib/planes/run-plane.mjs's resolveRunLedger — so the CLI and the
+// console never disagree about how a remote run's events read back. Never a
+// raw Firestore/ADC stack trace: a missing project/creds renders as a
+// DxError with a literal fix, the same four-field contract every other
+// command in this CLI uses (see guarded() in ./shared.mjs).
 function resolveRemoteProjectId(cfg) {
   return cfg.project || resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT"] });
 }
 
 // Connect to the durable Firestore run ledger. `createReader` is injectable so
 // tests can drive this against a fake transport instead of real GCP (see
-// packages/run-ledger/src/adapter-parity.test.mjs for the fake's shape).
-export async function connectRemoteLedgerReader(cfg, { createReader = createFirestoreLedgerReader } = {}) {
+// packages/run-ledger/src/adapter-parity.test.mjs for the fake's shape) —
+// resolveRunLedger's `createRemote` injection is what actually threads it
+// through.
+export async function connectRemoteLedgerReader(cfg, { createReader } = {}) {
   const projectId = resolveRemoteProjectId(cfg);
   if (!projectId) {
     throw new DxError("no GCP project configured — cannot read the durable Firestore run ledger", {
@@ -49,7 +52,7 @@ export async function connectRemoteLedgerReader(cfg, { createReader = createFire
     });
   }
   try {
-    return await createReader({ projectId });
+    return await resolveRunLedger({ source: "remote", cfg: { project: projectId }, createRemote: createReader });
   } catch (error) {
     throw new DxError("could not connect to the Firestore run ledger", {
       where: `project ${projectId}`,

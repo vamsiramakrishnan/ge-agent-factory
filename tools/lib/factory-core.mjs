@@ -18,6 +18,7 @@ import { runCommand } from "./factory-exec.mjs";
 import { createDataPlane } from "./planes/data-plane.mjs";
 import { createMcpPlane } from "./planes/mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./planes/factory-plane.mjs";
+import { resolveRunLedger } from "./planes/run-plane.mjs";
 import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
@@ -70,6 +71,13 @@ export { runSpawnedJob, createLocalJobSubmit } from "./ge-job-runner.mjs";
 // tools/check-app-import-surface.mjs).
 export { createDaemonClient } from "./daemon/client.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./ledger/factory-ledger.mjs";
+// The run OBSERVATION plane's one resolver (tools/lib/planes/run-plane.mjs) —
+// re-exported so apps/console/src/server/transport/ledger.mjs can construct
+// both the local SQLite ledger and the remote Firestore reader through the
+// frozen transport/*.mjs -> factory-core.mjs seam instead of reaching into
+// tools/lib/ledger/run-ledger-firestore.mjs directly (not on the allowlist in
+// tools/check-app-import-surface.mjs).
+export { resolveRunLedger } from "./planes/run-plane.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
 export { reviewSpec } from "./spec-review.mjs";
