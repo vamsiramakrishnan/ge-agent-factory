@@ -18,14 +18,23 @@
  *                           OpenAPI), by spawning the generator's
  *                           synthesize_cli.py with the spec on stdin.
  *   - checkToolchain     -> read-only doctor checks (python, synthesize_cli.py,
- *                           registry.json, overlay-backend durability), shared
- *                           by `ge systems doctor` and the MCP doctor tool so
- *                           the check logic is written once.
+ *                           registry.json, live-system bindings, overlay-backend
+ *                           durability), shared by `ge systems doctor` and the
+ *                           MCP doctor tool so the check logic is written once.
+ *   - bindings.mjs       -> the live-system binding schema + store (bind a
+ *                           contract system to a twin/mcp/rest target); its
+ *                           exports are re-exported here (and separately
+ *                           reachable as "@ge/byo-systems/bindings") so
+ *                           callers can use either one namespace-import or the
+ *                           precise subpath.
  */
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
+import { defaultBindingsDir, readBindings, validateBinding } from "./bindings.mjs";
+
+export * from "./bindings.mjs";
 
 /** Cap the free-text description so we never feed an unbounded prompt to the CLI. */
 export const MAX_DESCRIPTION_BYTES = 8000;
@@ -170,14 +179,57 @@ export function synthesisArgv({ script, promote = false, repoRoot } = {}) {
   return argv;
 }
 
+// Durable overlay backend a "remote" synth defaults to when nothing else
+// picked one — matches the Python default set in
+// packages/simulator-runtime/simulator_runtime/overlay.py's own "firestore"
+// option, and tools/lib/planes/mcp-plane.mjs's deployEnvVars(), which forwards
+// this same env var when set. "memory" (the in-process default everywhere
+// else) is deliberately never returned here — an unset/"memory" backend means
+// no injection happened.
+export const REMOTE_DURABLE_OVERLAY_BACKEND = "firestore";
+
+/**
+ * Decide what overlay backend a synth spawn's child env should carry, without
+ * mutating anything — pure so the env-injection matrix (remote+unset →
+ * firestore, local → untouched, explicit env/override wins) is unit-testable
+ * without a real spawn. `overlayBackend` is an explicit per-call override (a
+ * future `--overlay-backend` flag would thread through here);
+ * `env.GE_SIMULATOR_OVERLAY_BACKEND` is the ambient env var
+ * (tools/lib/config-schema.mjs's `simulatorOverlayBackend` scalar surfaces as
+ * this same var). Local mode's in-process (non-durable) default is
+ * deliberately left alone — this only closes the gap for `mode: "remote"`,
+ * where BYO twins living only in one cloud replica's process would otherwise
+ * vanish across replica restarts/switches.
+ * @param {{mode?: string, overlayBackend?: string, env?: object}} options
+ * @returns {{backend: string|null, durable: boolean, injected: boolean, source: string}}
+ */
+export function resolveOverlayScope({ mode, overlayBackend, env = process.env } = {}) {
+  const explicit = overlayBackend || env.GE_SIMULATOR_OVERLAY_BACKEND;
+  if (explicit) {
+    return { backend: explicit, durable: explicit !== "memory", injected: false, source: overlayBackend ? "override" : "env" };
+  }
+  if (mode === "remote") {
+    return { backend: REMOTE_DURABLE_OVERLAY_BACKEND, durable: true, injected: true, source: "remote-default" };
+  }
+  return { backend: null, durable: false, injected: false, source: "in-process-default" };
+}
+
 /**
  * Spawn the synthesis CLI with the given spec on stdin and resolve its parsed
  * JSON result. Passes through GOOGLE_CLOUD_* env (for the LLM tier) when present.
  * Rejects with a statusCode-tagged error on spawn failure, non-zero exit, or
  * unparseable output.
- * @param {{repoRoot?: string, synthesizeScript?: string, python?: string, timeoutMs?: number, promote?: boolean}} options
+ *
+ * `mode`/`overlayBackend` feed resolveOverlayScope(): a `mode: "remote"` call
+ * with no overlay backend already configured gets
+ * GE_SIMULATOR_OVERLAY_BACKEND=firestore injected into the child env so a
+ * BYO-synthesized twin survives cloud replica restarts/switches instead of
+ * living only in this one spawned process; `mode: "local"` (or omitted)
+ * leaves the in-process default untouched. The resolved scope is attached to
+ * the result as `overlayScope` either way.
+ * @param {{repoRoot?: string, synthesizeScript?: string, python?: string, timeoutMs?: number, promote?: boolean, mode?: string, overlayBackend?: string}} options
  */
-export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeoutMs = 120000, promote = false } = {}) {
+export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeoutMs = 120000, promote = false, mode, overlayBackend } = {}) {
   const script = synthesizeScript || (repoRoot ? defaultSynthesizeScript(repoRoot) : null);
   if (!script) {
     return Promise.reject(new Error("runSynthesis requires repoRoot or synthesizeScript"));
@@ -185,7 +237,9 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
   const scriptDir = dirname(script);
   return new Promise((resolve, reject) => {
     const resolvedPython = python || resolveSynthesisPython({ repoRoot });
+    const overlayScope = resolveOverlayScope({ mode, overlayBackend, env: process.env });
     const env = { ...process.env };
+    if (overlayScope.injected) env.GE_SIMULATOR_OVERLAY_BACKEND = overlayScope.backend;
     const child = spawn(
       resolvedPython,
       synthesisArgv({ script, promote, repoRoot }),
@@ -228,7 +282,8 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
       }
       try {
         settled = true;
-        resolve(JSON.parse(stdout));
+        const parsed = JSON.parse(stdout);
+        resolve({ ...parsed, overlayScope });
       } catch {
         const detail = (stdout || stderr).trim().slice(0, 800);
         const err = new Error(`could not parse synthesis output: ${detail || "empty"}`);
@@ -271,15 +326,17 @@ export function probeInterpreter(python) {
 
 /**
  * Read-only toolchain checks for BYO-systems: python resolvable + runnable,
- * synthesize_cli.py present, registry.json parseable (+ system count), and
- * the GE_SIMULATOR_OVERLAY_BACKEND durability setting. Never throws on a
- * failed check — each failure becomes a `{status: "fail"}` entry instead;
- * shared by `ge systems doctor` and the MCP doctor tool so this logic is
- * written once.
- * @param {{repoRoot?: string, registryPath?: string, synthesizeScript?: string, python?: string, env?: object}} options
+ * synthesize_cli.py present, registry.json parseable (+ system count), stored
+ * live-system bindings (each validated, twin targets cross-checked against
+ * the known-systems registry, mcp/rest targets shape-checked — no network
+ * calls), and the GE_SIMULATOR_OVERLAY_BACKEND durability setting. Never
+ * throws on a failed check — each failure becomes a `{status: "fail"}` entry
+ * instead; shared by `ge systems doctor` and the MCP doctor tool so this
+ * logic is written once.
+ * @param {{repoRoot?: string, registryPath?: string, synthesizeScript?: string, python?: string, env?: object, bindingsDir?: string}} options
  * @returns {Promise<{ok: boolean, checks: Array<{name, status, detail, fix?}>}>}
  */
-export async function checkToolchain({ repoRoot, registryPath, synthesizeScript, python, env = process.env } = {}) {
+export async function checkToolchain({ repoRoot, registryPath, synthesizeScript, python, env = process.env, bindingsDir } = {}) {
   const checks = [];
 
   const resolvedPython = python || resolveSynthesisPython({ repoRoot, env });
@@ -300,10 +357,12 @@ export async function checkToolchain({ repoRoot, registryPath, synthesizeScript,
     fix: scriptPresent ? undefined : "mise run setup",
   });
 
+  let knownSystemIds = null;
   try {
     const { systems } = await listKnownSystems({ repoRoot, registryPath });
     const path = registryPath || (repoRoot ? defaultRegistryPath(repoRoot) : "");
     checks.push({ name: "registry.json", status: "pass", detail: `${systems.length} system(s) at ${path}` });
+    knownSystemIds = new Set(systems.map((s) => s.id));
   } catch (error) {
     checks.push({
       name: "registry.json",
@@ -313,16 +372,65 @@ export async function checkToolchain({ repoRoot, registryPath, synthesizeScript,
     });
   }
 
+  // Live-system bindings: one check per stored binding (validated shape +,
+  // for twin bindings, that boundTo actually names a known system — mcp/rest
+  // targets are shape-checked only, never dialed). `bindingsDir` defaults from
+  // repoRoot the same way registryPath/synthesizeScript do; if neither is
+  // given, bindings simply aren't checked (informational, not a failure —
+  // mirrors how a missing repoRoot degrades the other checks above).
+  const resolvedBindingsDir = bindingsDir || (repoRoot ? defaultBindingsDir(repoRoot) : null);
+  if (resolvedBindingsDir) {
+    try {
+      const { bindings } = await readBindings({ dir: resolvedBindingsDir });
+      if (!bindings.length) {
+        checks.push({
+          name: "bindings",
+          status: "pass",
+          detail: "no live system bindings configured — systems run twin-only until bound (ge systems bind)",
+        });
+      } else {
+        for (const binding of bindings) {
+          const problems = validateBinding(binding);
+          if (binding.kind === "twin" && knownSystemIds && knownSystemIds.size && !knownSystemIds.has(binding.boundTo)) {
+            problems.push(`boundTo "${binding.boundTo}" is not a known system in registry.json`);
+          }
+          checks.push({
+            name: `binding:${binding.system}`,
+            status: problems.length ? "fail" : "pass",
+            detail: problems.length ? problems.join("; ") : `${binding.kind} → ${binding.boundTo} (mode: ${binding.mode})`,
+            fix: problems.length ? `ge systems bind ${binding.system} --to <target> --kind twin|mcp|rest --mode twin_first|live_first|twin_only` : undefined,
+          });
+        }
+      }
+    } catch (error) {
+      checks.push({
+        name: "bindings",
+        status: "fail",
+        detail: error?.message || String(error),
+        fix: `check ${join(resolvedBindingsDir, "bindings.json")} is valid JSON`,
+      });
+    }
+  }
+
   // In-process (non-durable) overlay is the default: any BYO-synthesized twin
-  // lives only in the mcp-service worker process that made it and vanishes on
-  // restart/replica switch. Informational, not a failing check.
+  // or live binding lives only in the mcp-service worker process that made it
+  // and vanishes on restart/replica switch. Informational, not a failing
+  // check — `mode: "remote"` synth calls auto-inject a durable backend (see
+  // resolveOverlayScope) even when this is unset.
   const overlayBackend = env.GE_SIMULATOR_OVERLAY_BACKEND;
   checks.push({
     name: "overlay backend",
     status: "pass",
     detail: overlayBackend
-      ? `${overlayBackend} (durable across replicas)`
-      : "<unset> — in-process overlay only; BYO synth results are NOT durable across replicas/restarts",
+      ? `${overlayBackend} (durable across replicas) — twin bindings persist across replica restarts`
+      : "<unset> — in-process overlay only; BYO synth results and twin bindings are NOT durable across replicas/restarts. Set simulatorOverlayBackend, or run synth in remote mode (auto-sets firestore)",
+  });
+  checks.push({
+    name: "overlay scope",
+    status: "pass",
+    detail: overlayBackend
+      ? `durable (${overlayBackend})`
+      : "session-only (in-process) — twins will not survive replica restarts; set simulatorOverlayBackend or run in remote mode for durable",
   });
 
   return { ok: checks.every((c) => c.status !== "fail"), checks };

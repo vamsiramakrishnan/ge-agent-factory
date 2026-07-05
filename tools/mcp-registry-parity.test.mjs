@@ -69,6 +69,16 @@ const EXPECTED_TOOLS = {
   factory_systems_list: [],
   factory_systems_synth: ["name?", "description?", "fromOpenapi?", "fromSamples?", "promote?"],
   factory_systems_doctor: [],
+  // BYO completion wave (bindings + manifest + models + quality trio, 2026-07-05):
+  factory_systems_bind: ["system", "to", "kind", "mode", "connector?", "config?"],
+  factory_systems_bindings: [],
+  factory_systems_unbind: ["system"],
+  factory_byo_doctor: ["manifest"],
+  factory_byo_apply: ["manifest", "dryRun?"],
+  factory_models_doctor: [],
+  factory_quality_audit: ["spec?", "all?"],
+  factory_enrich_plan: ["spec?", "all?", "target?"],
+  factory_evals_verify: ["spec?", "all?"],
   // Eval packs (2026-07-05): bring-your-own evalset import + coverage
   // reporting over the compile-emitted coverage artifact.
   factory_evals_import: ["evalset", "id?", "force?"],

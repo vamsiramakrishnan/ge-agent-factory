@@ -213,6 +213,66 @@ const HANDLERS = {
     const spec = byoSystems.buildSynthesisSpec(body);
     return byoSystems.runSynthesis(spec, { repoRoot: REPO_ROOT, promote: Boolean(a.promote) });
   },
+  "systems.bind": async (a) => {
+    const byoSystems = await import("@ge/byo-systems");
+    let config;
+    if (a.config !== undefined) {
+      try { config = JSON.parse(a.config); } catch (error) {
+        throw new DxError(`--config is not valid JSON: ${error.message}`, {
+          where: "factory_systems_bind", why: "connector config travels as a JSON object string over MCP",
+          fix: 'pass config as a JSON object string, e.g. {"tenant":"acme"}',
+        });
+      }
+    }
+    const binding = { system: a.system, boundTo: a.to, kind: a.kind, mode: a.mode, ...(a.connector ? { connector: a.connector } : {}), ...(config !== undefined ? { config } : {}) };
+    const problems = byoSystems.validateBinding(binding);
+    if (problems.length) {
+      throw new DxError(`invalid system binding: ${problems.join("; ")}`, {
+        where: "factory_systems_bind", why: "bindings are validated before they persist", fix: "fix the listed fields and retry",
+      });
+    }
+    return { ok: true, binding: await byoSystems.writeBinding({ dir: byoSystems.defaultBindingsDir(REPO_ROOT), binding }) };
+  },
+  "systems.bindings": async () => {
+    const byoSystems = await import("@ge/byo-systems");
+    return byoSystems.readBindings({ dir: byoSystems.defaultBindingsDir(REPO_ROOT) });
+  },
+  "systems.unbind": async (a) => {
+    const byoSystems = await import("@ge/byo-systems");
+    const removed = await byoSystems.removeBinding({ dir: byoSystems.defaultBindingsDir(REPO_ROOT), system: a.system });
+    return { ok: true, system: a.system, removed };
+  },
+  // BYO manifest — same core as ge byo doctor/apply (tools/lib/byo-manifest.mjs).
+  "byo.doctor": async (a) => {
+    const { loadByoManifest, planByoApply } = await import("./lib/byo-manifest.mjs");
+    const { ok, problems, manifest, schemaVersion } = loadByoManifest(a.manifest);
+    const actions = ok ? await planByoApply({ manifest, cfg: cfg() }) : [];
+    return { ok: ok && !actions.some((x) => x.status === "invalid"), schemaVersion, problems, actions };
+  },
+  "byo.apply": async (a) => {
+    const { loadByoManifest, applyByoManifest } = await import("./lib/byo-manifest.mjs");
+    const { ok, problems, manifest } = loadByoManifest(a.manifest);
+    if (!ok) return { ok: false, problems, applied: [], planned: [], invalid: [] };
+    const { applied, planned, invalid } = await applyByoManifest({ manifest, cfg: cfg(), dryRun: Boolean(a.dryRun) });
+    return { ok: invalid.length === 0 && !applied.some((x) => x.ok === false), applied, planned, invalid };
+  },
+  "models.doctor": async () => {
+    const { modelsDoctor } = await import("./lib/models-doctor.mjs");
+    return modelsDoctor(cfg());
+  },
+  // OKF quality/enrichment — same core as ge okf quality/enrich/eval (tools/lib/okf-quality.mjs).
+  "okf.quality.audit": async (a) => {
+    const { auditQuality } = await import("./lib/okf-quality.mjs");
+    return auditQuality({ all: Boolean(a.all), spec: a.spec });
+  },
+  "okf.enrich.plan": async (a) => {
+    const { generateEnrichmentPlan } = await import("./lib/okf-quality.mjs");
+    return generateEnrichmentPlan({ all: Boolean(a.all), spec: a.spec, target: a.target || "L4" });
+  },
+  "okf.eval.verify": async (a) => {
+    const { verifyOkfEvals } = await import("./lib/okf-quality.mjs");
+    return verifyOkfEvals({ all: Boolean(a.all), spec: a.spec });
+  },
   "systems.doctor": async () => {
     const byoSystems = await import("@ge/byo-systems");
     return byoSystems.checkToolchain({ repoRoot: REPO_ROOT });
