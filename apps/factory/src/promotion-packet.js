@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { glob } from "tinyglobby";
 import { readJsonAsync } from "@ge/std/json-io";
+import { computeProofBinding, validateProofBinding } from "@ge/admission";
 import {
   updateWorkspaceCapabilities,
   writeJsonArtifact,
@@ -58,7 +59,7 @@ function compactPreview(previewReport) {
   };
 }
 
-function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult }) {
+function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBinding }) {
   const blockers = [];
   if (validationReport?.ok !== true) blockers.push("validation report is not passing");
   if (!specCodeTrace) blockers.push(`missing ${ARTIFACT_PATHS.specCodeTrace}`);
@@ -77,6 +78,7 @@ function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback
   // the SDK-validated field the refine harness now emits — it finally gates here.
   const specToCodeFidelity = refineResult?.spec_to_code_fidelity || null;
   if (specToCodeFidelity && specToCodeFidelity !== "pass") blockers.push(`refine spec-to-code fidelity: ${specToCodeFidelity}`);
+  if (proofBinding?.ok !== true) blockers.push("proof binding is missing or stale");
   return {
     ok: blockers.length === 0,
     policy: PROMOTION_POLICY,
@@ -97,7 +99,12 @@ export async function readPromotionGate(workspaceDir) {
     readJson(join(workspaceDir, ARTIFACT_PATHS.generatorFeedback), null),
     readJson(join(workspaceDir, HARNESS_REFINE_PATH), null),
   ]);
-  return buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult });
+  const packet = await readJson(join(workspaceDir, ARTIFACT_PATHS.promotionPacket), null);
+  const currentProofBinding = computeProofBinding(workspaceDir);
+  const proofBinding = packet?.proofBinding
+    ? { ...currentProofBinding, ...validateProofBinding(packet.proofBinding, currentProofBinding) }
+    : currentProofBinding;
+  return buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBinding });
 }
 
 export async function createPromotionPacket({
@@ -122,7 +129,8 @@ export async function createPromotionPacket({
   const pipeline = await readJson(join(workspaceDir, WORKSPACE_PATHS.pipeline), null);
   const files = await listWorkspaceFiles(workspaceDir);
   const generatedAt = new Date().toISOString();
-  const promotionGate = buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult });
+  const proofBinding = computeProofBinding(workspaceDir);
+  const promotionGate = buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBinding });
 
   const packet = {
     schemaVersion: 1,
@@ -178,6 +186,7 @@ export async function createPromotionPacket({
     },
     preview: compactPreview(previewReport),
     promotionGate,
+    proofBinding,
     specCodeTrace: specCodeTrace ? {
       ok: specCodeTrace.ok,
       coverage: specCodeTrace.coverage,

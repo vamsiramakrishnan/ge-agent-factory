@@ -85,3 +85,73 @@ export function computeWorkspaceDigest(workspaceDir, {
 export function computeFileDigest(path) {
   return { algorithm: DIGEST_ALGORITHM, hex: sha256Hex(readFileSync(path)) };
 }
+
+export function computeTreeDigest(rootDir, roots = ["."], {
+  ignoreDirs = DEFAULT_IGNORE_DIRS,
+  ignorePrefixes = [],
+} = {}) {
+  const files = [];
+  const addFile = (relPath) => {
+    if (ignorePrefixes.some((prefix) => relPath.startsWith(prefix))) return;
+    files.push(relPath);
+  };
+  const walkRoot = (relRoot) => {
+    const abs = join(rootDir, relRoot);
+    const info = statSync(abs, { throwIfNoEntry: false });
+    if (!info) return;
+    if (info.isFile()) return addFile(relRoot);
+    if (!info.isDirectory()) return;
+    const ignoreDirSet = new Set(ignoreDirs);
+    const walk = (dir, rel) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const relPath = rel ? `${rel}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) {
+          if (ignoreDirSet.has(entry.name)) continue;
+          if (ignorePrefixes.some((prefix) => `${relPath}/`.startsWith(prefix))) continue;
+          walk(join(dir, entry.name), relPath);
+        } else if (entry.isFile()) addFile(relPath);
+      }
+    };
+    walk(abs, relRoot);
+  };
+  for (const root of roots) walkRoot(root);
+  const unique = [...new Set(files)].sort();
+  const hash = createHash("sha256");
+  for (const relPath of unique) {
+    hash.update(relPath);
+    hash.update("\0");
+    hash.update(readFileSync(join(rootDir, relPath)));
+    hash.update("\0");
+  }
+  return { algorithm: DIGEST_ALGORITHM, hex: hash.digest("hex"), fileCount: unique.length, roots };
+}
+
+export const PROOF_BINDING_SCHEMA_VERSION = "ge.proof-binding.v1";
+export const DEFAULT_PROOF_BINDING_ROOTS = Object.freeze({
+  okf: ["okf", "app/knowledge", "mock_systems/usecase-spec.json"],
+  evals: ["evals", "tests/eval", "tests"],
+  fixtures: ["fixtures", "mock_systems/fixtures"],
+  generator: ["app", "tools", "pyproject.toml", "package.json", "ge.lock.json"],
+});
+
+export function computeProofBinding(workspaceDir, {
+  roots = DEFAULT_PROOF_BINDING_ROOTS,
+  proofPolicy = { schemaVersion: "ge.proof-policy.v1", requireFreshProofBinding: true },
+} = {}) {
+  const okf = computeTreeDigest(workspaceDir, roots.okf || []);
+  const evals = computeTreeDigest(workspaceDir, roots.evals || []);
+  const fixtures = computeTreeDigest(workspaceDir, roots.fixtures || []);
+  const generator = computeTreeDigest(workspaceDir, roots.generator || []);
+  const workspace = computeWorkspaceDigest(workspaceDir);
+  const proofPolicyDigest = { algorithm: DIGEST_ALGORITHM, hex: sha256Hex(JSON.stringify(proofPolicy)) };
+  const binding = { schemaVersion: PROOF_BINDING_SCHEMA_VERSION, algorithm: DIGEST_ALGORITHM, okf, evals, fixtures, generator, workspace, proofPolicy: proofPolicyDigest };
+  return { ...binding, ok: true };
+}
+
+export function validateProofBinding(stored, expected) {
+  if (!stored) return { ok: false, reason: "missing proof binding" };
+  if (!expected) return { ok: false, reason: "missing expected proof binding" };
+  const paths = ["okf", "evals", "fixtures", "generator", "workspace", "proofPolicy"];
+  const stale = paths.filter((key) => stored[key]?.hex !== expected[key]?.hex);
+  return stale.length ? { ok: false, reason: `stale proof binding: ${stale.join(", ")}`, stale } : { ok: true, reason: "fresh proof binding" };
+}
