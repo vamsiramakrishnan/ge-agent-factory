@@ -4,6 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { REPO_ROOT } from "../state-paths.mjs";
+import { computeProofBinding } from "../../../packages/admission/src/index.mjs";
 import { admissionGatePolicy, shouldAdmit } from "./admission-ops.mjs";
 
 // Policy resolution and the handoff enforcement rule are pure — test in
@@ -54,6 +55,7 @@ describe("passport loop via the CLI", () => {
     writeFileSync(join(workspace, "mock_systems", "usecase-spec.json"), JSON.stringify({ behaviorContract: { role: "demo" } }));
     writeFileSync(join(workspace, "artifacts", "promotion-packet.json"), JSON.stringify({ workspace: { useCaseId: "demo" }, promotionGate: { ok: true, blockers: [] } }));
     writeFileSync(join(workspace, "app", "agent.py"), "print('hi')\n");
+    writeFileSync(join(workspace, "artifacts", "promotion-packet.json"), JSON.stringify({ workspace: { useCaseId: "demo" }, promotionGate: { ok: true, blockers: [] }, proofBinding: computeProofBinding(workspace) }));
 
     const emitted = runGe(["passport", "emit", "demo-agent"]);
     expect(emitted.status).toBe(0);

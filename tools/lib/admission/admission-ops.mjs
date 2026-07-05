@@ -24,6 +24,8 @@ import {
   buildStatement,
   computeFileDigest,
   computeWorkspaceDigest,
+  computeProofBinding,
+  validateProofBinding,
   createLocalSigner,
   evaluateAdmission,
   generateAdmissionKeypair,
@@ -120,6 +122,7 @@ function subjectDigests(dir) {
   return {
     workspaceDigest: computeWorkspaceDigest(dir),
     contractDigest: computeFileDigest(workspacePath(dir, WORKSPACE_PATHS.useCaseSpec)),
+    proofBinding: computeProofBinding(dir),
   };
 }
 
@@ -155,6 +158,15 @@ export function emitPassport({ id } = {}) {
   const keys = ensureAdmissionKeys();
   const signer = createLocalSigner(keys.privateKeyPem, keys.publicKeyPem);
   const digests = subjectDigests(workspace.dir);
+  const currentProofBinding = computeProofBinding(workspace.dir);
+  const proofBindingCheck = validateProofBinding(packet.proofBinding, currentProofBinding);
+  if (proofBindingCheck.ok !== true) {
+    throw new DxError(`workspace '${workspace.id}' has a stale promotion proof binding.`, {
+      where: `workspace artifact: ${ARTIFACT_PATHS.promotionPacket}`,
+      why: proofBindingCheck.reason,
+      fix: "ge prove",
+    });
+  }
 
   const attestations = [
     signStatement(buildStatement({
