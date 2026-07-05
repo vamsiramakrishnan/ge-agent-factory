@@ -12,9 +12,9 @@ description: Capture an enterprise agent contract through the console's artifact
 
 ## When to use this
 
-You have a business use case and someone who can answer questions about it.
-You need the contract — the use-case spec (saved by the interview as
-`agent-spec.json`) — captured in a reviewable, typed form. The console's
+This interview captures the contract — the use-case spec, saved as
+`agent-spec.json` — in a reviewable, typed form, starting from a business use
+case and someone who can answer questions about it. The console's
 artifact-driven interview asks the questions, renders the contract
 incrementally in a canvas as you answer, and saves the result with the two
 fields the compiler depends on: `behaviorContract.workflow` and
@@ -48,10 +48,10 @@ Environment prerequisites:
 
 1. **Open the interview in the console.**
 
-   From the console, start a new interview for a use case. The "start" action
-   is client-side logic in `apps/console/src/lib/startInterview.ts` — it calls
-   `ge.runtimeStart({ kind: "harness.run", ... })` (the generic runtime task
-   route `POST /api/runtime/tasks`), not a dedicated interview endpoint.
+   From the console, start a new interview for a use case. Starting it runs
+   client-side logic in `apps/console/src/lib/startInterview.ts`, which calls
+   `ge.runtimeStart({ kind: "harness.run", ... })` — the generic runtime task
+   route `POST /api/runtime/tasks`, not a dedicated interview endpoint.
 
 2. **Provide the brief and, optionally, ground it in documents.**
 

@@ -13,9 +13,10 @@ description: Provision the managed Agent Gateway, apply the authz layer in DRY_R
 
 ## Goal
 
-Provision the managed Agent Gateway that fronts the factory's MCP servers, then
-apply the authz layer (extension + policy) and grant the agent runtime identity
-egress — landing in audit (DRY_RUN) mode.
+Provision the managed Agent Gateway that fronts the factory's MCP servers,
+apply the authz layer (extension + policy), and grant the agent runtime
+identity egress. The result lands in audit-only (DRY_RUN) mode by design, so
+nothing blocks a call until you flip it deliberately.
 
 <p align="center">
   <img src="../assets/diagrams/tool-authz-chain.svg" alt="The authorization chain the gateway governs: an agent with a per-agent SPIFFE identity resolves its toolset from the Agent Registry, invokes the registered per-department MCP server on Cloud Run, which reads and writes the per-agent store" width="650">
@@ -98,11 +99,11 @@ extension and policy are imported, and the runner has `roles/iap.egressor`.
 ## Troubleshoot
 
 - **`Error 501: unimplemented`** — you used `location=global`. Agent Gateway is
-  regional; use `us-central1` (or `europe-west1` for `eu`). If you've seen a
-  Google-provided early-access/allowlist form for this feature elsewhere, it's
-  for semantic-governance/Agent-Runtime features, *not* a prerequisite to
-  create a gateway — the region fix alone resolves this error. See
-  `installer/AGENT-GATEWAY.md` for the full story.
+  regional; use `us-central1` (or `europe-west1` for `eu`). A Google-provided
+  early-access/allowlist form for this feature, if you've come across one,
+  gates semantic-governance/Agent-Runtime features — it is *not* a
+  prerequisite for creating a gateway. The region fix alone resolves this
+  error; see `installer/AGENT-GATEWAY.md` for the full rationale.
 - **Governed MCP calls blocked after enforcement** — the target host isn't in
   `registries`. Register the MCP servers first; egress blocks unregistered hosts.
 - **Registry mismatch** — Agent Runtime uses a *regional* registry, Gemini

@@ -17,8 +17,8 @@ capabilities**, each with the same four faces:
   flags needed when stdout is not a TTY);
 - a **console route** under `/api/ge/*` (generated from the same command
   registry — see [Console & APIs](console-and-apis.html));
-- an **MCP tool** (`factory_*`) plus a **skill** for AI assistants and agent
-  harnesses (see [MCP tools](../MCP.html) and
+- an **MCP (Model Context Protocol) tool** (`factory_*`) plus a **skill** for
+  AI assistants and agent harnesses (see [MCP tools](../MCP.html) and
   [`skills/`](https://github.com/vamsiramakrishnan/ge-agent-factory/tree/main/skills)).
 
 One command registry (`tools/lib/ge-command-registry.mjs`) wires all four, so
@@ -99,9 +99,9 @@ workspaces passed the gate — it does not care how they were produced. See
 
 **Drive live** (`ge drive`). Talks to *any* deployed assist surface —
 factory-built or not: `--ge-app` takes a full engine resource name and
-`--assistant` any assistant on it; cassettes make it fully offline. This is
-the most plug-in-your-own-inputs capability of the set. See
-[Drive a shipped agent](../cookbooks/drive-a-shipped-agent.html).
+`--assistant` any assistant on it; cassettes make it fully offline. Of every
+capability here, this one asks the least about where its inputs came from.
+See [Drive a shipped agent](../cookbooks/drive-a-shipped-agent.html).
 
 **Prove live** (`ge prove --live`). Runs any evalset compatible with ADK
 (Agent Development Kit) — compiled, recorded, or hand-written — against any

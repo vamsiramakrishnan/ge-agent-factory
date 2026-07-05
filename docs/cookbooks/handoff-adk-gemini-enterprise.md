@@ -11,13 +11,13 @@ description: Ship a proven workspace with ge handoff agents-cli — the post-bou
 **Scope:** cloud — every stage in this guide mutates your Google Cloud
 project.
 
-`ge handoff agents-cli` is the handoff to the runtime and the end-user surface: it
+`ge handoff agents-cli` deploys a proven workspace to the runtime and the
+end-user surface — the same workspace you proved, with no regeneration and
+no re-refine (see [Handoff targets](../concepts/handoff-targets.html)). It
 uploads each locally-built, proven workspace and runs the post-boundary
-release stages in your GCP project —
+release stages in your Google Cloud project (GCP) —
 `load_data → deploy_runtime → poll_runtime → register_tools → publish_enterprise`,
-with `verify_live` as the final stage of the graph. The cloud deploys
-exactly the workspace you proved — no regeneration, no re-refine (see
-[Handoff targets](../concepts/handoff-targets.html)).
+with `verify_live` as the final stage of the graph.
 
 <p align="center">
   <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build stages, then Validate and Refine ending at preview (the local build boundary), then the Release stages that touch your GCP project — the part only a remote run performs" width="700">

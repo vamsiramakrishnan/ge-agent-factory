@@ -15,7 +15,7 @@ The view streams the health-check family (`doctor`) for a chosen scope —
 `all`, `local`, `cloud`, `data`, or `mcp` — and optionally for a specific
 target command (e.g. "am I ready to run `agents.build`?"). Every section's
 checks roll up into a single verdict — **READY / NEEDS ATTENTION / NOT
-READY** — and each failing check renders with a copy-able fix you can run
+READY**. Each failing check renders with a copy-able fix you can run
 directly, or follow as a run.
 
 Use it:
@@ -37,8 +37,8 @@ CLI equivalents: `ge doctor`, `ge doctor --local|--cloud|--data|--mcp`, and
 Two different verdicts, easy to conflate:
 
 - **Readiness** (this view) judges the *environment*: toolchain, platform
-  services, data and tool <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a>.
-- **Proof** judges the *agent*: evals, trace, <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a> verdicts, the
+  services, data and tool <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project: the factory plane, the data plane, and the tool plane.">planes</a>.
+- **Proof** judges the *agent*: evals, trace, <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven review-and-fix step that checks whether generated code matches the spec, running on your machine (or the worker) after code generation and before anything ships to the cloud.">harness</a> verdicts, the
   <a href="/ge-agent-factory/reference/glossary/#promotion-gate" title="An automated pass/fail check that runs right before deploy and refuses to ship a workspace whose validation report, spec-to-code trace, or harness verdicts (review/refine) haven't cleared their bar.">promotion gate</a>. That story is in
   [Evals as proof](/ge-agent-factory/concepts/evals-as-proof/), and its console home is
   the Agent detail view's artifacts and the

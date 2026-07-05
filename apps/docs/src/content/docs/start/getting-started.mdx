@@ -21,10 +21,10 @@ translations of every internal term, the operator vocabulary included.
 
 ## Recommended: skills-first install
 
-The easiest setup path is to let your coding agent run the factory's install
-skill. The skill performs the clone/bootstrap, checks each phase, applies the
-structured fixes it knows about, and leaves the `ge` CLI plus the factory's
-agent skills ready for the next operator step.
+Let your coding agent run the factory's install skill: it performs the
+clone/bootstrap, checks each phase, applies the structured fixes it knows
+about, and leaves the `ge` CLI plus the factory's agent skills ready for the
+next operator step.
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install
@@ -40,9 +40,10 @@ Other surfaces use the same skill bundle:
 | Existing checkout | `mise run skills-install` |
 | MCP-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |
 
-The proven <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> this produces is still a standard
-[Google agents-cli](https://google.github.io/agents-cli/) / ADK project. The
-skills automate setup and operations for the layer above.
+The proven <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> this produces is a standard
+[Google agents-cli](https://google.github.io/agents-cli/) / ADK (Agent
+Development Kit) project. The skills automate setup and operations for the
+layer above.
 
 ## Manual prerequisites + install
 
@@ -89,7 +90,7 @@ mise run console         # open the operator UI → http://localhost:18260
 
    </details>
 
-2. **Understand which side of the <a href="/ge-agent-factory/reference/glossary/#build-boundary" title="The cutoff point between &quot;building and previewing an agent on your own machine&quot; and &quot;actually deploying it to your Google Cloud project.&quot;">build boundary</a> you're on.**
+2. **Understand which side of the <a href="/ge-agent-factory/reference/glossary/#build-boundary" title="The cutoff between building and previewing an agent locally and deploying it to your Google Cloud project.">build boundary</a> you're on.**
 
    <p align="center">
      <img src="/ge-agent-factory/assets/diagrams/factory-line.svg" alt="The factory line's three phases: Author and Build, then Validate and Refine (ending at preview, the build boundary), then Release — only the Release phase touches your GCP project" width="700" />
@@ -99,7 +100,7 @@ mise run console         # open the operator UI → http://localhost:18260
    boundary** (the `previewed` stage — the last stage that runs with no
    cloud credentials; everything after it touches your Google Cloud
    project). Deploy/register/publish are cloud-only steps that happen at
-   <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act: giving a locally proven workspace to the layer below — agents-cli → ADK Agent Engine → Gemini Enterprise — via ge handoff agents-cli, which runs only the post-boundary stages (load_data → deploy_runtime → register_tools → publish_enterprise).">handoff</a>. You can instead have the cloud factory do the building while
+   <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act — handing a locally proven workspace to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise.">handoff</a>. You can instead have the cloud factory do the building while
    this machine submits and observes.
 
    <details>
@@ -180,7 +181,7 @@ The console should load at http://localhost:18260 and show the Readiness view.
 
 See [`SETUP.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/SETUP.md#troubleshoot) for install-time issues (missing
 Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
-to this cookbook's loop:
+to this guide's loop:
 
 Real output from running the fast check on a clean clone, before `mise run
 setup` has installed `agents-cli`/<a href="/ge-agent-factory/reference/glossary/#antigravity" title="Google's agent SDK (the google-antigravity Python package) that powers the harness review/refine step — the factory drives it headlessly to judge and repair spec-to-code fidelity.">Antigravity</a>/skills — this is what "not

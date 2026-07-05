@@ -21,10 +21,10 @@ translations of every internal term, the operator vocabulary included.
 
 ## Recommended: skills-first install
 
-The easiest setup path is to let your coding agent run the factory's install
-skill. The skill performs the clone/bootstrap, checks each phase, applies the
-structured fixes it knows about, and leaves the `ge` CLI plus the factory's
-agent skills ready for the next operator step.
+Let your coding agent run the factory's install skill: it performs the
+clone/bootstrap, checks each phase, applies the structured fixes it knows
+about, and leaves the `ge` CLI plus the factory's agent skills ready for the
+next operator step.
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install
@@ -40,9 +40,10 @@ Other surfaces use the same skill bundle:
 | Existing checkout | `mise run skills-install` |
 | MCP-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |
 
-The proven workspace this produces is still a standard
-[Google agents-cli](https://google.github.io/agents-cli/) / ADK project. The
-skills automate setup and operations for the layer above.
+The proven workspace this produces is a standard
+[Google agents-cli](https://google.github.io/agents-cli/) / ADK (Agent
+Development Kit) project. The skills automate setup and operations for the
+layer above.
 
 ## Manual prerequisites + install
 
@@ -174,7 +175,7 @@ The console should load at http://localhost:18260 and show the Readiness view.
 
 See [`SETUP.md`](../../SETUP.md#troubleshoot) for install-time issues (missing
 Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
-to this cookbook's loop:
+to this guide's loop:
 
 Real output from running the fast check on a clean clone, before `mise run
 setup` has installed `agents-cli`/Antigravity/skills — this is what "not

@@ -59,7 +59,7 @@ passing.
 |---|---|
 | `agents-cli-manifest.yaml` | the project's deploy identity for the layer below: name, agent directory, region, `deployment_target: agent_runtime` |
 | Agent Registry entry (`register_tools` stage; `adk` / `mcp` / `a2a`) | the agent and the toolsets it may resolve |
-| per-agent Agent Runtime identity | the IAM principal the agent runs as — grants go to the principalSet, not a shared account |
+| per-agent Agent Runtime identity | the IAM (Identity and Access Management) principal the agent runs as — grants go to the principalSet, not a shared account |
 | `workspace.json` | the workspace manifest: what is in this agent, stage by stage |
 | `artifacts/agent-passport.json` | the consolidated signed form: the workspace's content digest, the contract digest, and signed attestations over the proof pack — verifiable offline |
 | run ledger entries | the full build/deploy/publish history, event by event |

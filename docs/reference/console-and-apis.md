@@ -9,8 +9,9 @@ layout: default
 
 The console is the operator UI over the same engine the `ge` CLI drives —
 Pipeline, Fleet, Activity, Readiness/Doctor, a live Run Drawer, and the
-BYO systems flow. Run it with `mise run console` → `http://localhost:18260`. It proxies
-the local GE runtime daemon (default port `17654`).
+BYO (bring-your-own) systems flow. Run it with `mise run console` →
+`http://localhost:18260`. It proxies the local GE runtime daemon (default
+port `17654`).
 
 - Views: `apps/console/src/views/`
 - Server: `apps/console/src/server/`

@@ -8,10 +8,9 @@ description: How OKF export and existing console run controls fit together.
 
 # OKF export & run controls
 
-The console does not introduce separate **OKF** or **GE Drive** sidebar views.
-Instead, OKF is an export/review affordance tied to the contract, and run-driving
-uses the existing **Pipeline**, **Runs**, and **Agent detail** surfaces. This
-page documents that integration as implemented in the current UI.
+OKF export lives inside the contract surfaces, not in a separate sidebar view —
+the console has no standalone **OKF** or **GE Drive** entry. Run-driving uses
+the existing **Pipeline**, **Runs**, and **Agent detail** surfaces instead.
 
 <p align="center">
   <img src="../assets/diagrams/console-okf-drive-views.svg" alt="Operator intent enters the Interview view, flows through Spec Review and OKF export, continues through Pipeline and Runs, opens Agent detail proof views, and reaches the promotion gate before handoff to agents-cli, ADK, and Gemini Enterprise" width="860">
@@ -20,9 +19,8 @@ page documents that integration as implemented in the current UI.
 ## OKF export
 
 OKF belongs next to **Spec Review** because it is the portable knowledge form of
-the same reviewed contract, not a second source of truth. The contract review
-flow should make these questions answerable before an operator regenerates an
-agent:
+the same reviewed contract, not a second source of truth. Before an operator
+regenerates an agent, the contract review flow answers:
 
 | Question | Console affordance |
 |---|---|
@@ -31,13 +29,13 @@ agent:
 | What is ready to export? | OKF bundle status, file list, and generated knowledge artifacts |
 | What still needs review? | Missing source references, thin concepts, or contract fields that do not map cleanly |
 
-The important invariant is contract-first ownership: edits happen in the
-contract review surface; OKF export reflects that reviewed state.
+Contract-first ownership is the invariant: edits happen in the contract
+review surface, and OKF export reflects that reviewed state.
 
 ## Existing run controls
 
-The browser run loop is the same operator loop you run from a terminal with
-commands such as `ge prove` and `ge agents build`, but it is surfaced through
+The browser run loop mirrors the terminal loop — the same operations, run
+with commands such as `ge prove` and `ge agents build` — surfaced through
 existing console areas:
 
 - **Pipeline** chooses or previews the next build action for a use case.

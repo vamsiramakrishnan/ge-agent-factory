@@ -112,8 +112,8 @@ The compiler's sibling modules grade what the compiled cases produce:
 
 Not every metric family can grade every rail: the local ADK rail exposes tool
 calls and citations directly, while the live stream-assist surface only
-exposes what the stream carries. The single source answering "can metric X
-grade rail Y" is `@ge/evalkit/metric-applicability` — rendered by
+exposes what the stream carries. `@ge/evalkit/metric-applicability` is the
+single source of truth for "can metric X grade rail Y" — rendered by
 `ge evals applicability`, written next to every compile as
 `metric-applicability.json`, and documented at
 [Metric applicability](metric-applicability.html). Statuses are honest by
@@ -126,6 +126,7 @@ One registry entry wires the three drivers, so they cannot drift: the CLI
 verb (`ge evals compile` — flag table in the
 [CLI reference](cli.html#ge-evals-compile)), the console route
 (`POST /api/ge/evals/compile`, see [Console &amp; APIs](console-and-apis.html)),
-and the MCP tool (`factory_evals_compile`, see [MCP tools](../MCP.html)).
+and the MCP (Model Context Protocol) tool (`factory_evals_compile`, see
+[MCP tools](../MCP.html)).
 Compiled evalsets feed `ge prove --live` for
 [release verification](../concepts/live-proof.html).

@@ -8,10 +8,10 @@ description: The signed Agent Passport file, the AdmissionDecision record, the p
 
 # Admission gate & Agent Passport
 
-The admission gate is the factory's contractual checks operationalized as an
-admission controller: the proof pack is consolidated into one **signed,
-digest-bound document** (the Agent Passport), and a policy evaluation over
-that document produces a **recorded allow/deny decision** that `ge handoff`
+The admission gate turns the factory's contractual checks into an admission
+controller: it consolidates the proof pack into one **signed, digest-bound
+document** (the Agent Passport), then runs a policy evaluation over that
+document to produce a **recorded allow/deny decision** that `ge handoff`
 enforces per workspace. The gate *verifies* evidence — signatures, digest
 bindings, freshness, attested verdicts — it never produces it: evals and
 validation run upstream, exactly once.
@@ -53,10 +53,11 @@ Predicate types carried today:
 | `ge.dev/attestation/promotion-packet/v1` | the workspace's promotion packet (with its gate verdict) | always — `emit` refuses without one |
 | `ge.dev/attestation/live-proof/v1` | the LiveProofResult | when `.ge/proof/live-proof-result.json` exists on the minting machine |
 
-The formats are standard (in-toto Statement v1 in a DSSE envelope) on
-purpose: the same attestations are consumable by policy engines that already
-speak them — sigstore policy-controller, Kyverno, GCP Binary Authorization —
-if a Kubernetes- or broker-shaped admission point is added downstream.
+The formats are standard — in-toto Statement v1 in a DSSE envelope — on
+purpose: policy engines that already speak them (sigstore policy-controller,
+Kyverno, GCP Binary Authorization) can consume the same attestations
+directly, if a Kubernetes- or broker-shaped admission point is added
+downstream.
 
 ## `promotion.gates.admission` — gate policy
 
@@ -69,7 +70,7 @@ Lives in `.ge.json`, merged over defaults (extra keys sanctioned, same as
 | `maxAgeDays` | `30` | a passport older than this is stale (`GEADM007`); `0` disables the freshness check |
 | `requireLiveProof` | `false` | `true`: the passport must carry a *passing* live-proof attestation (`GEADM008`) |
 
-The staged rollout is the house convention (`promotion.gates.live`, the
+The staged rollout follows the same pattern as `promotion.gates.live` (the
 Agent Gateway's DRY_RUN → ENFORCED): run in audit mode, read the decision
 log, then set `required: true`.
 
@@ -94,6 +95,9 @@ last).
 | `next` | the literal next command |
 
 ## `GEADM` blocker codes
+
+Each code names exactly one cause and one fix command — an agent or operator
+reading a denial acts on `fix` directly, no diagnosis required.
 
 | Code | Means | Fix |
 |---|---|---|
@@ -135,9 +139,9 @@ the audit log. Same philosophy as the promotion gate's `--force` /
 - **Console:** `POST /api/ge/passport/emit|verify|admit` — generated from
   the shared command registry (see
   [Console & APIs](console-and-apis.html)).
-- **MCP:** `factory_passport_emit` / `factory_passport_verify` /
-  `factory_passport_admit`, plus `factory_handoff`'s `force` param — see
-  [MCP tools](../MCP.html).
+- **MCP (Model Context Protocol):** `factory_passport_emit` /
+  `factory_passport_verify` / `factory_passport_admit`, plus
+  `factory_handoff`'s `force` param — see [MCP tools](../MCP.html).
 - **Skill:** [`admitting-agents`](https://github.com/vamsiramakrishnan/ge-agent-factory/tree/main/skills/admitting-agents)
   packages the whole job for an agent harness.
 

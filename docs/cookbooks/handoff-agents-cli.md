@@ -12,12 +12,12 @@ description: The generated workspace is a standard agents-cli/ADK project — op
 `agents-cli`; actually deploying it is a cloud action covered in the
 [next guide](handoff-adk-gemini-enterprise.html).
 
-The handoff line is deliberate: the factory compiles and proves, and what
-crosses the line is a *standard* `agents-cli` / ADK (Agent Development Kit)
-project with no factory runtime library inside (see
-[Handoff targets](../concepts/handoff-targets.html)). This guide opens a
-proven workspace as exactly that — an ordinary project any ADK engineer can
-run, eval, and deploy with tools they already know.
+This guide opens a proven workspace as a standard `agents-cli` / ADK (Agent
+Development Kit) project — no factory runtime library inside — so any ADK
+engineer can run, eval, and deploy it with tools they already know. The
+handoff line is deliberate: the factory compiles and proves, and what
+crosses that line is exactly this ordinary project (see
+[Handoff targets](../concepts/handoff-targets.html)).
 
 <p align="center">
   <img src="../assets/diagrams/signature-pipeline-handoff-targets.svg" alt="signature pipeline zoomed to hand off, lit; the passport crosses the build boundary via a thick edge into agents-cli, ADK, and Gemini Enterprise, with the rest of the pipeline shown dimmed for context" width="700">
@@ -101,9 +101,9 @@ A compiled, [proven](prove-an-agent.html) workspace. Find its path:
    `agents-cli deploy` for you (`deploy_runtime` runs it inside the
    workspace — see the [next guide](handoff-adk-gemini-enterprise.html)).
    Because the project is standard, a manual `agents-cli` deploy from this
-   directory is also possible — the manifest already declares the target —
-   but then the factory's promotion gate and passport artifacts are on you
-   to enforce.
+   directory also works — the manifest already declares the target — but
+   then you enforce the factory's promotion gate and passport checks
+   yourself.
 
    > Prefer `ge handoff agents-cli` over a by-hand deploy: it runs the same
    > `agents-cli` deploy underneath, plus the promotion gate, the

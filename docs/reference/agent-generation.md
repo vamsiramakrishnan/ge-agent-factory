@@ -118,8 +118,8 @@ reference sample).
 
 ## `app/tools.py` — the dual tool backend
 
-Tools are real `FunctionTool`s over the offline fixtures. The backend is selected
-by the **`GE_DATA_BACKEND`** env var:
+Tools are real `FunctionTool`s over the offline fixtures. The
+**`GE_DATA_BACKEND`** env var selects the backend:
 
 <p align="center">
   <img src="../assets/diagrams/dual-backend.svg" alt="app/tools.py's source_adapters read local fixture files when GE_DATA_BACKEND=fixtures (the default for local and eval runs) or resolve MCP toolsets from the Agent Registry when GE_DATA_BACKEND=mcp, reaching the per-agent store through the MCP tool plane" width="700">

@@ -96,8 +96,7 @@ bunx create-ge-agent-factory        # any machine: clone + guided, verified inst
 | **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` |
 | **Any MCP client** | `bun tools/mcp-server.mjs` from a checkout |
 
-Generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills automate the setup and operations layer above that handoff.
-
+Generated workspaces hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise either way; skills automate the setup and operations above that handoff, not the handoff itself.
 
 ## From contract to proof in the console
 
@@ -148,8 +147,8 @@ The factory closes those seams with one artifact chain:
 - **Not a chat product.** The output is code, data, evals, and proof — the
   conversational surface belongs to Gemini Enterprise.
 
-If you're deciding where this fits next to what you already run, read
-[GE Agent Factory vs agents-cli](./start/vs-agents-cli.html).
+Comparing this against what you already run? [GE Agent Factory vs agents-cli](./start/vs-agents-cli.html)
+breaks down the layers.
 
 ## See it work
 
@@ -190,7 +189,7 @@ or the fuller [local setup guide](./start/getting-started.html).
 </p>
 
 The console (`mise run console` → `http://localhost:18260`) shows the same
-state live — a real capture from the screenshot factory below, not a mock.
+state live — the screenshot above is a real capture of it, not a mock.
 See [Console](./console/).
 
 ## Do this at scale

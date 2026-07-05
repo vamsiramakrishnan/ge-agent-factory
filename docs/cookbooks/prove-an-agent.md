@@ -118,7 +118,7 @@ concepts.
    node apps/factory/scripts/factory.mjs promotion-gate --dir .ge/factory/workspaces/<workspace-id>
    ```
 
-   (Run from the repo root; the docs refer to this as
+   (Run from the repo root; this command is also called
    `factory promotion-gate`.) On failure it prints the specific blockers and
    exits non-zero. An override exists (`--force` on the gate/deploy, or
    `GE_ALLOW_UNPROMOTED=1`) precisely so that using it is a visible,
@@ -182,11 +182,11 @@ Proof artifacts, all inside the workspace:
 ## Repair
 
 A failed proof is a work item, not a dead end. The harness refine step
-auto-fixes what it can; what remains becomes blockers that the repair loop
-drives back through the line — see
-[Repair a failed proof](repair-failed-proof.html). For a single workspace,
-`ge agents logs <runId> --stage validate` shows why validation failed, and
-`ge agents build --local --ids <id> --force` recompiles from scratch.
+fixes what it can automatically; what's left becomes blockers for the repair
+loop — see [Repair a failed proof](repair-failed-proof.html). For a single
+workspace, `ge agents logs <runId> --stage validate` shows why validation
+failed, and `ge agents build --local --ids <id> --force` recompiles from
+scratch.
 
 ## Next step
 

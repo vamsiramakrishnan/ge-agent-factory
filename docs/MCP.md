@@ -81,9 +81,9 @@ project, bucket, and service identities to work with.
 
 One engine, two surfaces: see
 [`tools/README.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/tools/README.md).
-The tool surface (names, descriptions, schemas) is derived from the `mcp`
-blocks in `tools/lib/ge-command-registry.mjs` — the same registry the CLI and
-console read — and frozen by `tools/mcp-registry-parity.test.mjs`.
+The `mcp` blocks in `tools/lib/ge-command-registry.mjs` — the same registry
+the CLI and console read — define the tool surface (names, descriptions,
+schemas), and `tools/mcp-registry-parity.test.mjs` freezes it against drift.
 Read-only tools (`list_usecases`, `doctor`, `status`, `logs`, `mcp_doctor`)
 are safe to call freely; `capture` starts a local dev server; `prove` and
 `evals_compile` run local computation; `handoff`, `provision`, `sync`, and
@@ -113,8 +113,8 @@ managed MCP endpoint (`bigquery.googleapis.com/mcp`, `firestore…`, `bigtable�
 agent uses, with the right OAuth scope. No custom code; auto-registered when the
 product API is enabled.
 
-**Tier 2 — custom per-department MCP** (domain facades). A generic multi-tenant
-FastMCP server (`apps/factory/mcp-service/`) is deployed once per
+**Tier 2 — custom per-department MCP** (domain facades). `ge mcp deploy` stands up
+a generic multi-tenant FastMCP server (`apps/factory/mcp-service/`) once per
 department (`ge-agent-factory-mcp-<dept>`). It resolves `?agent=<id>` and loads that
 agent's `mock_data/apis/mcp-tools.json`. It then maps each tool's `binding`
 (`{op, store, entity, key, sourceSystem}`) to an op over the agent's per-agent 1P
@@ -133,8 +133,8 @@ ge mcp doctor         # services Ready + Agent Registry API/CLI
 
 **Auth — agent identity (Preview).** Generated agents run under the Agent Runtime
 per-agent SPIFFE identity, enabled by `.agent_engine_config.json`
-(`{"identity_type":"AGENT_IDENTITY"}`) written into each workspace. IAM is granted
-to the **principalSet** (`agent_identity.tf`), not a SA email:
+(`{"identity_type":"AGENT_IDENTITY"}`) written into each workspace. `agent_identity.tf`
+grants IAM to the **principalSet**, not a SA email:
 `mcp.toolUser` + per-product data roles + `run.invoker` on the dept services. ADC
 (`google.auth.default()`) returns the agent-identity token at runtime; tokens are
 CAA/mTLS-bound (in-runtime only). If the Preview is off, the attached runtime SA

@@ -7,16 +7,17 @@ layout: default
 
 # Core Concepts
 
-These pages explain the mental model of the contract layer — the **why** and
-the **how it fits together**, not the exact commands. For commands, flags,
-and file layouts, follow the links into [Reference](../reference/) and the
-[Guides](../cookbooks/).
+Every agent this factory builds traces back to one artifact: the Enterprise
+Agent Contract. These pages explain how that contract drives everything
+downstream — simulation, code, evals, proof — not the exact commands to run
+them. For commands, flags, and file layouts, follow the links into
+[Reference](../reference/) and the [Guides](../cookbooks/).
 
 One idea ties the section together: **the contract is the center of
-gravity.** Enterprise intent is captured into an Enterprise Agent Contract;
-simulations, tools, evals, and proof are compiled from it; and the proven
-result is handed off to agents-cli, ADK, and Gemini Enterprise. Each concept
-page covers one link in that chain.
+gravity.** Capture turns enterprise intent into an Enterprise Agent Contract.
+Every simulation, tool, eval, and proof compiles from that contract, and
+prove hands the result off to agents-cli, ADK (Agent Development Kit), and
+Gemini Enterprise. Each concept page below covers one link in that chain.
 
 <p align="center">
   <img src="../assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
