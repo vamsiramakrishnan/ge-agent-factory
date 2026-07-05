@@ -17,7 +17,7 @@ import {
   listJobRecords,
 } from "../job-store.mjs";
 import { makeSseWriter } from "./sse.mjs";
-import { daemonBaseUrl } from "./daemon.mjs";
+import { daemonBaseUrl, daemonClient } from "./daemon.mjs";
 import { GE_CLI } from "./paths.mjs";
 
 const jobs = new Map(); // id -> { id, argv, status, events[], code, listeners:Set }
@@ -86,15 +86,15 @@ function terminalJobStatusFromEvent(ev) {
   return "failed";
 }
 
+// Thin binding over the shared daemon HTTP client (tools/lib/daemon/client.mjs,
+// via daemon.mjs's daemonClient()) — same URL, same body, same 600ms budget
+// as the hand-rolled fetch this replaced. createLocalJobSubmit (ge-job-runner.mjs)
+// falls back to local execution on ANY rejection here regardless of type, so
+// the client's typed DaemonConnectionError/DaemonHttpError distinction doesn't
+// change this call site's observable behavior — it's still "one Error, any
+// failure triggers fallback" from this function's caller's point of view.
 async function submitGeJobToDaemon(argv, command = null) {
-  const response = await fetch(`${daemonBaseUrl()}/api/tasks`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ kind: "ge.command", argv, command }),
-    signal: AbortSignal.timeout(600),
-  });
-  if (!response.ok) throw new Error(`daemon task start failed: ${response.status}`);
-  return await response.json();
+  return daemonClient({ timeoutMs: 600 }).submitTask({ kind: "ge.command", argv, command });
 }
 
 async function streamDaemonTask(id, writeSSE, isClosed, onEnd = () => {}, { mirrorJobEvents = false } = {}) {

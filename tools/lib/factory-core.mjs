@@ -62,6 +62,13 @@ export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor/engine.mjs";
 // tools/lib/ge-job-runner.mjs directly (not on the allowlist in
 // tools/check-app-import-surface.mjs).
 export { runSpawnedJob, createLocalJobSubmit } from "./ge-job-runner.mjs";
+// The daemon HTTP client (tools/lib/daemon/client.mjs) — re-exported so
+// apps/console/src/server/transport/daemon.mjs (and jobs.mjs's daemonSubmit
+// binding, through daemon.mjs) can reach it through the frozen
+// transport/*.mjs -> factory-core.mjs seam instead of importing
+// tools/lib/daemon/client.mjs directly (not on the allowlist in
+// tools/check-app-import-surface.mjs).
+export { createDaemonClient } from "./daemon/client.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./ledger/factory-ledger.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";

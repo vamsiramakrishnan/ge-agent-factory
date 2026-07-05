@@ -26,6 +26,7 @@ const ALLOWED_PAIRS = new Set([
   "apps/console/src/server/transport.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/repair.mjs -> tools/lib/repair-runner.mjs",
   "apps/console/src/server/transport/repair.mjs -> tools/lib/factory-core.mjs",
+  "apps/console/src/server/transport/daemon.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/doctor.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/jobs.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/ledger.mjs -> tools/lib/factory-core.mjs",
