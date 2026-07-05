@@ -78,6 +78,13 @@ const EXPECTED_TOOLS = {
   factory_models_doctor: [],
   factory_quality_audit: ["spec?", "all?"],
   factory_enrich_plan: ["spec?", "all?", "target?"],
+  // Enrichment completion (audit-fix-wave WS2, 2026-07-05): generate/apply/
+  // shard fill out the plan → generate → apply/shard verb set; write
+  // defaults falsy on factory_enrich_apply so an MCP call is a dry run
+  // unless the caller explicitly opts in, mirroring the CLI's own default.
+  factory_enrich_generate: ["spec", "target?", "root?", "packRoot?", "out?", "maxEvals?"],
+  factory_enrich_apply: ["patch", "root?", "write?", "force?"],
+  factory_enrich_shard: ["plan", "out"],
   factory_evals_verify: ["spec?", "all?"],
   // Eval packs (2026-07-05): bring-your-own evalset import + coverage
   // reporting over the compile-emitted coverage artifact.

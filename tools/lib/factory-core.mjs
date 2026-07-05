@@ -46,6 +46,9 @@ import { createApplyOps } from "./apply-ops.mjs";
 import { createRemoteRunOps } from "./remote-run-ops.mjs";
 import { DxError } from "./errors/dx-error.mjs";
 import { createGoldenPathOps } from "./golden-path.mjs";
+import { evalsCoverage as coverageReport } from "./evals/coverage-command.mjs";
+import { loadByoManifest, planByoApply } from "./byo-manifest.mjs";
+import { readBindings, defaultBindingsDir } from "@ge/byo-systems";
 
 export {
   selectionDepartments,
@@ -283,6 +286,31 @@ export function infra(cfg, { sub, gatewayImage, workerImage, consoleImage, yes =
 // Console doctor (read-only; never throws — see factory-plane.mjs's consoleDoctor).
 export function consoleDoctor(cfg) {
   return factoryPlane.consoleDoctor(cfg);
+}
+
+// ── read-only wrappers for ge-api.mjs's generic GET route (audit-fix-wave
+// WS2) ────────────────────────────────────────────────────────────────────
+// Named distinctly from tools/mcp-server.mjs's own handler closures, but
+// delegate to the exact same underlying library calls the MCP server uses —
+// one implementation of each read, reused by both surfaces.
+
+// `evals.coverage` console route: same core as `ge evals coverage` /
+// factory_evals_coverage.
+export function evalsCoverage({ id } = {}) {
+  return coverageReport({ id });
+}
+
+// `byo.doctor` console route: same core as `ge byo doctor` / factory_byo_doctor.
+export async function byoDoctor({ manifest } = {}) {
+  const { ok, problems, manifest: parsed, schemaVersion } = loadByoManifest(manifest);
+  const actions = ok ? await planByoApply({ manifest: parsed, cfg: loadConfig({}) }) : [];
+  return { ok: ok && !actions.some((x) => x.status === "invalid"), schemaVersion, problems, actions };
+}
+
+// `systems.bindings` console route: same core as `ge systems bindings` /
+// factory_systems_bindings.
+export async function systemsBindings() {
+  return readBindings({ dir: defaultBindingsDir(REPO_ROOT) });
 }
 
 const factoryPlane = createFactoryPlane({
