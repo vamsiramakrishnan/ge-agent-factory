@@ -1,0 +1,72 @@
+---
+// Override of @astrojs/starlight's PageTitle — adds a breadcrumb line above
+// the <h1>, built from the same sidebar tree Starlight already computed for
+// this route (Astro.locals.starlightRoute.sidebar), so it can never drift
+// from the real nav: no separate breadcrumb config to keep in sync.
+//
+// Walks the sidebar for the group-label chain leading to the current page.
+// A top-level page (no containing group, or the landing page) renders no
+// breadcrumb — a chain of one crumb ("current page") tells a reader nothing
+// a page title doesn't already say.
+const { sidebar } = Astro.locals.starlightRoute;
+
+function findCrumbs(entries, path) {
+  for (const entry of entries) {
+    if (entry.type === "link" && entry.isCurrent) return [...path, entry.label];
+    if (entry.type === "group") {
+      const found = findCrumbs(entry.entries, [...path, entry.label]);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+const crumbs = findCrumbs(sidebar, []) ?? [];
+const title = Astro.locals.starlightRoute.entry.data.title;
+---
+
+{
+  crumbs.length > 1 && (
+    <nav class="ge-breadcrumb" aria-label="Breadcrumb">
+      {crumbs.slice(0, -1).map((label) => (
+        <>
+          <span>{label}</span>
+          <span class="sep" aria-hidden="true">
+            /
+          </span>
+        </>
+      ))}
+      <span class="current">{crumbs[crumbs.length - 1]}</span>
+    </nav>
+  )
+}
+<h1 id="_top">{title}</h1>
+
+<style>
+  .ge-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+
+  .ge-breadcrumb .sep {
+    font-family: var(--sl-font-mono);
+    color: var(--sl-color-gray-4);
+  }
+
+  .ge-breadcrumb .current {
+    color: var(--sl-color-white);
+    font-weight: 500;
+  }
+
+  h1 {
+    margin-top: 0.5rem;
+    font-size: var(--sl-text-h1);
+    line-height: var(--sl-line-height-headings);
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+</style>
