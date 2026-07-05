@@ -50,6 +50,7 @@ registry, so the table cannot drift from those sources:
 | [`triaging-runs`](triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../packages/okf/) | [`okf.md`](../docs/reference/okf.md), [`agent-lifecycle.md`](../docs/reference/agent-lifecycle.md) |
+| [`okf-blueprint-enrichment`](okf-blueprint-enrichment/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](okf-blueprint-enrichment/references/enrichment-rules.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ## Composition

@@ -233,11 +233,31 @@ export async function createFirestoreEventMirror({
   projectId = resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT"] }),
   databaseId = process.env.GE_FIRESTORE_DATABASE || DEFAULT_DATABASE,
   collection = process.env.GE_FIRESTORE_COLLECTION || DEFAULT_COLLECTION,
+  db = null,
 } = {}) {
-  const { Firestore } = await import("@google-cloud/firestore");
-  const db = new Firestore({ projectId, databaseId });
+  if (!db) {
+    const { Firestore } = await import("@google-cloud/firestore");
+    db = new Firestore({ projectId, databaseId });
+  }
   const runDoc = (runId) => db.collection(collection).doc(runId);
   const nowIso = () => new Date().toISOString();
+
+  // Per-run monotonic seq allocator. The event doc id is String(seq), so a
+  // wall-clock fallback alone loses events: two events landing in the same
+  // millisecond get the same doc id and the second silently overwrites the
+  // first via set(merge:true) — the SQLite adapter never drops (its
+  // idempotency key is workItemId:stage:status). Allocating
+  // max(Date.now(), last + 1) keeps ids time-ordered AND unique for the
+  // single-writer-per-run mirror; an explicit event.seq (already unique by
+  // contract) passes through and advances the floor. Restart-safe: wall
+  // clock moves past any seq a previous writer issued.
+  const lastSeqByRun = new Map();
+  const nextSeq = (runId, explicit) => {
+    const last = lastSeqByRun.get(runId) ?? 0;
+    const seq = explicit ?? Math.max(Date.now(), last + 1);
+    lastSeqByRun.set(runId, Math.max(seq, last));
+    return seq;
+  };
 
   const startRun = ({ id, mode = "remote", targetStage = null, total = 0, startedAt = nowIso() }) =>
     runDoc(id).set({ mode, targetStage, total, status: "running", startedAt, updatedAt: startedAt }, { merge: true });
@@ -246,7 +266,7 @@ export async function createFirestoreEventMirror({
     runDoc(runId).set({ status: ok ? "done" : "failed", ok, finishedAt, updatedAt: finishedAt }, { merge: true });
 
   const recordEvent = async (runId, event) => {
-    const seq = event.seq ?? Date.now();
+    const seq = nextSeq(runId, event.seq);
     const ts = event.ts || nowIso();
     await runDoc(runId).collection("events").doc(String(seq)).set({ ...event, seq, ts }, { merge: true });
     if (event.workItemId) {
@@ -258,13 +278,22 @@ export async function createFirestoreEventMirror({
     await runDoc(runId).set({ updatedAt: ts }, { merge: true });
   };
 
-  // Mirror a single generator event to Firestore (parity with ledger.applyFactoryEvent).
+  // Mirror a single generator event to Firestore (parity with ledger.applyFactoryEvent
+  // in store.mjs). MUST dispatch on the SAME translated `op` the SQLite ledger
+  // writes (workItemId/status/stage/error — the error field in particular already
+  // carries factoryEventToLedgerOp's message fallback chain), not the raw
+  // generator event: the raw event has no `workItemId` (only useCaseId) and no
+  // `status` (only `type`, e.g. "item_started"), so writing it verbatim silently
+  // breaks work-item association and status normalization on the Firestore side
+  // while the SQLite side (which always transitions through `op`) stays correct —
+  // exactly the kind of adapter drift this mirror exists to prevent.
   const applyFactoryEvent = (runId, event, { mode = "remote" } = {}) => {
     const op = factoryEventToLedgerOp(event);
     if (!op) return Promise.resolve();
     if (op.kind === "start") return startRun({ id: runId, mode, targetStage: op.targetStage, total: op.total, startedAt: op.startedAt || event.ts });
     if (op.kind === "complete") return completeRun(runId, { ok: op.ok, finishedAt: event.ts });
-    return recordEvent(runId, { ...event });
+    const { kind, ...transition } = op;
+    return recordEvent(runId, { ...transition });
   };
 
   return { startRun, completeRun, recordEvent, applyFactoryEvent, db };

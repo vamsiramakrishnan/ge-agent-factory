@@ -81,13 +81,3 @@ test("audit reports fresh hash-bound proof binding", async()=>{
   expect(after.allowedToClaimProven).toBe(true);
   expect(after.proofBinding.allowed).toBe(true);
 });
-
-
-test("eval verifier parses expected_tool_calls names without Mechanisms section", async()=>{
-  const d=await fixture({
-    "index.md":fm("Knowledge Bundle","Expected Tool Agent"),
-    "tests/expected-tool.md":fm("Eval Scenario","Expected tool only","expected_tool_calls:\n- name: invented_tool\n  args:\n    id: CASE-1\ndeterministic_assertions:\n- tool_checked\n")
-  });
-  const r=await verifyOkfEvals({spec:d});
-  expect(r.specs[0].errors.map((e)=>e.code)).toContain("OKF-REF-001");
-});

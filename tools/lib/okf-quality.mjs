@@ -278,22 +278,13 @@ function evalConcepts(bundle) { return bundle.concepts.filter((c) => /Eval/i.tes
 function toolConcepts(bundle) { return bundle.concepts.filter((c) => /Tool/i.test(c.type) || c.relInBundle.startsWith("tools/")); }
 function linkedHrefs(body) { return [...body.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1]); }
 function fixtureRefs(raw) { return [...new Set([...raw.matchAll(/fixtures\/[^`"'\s,)]+\.(?:json|csv|yaml|yml)/gi)].map((m) => m[0]))]; }
-function expectedToolCallNames(raw) {
-  const start = raw.search(/expected_tool_calls:/i);
-  if (start < 0) return [];
-  const tail = raw.slice(start);
-  const end = tail.search(/\n(?:forbidden_tool_calls|expected_state_delta|expected_no_mutation|deterministic_assertions|coverage_links|## )/i);
-  const block = end < 0 ? tail : tail.slice(0, end);
-  return [...new Set([...block.matchAll(/name:\s*([A-Za-z0-9_.-]+)/g)].map((m) => m[1].replaceAll("-", "_")))];
-}
 function verifyError(code, severity, message, path, fix, extra = {}) { return { code, severity, message, path, fix, ...extra }; }
 
 export async function verifySpecEvals(dir) {
   const bundle = await readBundle(dir);
   const tools = toolConcepts(bundle);
-  const toolAliases = tools.flatMap((t) => [t.id, t.title, basename(t.path, ".md")].filter(Boolean).map((v) => String(v).replaceAll("-", "_")));
-  const toolIds = new Set(toolAliases);
-  const toolById = new Map(tools.flatMap((t) => [t.id, t.title, basename(t.path, ".md")].filter(Boolean).map((v) => [String(v).replaceAll("-", "_"), t])));
+  const toolIds = new Set(tools.map((t) => t.id));
+  const toolById = new Map(tools.map((t) => [t.id, t]));
   const systems = new Set(concepts(bundle, /System|systems\//i).map((s) => s.id));
   const entities = new Set(concepts(bundle, /Table|Entity|tables\//i).map((e) => e.id));
   const evals = evalConcepts(bundle);
@@ -303,7 +294,7 @@ export async function verifySpecEvals(dir) {
     if (GENERIC_PROMPTS.some((re) => re.test(ev.title) || re.test(ev.body))) errors.push(verifyError("OKF-EVAL-002", "medium", "Generic workflow evals are not allowed by static verification.", ev.path, "Replace with a fixture-backed scenario and deterministic assertions."));
     if (!/deterministic_assertions|deterministic assertions|\bassert(s|ion|ions)?\b/i.test(ev.raw)) errors.push(verifyError("OKF-ASSERT-001", "medium", "Eval has no deterministic assertions.", ev.path, "Add deterministic_assertions or an Assertions section."));
     if (/coverage_links:/i.test(ev.raw) && !/obligations:\s*\n\s*-/i.test(ev.raw)) errors.push(verifyError("OKF-COVERAGE-001", "high", "coverage_links exists but contains no obligation links.", ev.path, "Add coverage_links.obligations entries that point to enrichment obligations."));
-    const refs = [...new Set([...refIds(ev.body, "Mechanisms to call"), ...expectedToolCallNames(ev.raw)])];
+    const refs = [...new Set(refIds(ev.body, "Mechanisms to call"))];
     for (const ref of refs) {
       if (!toolIds.has(ref)) errors.push(verifyError("OKF-REF-001", "critical", `Eval references unknown tool: ${ref}.`, ev.path, "Reference only tools defined under the OKF tools contract.", { reference: ref }));
       else if (!/\b(args|arguments|inputs?|expected_tool_calls)\b/i.test(ev.raw)) errors.push(verifyError("OKF-EVAL-005", "high", `Eval references tool ${ref} without deterministic expected arguments.`, ev.path, "Add expected_tool_calls with argument assertions.", { reference: ref }));

@@ -50,7 +50,7 @@ export const DaemonNextActionSchema = z.enum([
 ]);
 export type DaemonNextAction = z.infer<typeof DaemonNextActionSchema>;
 
-// (d) CLI command ids from tools/lib/ge-command-registry.mjs (a separate namespace).
+// (d) CLI command ids from @ge/capability-registry's GE_COMMANDS (a separate namespace).
 //     Completeness is enforced structurally — tools/contracts-registry-parity.test.mjs
 //     fails when a GE_COMMANDS entry is added without extending this enum.
 export const GeCommandIdSchema = z.enum([
@@ -80,17 +80,45 @@ export const GeCommandIdSchema = z.enum([
   "okf.customize",
   "agents.register",
   "agents.track",
+  // OKF quality + enrichment (blueprint upgrade factory, merged 2026-07-05):
+  "okf.quality.audit",
+  "okf.enrich.plan",
+  "okf.enrich.generate",
+  "okf.enrich.apply",
+  "okf.enrich.shard",
+  "okf.eval.verify",
   // Release admission (Agent Passport + its gate):
   "passport.emit",
   "passport.verify",
   "passport.admit",
+  // Handoff packaging (local plan / package / verify-package):
+  "handoff.plan",
+  "handoff.package",
+  "handoff.verifyPackage",
+  // Eval packs (bring-your-own import + coverage reporting):
+  "evals.import",
+  "evals.coverage",
+  // Agent Library (blueprint-library surfaces + create-from-library):
+  "library.stats",
+  "library.search",
+  "library.inspect",
+  "library.status",
+  "create.fromLibrary",
+  // BYO source systems (byo-systems surfaces):
+  "systems.list",
+  "systems.synth",
+  "systems.doctor",
+  // Console UI packaging (deploy + doctor):
+  "console.deploy",
+  "console.doctor",
 ]);
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 
 // (e) Risk levels encoded by GE_COMMANDS entries (used for confirm-gating).
-//     Same parity test keeps this a superset of the registry's risks;
-//     apps/console/src/services/geClient.ts types GeCommand.risk from here
-//     instead of hand-mirroring the union.
+//     The zod twin of @ge/core-api's RISK_LEVELS (the dependency-free kernel
+//     vocabulary the registry validates against) — the same parity test holds
+//     the two equal; apps/console/src/services/geClient.ts types
+//     GeCommand.risk from here instead of hand-mirroring the union.
 export const RiskLevelSchema = z.enum([
   "mutates-cloud",
   "starts-workloads",

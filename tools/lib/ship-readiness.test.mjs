@@ -4,7 +4,7 @@ import {
   gatewayProvisionCheck,
   shipProxyCheck,
 } from "./factory-core.mjs";
-import { commandRequirements } from "./ge-command-registry.mjs";
+import { commandRequirements } from "@ge/capability-registry";
 
 // P0: the handoff readiness pre-flight must catch the three blockers that
 // previously only fired mid-run, each with its exact fix command. The checks are

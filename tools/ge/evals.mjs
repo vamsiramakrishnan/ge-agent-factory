@@ -7,6 +7,8 @@
 import { defineCommand } from "citty";
 import { guarded, common, emit, out, pc, ui } from "./shared.mjs";
 import { compileEvals } from "../lib/evals/compile-command.mjs";
+import { importEvalset } from "../lib/evals/import-command.mjs";
+import { evalsCoverage } from "../lib/evals/coverage-command.mjs";
 import { METRIC_APPLICABILITY, renderMetricApplicabilityMarkdown } from "@ge/evalkit/metric-applicability";
 
 function renderCompile(r) {
@@ -48,6 +50,60 @@ const compile = defineCommand({
   }),
 });
 
+function renderImport(r) {
+  out(ui.title("Evals — imported", r.id));
+  out(ui.kv([
+    ["source", pc.dim(r.source)],
+    ["cases", `${r.cases} case(s) · ${r.turns} turn(s)`],
+    ["out", pc.dim(r.out)],
+  ]));
+  out(ui.next(`ge evals coverage --id ${r.id}`, "check coverage against the compiled behavioral graph"));
+}
+
+const importCmd = defineCommand({
+  meta: { name: "import", description: "Import a bring-your-own ADK-compatible evalset into .ge/behavioral, alongside compiled suites" },
+  args: {
+    ...common,
+    evalset: { type: "string", description: "Path to an external ADK-compatible evalset JSON file", required: true },
+    id: { type: "string", description: "Id to store the evalset under (default: the file's own evalSetId, or a filename slug)" },
+    force: { type: "boolean", description: "Overwrite an existing evalset with the same id" },
+  },
+  run: guarded(async ({ args }) => {
+    const result = importEvalset({ evalset: args.evalset, id: args.id, force: args.force });
+    emit(args, result, renderImport);
+  }),
+});
+
+function renderCoverage(r) {
+  out(ui.title("Evals — coverage", r.evalset?.path));
+  out(ui.kv([
+    ["candidates", String(r.totalCandidates)],
+    ["selected", String(r.selected)],
+    ["gaps", r.summary.totals.gaps ? pc.yellow(`${r.summary.totals.gaps} gap(s)`) : pc.green("no gaps")],
+  ]));
+  out(ui.section("Dimensions"));
+  for (const [dimension, d] of Object.entries(r.summary.dimensions)) {
+    out(`  ${dimension.padEnd(20)} ${d.covered}/${d.required} covered ${d.gapCount ? pc.yellow(`· ${d.gapCount} gap(s)`) : pc.green("· complete")}`);
+  }
+  if (r.summary.gaps.length) {
+    out(ui.section("Gaps"));
+    for (const gap of r.summary.gaps.slice(0, 10)) out(`    ${pc.yellow(gap.dimension)} ${pc.dim(gap.gap)}`);
+  }
+  if (r.evalset) out(ui.kv([["evalset", `${r.evalset.cases} case(s) · ${pc.dim(r.evalset.path)}`]]));
+}
+
+const coverage = defineCommand({
+  meta: { name: "coverage", description: "Report per-dimension coverage from the last `ge evals compile` (required/covered/gaps), optionally scoped to one evalset id" },
+  args: {
+    ...common,
+    id: { type: "string", description: "Evalset id to also report case counts for (compiled or imported)" },
+  },
+  run: guarded(async ({ args }) => {
+    const result = evalsCoverage({ id: args.id });
+    emit(args, result, renderCoverage);
+  }),
+});
+
 const applicability = defineCommand({
   meta: { name: "applicability", description: "Which metric families apply locally vs through the live assist surface (and why)" },
   args: { ...common, markdown: { type: "boolean", description: "Print the markdown table instead of the human view" } },
@@ -64,5 +120,5 @@ const applicability = defineCommand({
 
 export const evals = defineCommand({
   meta: { name: "evals", description: "Behavioral compiler: turn agent contracts into executable eval suites, datasets, and load profiles" },
-  subCommands: { compile, applicability },
+  subCommands: { compile, import: importCmd, coverage, applicability },
 });

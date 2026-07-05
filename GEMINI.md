@@ -40,4 +40,4 @@ simulators, releases, and triage. Trigger routing lives in
 Agent working notes (gates, conventions, layering rules): `AGENTS.md`.
 Documentation: `docs/` (start with `docs/start/getting-started.md`).
 The `factory_*` MCP tools this extension registers are derived from
-`tools/lib/ge-command-registry.mjs` — same functions as the CLI verbs.
+`packages/capability-registry/src/registry.mjs` — same functions as the CLI verbs.

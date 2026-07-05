@@ -31,7 +31,7 @@ Use this skill when the question is “how should the console expose this factor
 
 1. Identify whether the change is UI, route, transport, persistence, or core.
 2. For mutating GE commands, use the shared command registry:
-   - `tools/lib/ge-command-registry.mjs`
+   - `packages/capability-registry/src/registry.mjs`
    - `apps/console/src/shared/ge-commands.mjs`
 3. For long-running commands, return a job sentinel from `ge-api.mjs`; let `transport.mjs` persist and stream it.
 4. For Autopilot, persist run intent and items in `job-store.mjs`; do not keep resumability only in memory.

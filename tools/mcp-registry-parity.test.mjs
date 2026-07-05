@@ -6,7 +6,7 @@
 // optionality — fails here first. Widening the MCP surface is a deliberate
 // act: update this fixture in the same commit, and say so in the subject.
 import { test, expect } from "bun:test";
-import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 
 const EXPECTED_TOOLS = {
   // Golden-path verbs (Language & DX refactor, 2026-07-03): capture/prove/
@@ -30,7 +30,7 @@ const EXPECTED_TOOLS = {
   // provision/provision-local tasks), while apps/factory/src/cli.js's own
   // `factory provision` meant something unrelated (infra/control-plane
   // apply) -- renamed to match its registry id "agents.build".
-  factory_agents_build: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?"],
+  factory_agents_build: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?", "detach?"],
   factory_sync: ["force?", "push?", "commit?", "local?", "remote?", "create?"],
   factory_mcp_deploy: [],
   factory_mcp_doctor: [],
@@ -56,6 +56,31 @@ const EXPECTED_TOOLS = {
   factory_passport_emit: ["id"],
   factory_passport_verify: ["id"],
   factory_passport_admit: ["id", "stage?", "force?"],
+  // Agent Library parity (blueprint-library extraction, 2026-07-05):
+  // read-only projections over the generated okf/library/index.json, plus
+  // create-from-library — same core as `ge library ...` / `ge create`.
+  factory_library_stats: [],
+  factory_library_search: ["query?", "department?", "limit?"],
+  factory_library_inspect: ["slug"],
+  factory_library_status: ["slug"],
+  factory_library_create: ["slug", "out?", "overlay?", "target?", "dryRun?", "noSmoke?", "force?"],
+  // BYO source systems (byo-systems extraction, 2026-07-05): list/synthesize/
+  // doctor over the simulator-system corpus — same core as `ge systems ...`.
+  factory_systems_list: [],
+  factory_systems_synth: ["name?", "description?", "fromOpenapi?", "fromSamples?", "promote?"],
+  factory_systems_doctor: [],
+  // Eval packs (2026-07-05): bring-your-own evalset import + coverage
+  // reporting over the compile-emitted coverage artifact.
+  factory_evals_import: ["evalset", "id?", "force?"],
+  factory_evals_coverage: ["id?"],
+  // Handoff packaging (2026-07-05): local-only plan/package/verify trio —
+  // digests + admission verdict, zero cloud calls.
+  factory_handoff_plan: ["ids?", "target?"],
+  factory_handoff_package: ["ids?", "out?"],
+  factory_handoff_verify_package: ["archive"],
+  // Console UI packaging (2026-07-05): read-only doctor (deploy is CLI/console
+  // only — widening MCP to cloud deploys is a separate deliberate act).
+  factory_console_doctor: [],
 };
 
 const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];
@@ -96,4 +121,16 @@ test("every registry entry declares one of the known risk values", () => {
   for (const command of Object.values(GE_COMMANDS)) {
     expect(KNOWN_RISKS).toContain(command.risk);
   }
+});
+
+test("every declared mcp tool has an in-process handler in mcp-server.mjs", async () => {
+  // A registry entry may declare an MCP surface only if the server can
+  // execute it — this is what used to fail at server boot (the loop in
+  // tools/mcp-server.mjs throws on a handler-less mcp block); holding the two
+  // maps equal here surfaces the gap in CI instead. The import is safe: the
+  // server module only connects its stdio transport under import.meta.main.
+  const { HANDLERS } = await import("./mcp-server.mjs");
+  const declared = Object.values(GE_COMMANDS).filter((c) => c.mcp).map((c) => c.id).sort();
+  const handled = Object.keys(HANDLERS).sort();
+  expect(handled).toEqual(declared);
 });

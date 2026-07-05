@@ -5,12 +5,32 @@
 // classifiers (safeGeCommand/safeProcessCommand) and the PATH/env augmentation
 // helpers (toolAugmentedPath/runtimeEnv) that the pipeline-node-command
 // run-kind reuses for its own uv/node process spawns.
+//
+// ge.command SCOPE NOTE (local-execution unification): startGeCommandTask/
+// resumeGeCommandTask are the only run-kind bound to tools/lib/ge-job-runner.mjs's
+// runSpawnedJob — the same primitive apps/console/src/server/transport/jobs.mjs's
+// daemon-fallback binds (via factory-core.mjs), since jobs.mjs's `bun ge.mjs
+// <argv>` fallback and this module's `node tools/ge.mjs <argv>` are the same
+// user-facing command run two ways. process.command (below) keeps
+// runStreamedTask — it, and the harness.run/pipeline-node/doctor kinds it also
+// serves, have no direct test coverage (see tools/lib/daemon/task-runner.mjs's
+// header and the recon this rewire was scoped from), so they are left
+// untouched rather than rebound without a safety net.
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { REPO_ROOT, STATE_PATHS } from "../state-paths.mjs";
+import { runSpawnedJob } from "../ge-job-runner.mjs";
 import { runStreamedTask } from "./task-runner.mjs";
-import { createRun, newTaskId } from "./run-store.mjs";
+import {
+  appendEvent,
+  appendResumeAttempt,
+  commandOutput,
+  createRun,
+  newTaskId,
+  runOutput,
+  updateRun,
+} from "./run-store.mjs";
 
 const GE_CLI = join(REPO_ROOT, "tools", "ge.mjs");
 const DEFAULT_UV_CACHE_DIR = STATE_PATHS.cache.uv;
@@ -107,10 +127,47 @@ function requireArgv(argv, message) {
   return safeArgv;
 }
 
+const defaultOutput = (result) => commandOutput(result, { preserveMachineStdout: true });
+
+// onTerminal binding for ge.command's runSpawnedJob calls — does exactly what
+// task-runner.mjs's runStreamedTask does on settle, split into the two
+// branches runSpawnedJob's onTerminal info discriminates (`error` present only
+// when the execStream promise itself rejected, matching task-runner.mjs's
+// `.catch` vs `.then` behavior byte-for-byte, including that only the reject
+// branch sets `run.error`).
+function geCommandTerminal(id, status, { code, result, error, line, resumeAction }) {
+  const resume = resumeAction != null;
+  if (error !== undefined) {
+    if (resume) appendResumeAttempt(id, { status: "failed", action: resumeAction, error: line });
+    updateRun(id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
+    return;
+  }
+  if (resume) appendResumeAttempt(id, { status, action: resumeAction, code });
+  updateRun(id, {
+    status,
+    code,
+    endedAt: new Date().toISOString(),
+    output: resume ? { ...runOutput(id), ...defaultOutput(result) } : defaultOutput(result),
+  });
+}
+
 export function startGeCommandTask({ argv = [], command = null } = {}) {
   const safeArgv = requireArgv(argv, "argv is required");
   const run = createRun({ id: newTaskId("job"), kind: "ge.command", input: { argv: safeArgv, command } });
-  return runStreamedTask({ run, ...geCommandExecution(safeArgv) });
+  const { stage, startLine, cmd, args, env } = geCommandExecution(safeArgv);
+  runSpawnedJob({
+    id: run.id,
+    cmd,
+    args,
+    cwd: REPO_ROOT,
+    env,
+    announceLine: startLine,
+    stage,
+    terminalData: true,
+    onEvent: (event) => appendEvent(run.id, event),
+    onTerminal: (status, info) => geCommandTerminal(run.id, status, info),
+  });
+  return run;
 }
 
 export function startProcessCommandTask({ argv = [], command = null } = {}) {
@@ -122,7 +179,22 @@ export function startProcessCommandTask({ argv = [], command = null } = {}) {
 
 export function resumeGeCommandTask(run) {
   const argv = requireArgv(run.input?.argv, "stored argv is empty");
-  runStreamedTask({ run, resume: true, resumeAction: "rerun_command", ...geCommandExecution(argv) });
+  updateRun(run.id, { status: "running", endedAt: null, error: null });
+  const { stage, startLine, cmd, args, env } = geCommandExecution(argv);
+  runSpawnedJob({
+    id: run.id,
+    cmd,
+    args,
+    cwd: REPO_ROOT,
+    env,
+    announceLine: startLine,
+    stage,
+    terminalData: true,
+    resume: true,
+    resumeAction: "rerun_command",
+    onEvent: (event) => appendEvent(run.id, event),
+    onTerminal: (status, info) => geCommandTerminal(run.id, status, info),
+  });
 }
 
 export function resumeProcessCommandTask(run) {

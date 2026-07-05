@@ -26,18 +26,14 @@ const ALLOWED_PAIRS = new Set([
   "apps/console/src/server/transport.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/repair.mjs -> tools/lib/repair-runner.mjs",
   "apps/console/src/server/transport/repair.mjs -> tools/lib/factory-core.mjs",
+  "apps/console/src/server/transport/daemon.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/doctor.mjs -> tools/lib/factory-core.mjs",
-  "apps/console/src/server/transport/jobs.mjs -> tools/lib/exec-stream.mjs",
   "apps/console/src/server/transport/jobs.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/ledger.mjs -> tools/lib/factory-core.mjs",
-  "apps/console/src/server/transport/ledger.mjs -> tools/lib/ledger/run-ledger-firestore.mjs",
   "apps/console/src/server/transport/logs.mjs -> tools/lib/factory-core.mjs",
-  "apps/console/src/shared/ge-commands.mjs -> tools/lib/ge-command-registry.mjs",
-  // The command registry is the sanctioned cross-surface contract (route/CLI/
-  // risk per command) — the docs site reads it at build time through the same
-  // re-export-shim seam the console uses, so rendered command docs
-  // (CommandCard.astro) can never drift from the registry.
-  "apps/docs/src/lib/ge-commands.mjs -> tools/lib/ge-command-registry.mjs",
+  // (The command-registry pairs that used to sit here were retired when the
+  // registry moved to @ge/capability-registry — the console/docs shims now
+  // import the package, not tools/lib.)
   "apps/factory/src/factory-worker-logtap.test.mjs -> tools/lib/ledger/run-ledger-firestore.mjs",
   "apps/factory/src/factory-worker.js -> tools/lib/events.mjs",
   "apps/factory/src/factory-worker.js -> tools/lib/exec-stream.mjs",

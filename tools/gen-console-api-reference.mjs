@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Generate the registry-backed console-route table in
-// docs/reference/console-and-apis.md from tools/lib/ge-command-registry.mjs —
+// docs/reference/console-and-apis.md from packages/capability-registry/src/registry.mjs —
 // the same single source of truth that dispatches the CLI, the console
 // routes, and the MCP server. The generated markdown lives between marker
 // comments; the hand-written prose around the markers is never touched.
@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+import { GE_COMMANDS } from "@ge/capability-registry";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DOC_PATH = join(HERE, "..", "docs", "reference", "console-and-apis.md");
@@ -27,7 +27,7 @@ const escapeCell = (s) => String(s ?? "").replaceAll("|", "\\|").replaceAll("\n"
 
 // Human phrasing for the registry's boolean requirement flags — the same
 // vocabulary CommandCard.astro renders on the docs site, per the
-// `requirements` field contract documented in ge-command-registry.mjs.
+// `requirements` field contract documented in @ge/core-api (packages/core-api/src/capability.mjs).
 const FLAG_LABELS = {
   cloudAuth: "cloud auth",
   terraformRoot: "Terraform root",
@@ -102,7 +102,7 @@ async function main() {
   if (check) {
     if (region !== generated) {
       console.error(
-        "✗ docs/reference/console-and-apis.md ge-console-commands region is stale vs tools/lib/ge-command-registry.mjs",
+        "✗ docs/reference/console-and-apis.md ge-console-commands region is stale vs packages/capability-registry/src/registry.mjs",
       );
       printLineDiff(generated, region);
       console.error("Run: bun run docs:console-api");
