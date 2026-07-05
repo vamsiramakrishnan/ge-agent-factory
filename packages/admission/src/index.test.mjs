@@ -8,6 +8,8 @@ import {
   buildPassport,
   buildStatement,
   computeFileDigest,
+  computeProofBinding,
+  computeTreeDigest,
   computeWorkspaceDigest,
   createLocalSigner,
   evaluateAdmission,
@@ -34,7 +36,8 @@ function makeWorkspace(extra = {}) {
 const KEYS = generateAdmissionKeypair();
 const SIGNER = createLocalSigner(KEYS.privateKeyPem, KEYS.publicKeyPem);
 
-function passportFor(dir, { predicate = { promotionGate: { ok: true }, proofBinding: { ok: true, workspace: { hex: "a".repeat(64) }, proofPolicy: { hex: "b".repeat(64) } } }, issuedAt = new Date().toISOString(), extraAttestations = [] } = {}) {
+function passportFor(dir, { predicate = null, issuedAt = new Date().toISOString(), extraAttestations = [] } = {}) {
+  predicate ||= { promotionGate: { ok: true }, proofBinding: computeProofBinding(dir) };
   const workspaceDigest = computeWorkspaceDigest(dir);
   const contractDigest = computeFileDigest(join(dir, "mock_systems", "usecase-spec.json"));
   const statement = buildStatement({
@@ -67,6 +70,16 @@ describe("digest", () => {
     // shipped bytes do
     writeFileSync(join(dir, "app", "agent.py"), "print('changed')\n");
     expect(computeWorkspaceDigest(dir).hex).not.toBe(first.hex);
+  });
+
+  test("proof tree digests include explicit file roots", () => {
+    const dir = makeWorkspace({ "ge.lock.json": "{\"version\":1}\n" });
+    const first = computeTreeDigest(dir, ["ge.lock.json"]);
+    writeFileSync(join(dir, "ge.lock.json"), "{\"version\":2}\n");
+    const second = computeTreeDigest(dir, ["ge.lock.json"]);
+    expect(first.fileCount).toBe(1);
+    expect(second.fileCount).toBe(1);
+    expect(second.hex).not.toBe(first.hex);
   });
 });
 
@@ -113,6 +126,7 @@ describe("evaluateAdmission", () => {
       expected: {
         workspaceDigest: computeWorkspaceDigest(dir),
         contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
       },
       publicKeyPem: KEYS.publicKeyPem,
     });
@@ -136,11 +150,30 @@ describe("evaluateAdmission", () => {
       expected: {
         workspaceDigest: computeWorkspaceDigest(dir),
         contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
       },
       publicKeyPem: KEYS.publicKeyPem,
     });
     expect(decision.allowed).toBe(false);
     expect(decision.blockers.map((b) => b.code)).toContain("GEADM003");
+  });
+
+
+  test("denies with GEADM009 when attested proof binding is stale", () => {
+    const dir = makeWorkspace();
+    const stale = computeProofBinding(dir);
+    const passport = passportFor(dir, { predicate: { promotionGate: { ok: true }, proofBinding: stale } });
+    writeFileSync(join(dir, "app", "agent.py"), "print('proof drift')\n");
+    const decision = evaluateAdmission({
+      passport,
+      expected: {
+        workspaceDigest: computeWorkspaceDigest(dir),
+        contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
+      },
+      publicKeyPem: KEYS.publicKeyPem,
+    });
+    expect(decision.blockers.map((b) => b.code)).toContain("GEADM009");
   });
 
   test("denies with GEADM004 when the contract changed after issuance", () => {
@@ -153,6 +186,7 @@ describe("evaluateAdmission", () => {
         // digest also changes with the spec file; assert the contract-specific code fires too
         workspaceDigest: computeWorkspaceDigest(dir),
         contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
       },
       publicKeyPem: KEYS.publicKeyPem,
     });
@@ -168,43 +202,12 @@ describe("evaluateAdmission", () => {
       expected: {
         workspaceDigest: computeWorkspaceDigest(dir),
         contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
       },
       publicKeyPem: KEYS.publicKeyPem,
     });
     expect(decision.allowed).toBe(false);
     expect(decision.blockers.map((b) => b.code)).toContain("GEADM006");
-  });
-
-
-
-  test("denies with GEADM009 when attested proof binding is missing", () => {
-    const dir = makeWorkspace();
-    const passport = passportFor(dir, { predicate: { promotionGate: { ok: true } } });
-    const decision = evaluateAdmission({
-      passport,
-      expected: {
-        workspaceDigest: computeWorkspaceDigest(dir),
-        contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
-      },
-      publicKeyPem: KEYS.publicKeyPem,
-    });
-    expect(decision.allowed).toBe(false);
-    expect(decision.blockers.map((b) => b.code)).toContain("GEADM009");
-  });
-
-  test("denies with GEADM009 when attested proof binding is stale", () => {
-    const dir = makeWorkspace();
-    const passport = passportFor(dir, { predicate: { promotionGate: { ok: true }, proofBinding: { ok: false, status: "stale" } } });
-    const decision = evaluateAdmission({
-      passport,
-      expected: {
-        workspaceDigest: computeWorkspaceDigest(dir),
-        contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
-      },
-      publicKeyPem: KEYS.publicKeyPem,
-    });
-    expect(decision.allowed).toBe(false);
-    expect(decision.blockers.map((b) => b.code)).toContain("GEADM009");
   });
 
   test("denies with GEADM007 when the passport is older than maxAgeDays", () => {
@@ -216,6 +219,7 @@ describe("evaluateAdmission", () => {
       expected: {
         workspaceDigest: computeWorkspaceDigest(dir),
         contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
       },
       publicKeyPem: KEYS.publicKeyPem,
       policy: { ...DEFAULT_ADMISSION_POLICY, maxAgeDays: 30 },
@@ -232,6 +236,7 @@ describe("evaluateAdmission", () => {
       expected: {
         workspaceDigest: computeWorkspaceDigest(dir),
         contractDigest: computeFileDigest(join(dir, "mock_systems", "usecase-spec.json")),
+        proofBinding: computeProofBinding(dir),
       },
       publicKeyPem: KEYS.publicKeyPem,
       policy: { ...DEFAULT_ADMISSION_POLICY, requireLiveProof: true },

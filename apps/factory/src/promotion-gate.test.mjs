@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { computeProofBinding } from "@ge/admission";
 import { readPromotionGate } from "./promotion-packet.js";
 
 const made = [];
@@ -12,6 +13,8 @@ function workspace({ validation = { ok: true }, trace = { ok: true }, feedback =
   const dir = mkdtempSync(join(tmpdir(), "ge-promote-"));
   made.push(dir);
   mkdirSync(join(dir, "artifacts"), { recursive: true });
+  mkdirSync(join(dir, "app"), { recursive: true });
+  writeFileSync(join(dir, "app", "agent.py"), "print(\"agent\")\n");
   const write = (name, value) => value !== null && writeFileSync(join(dir, "artifacts", name), JSON.stringify(value));
   write("validation-report.json", validation);
   write("spec-code-trace.json", trace);
@@ -28,6 +31,18 @@ describe("readPromotionGate", () => {
     expect(gate.ok).toBe(true);
     expect(gate.blockers).toEqual([]);
     expect(gate.specToCodeFidelity).toBe("pass");
+  });
+
+
+
+  test("blocks when stored promotion-packet proof binding is stale", async () => {
+    const dir = workspace();
+    const stale = computeProofBinding(dir);
+    writeFileSync(join(dir, "artifacts", "promotion-packet.json"), JSON.stringify({ proofBinding: stale, promotionGate: { ok: true } }));
+    writeFileSync(join(dir, "app", "agent.py"), "print(\"changed\")\n");
+    const gate = await readPromotionGate(dir);
+    expect(gate.ok).toBe(false);
+    expect(gate.blockers.some((b) => b.startsWith("proof binding stale:"))).toBe(true);
   });
 
   test("blocks when validation is not passing", async () => {

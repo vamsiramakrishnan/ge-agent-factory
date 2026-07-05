@@ -12,6 +12,7 @@
 // `required: true` — landing in audit mode first is the house convention
 // (see the Agent Gateway's DRY_RUN → ENFORCED path).
 import { verifyEnvelope, PREDICATE_TYPES } from "./attestation.mjs";
+import { validateProofBinding } from "./digest.mjs";
 import { isPassport } from "./passport.mjs";
 
 export const ADMISSION_API_VERSION = "ge.dev/v1";
@@ -99,9 +100,9 @@ export function evaluateAdmission({
       const detail = (gate?.blockers || []).slice(0, 3).join("; ") || "promotion gate verdict missing";
       blockers.push(blocker("GEADM006", `attested promotion gate is not passing: ${detail}`, "ge prove"));
     }
-    const proofBinding = promotion.predicate?.proofBinding;
-    if (effective.requireFreshProofBinding && proofBinding?.ok !== true) {
-      blockers.push(blocker("GEADM009", proofBinding ? "attested proof binding is stale" : "attested promotion packet has no proof binding", "ge prove, then emit a new passport"));
+    if (effective.requireFreshProofBinding) {
+      const proofBinding = validateProofBinding(promotion.predicate?.proofBinding, expected?.proofBinding);
+      if (proofBinding.ok !== true) blockers.push(blocker("GEADM009", `attested proof binding is not fresh: ${proofBinding.reason}`, `ge prove, then ${emitFix}`));
     }
   }
 

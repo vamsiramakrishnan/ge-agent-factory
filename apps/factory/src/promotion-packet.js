@@ -1,9 +1,9 @@
-import { readFile, stat } from "node:fs/promises";
-import { createHash } from "node:crypto";
+import { stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { glob } from "tinyglobby";
 import { readJsonAsync } from "@ge/std/json-io";
+import { computeProofBinding, validateProofBinding } from "@ge/admission";
 import {
   updateWorkspaceCapabilities,
   writeJsonArtifact,
@@ -39,54 +39,6 @@ async function listWorkspaceFiles(workspaceDir) {
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-function sha256(value) { return createHash("sha256").update(value).digest("hex"); }
-
-async function treeDigest(workspaceDir, roots) {
-  const files = [];
-  for (const root of roots) {
-    if (!existsSync(join(workspaceDir, root))) continue;
-    const rels = await glob(`${root}/**/*`, { cwd: workspaceDir, onlyFiles: true, dot: true, ignore: ["**/.git/**", "**/.venv/**", "**/__pycache__/**"] });
-    files.push(...rels);
-  }
-  const hash = createHash("sha256");
-  for (const rel of [...new Set(files)].sort()) {
-    hash.update(rel);
-    hash.update("\0");
-    hash.update(await readFile(join(workspaceDir, rel)));
-    hash.update("\0");
-  }
-  return { algorithm: "sha256", hex: hash.digest("hex"), files: [...new Set(files)].length };
-}
-
-async function computeProofBinding(workspaceDir) {
-  const proofPolicy = { schemaVersion: "ge-proof-binding-policy.v1", required: ["okf", "evals", "fixtures", "generator", "workspace"] };
-  const [okf, evals, fixtures, generator, workspace] = await Promise.all([
-    treeDigest(workspaceDir, ["okf", "app/knowledge"]),
-    treeDigest(workspaceDir, ["evals", "tests/eval"]),
-    treeDigest(workspaceDir, ["fixtures"]),
-    treeDigest(workspaceDir, ["app", "pyproject.toml", "ge.lock.json"]),
-    treeDigest(workspaceDir, ["app", "mock_systems", "fixtures", "evals", "tests", "okf", "pyproject.toml", "ge.lock.json"]),
-  ]);
-  return {
-    schemaVersion: "ge-proof-binding.v1",
-    generatedAt: new Date().toISOString(),
-    ok: true,
-    okf, evals, fixtures, generator, workspace,
-    proofPolicy: { algorithm: "sha256", hex: sha256(JSON.stringify(proofPolicy)), policy: proofPolicy },
-  };
-}
-
-async function validateProofBinding(workspaceDir, binding) {
-  if (!binding) return { ok: null, status: "missing", blockers: [] };
-  const current = await computeProofBinding(workspaceDir);
-  const blockers = [];
-  for (const key of ["okf", "evals", "fixtures", "generator", "workspace", "proofPolicy"]) {
-    if (!binding[key]?.hex) blockers.push(`proof binding missing ${key} hash`);
-    else if (binding[key].hex !== current[key].hex) blockers.push(`proof binding stale for ${key}`);
-  }
-  return { ok: blockers.length === 0, status: blockers.length ? "stale" : "fresh", blockers, current };
-}
-
 function artifactStatus(path, value, summary = "") {
   return {
     path,
@@ -107,7 +59,7 @@ function compactPreview(previewReport) {
   };
 }
 
-function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBindingStatus = null }) {
+function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBinding }) {
   const blockers = [];
   if (validationReport?.ok !== true) blockers.push("validation report is not passing");
   if (!specCodeTrace) blockers.push(`missing ${ARTIFACT_PATHS.specCodeTrace}`);
@@ -126,7 +78,15 @@ function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback
   // the SDK-validated field the refine harness now emits — it finally gates here.
   const specToCodeFidelity = refineResult?.spec_to_code_fidelity || null;
   if (specToCodeFidelity && specToCodeFidelity !== "pass") blockers.push(`refine spec-to-code fidelity: ${specToCodeFidelity}`);
-  if (proofBindingStatus?.ok === false) blockers.push(...proofBindingStatus.blockers);
+  // Precise blocker per state — an absent binding and a drifted one have
+  // different fixes (re-prove vs re-emit), and the gate tests assert the
+  // "proof binding missing" / "proof binding stale" distinction.
+  if (proofBinding?.ok !== true) {
+    const reason = (proofBinding?.reason || "").replace(/^stale proof binding:\s*/i, "");
+    blockers.push(/missing/i.test(reason) || !reason
+      ? "proof binding missing from the promotion packet"
+      : `proof binding stale: ${reason}`);
+  }
   return {
     ok: blockers.length === 0,
     policy: PROMOTION_POLICY,
@@ -141,15 +101,18 @@ function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback
 // to refuse shipping a workspace that hasn't passed validation + the harness
 // verdicts.
 export async function readPromotionGate(workspaceDir) {
-  const [validationReport, specCodeTrace, generatorFeedback, refineResult, promotionPacket] = await Promise.all([
+  const [validationReport, specCodeTrace, generatorFeedback, refineResult] = await Promise.all([
     readJson(join(workspaceDir, ARTIFACT_PATHS.validationReport), null),
     readJson(join(workspaceDir, ARTIFACT_PATHS.specCodeTrace), null),
     readJson(join(workspaceDir, ARTIFACT_PATHS.generatorFeedback), null),
     readJson(join(workspaceDir, HARNESS_REFINE_PATH), null),
-    readJson(join(workspaceDir, ARTIFACT_PATHS.promotionPacket), null),
   ]);
-  const proofBindingStatus = await validateProofBinding(workspaceDir, promotionPacket?.proofBinding || null);
-  return buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBindingStatus });
+  const packet = await readJson(join(workspaceDir, ARTIFACT_PATHS.promotionPacket), null);
+  const currentProofBinding = computeProofBinding(workspaceDir);
+  const proofBinding = packet?.proofBinding
+    ? { ...currentProofBinding, ...validateProofBinding(packet.proofBinding, currentProofBinding) }
+    : currentProofBinding;
+  return buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBinding });
 }
 
 export async function createPromotionPacket({
@@ -174,9 +137,8 @@ export async function createPromotionPacket({
   const pipeline = await readJson(join(workspaceDir, WORKSPACE_PATHS.pipeline), null);
   const files = await listWorkspaceFiles(workspaceDir);
   const generatedAt = new Date().toISOString();
-  const proofBinding = await computeProofBinding(workspaceDir);
-  const proofBindingStatus = await validateProofBinding(workspaceDir, proofBinding);
-  const promotionGate = buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBindingStatus });
+  const proofBinding = computeProofBinding(workspaceDir);
+  const promotionGate = buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult, proofBinding });
 
   const packet = {
     schemaVersion: 1,
@@ -311,10 +273,6 @@ export function renderPromotionPacket(packet) {
     "",
     "## Evidence",
     ...Object.entries(evidence).map(([name, item]) => `- ${name}: ${item.ok ? "ready" : "missing"} (${item.path}) ${item.summary ? `- ${item.summary}` : ""}`),
-    "",
-    "## Proof Binding",
-    `Status: ${packet.proofBinding?.ok ? "fresh" : "missing/stale"}`,
-    packet.proofBinding ? `Workspace hash: ${packet.proofBinding.workspace?.hex || "missing"}` : "No proof binding recorded.",
     "",
     "## Promotion Gate",
     `Status: ${packet.promotionGate?.ok ? "pass" : "blocked"}`,
