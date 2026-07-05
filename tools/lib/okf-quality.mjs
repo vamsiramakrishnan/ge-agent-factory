@@ -247,3 +247,56 @@ export function shardEnrichmentPlan(plan, { maxHigh = 10, maxMedium = 20 } = {})
   }
   return shards;
 }
+
+export const EVAL_VERIFY_SCHEMA_VERSION = "okf-eval-verify.v1";
+function evalConcepts(bundle) { return bundle.concepts.filter((c) => /Eval/i.test(c.type) || c.relInBundle.startsWith("tests/")); }
+function toolConcepts(bundle) { return bundle.concepts.filter((c) => /Tool/i.test(c.type) || c.relInBundle.startsWith("tools/")); }
+function linkedHrefs(body) { return [...body.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1]); }
+function fixtureRefs(raw) { return [...raw.matchAll(/(?:fixtures|fixtureRefs?|fixture_refs?)[:\s/][`"']?([^`"'\s,)]+\.(?:json|csv|yaml|yml))/gi)].map((m) => m[0].match(/fixtures\/[^`"'\s,)]+|[^`"'\s,)]+\.(?:json|csv|yaml|yml)$/i)?.[0]).filter(Boolean); }
+function verifyError(code, severity, message, path, fix, extra = {}) { return { code, severity, message, path, fix, ...extra }; }
+
+export async function verifySpecEvals(dir) {
+  const bundle = await readBundle(dir);
+  const tools = toolConcepts(bundle);
+  const toolIds = new Set(tools.map((t) => t.id));
+  const toolById = new Map(tools.map((t) => [t.id, t]));
+  const systems = new Set(concepts(bundle, /System|systems\//i).map((s) => s.id));
+  const entities = new Set(concepts(bundle, /Table|Entity|tables\//i).map((e) => e.id));
+  const evals = evalConcepts(bundle);
+  const errors = [];
+  const warnings = [];
+  for (const ev of evals) {
+    if (GENERIC_PROMPTS.some((re) => re.test(ev.title) || re.test(ev.body))) errors.push(verifyError("OKF-EVAL-002", "medium", "Generic workflow evals are not allowed by static verification.", ev.path, "Replace with a fixture-backed scenario and deterministic assertions."));
+    if (!/deterministic_assertions|deterministic assertions|\bassert(s|ion|ions)?\b/i.test(ev.raw)) errors.push(verifyError("OKF-ASSERT-001", "medium", "Eval has no deterministic assertions.", ev.path, "Add deterministic_assertions or an Assertions section."));
+    const refs = [...new Set(refIds(ev.body, "Mechanisms to call"))];
+    for (const ref of refs) {
+      if (!toolIds.has(ref)) errors.push(verifyError("OKF-REF-001", "critical", `Eval references unknown tool: ${ref}.`, ev.path, "Reference only tools defined under the OKF tools contract.", { reference: ref }));
+      else if (!/\b(args|arguments|inputs?|expected_tool_calls)\b/i.test(ev.raw)) errors.push(verifyError("OKF-EVAL-005", "high", `Eval references tool ${ref} without deterministic expected arguments.`, ev.path, "Add expected_tool_calls with argument assertions.", { reference: ref }));
+      const tool = toolById.get(ref);
+      if (tool && isActionTool(tool) && !STATE_RE.test(ev.raw)) errors.push(verifyError("OKF-STATE-001", "critical", `Action tool ${ref} is exercised without expected_state_delta or expected_no_mutation.`, ev.path, "Add expected_state_delta or expected_no_mutation for every action-tool eval.", { reference: ref }));
+    }
+    for (const href of linkedHrefs(ev.body)) {
+      const id = conceptIdFromHref(href);
+      if (/\/systems\//.test(href) && !systems.has(id)) errors.push(verifyError("OKF-REF-001", "critical", `Eval references unknown source system: ${id}.`, ev.path, "Reference only source systems defined in the OKF contract.", { reference: id }));
+      if (/(\/tables\/|\/entities\/)/.test(href) && !entities.has(id)) errors.push(verifyError("OKF-REF-001", "critical", `Eval references unknown entity: ${id}.`, ev.path, "Reference only entities/tables defined in the OKF contract.", { reference: id }));
+    }
+    for (const fixture of fixtureRefs(ev.raw)) {
+      const candidates = [resolve(fixture), resolve(dirname(bundle.dir), fixture), resolve(bundle.dir, fixture)];
+      if (!candidates.some((p) => existsSync(p))) errors.push(verifyError("OKF-FIXTURE-001", "high", `Eval references missing fixture: ${fixture}.`, ev.path, "Create the fixture or correct the fixture reference.", { reference: fixture }));
+    }
+  }
+  return { specId: slugPath(dir), sourcePath: bundle.sourcePath, evals: evals.length, errors, warnings, ok: errors.length === 0 };
+}
+
+export async function verifyOkfEvals({ all = false, spec, root = "okf", changed = false } = {}) {
+  let dirs = await discoverOkfBundles({ root, spec });
+  if (changed) {
+    const { execa } = await import("execa");
+    const out = await execa("git", ["diff", "--name-only", "HEAD"], { reject: false });
+    const changedFiles = new Set(out.stdout.split(/\r?\n/).filter(Boolean));
+    dirs = dirs.filter((d) => [...changedFiles].some((f) => f.startsWith(rel(d) + "/")));
+  }
+  const specs = [];
+  for (const dir of dirs) specs.push(await verifySpecEvals(dir));
+  return { schemaVersion: EVAL_VERIFY_SCHEMA_VERSION, generatedAt: new Date().toISOString(), summary: { specs: specs.length, evals: specs.reduce((n, s) => n + s.evals, 0), errors: specs.reduce((n, s) => n + s.errors.length, 0), warnings: specs.reduce((n, s) => n + s.warnings.length, 0), ok: specs.every((s) => s.ok) }, specs };
+}

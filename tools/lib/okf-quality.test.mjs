@@ -10,7 +10,7 @@ test("action tool without state assertion is flagged", async()=>{ const d=await 
 test("HITL without approval eval is flagged", async()=>{ const d=await fixture({"index.md":fm("Knowledge Bundle","Claims Agent","Requires human checkpoint before settlement."),"tests/t.md":fm("Eval Scenario","Claim happy path","Normal happy path.")}); const r=await auditSpec(d); expect(r.failedRules.map(f=>f.code)).toContain("OKF-HITL-001"); });
 test("unknown tool reference fails", async()=>{ const d=await fixture({"index.md":fm("Knowledge Bundle","Tool Agent"),"tests/t.md":fm("Eval Scenario","Tool eval","## Mechanisms to call\n- [missing_tool](/tools/missing-tool.md)\n")}); const r=await auditSpec(d); expect(r.failedRules.map(f=>f.code)).toContain("OKF-REF-001"); });
 test("status cannot become proven without fresh proof", ()=>{ const report={contractValid:true, inventory:{evals:5}, score:{total:90}, allowedToClaimProven:false}; expect(computeStatus(report)).toBe("L4"); });
-import { generateEnrichmentPlan, loadDomainPacks, matchDomainPacksForSpec, shardEnrichmentPlan } from "./okf-quality.mjs";
+import { generateEnrichmentPlan, loadDomainPacks, matchDomainPacksForSpec, shardEnrichmentPlan, verifyOkfEvals } from "./okf-quality.mjs";
 
 test("domain packs load and match by keywords", async()=>{
   const packs = await loadDomainPacks();
@@ -27,4 +27,29 @@ test("enrichment plan creates concrete obligations and bounded shards", async()=
   const shards = shardEnrichmentPlan(plan);
   expect(shards.length).toBe(1);
   expect(shards[0].specs[0].id).toBe("eco-impact-analysis-agent");
+});
+
+
+test("eval verifier rejects generic evals, missing fixtures, and action evals without state assertions", async()=>{
+  const d=await fixture({
+    "index.md":fm("Knowledge Bundle","Verifier Agent"),
+    "tools/create-case.md":fm("Agent Tool","action_create_case","- **Kind:** action\n\n## Side Effects\nMay change CRM state."),
+    "tests/generic.md":fm("Eval Scenario","Run the Verifier Agent workflow for the current period.","## Mechanisms to call\n- [action_create_case](/tools/create-case.md)\n\nfixtureRefs: fixtures/verifier/missing.json\n")
+  });
+  const r=await verifyOkfEvals({spec:d});
+  const codes=r.specs[0].errors.map((e)=>e.code);
+  expect(codes).toContain("OKF-EVAL-002");
+  expect(codes).toContain("OKF-FIXTURE-001");
+  expect(codes).toContain("OKF-STATE-001");
+});
+
+test("eval verifier accepts deterministic action evals with args, fixture, and state assertion", async()=>{
+  const d=await fixture({
+    "index.md":fm("Knowledge Bundle","Verifier Agent"),
+    "tools/create-case.md":fm("Agent Tool","action_create_case","- **Kind:** action\n\n## Side Effects\nMay change CRM state."),
+    "fixtures/case.json":"{\"case_id\":\"CASE-1\"}\n",
+    "tests/create-case.md":fm("Eval Scenario","Create case with approval","## Mechanisms to call\n- [action_create_case](/tools/create-case.md)\n\nexpected_tool_calls:\n- name: action_create_case\n  args:\n    case_id: CASE-1\nexpected_state_delta:\n  systems: [crm.cases]\ndeterministic_assertions:\n- state_mutation_recorded\nfixtureRefs: fixtures/case.json\n")
+  });
+  const r=await verifyOkfEvals({spec:d});
+  expect(r.summary.ok).toBe(true);
 });
