@@ -54,7 +54,8 @@
       "commands": [
         "okf.customize",
         "agents.register",
-        "agents.track"
+        "agents.track",
+        "okf.skill"
       ],
       "engines": [
         "@ge/okf"
@@ -550,7 +551,9 @@
         "systems.unbind",
         "systems.synth",
         "evals.import",
-        "models.doctor"
+        "models.doctor",
+        "systems.list",
+        "systems.doctor"
       ],
       "engines": [
         "@ge/byo-systems"
