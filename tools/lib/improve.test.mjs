@@ -71,6 +71,13 @@ describe("improveSpec", () => {
     expect(r.reachedTarget).toBe(false);
   });
 
+  test("surfaces a verifyOkfEvals failure instead of swallowing it", async () => {
+    const { deps } = fakeDeps({ startScore: 24, step: 20 });
+    deps.verifyOkfEvals = async () => { throw new Error("fixture INV-1 has an unresolvable coverage link"); };
+    const r = await improveSpec({ spec: "fake-agent", write: true, target: "L4", maxIterations: 1, deps });
+    expect(r.iterations[0].evalVerifyError).toContain("unresolvable coverage link");
+  });
+
   test("rejects an unknown target level and a missing id", async () => {
     const { deps } = fakeDeps();
     await expect(improveSpec({ spec: "x", target: "L9", deps })).rejects.toThrow(/unknown target/);

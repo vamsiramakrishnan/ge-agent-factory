@@ -213,8 +213,9 @@ export function buildStageExecutionPlan(payload) {
     // deterministic code instead of failing the run — parity with local builds.
     harness_refine: payload.options?.refine === false ? [] : (() => {
       // Pin the harness review/refine model so the cloud factory reviews on the same
-      // model as local (default gemini-3.5-flash) — parity with factory.js.
-      const harnessModel = payload.options?.model || DEFAULT_AGENT_MODEL;
+      // model as local — parity with factory.js/provisionLocal, which pin the
+      // refinementModel here (falling back to the agent model, then the default).
+      const harnessModel = payload.options?.refinementModel || payload.options?.model || DEFAULT_AGENT_MODEL;
       const provider = payload.options?.harnessProvider || "antigravity-sdk";
       return [
         ["node", ["scripts/verify-harness-runtime.mjs", "--dir", workspaceDir, "--provider", provider]],
