@@ -6,6 +6,13 @@
 //   {"type":"chunk","turn":0,"atMs":0,"json":{…StreamAssistResponse…}}
 //   {"type":"chunk","turn":0,"atMs":412,"json":{…}}
 //   {"type":"request","turn":1,"session":"projects/…/sessions/abc","body":{…}}
+//   {"type":"span","span":{…OTLP/JSON span…}}     (appended after the stream)
+//
+// `span` records carry the run's OTel trace (otel-spans.mjs — root
+// ge.live.conversation + one ge.live.turn per turn) in OTLP/JSON shape, so a
+// recorded cassette is also a shippable trace. They are annotations: replay
+// ignores them (replays record their own trace), and readers older than this
+// record type skip them via the unknown-type rule below.
 //
 // atMs offsets are preserved from the recording, so replay reproduces the
 // original time-to-first-text and inter-chunk gaps deterministically — which
@@ -22,6 +29,7 @@ export function parseCassette(text, { path = "<inline>" } = {}) {
   const lines = String(text).split("\n").filter((line) => line.trim().length);
   let meta = null;
   const turns = [];
+  const spans = [];
   lines.forEach((line, lineNo) => {
     let record;
     try {
@@ -47,6 +55,8 @@ export function parseCassette(text, { path = "<inline>" } = {}) {
         });
       }
       turns[record.turn].chunks.push({ atMs: record.atMs ?? 0, json: record.json });
+    } else if (record.type === "span") {
+      if (record.span) spans.push(record.span);
     }
     // Unknown record types are skipped on purpose: future recorders may add
     // annotation records and old readers must keep replaying.
@@ -66,7 +76,7 @@ export function parseCassette(text, { path = "<inline>" } = {}) {
       fix: `re-record the cassette (ge drive --record-cassette ${path})`,
     });
   }
-  return { meta, turns, path };
+  return { meta, turns, spans, path };
 }
 
 export function readCassette(path) {
@@ -100,6 +110,9 @@ export function createCassetteRecorder(path, { target, recordedAt } = {}) {
     },
     chunk(turn, atMs, json) {
       append({ type: "chunk", turn, atMs, json });
+    },
+    span(span) {
+      append({ type: "span", span });
     },
   };
 }

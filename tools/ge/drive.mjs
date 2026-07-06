@@ -15,7 +15,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { defineCommand } from "citty";
 import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core } from "./shared.mjs";
-import { prepareDrive, runDrive, saveTranscript, recordTranscriptAsEvalCase } from "../lib/live/drive-session.mjs";
+import { prepareDrive, runDrive, saveTranscript, recordTranscriptAsEvalCase, recordTranscriptSpans } from "../lib/live/drive-session.mjs";
 import { createConversationSession, nextTranscriptId } from "../lib/live/conversation.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
 import { sourceTimestamp } from "../../apps/factory/src/source-clock.js";
@@ -88,6 +88,7 @@ function renderDriveResult(result) {
   out(ui.kv([
     ["verdict", result.ok ? pc.green("ok") : pc.red("failed")],
     ["transcript", pc.dim(result.transcriptPath)],
+    result.transcript.trace && ["trace", pc.dim(`${result.transcript.trace.traceId} (${result.transcript.trace.spans.length} spans, OTLP/JSON in the transcript)`)],
     result.recorded && ["saved", `${ui.cmd(result.recorded.evalsetPath)}${pc.dim(`#${result.recorded.caseId}`)}`],
     result.responderWarning && ["warning", pc.yellow(result.responderWarning)],
   ]));
@@ -101,7 +102,7 @@ function renderDriveResult(result) {
 }
 
 async function interactiveDrive(cfg, args) {
-  const { runner, target } = await prepareDrive(cfg, {
+  const { runner, target, recorder } = await prepareDrive(cfg, {
     cassette: args.cassette,
     recordCassette: args.recordCassette,
     targetAgent: args.targetAgent,
@@ -142,6 +143,7 @@ async function interactiveDrive(cfg, args) {
     return;
   }
   const finished = session.finish();
+  recordTranscriptSpans(recorder, finished.transcript);
   const transcriptPath = saveTranscript(finished.transcript);
   const recorded = args.record ? recordTranscriptAsEvalCase(finished.transcript, { evalsetPath: args.record, caseId: args.recordId }) : null;
   out("");
