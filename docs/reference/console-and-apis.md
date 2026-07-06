@@ -90,6 +90,7 @@ returns `202 { jobId, command }`; stream progress via
 | `POST /api/ge/data/up` | `ge data up` | Apply Terraform for shared stores and merge coordinates into .ge.json | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` · BigQuery API (hard) |
 | `POST /api/ge/data/synth` | `ge data synth` | Generate deterministic synthetic seed data for a simulator system twin (pack contract → recipe → seeded rows → seed.json), with an opt-in statistical realism profile | `writes-repo` | `node` on PATH |
 | `POST /api/ge/okf/customize` | `ge okf customize` | Customize a base agent into a new variant OKF bundle (system swaps, terminology rewrites, vertical policy overlay) and compile it against the base | `writes-repo` | `node` on PATH |
+| `POST /api/ge/okf/skill` | `ge okf skill` | Compile an agent spec into an Agent Skill package (SKILL.md + references + scripts + assets) — the skill-based alternative to generated ADK runtime code | `writes-repo` | `node` on PATH |
 | `POST /api/ge/systems/bind` | `ge systems bind` | Bind a contract system to a live twin/mcp/rest target, validating the binding and persisting it under .ge/systems/bindings.json | `starts-local-workloads` | `node` on PATH |
 | `GET /api/ge/systems/bindings` | `ge systems bindings` | List stored live-system bindings (.ge/systems/bindings.json) | `read-only` | — |
 | `POST /api/ge/systems/unbind` | `ge systems unbind` | Remove a system's live binding from .ge/systems/bindings.json | `starts-local-workloads` | `node` on PATH |

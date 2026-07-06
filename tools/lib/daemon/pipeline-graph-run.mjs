@@ -202,8 +202,12 @@ export function rehydratePipelineGraphForResume(resumeGraph = {}, plannedGraph =
   };
 }
 
-export async function startPipelineTask({ ids = [], scenario = null, spec = null, workspace = null, systems = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {}, mode = null, executeFactory = false, useAntigravity = true, harnessAgent = "antigravity-sdk", harnessModel = "gemini-3.5-flash", harnessLocation = "global", resumedFrom = null, resumeGraph = null, startAtNode = null } = {}) {
+export async function startPipelineTask({ ids = [], scenario = null, spec = null, workspace = null, systems = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {}, mode = null, executeFactory = false, useAntigravity = true, harnessAgent = null, harnessModel = null, harnessLocation = "global", resumedFrom = null, resumeGraph = null, startAtNode = null } = {}) {
   const cfg = core.loadConfig(query || {});
+  // Centralized harness defaults (config-schema.mjs): callers that omit these
+  // get the flag→env→.ge.json→default resolution instead of literals here.
+  harnessAgent = harnessAgent || cfg.harnessAgent || "antigravity-sdk";
+  harnessModel = harnessModel || cfg.refinementModel || "gemini-3.5-flash";
   const plannedGraph = buildPipelineGraph({
     mode: mode || cfg.mode || "local",
     ids,

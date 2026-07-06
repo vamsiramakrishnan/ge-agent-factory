@@ -30,7 +30,29 @@ export const harnessReviewSchema = z.looseObject({
   required_follow_up_commands: z.array(z.any()).optional(),
 });
 
+// Harness-as-judge output: per-case rubric grading in the SAME metric
+// vocabulary as the platform judge (tool_use_quality / final_response_quality
+// / the behavior-contract judge), so the deterministic aggregation in
+// cmdHarnessJudge can gate against the standard ge_thresholds. Scores are
+// 0.0–1.0 fractions of rubrics satisfied, mirroring the agents-cli judge.
+export const harnessJudgeSchema = z.looseObject({
+  cases: z.array(z.looseObject({
+    id: z.string(),
+    tool_use_quality: z.number(),
+    final_response_quality: z.number(),
+    behavior_contract_score: z.number(),
+    rubric_verdicts: z.array(z.looseObject({
+      rubric_id: z.string(),
+      verdict: z.number(),
+      reason: z.string().optional(),
+    })).optional(),
+    explanation: z.string().optional(),
+  })),
+  notes: z.array(z.string()).optional(),
+});
+
 export const HARNESS_SCHEMAS = {
   "harness-refine": harnessRefineSchema,
   "harness-review": harnessReviewSchema,
+  "harness-judge": harnessJudgeSchema,
 };

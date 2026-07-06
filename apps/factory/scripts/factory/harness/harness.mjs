@@ -14,9 +14,10 @@
 // buildAgentQualityPlan elsewhere in this tree.
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 import { extractFirstJsonObject } from "@ge/std/json-repair";
 import { resolveGcpProject } from "@ge/std/gcp-config";
+import { renderEvalConfig } from "../evals/render-eval-artifacts.mjs";
 
 // Non-fatal: validate parsed harness output against its zod source of truth.
 // Warns (keeps the output) so a contract drift surfaces without breaking a run.
@@ -69,7 +70,10 @@ export async function cmdHarnessReview(dir, flags, deps) {
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
   await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
-  const provider = flags.agent || flags.provider || "antigravity-sdk";
+  // Flag → env (centralized GE_HARNESS_AGENT knob) → historical default; the
+  // claude/codex adapters run this same read-only audit with the JSON schema
+  // embedded in the prompt (extractFirstJsonObject parses either way).
+  const provider = flags.agent || flags.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
   const context = await readWorkspaceReviewContext(dir);
   const message = [
     "Review this generated GE ADK agent workspace for spec-to-code generation quality. Do not edit files.",
@@ -265,7 +269,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
   await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
-  const provider = flags.agent || flags.provider || "antigravity-sdk";
+  const provider = flags.agent || flags.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
   const workItem = buildHarnessWorkItem({
     runId: flags["run-id"] || process.env.GE_AGENT_FACTORY_RUN_ID || null,
     itemId: flags["item-id"] || process.env.GE_AGENT_FACTORY_ITEM_ID || null,
@@ -386,6 +390,199 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     nextCommand: nextCommandFor(pipeline, dir),
   };
   // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
+  return summary;
+}
+
+// ── harness-as-judge ────────────────────────────────────────────────────────
+// The judge lane runs through the SAME harness adapters (antigravity-sdk,
+// claude, codex, gemini — flag → GE_HARNESS_AGENT → default) and the same
+// skill materialization as review/refine, instead of being a bare model id in
+// eval_config.yaml. Split of responsibilities:
+//   · rubric (LLM-judged) metrics — the harness grades each case against the
+//     behavior contract's rubric prose (the SAME rubric source that renders
+//     eval_config.yaml's judge metric, via renderEvalConfig), one 0–1 score
+//     per standard metric name;
+//   · aggregation + thresholds — deterministic code below (mean per metric,
+//     gated against the same thresholds the platform judge uses);
+//   · computed metrics (transport, tool trajectory, response match, grounding)
+//     stay in the deterministic lane (evalkit / `ge prove --live`), never LLM.
+
+// Normalize judge input into [{ id, prompt, response, toolCalls }] cases.
+// Accepts a bare case array, a `ge drive`/prove LiveTranscript ({turns:[...]}),
+// or an object wrapping either under `cases`.
+export function normalizeJudgeCases(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map((entry, index) => ({
+      id: String(entry?.id || `case-${index + 1}`),
+      prompt: String(entry?.prompt || entry?.input || entry?.question || entry?.user?.text || ""),
+      response: String(entry?.response || entry?.finalResponse || entry?.final_response || entry?.output || entry?.assistant?.text || entry?.text || ""),
+      toolCalls: (entry?.toolCalls || entry?.tool_calls || entry?.invocationTools || []).map((tool) => String(tool?.name || tool)),
+    })).filter((entry) => entry.prompt || entry.response);
+  }
+  if (raw && Array.isArray(raw.turns)) {
+    return raw.turns.map((turn, index) => ({
+      id: `turn-${(Number.isInteger(turn?.index) ? turn.index : index) + 1}`,
+      prompt: String(turn?.user?.text || ""),
+      response: String(turn?.assistant?.text || ""),
+      toolCalls: (turn?.invocationTools || []).map((tool) => String(tool?.name || tool)),
+    })).filter((entry) => entry.prompt || entry.response);
+  }
+  if (raw && Array.isArray(raw.cases)) return normalizeJudgeCases(raw.cases);
+  return [];
+}
+
+function judgeRubricLines(rubrics) {
+  return rubrics.map((rubric) => `- ${rubric.rubric_id}: ${rubric.rubric_content.text_property}`);
+}
+
+// Deterministic aggregation of per-case judge scores into standard
+// metric-shaped rows: { metric: { meanScore, threshold, pass, cases } }.
+export function aggregateJudgeMetrics(cases, { toolUseThreshold, finalResponseThreshold }) {
+  const mean = (key) => cases.length
+    ? Number((cases.reduce((sum, entry) => sum + (Number(entry[key]) || 0), 0) / cases.length).toFixed(4))
+    : 0;
+  const row = (meanScore, threshold) => ({ meanScore, threshold, pass: cases.length > 0 && meanScore >= threshold, cases: cases.length });
+  const behaviorThreshold = Math.min(toolUseThreshold, finalResponseThreshold);
+  return {
+    tool_use_quality: row(mean("tool_use_quality"), toolUseThreshold),
+    final_response_quality: row(mean("final_response_quality"), finalResponseThreshold),
+    ge_behavior_contract_judge: row(mean("behavior_contract_score"), behaviorThreshold),
+  };
+}
+
+export async function cmdHarnessJudge(dir, flags, deps) {
+  const {
+    readJson, fail, mkdir, writeText, writeJson,
+    loadPipeline, savePipeline, markStep, nextCommandFor,
+    runHarnessTask, REPO_ROOT, HARNESS_DATA_ROOT,
+    harnessJudgeSchema, wantsVertex, truthyFlag,
+    harnessResponseSchemaFile, reviewFanoutOptions,
+  } = deps;
+  const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
+  const behaviorContract = spec?.behaviorContract || spec?.generationSpec?.behaviorContract || null;
+  if (!behaviorContract) fail("No behavior contract found (mock_systems/usecase-spec.json). Run 'factory from-usecase' or 'factory tools' first.");
+  if (!flags.results) {
+    fail("Pass --results <path> — a JSON file of cases to judge: a `ge drive`/`ge prove --live` transcript (.ge/transcripts/<id>.json), an agents-cli eval generate output, or an array of {prompt, response, toolCalls} objects.");
+  }
+  const resultsPath = isAbsolute(flags.results) ? flags.results : resolve(dir, flags.results);
+  const rawResults = await readJson(resultsPath, null);
+  if (!rawResults) fail(`Could not read judge input: ${resultsPath}`);
+  const cases = normalizeJudgeCases(rawResults);
+  if (!cases.length) fail(`Judge input has no gradeable cases (need prompt/response pairs): ${resultsPath}`);
+  await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
+
+  const provider = flags.agent || flags.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
+  // Same rubric source as the generated eval_config.yaml judge metric — one
+  // rubric prose, two execution lanes (platform judge_model, harness judge).
+  const criteria = renderEvalConfig(behaviorContract).criteria;
+  const toolUse = criteria.rubric_based_tool_use_quality_v1;
+  const finalResponse = criteria.rubric_based_final_response_quality_v1;
+  const message = [
+    "Judge the recorded agent behavior below against its behavior contract. Do not edit files.",
+    "",
+    "For EVERY case: judge each rubric independently (1 satisfied, 0 violated), using toolCalls for tool-use rubrics and response for final-response rubrics. Then report, per case:",
+    "- tool_use_quality: fraction of tool-use rubrics satisfied (0.0-1.0)",
+    "- final_response_quality: fraction of final-response rubrics satisfied (0.0-1.0)",
+    "- behavior_contract_score: fraction of ALL rubrics satisfied (0.0-1.0)",
+    "",
+    "Tool-use rubrics:",
+    ...judgeRubricLines(toolUse.rubrics),
+    "",
+    "Final-response rubrics:",
+    ...judgeRubricLines(finalResponse.rubrics),
+    "",
+    "Return only a single JSON object with this schema:",
+    JSON.stringify({
+      cases: [{ id: "", tool_use_quality: 0, final_response_quality: 0, behavior_contract_score: 0, rubric_verdicts: [{ rubric_id: "", verdict: 0, reason: "" }], explanation: "" }],
+      notes: [],
+    }, null, 2),
+    "",
+    "# Cases to judge",
+    "",
+    "```json",
+    JSON.stringify(cases, null, 2).slice(0, 120000),
+    "```",
+  ].join("\n");
+
+  const result = await runHarnessTask({
+    repoRoot: REPO_ROOT,
+    dataRoot: HARNESS_DATA_ROOT,
+    workspaceDir: dir,
+    agentId: provider,
+    message,
+    // "eval" routes the eval/judging skills from the skill registry into the
+    // run — the judge is a harness WITH skills, not a bare model call.
+    stages: ["eval", "review"],
+    permissionProfile: flags["permission-profile"] || "review",
+    model: flags.model || "default",
+    vertex: wantsVertex(flags),
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
+    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    responseSchemaFile: harnessResponseSchemaFile("harness-judge"),
+    ...reviewFanoutOptions(),
+    timeoutSec: Number(flags["timeout-sec"] || 600),
+  });
+
+  await writeText(join(dir, "artifacts", `${provider}-harness-judge.raw.txt`), result.text || result.stdout || "");
+  let judged = null;
+  let parseError = null;
+  try {
+    judged = extractFirstJsonObject(result.text || result.stdout || "");
+    validateHarnessOutput(harnessJudgeSchema, judged, "harness judge");
+  } catch (error) {
+    parseError = error.message;
+  }
+  if (!result.ok || !judged || !Array.isArray(judged.cases)) {
+    const reason = !result.ok
+      ? `harness run failed: ${result.stderr || result.status}`
+      : `did not return parseable JSON: ${parseError || "no cases array"}`;
+    if (truthyFlag(flags.soft)) {
+      const summary = { step: "harness-judge", provider, skipped: true, degraded: true, reason };
+      console.error(`⚠  ${provider} harness judge degraded: ${reason}`);
+      // Bare return, same contract as cmdHarnessReview (see the NOTE there).
+      return summary;
+    }
+    fail(`${provider} harness judge ${reason}`, "GE0012");
+  }
+
+  const metrics = aggregateJudgeMetrics(judged.cases, {
+    toolUseThreshold: toolUse.threshold,
+    finalResponseThreshold: finalResponse.threshold,
+  });
+  const pass = Object.values(metrics).every((metric) => metric.pass);
+  const artifact = {
+    kind: "ge.harness_judge.result",
+    provider,
+    resultsPath,
+    casesJudged: judged.cases.length,
+    metrics,
+    pass,
+    cases: judged.cases,
+    notes: Array.isArray(judged.notes) ? judged.notes : [],
+    // Deterministic metrics (transport, trajectory, response match, grounding)
+    // are the other lane: `ge prove --live` / evalkit — never judged here.
+    computedMetricsLane: "ge prove --live",
+  };
+  await writeJson(join(dir, "artifacts", `${provider}-harness-judge.json`), artifact);
+  await writeJson(join(dir, "artifacts", "harness-judge.json"), artifact);
+  const pipeline = await loadPipeline(dir);
+  markStep(pipeline, "harnessJudge", pass ? "done" : "failed", {
+    provider,
+    output: `artifacts/${provider}-harness-judge.json`,
+    pass,
+    cases: judged.cases.length,
+  });
+  await savePipeline(dir, pipeline);
+  const summary = {
+    step: "harness-judge",
+    provider,
+    output: `artifacts/${provider}-harness-judge.json`,
+    pass,
+    metrics,
+    casesJudged: judged.cases.length,
+    nextCommand: nextCommandFor(pipeline, dir),
+  };
+  // Bare return, same contract as cmdHarnessReview (see the NOTE there).
   return summary;
 }
 

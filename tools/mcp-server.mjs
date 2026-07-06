@@ -143,6 +143,13 @@ const HANDLERS = {
     }
     return summary;
   },
+  // Spec → Agent Skill package — the same core as `ge okf skill`
+  // (apps/factory/scripts/spec-to-skill.mjs; dynamic apps-layer import like
+  // data.synth above, so it loads only when the tool is called).
+  "okf.skill": async (a) => {
+    const { specToSkill } = await import("../apps/factory/scripts/spec-to-skill.mjs");
+    return specToSkill({ id: a.id, spec: a.spec, out: a.out });
+  },
   // OKF agent lifecycle — the same return/throw core as `ge okf customize` /
   // `ge agents register` / `ge agents track` (tools/lib/okf-lifecycle.mjs).
   "okf.customize": async (a) => {

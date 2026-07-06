@@ -48,6 +48,9 @@ const EXPECTED_TOOLS = {
   // OKF agent-lifecycle widening (customize → register → track, 2026-07-04):
   // the three lifecycle verbs share tools/lib/okf-lifecycle.mjs with the CLI.
   factory_okf_customize: ["base", "id", "swapSystem?", "rename?", "vertical?", "out?"],
+  // Spec → Agent Skill package (2026-07-06): the skill-based consumption
+  // alternative to generated ADK runtime code (apps/factory/scripts/spec-to-skill.mjs).
+  factory_okf_skill: ["id?", "spec?", "out?"],
   factory_agents_register: ["bundle", "owner?"],
   factory_agents_track: ["id"],
   // Admission-gate widening (Agent Passport + handoff admission gate,
