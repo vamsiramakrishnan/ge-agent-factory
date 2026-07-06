@@ -16,8 +16,9 @@
 // command is not already present for the event/matcher; re-running install is
 // a no-op. Pure merge logic here (return/throw), fs at the edges.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { writeJson } from "@ge/std/json-io";
 import { DxError } from "./errors/dx-error.mjs";
 import { REPO_ROOT } from "./state-paths.mjs";
 
@@ -109,10 +110,7 @@ export function installHarnessHooks({ harness = "claude", repoRoot = REPO_ROOT, 
   }
   const { settings, added, alreadyPresent } = mergeClaudeHooksSettings(existing);
   const wrote = !dryRun && added.length > 0;
-  if (wrote) {
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`, "utf8");
-  }
+  if (wrote) writeJson(path, settings);
   return {
     kind: "ge.harness.hooks",
     harness,

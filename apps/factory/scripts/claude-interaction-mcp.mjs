@@ -20,9 +20,10 @@
 // Wired automatically by the claude adapter (apps/factory/src/agents.js) via
 // --mcp-config whenever GE_HARNESS_INTERACTION_DIR is set.
 
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
+import { mkdirSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { writeJson } from "@ge/std/json-io";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -116,7 +117,7 @@ async function main() {
     async ({ title, description, questions }) => {
       const interactionId = `interaction-${randomUUID().replace(/-/g, "").slice(0, 12)}`;
       const request = buildInteractionRequest({ interactionId, title, description, questions });
-      writeFileSync(join(interactionDir, "requests", `${interactionId}.json`), `${JSON.stringify(request, null, 2)}\n`, "utf8");
+      writeJson(join(interactionDir, "requests", `${interactionId}.json`), request);
       const response = await waitForResponse(interactionDir, interactionId, { timeoutMs });
       const summary = summarizeInteractionResponse(request, response);
       return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
