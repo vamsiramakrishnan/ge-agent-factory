@@ -1,8 +1,16 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+
+// The library's default roots ("okf", "okf/library/index.json") name repo
+// directories, so relative paths anchor to the repo checkout — located from
+// this module's own path, since packages/* must not import tools/lib — not to
+// process.cwd(), which varies (per-directory test shards, external callers).
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const fromRepoRoot = (path) => (isAbsolute(path) ? path : resolve(REPO_ROOT, path));
 
 export const LIBRARY_SCHEMA_VERSION = "agent-library.v1";
 export const READINESS_STATES = ["draft","contract_valid","workspace_generated","twins_ready","evals_ready","proof_passed","promotion_ready","handed_off"];
@@ -64,7 +72,7 @@ export async function blueprintFromBundle(bundleDir) {
   return {
     id, slug, title: fm.title || slugTitle(slugLeaf), version: "0.1.0", status,
     taxonomy: { vertical: vertical ? slugTitle(String(vertical)) : undefined, department: fm.department, valueStream: subtitle.split("•")[1]?.trim(), domain: subtitle.split("•")[1]?.trim(), businessFunction: fm.persona },
-    okf: { bundlePath: relative(process.cwd(), bundleDir), sourceSpecPath: fm.provenance_source_ref, contentHash, schemaVersion: fm.okf_version || "0.1" },
+    okf: { bundlePath: relative(REPO_ROOT, bundleDir), sourceSpecPath: fm.provenance_source_ref, contentHash, schemaVersion: fm.okf_version || "0.1" },
     behavior: { role: md.match(/\*\*Persona:\*\*\s*([^\n]+)/)?.[1]?.trim() || "Agent operator", objective: fm.description || md.match(/\*\*Objective:\*\*\s*([^\n]+)/)?.[1]?.trim() || "Execute the packaged OKF workflow.", authorityLevel: policies ? "write_with_approval" : "recommend", trigger, layer, humanApprovalPoints: policies ? 1 : 0 },
     inventory: { sourceSystems: systems, entities, fields, toolIntents: tools, workflowSteps: workflow, evals, evidenceRules, anomalies: linesMatching(md, "- **Anomaly").length },
     targets: { local: "ready", adk: "buildable", agentsCli: "buildable", geminiEnterprise: "requires_handoff" },
@@ -74,7 +82,8 @@ export async function blueprintFromBundle(bundleDir) {
 }
 
 export async function generateLibraryIndex({ root = "okf", out = "okf/library/index.json" } = {}) {
-  const rootDir = resolve(root);
+  const rootDir = fromRepoRoot(root);
+  out = fromRepoRoot(out);
   const entries = await readdir(rootDir, { withFileTypes: true });
   const blueprints = [];
   for (const ent of entries) {
@@ -94,7 +103,7 @@ export async function generateLibraryIndex({ root = "okf", out = "okf/library/in
 }
 
 export async function readLibraryIndex({ refresh = false } = {}) {
-  const path = resolve("okf/library/index.json");
+  const path = fromRepoRoot("okf/library/index.json");
   if (refresh || !existsSync(path)) return generateLibraryIndex();
   return JSON.parse(await readFile(path, "utf8"));
 }
@@ -107,8 +116,8 @@ export async function createFromLibrary({ slug, outDir, overlay, target = "adk",
   if (existsSync(workspace) && !force) throw Object.assign(new Error(`Output directory exists: ${workspace} (pass --force to overwrite generated files)`), { code: "GE-CREATE-EXISTS" });
   await mkdir(workspace, { recursive: true });
   await mkdir(join(workspace,"okf"), { recursive: true });
-  await cp(resolve(bp.okf.bundlePath), join(workspace,"okf","bundle"), { recursive: true, force: true });
-  await writeFile(join(workspace,"okf","agent.okf.md"), await readFile(join(resolve(bp.okf.bundlePath),"index.md"),"utf8"));
+  await cp(fromRepoRoot(bp.okf.bundlePath), join(workspace,"okf","bundle"), { recursive: true, force: true });
+  await writeFile(join(workspace,"okf","agent.okf.md"), await readFile(join(fromRepoRoot(bp.okf.bundlePath),"index.md"),"utf8"));
   await writeFile(join(workspace,"okf","normalized.json"), JSON.stringify({ blueprint: bp, overlay: overlay || null, target }, null, 2)+"\n");
   await mkdir(join(workspace,"app"), { recursive: true });
   await writeFile(join(workspace,"app","agent.py"), `# Generated from ${bp.slug}\nAGENT_TITLE = ${JSON.stringify(bp.title)}\n`);
