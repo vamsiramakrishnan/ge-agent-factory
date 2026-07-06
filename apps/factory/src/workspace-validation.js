@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { readJsonAsync } from "@ge/std/json-io";
 import { buildSpecCodeTrace, candidateIntentToolNames } from "./spec-code-trace.js";
 import { DATA_PATHS, REQUIRED_WORKSPACE_FILES, WORKSPACE_PATHS } from "./workspace-contract.js";
+import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 
 function readJson(path, fallback = null) {
   return readJsonAsync(path, fallback, { rethrowUnexpected: true });
@@ -107,11 +108,15 @@ export async function validateAgentContract(workspaceDir) {
     check("agent:no_generic_mock_naming", !/list_mock_systems|query_mock_|mock data source/i.test(toolsText), "tools avoid generic mock-source naming"),
     check("agent:no_google_auth_required", !/google\.auth\.default|GOOGLE_GENAI_USE_VERTEXAI/.test(agentText + toolsText), "local mock agent does not require Google auth"),
     check("agent:pyproject_adk", /google-adk/.test(pyprojectText), "pyproject declares google-adk dependency"),
-    // Review point: generated agents must run on gemini-3.5-flash.
+    // Review point: generated agents must run on the CONFIGURED model — the
+    // centralized agentModel knob (GE_AGENT_MODEL, default gemini-3.5-flash).
+    // Asserting against the resolved value (not a literal) keeps this gate in
+    // agreement with a deliberate model override instead of fighting it. The
+    // check id keeps its historical name for ledger/skill-doc continuity.
     check(
       "agent:model_is_gemini_3_5_flash",
-      /model\s*=\s*["']gemini-3\.5-flash["']/.test(agentText),
-      "agent.py uses model='gemini-3.5-flash'",
+      new RegExp(`model\\s*=\\s*["']${(process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`).test(agentText),
+      `agent.py uses model='${(process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL).trim()}'`,
       { foundModel: agentText.match(/model\s*=\s*["']([^"']+)["']/)?.[1] || null },
     ),
     // Review point: never ship the 2048 boilerplate. Unset (model default) is fine;

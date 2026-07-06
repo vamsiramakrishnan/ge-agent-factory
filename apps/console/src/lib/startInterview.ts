@@ -170,13 +170,17 @@ export async function startInterview({
     kind: "harness.run",
     input: {
       workspaceDir: ".",
+      // The interview stage needs the interaction-form protocol, which only the
+      // Antigravity SDK adapter speaks — pinned here rather than following the
+      // configurable harnessAgent default. The model is deliberately omitted:
+      // the daemon fills it from the centralized refinementModel config
+      // (tools/lib/daemon/harness-run.mjs resolveHarnessRunInput).
       agent: "antigravity-sdk",
       stage: "interview,spec_generation,mock_data,simulation,eval",
       permissionProfile: "workspace-write",
       vertex: true,
       project: status?.project || undefined,
       location: "global",
-      model: "gemini-3.5-flash",
       expectedArtifacts: interviewArtifacts(id),
       message: buildInterviewPrompt({ usecaseId: id, outcome, systems: systemList, constraints, groundingText }),
     },

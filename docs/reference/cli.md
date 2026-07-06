@@ -827,7 +827,7 @@ Next action per work item from the ledger + pipeline state machine
 
 ### `ge okf`
 
-OKF knowledge substrate: compile · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair
+OKF knowledge substrate: compile · skill · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair
 
 ### `ge okf audit`
 
@@ -993,6 +993,16 @@ Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant reso
 | `--out` | string |  |
 | `--all` | boolean | Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars |
 | `--variant-base` | string | Base bundle directory for a variant bundle (default: sibling directory named after the root's variant_of id) |
+
+### `ge okf skill`
+
+Compile an agent spec into an Agent Skill package (SKILL.md + references + scripts + assets) — the skill-based alternative to generated ADK runtime code
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Use case id from the generated catalog |
+| `--spec` | string | Path to an agent spec JSON (alternative to --id) |
+| `--out` | string | Output skill directory (default apps/factory/artifacts/skills/<id>) |
 
 ### `ge okf customize`
 

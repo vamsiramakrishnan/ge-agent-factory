@@ -150,12 +150,28 @@ async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
   };
 }
 
+// Prompt-level guardrail fallback for adapters without the Antigravity SDK's
+// native protect-file/disable-tool enforcement (the Claude Code, Codex, and
+// Gemini CLI compat adapters): state the constraints in the prompt so a
+// write-enabled run on those adapters still respects them. Returns null for
+// the native adapter or when nothing is constrained — existing prompts are
+// byte-unchanged.
+function buildCompatGuardrailSection(adapterId, { protectFiles = [], disableTools = [] } = {}) {
+  if (adapterId === "antigravity-sdk") return null;
+  const lines = [];
+  if (protectFiles.length) lines.push(`- Do NOT modify these protected files: ${protectFiles.join(", ")}. Treat them as read-only.`);
+  if (disableTools.length) lines.push(`- These capabilities are disabled for this run — never perform them: ${disableTools.join(", ")}.`);
+  if (!lines.length) return null;
+  return ["# Guardrails", ...lines].join("\n");
+}
+
 export const __test = {
   createLineBuffer,
   loadGeConfig,
   parseAntigravityStatusLines,
   resolveVertexDefaults,
   buildSubagentPlanSection,
+  buildCompatGuardrailSection,
 };
 
 function materializeWorkspaceCommandShims({ workspaceDir, repoRoot }) {
@@ -378,6 +394,9 @@ export async function runHarnessTask({
     // Additive: when the run is write-enabled and validation sidecars exist,
     // direct the harness to fan the independent checks out to subagents.
     buildSubagentPlanSection(cwd, { subagentsAvailable }),
+    // Additive: on non-Antigravity adapters, protect-file/disable-tool
+    // constraints are stated in the prompt instead of silently dropped.
+    buildCompatGuardrailSection(plan.adapterId, { protectFiles, disableTools }),
   ].filter(Boolean).join("\n");
 
   const binDir = materializeWorkspaceCommandShims({ workspaceDir: cwd, repoRoot: resolvedRepoRoot });

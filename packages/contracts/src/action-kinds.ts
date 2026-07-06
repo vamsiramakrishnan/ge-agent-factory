@@ -78,6 +78,9 @@ export const GeCommandIdSchema = z.enum([
   "evals.compile",
   // The OKF agent lifecycle (customize → register → track):
   "okf.customize",
+  // Spec → Agent Skill package (the skill-based alternative to generated ADK
+  // runtime code; apps/factory/scripts/spec-to-skill.mjs):
+  "okf.skill",
   "agents.register",
   "agents.track",
   // OKF quality + enrichment (blueprint upgrade factory, merged 2026-07-05):
