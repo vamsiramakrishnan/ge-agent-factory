@@ -33,6 +33,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { stringify as stringifyYaml } from "yaml";
 import { findUseCase, slug } from "@ge/okf";
 import { deriveAnswerableQueries, deriveTestMechanisms, specDocuments } from "./lib/okf-capabilities.mjs";
 import { bullets, entityFields, fieldName, mdTable } from "./factory/okf/markdown.mjs";
@@ -115,10 +116,20 @@ function renderSkillMd(spec) {
     asArray(tool.produces).join(", ") || "—",
   ]);
 
+  // Render frontmatter through the YAML serializer, not string interpolation:
+  // spec-derived descriptions carry YAML-significant text (a `: ` from "Use
+  // when the user needs: …", a leading `#`, etc.) that would produce invalid or
+  // truncated frontmatter for a real skill loader. `lineWidth: 0` disables
+  // folding so the description stays on one line; the serializer quotes only
+  // when a value needs it, so simple names stay plain.
+  const frontmatter = stringifyYaml(
+    { name: skillName(spec), description: skillDescription(spec) },
+    { lineWidth: 0 },
+  ).trimEnd();
+
   return [
     "---",
-    `name: ${skillName(spec)}`,
-    `description: ${skillDescription(spec)}`,
+    frontmatter,
     "---",
     "",
     `# ${spec.title || id}`,
