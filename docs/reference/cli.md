@@ -1199,6 +1199,20 @@ Write this repo's post-action checks into a harness's hook config (supported: cl
 
 Show the hook plan `install` would apply, per harness
 
+### `ge improve`
+
+Self-improvement loop: enrich an agent's blueprint toward a target quality level (audit → enrich → verify → re-audit), then build+judge
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Agent/spec id under the OKF corpus root |
+| `--spec` | string | Alias for --id |
+| `--target` | string | Target quality level L0–L5 (default L4) |
+| `--write` | boolean | Run the closed loop and enrich the corpus (default: preview one batch) |
+| `--max-iterations` | string | Loop cap when writing (default 5) |
+| `--max-evals` | string | Obligations added per iteration (default 5) |
+| `--root` | string | OKF corpus root (default okf) |
+
 ### `ge models`
 
 Model provider readiness: doctor

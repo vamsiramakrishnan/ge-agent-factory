@@ -272,6 +272,11 @@ const HANDLERS = {
     const { auditQuality } = await import("./lib/okf-quality.mjs");
     return auditQuality({ all: Boolean(a.all), spec: a.spec });
   },
+  // The self-improvement loop — same core as `ge improve` (tools/lib/improve.mjs).
+  "improve": async (a) => {
+    const { improveSpec } = await import("./lib/improve.mjs");
+    return improveSpec({ spec: a.id, target: a.target, write: Boolean(a.write), maxIterations: a.maxIterations });
+  },
   "okf.enrich.plan": async (a) => {
     const { generateEnrichmentPlan } = await import("./lib/okf-quality.mjs");
     return generateEnrichmentPlan({ all: Boolean(a.all), spec: a.spec, target: a.target || "L4" });

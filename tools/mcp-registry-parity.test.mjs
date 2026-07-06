@@ -51,6 +51,9 @@ const EXPECTED_TOOLS = {
   // Spec → Agent Skill package (2026-07-06): the skill-based consumption
   // alternative to generated ADK runtime code (apps/factory/scripts/spec-to-skill.mjs).
   factory_okf_skill: ["id?", "spec?", "out?"],
+  // Self-improvement loop (2026-07-06): audit → enrich → verify → re-audit a
+  // blueprint toward a target quality level (tools/lib/improve.mjs).
+  factory_improve: ["id", "target?", "write?", "maxIterations?"],
   factory_agents_register: ["bundle", "owner?"],
   factory_agents_track: ["id"],
   // Admission-gate widening (Agent Passport + handoff admission gate,

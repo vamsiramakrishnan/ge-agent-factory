@@ -13,40 +13,20 @@ describe("GE command registry contracts", () => {
     }
   });
 
-  // GPS-style guidance is a CONTRACT, not a convention: every command carries
+  // GPS-style guidance is a CONTRACT, not a convention: EVERY command carries
   // guide.when (when to reach for it) + guide.next (concrete next commands),
   // so every surface — CLI render, console, skills, MCP descriptions — can
-  // tell the operator what to do next. Commands that predate the rule are
-  // frozen below; the list must only shrink. A NEW command without a guide
-  // fails here by construction.
-  const GUIDE_GRANDFATHERED = new Set([
-    "handoff.plan", "handoff.package", "handoff.verifyPackage", "passport.verify",
-    "prove.live", "evals.compile", "evals.import", "evals.coverage",
-    "up", "data.up", "data.synth",
-    "systems.bind", "systems.bindings", "systems.unbind", "systems.synth", "systems.list", "systems.doctor",
-    "byo.doctor", "byo.apply", "models.doctor",
-    "okf.quality.audit", "okf.enrich.plan", "okf.enrich.generate", "okf.enrich.apply", "okf.enrich.shard", "okf.eval.verify",
-    "mcp.deploy", "mcp.doctor", "console.deploy", "console.doctor",
-    "agents.build", "agents.build.local", "agents.sync", "agents.track",
-    "pipeline.run", "daemon.start", "usecases.list",
-    "library.stats", "library.search", "library.inspect", "library.status",
-    "status", "logs",
-  ]);
-
-  test("every command carries GPS guidance (guide.when + guide.next) unless grandfathered", () => {
+  // tell the operator what to do next. The grandfather backlog is paid off:
+  // commands that predate the inline `guide` field get theirs from the
+  // COMMAND_GUIDES backfill in registry.mjs. No exemptions remain.
+  test("every command carries GPS guidance (guide.when + guide.next)", () => {
     const missing = [];
-    const stale = [];
     for (const id of commandIds()) {
       const guide = GE_COMMANDS[id].guide;
       const hasGuide = Boolean(guide && typeof guide.when === "string" && guide.when.length && Array.isArray(guide.next) && guide.next.length);
-      if (!hasGuide && !GUIDE_GRANDFATHERED.has(id)) missing.push(id);
-      if (hasGuide && GUIDE_GRANDFATHERED.has(id)) stale.push(id);
+      if (!hasGuide) missing.push(id);
     }
-    // New commands must ship guide.when/next; see the comment above the list.
     expect(missing).toEqual([]);
-    // A grandfathered command that gained a guide must be trimmed from the list.
-    expect(stale).toEqual([]);
-    for (const id of GUIDE_GRANDFATHERED) expect(commandIds()).toContain(id);
   });
 
   test("every command argv builder returns a concrete ge argv", () => {
