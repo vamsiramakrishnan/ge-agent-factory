@@ -869,6 +869,10 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
     // Pin the generated-agent model on remote (default gemini-3.5-flash) and forward
     // an operator-set output-token budget so `factory generate` matches local builds.
     GE_AGENT_MODEL: payload.options?.model || process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL,
+    // The eval-judge model for the generated eval_config.yaml. commandEnv already
+    // inherits process.env.GE_JUDGE_MODEL via the spread above; a per-run
+    // payload.options.judgeModel (operator .ge.json → submit) overrides it.
+    ...(payload.options?.judgeModel ? { GE_JUDGE_MODEL: String(payload.options.judgeModel) } : {}),
     ...(payload.options?.maxOutputTokens != null
       ? { GE_AGENT_MAX_OUTPUT_TOKENS: String(payload.options.maxOutputTokens) }
       : {}),

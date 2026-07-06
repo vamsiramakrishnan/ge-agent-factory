@@ -2,6 +2,7 @@
 // converter. Mirrors spec-to-okf.test.mjs's shape: pure builder assertions
 // (determinism, portability rules) against a representative in-memory spec.
 import { describe, expect, test } from "bun:test";
+import { parse as parseYaml } from "yaml";
 import { buildSkillFiles, skillDescription, skillName } from "./spec-to-skill.mjs";
 
 const SPEC = {
@@ -70,6 +71,17 @@ describe("spec-to-skill", () => {
     }
     expect(skillMd).toContain("scripts/check-coverage.mjs");
     expect(skillMd).toContain("assets/agent-spec.json");
+  });
+
+  test("frontmatter is valid YAML even when the description carries YAML-significant text", () => {
+    // This spec's derived description contains a `: ` ("Use when the user
+    // needs: …") — an unquoted plain scalar would be invalid/truncated YAML.
+    const skillMd = buildSkillFiles(SPEC).find((f) => f.relPath === "SKILL.md").content;
+    const frontmatter = skillMd.match(/^---\n([\s\S]*?)\n---/)[1];
+    const parsed = parseYaml(frontmatter);
+    expect(parsed.name).toBe(skillName(SPEC));
+    expect(parsed.description).toBe(skillDescription(SPEC));
+    expect(parsed.description).toContain("Use when the user needs:");
   });
 
   test("contract content lands in the right layers", () => {

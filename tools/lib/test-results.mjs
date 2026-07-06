@@ -196,17 +196,44 @@ export function bucketTestResults(actualFailing, knownFailing) {
  *   shard `apps/factory` with filter `x`; `tools/lib/y.test.mjs` → shard
  *   `tools` with filter `lib/y.test.mjs`. A path that doesn't start with a
  *   known shard root falls back to a repo-root shard (previous behavior).
+ *   Value-taking Bun flags in space-separated form (`--test-name-pattern spec`,
+ *   `--timeout 20000`) keep their value as part of the flag, not as a path
+ *   filter — otherwise the value would be misread as a shard path and the
+ *   flag would reach Bun without its argument.
  * @param {{ appShards: string[] }} options - shard roots under apps/
  *   (e.g. ["apps/console", "apps/factory"]), enumerated by the caller.
  * @returns {{ shards: { root: string, filters: string[] }[], flags: string[] }}
  *   `root` is repo-relative ("." = repo root); an empty `filters` means the
  *   whole shard.
  */
+// Bun test flags that take a following value as a separate argv token (see
+// https://bun.com/docs/test). The `--flag=value` inline form is self-contained
+// and needs no special handling.
+const BUN_VALUE_FLAGS = new Set([
+  "-t", "--test-name-pattern",
+  "--timeout",
+  "--rerun-each",
+  "--reporter", "--reporter-outfile",
+  "--concurrency",
+]);
+
 export function planTestShards(args, { appShards }) {
-  const flags = args.filter((arg) => arg.startsWith("-"));
-  const paths = args
-    .filter((arg) => !arg.startsWith("-"))
-    .map((arg) => arg.replace(/^\.\//, "").replace(/\/+$/, ""));
+  const flags = [];
+  const paths = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg.startsWith("-")) {
+      flags.push(arg);
+      // A value-taking flag consumes the next token as its value, so that token
+      // is neither a path filter nor a bare flag.
+      if (BUN_VALUE_FLAGS.has(arg) && i + 1 < args.length && !args[i + 1].startsWith("-")) {
+        flags.push(args[i + 1]);
+        i += 1;
+      }
+    } else {
+      paths.push(arg.replace(/^\.\//, "").replace(/\/+$/, ""));
+    }
+  }
 
   if (paths.length === 0) {
     return {

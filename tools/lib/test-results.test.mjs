@@ -236,4 +236,18 @@ describe("planTestShards", () => {
     expect(flags).toEqual(["--bail"]);
     expect(shards).toEqual([{ root: ".", filters: ["somefile.test.mjs"] }]);
   });
+
+  test("value-taking Bun flags keep their value; the run still shards normally", () => {
+    const { shards, flags } = planTestShards(["--test-name-pattern", "spec", "--timeout", "20000"], { appShards: APPS });
+    // The values are attached to their flags, not misread as shard paths…
+    expect(flags).toEqual(["--test-name-pattern", "spec", "--timeout", "20000"]);
+    // …so with no real path filters the whole suite is planned per-shard.
+    expect(shards.map((s) => s.root)).toEqual([...APPS, "tools", "packages"]);
+  });
+
+  test("a value flag before a real path filter does not swallow the path", () => {
+    const { shards, flags } = planTestShards(["-t", "addition", "tools/lib/x.test.mjs"], { appShards: APPS });
+    expect(flags).toEqual(["-t", "addition"]);
+    expect(shards).toEqual([{ root: "tools", filters: ["lib/x.test.mjs"] }]);
+  });
 });

@@ -129,6 +129,9 @@ export function createProvisionOps({
           // the same model (default gemini-3.5-flash) + output-token budget as local.
           // cfg.agentModel carries the centralized flag→env→.ge.json→default resolution.
           ...(model || cfg.agentModel ? { model: model || cfg.agentModel } : {}),
+          // The eval-judge model, forwarded the same way so a .ge.json judgeModel
+          // reaches the remote generator's eval_config.yaml (parity with local).
+          ...(cfg.judgeModel ? { judgeModel: cfg.judgeModel } : {}),
           ...(maxOutputTokens != null && String(maxOutputTokens).trim() !== ""
             ? { maxOutputTokens: Number(maxOutputTokens) }
             : {}),
@@ -223,6 +226,11 @@ export function createProvisionOps({
     // agentModel is honored when no flag/env override is present.
     const agentModel = model || cfg.agentModel;
     if (agentModel) process.env.GE_AGENT_MODEL = agentModel;
+    // The LLM-judge model rendered into each generated eval_config.yaml. The
+    // generator reads GE_JUDGE_MODEL directly (apps/factory/scripts/factory.mjs),
+    // so a .ge.json judgeModel only reaches it if exported here — parity with
+    // GE_AGENT_MODEL above.
+    if (cfg.judgeModel) process.env.GE_JUDGE_MODEL = cfg.judgeModel;
     if (maxOutputTokens != null && String(maxOutputTokens).trim() !== "") {
       process.env.GE_AGENT_MAX_OUTPUT_TOKENS = String(maxOutputTokens);
     }
