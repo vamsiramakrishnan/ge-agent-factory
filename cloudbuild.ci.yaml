@@ -36,9 +36,9 @@ steps:
 
   # Docs-specific gate: link/image/blockquote correctness (tools/docs-check.mjs),
   # diagram-source-vs-generated-SVG drift (tools/gen-docs-diagrams.mjs --check),
-  # and design-token drift across packages/design/src/tokens.css,
-  # docs/_sass/color_schemes/ge.scss, and tools/lib/docs-diagram-theme.mjs
-  # (tools/check-design-tokens.mjs). See docs/DESIGN.md.
+  # and design-token drift across packages/design/src/tokens.css and
+  # tools/lib/docs-diagram-theme.mjs (tools/check-design-tokens.mjs). See
+  # docs/DESIGN.md.
   - id: docs-gate
     name: 'oven/bun:1.3'
     entrypoint: bun

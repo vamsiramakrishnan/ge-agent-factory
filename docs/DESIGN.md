@@ -28,31 +28,25 @@ callout, read the relevant section below first.
 
 ## Theme
 
-The site is Jekyll + [just-the-docs](https://just-the-docs.com), rendered
-directly from GitHub via `remote_theme` (no local build step needed to view
-it — `docs/_config.yml`). The color scheme (`color_scheme: ge`) and fonts are
-derived from the product's own design tokens
-(`packages/design/src/tokens.css`) so the docs site and the console/presentation
-apps read as one system:
+The public website is Astro + [Starlight](https://starlight.astro.build)
+(`apps/docs`), which renders these `docs/` pages after a build-time sync step
+(see `apps/docs/README.md`). Its theme — `apps/docs/src/styles/custom.css` —
+derives from the product's own design tokens (`packages/design/src/palette.mjs`,
+the canonical source, mirrored into `packages/design/src/tokens.css` by
+`bun run docs:tokens`) so the docs site and the console/presentation apps read
+as one system:
 
-- **Colors** — `docs/_sass/color_schemes/ge.scss` re-tints just-the-docs'
-  stock purple theme to the "Modernist Functionalism" palette
-  (`packages/design/src/palette.mjs`, the canonical source): primary
-  `#00408b`, on-surface `#1b1c1c`, body text `#383e47`, border `#c2c6d4`,
-  sidebar `#f0eded`. `docs/_sass/custom/setup.scss` re-tints the built-in
-  blue/green swatches used by callouts to the same palette (`$blue-200:
-  #00408b`, `$green-200: #0d6d3a`). Both files are generated — run
-  `bun run docs:tokens` after editing `palette.mjs`.
-- **Fonts** — `docs/_sass/custom/custom.scss` sets `Space Grotesk` for
-  headings, nav, and site chrome (`$ge-display-font`); body copy stays on the
-  theme's system-ui reading face for long-form legibility. Code uses `Geist
-  Mono` (`docs/_sass/custom/setup.scss`, `$mono-font-family`) — the same
-  monospace family as the product UI. (This is the legacy Jekyll site's own
-  font choice, independent of the Astro/Starlight site's Hanken Grotesk +
-  JetBrains Mono — see `apps/docs/README.md`.)
+- **Colors** — the "Modernist Functionalism" palette: primary `#00408b`,
+  on-surface `#1b1c1c`, body text `#383e47`, border `#c2c6d4`, surface
+  container `#f0eded`. Change a value in `palette.mjs` and re-derive
+  (`bun run docs:tokens`); `node tools/check-design-tokens.mjs` guards the
+  generated copies and fails the gate on drift.
+- **Fonts** — Hanken Grotesk carries headings and chrome, JetBrains Mono
+  carries code and technical labels (self-hosted via Fontsource); body copy
+  stays on the system reading face for long-form legibility.
 
 Don't hand-roll colors or fonts in a page. If something needs a new color,
-add it to `ge.scss` or `setup.scss`, not inline `style=`.
+add it to `palette.mjs` and re-derive, not inline `style=`.
 
 ## Diagrams
 
@@ -211,8 +205,8 @@ invent a different status palette for docs:
 - Always set `width` on the `<img>`, sized to the diagram's actual aspect
   ratio (700–800 is typical for a wide flowchart). **Never use `style="..."`**
   — GitHub's markdown sanitizer strips inline `style` attributes, and several
-  docs pages are read directly on GitHub (not just through the styled Jekyll
-  site), so a `style`-based width silently reverts to the image's native
+  docs pages are read directly on GitHub (not just through the styled website),
+  so a `style`-based width silently reverts to the image's native
   (often huge) pixel size there. `width` as a plain HTML attribute survives
   both renderers.
 - Always write a real `alt` describing the flow, not the filename.
@@ -339,8 +333,9 @@ Two annotation mechanisms, chosen by what's being annotated:
 
 ## Callouts
 
-Five types, configured in `docs/_config.yml` under `callouts:`, colors
-resolved in `docs/_sass/custom/setup.scss` / just-the-docs' callout module:
+Five types. Author them in `docs/` with the kramdown syntax below; the
+website sync (`apps/docs/scripts/lib/enrich.mjs`) converts each to a
+Starlight aside, themed from the same palette as the rest of the site:
 
 | Type | Class | Color | Use for |
 |---|---|---|---|
@@ -408,8 +403,8 @@ Every cookbook opens with a one-line scope strip directly under the H1:
 The shape is `**Scope:** <label> — <description>` (an em dash separates the
 two). It answers the reader's first question — "will this touch my cloud
 project?" — before anything else on the page. Labels in use: `local-only`,
-`cloud`, `local or remote`, `local by default`, `repo change`. On GitHub and
-the Jekyll site it renders as plain bold text; the website's sync
+`cloud`, `local or remote`, `local by default`, `repo change`. On GitHub it
+renders as plain bold text; the website's sync
 (`apps/docs/scripts/lib/enrich.mjs`) upgrades it to a Starlight badge —
 green for `local-only`, orange for `cloud`, neutral otherwise. The same sync
 wraps a cookbook's `## Steps` ordered list in Starlight's `<Steps>` component,
@@ -431,9 +426,10 @@ don't need one. Convention (see `docs/reference/cli.md`):
 {:toc}
 ```
 
-`docs/_config.yml` sets `kramdown: toc_levels: 2..3`, so the generated TOC
-lists only `##`/`###` headings — the page's own `#` H1 title is excluded from
-listing itself as the first entry.
+The website's Starlight theme also renders an automatic "On this page" TOC
+from every page's `##`/`###` headings, independent of this block; the sync
+strips the kramdown `{:toc}` marker (only the retired Jekyll renderer expanded
+it in place).
 
 ## Scope discipline for diagrams
 
