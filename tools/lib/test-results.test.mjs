@@ -7,6 +7,7 @@ import {
   fullTestName,
   normalizeKnownFailureEntries,
   parseJUnitTestcases,
+  planTestShards,
   staleBugEntries,
 } from "./test-results.mjs";
 
@@ -198,5 +199,41 @@ describe("formatTestResultsReport", () => {
     const text = formatTestResultsReport(bucketTestResults([], ["fixed-now"]));
     expect(text).toContain("now passing");
     expect(text).toContain("fixed-now");
+  });
+});
+
+describe("planTestShards", () => {
+  const APPS = ["apps/console", "apps/docs", "apps/factory", "apps/presentation"];
+
+  test("no args plans one shard per app plus tools and packages, whole-shard filters", () => {
+    const { shards, flags } = planTestShards([], { appShards: APPS });
+    expect(shards.map((s) => s.root)).toEqual([...APPS, "tools", "packages"]);
+    expect(shards.every((s) => s.filters.length === 0)).toBe(true);
+    expect(flags).toEqual([]);
+  });
+
+  test("path filters map onto their owning shard with the remainder as the filter", () => {
+    const { shards } = planTestShards(
+      ["apps/factory/scripts/spec-to-skill.test.mjs", "tools/lib/test-results.test.mjs", "packages"],
+      { appShards: APPS },
+    );
+    expect(shards).toEqual([
+      { root: "apps/factory", filters: ["scripts/spec-to-skill.test.mjs"] },
+      { root: "tools", filters: ["lib/test-results.test.mjs"] },
+      { root: "packages", filters: [] },
+    ]);
+  });
+
+  test("a bare apps arg expands to every app shard; whole-shard beats narrower filters", () => {
+    const { shards } = planTestShards(["apps", "apps/docs/scripts"], { appShards: APPS });
+    const docs = shards.find((s) => s.root === "apps/docs");
+    expect(shards.map((s) => s.root).sort()).toEqual([...APPS].sort());
+    expect(docs.filters).toEqual([]); // "apps" claimed the whole shard
+  });
+
+  test("flags are separated from paths; unknown roots fall back to a repo-root shard", () => {
+    const { shards, flags } = planTestShards(["--bail", "somefile.test.mjs"], { appShards: APPS });
+    expect(flags).toEqual(["--bail"]);
+    expect(shards).toEqual([{ root: ".", filters: ["somefile.test.mjs"] }]);
   });
 });

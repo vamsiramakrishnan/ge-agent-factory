@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { REPO_ROOT } from "./state-paths.mjs";
 
 const DEFAULT_ALLOWED_LEGACY = new Set([
   // use-cases.generated.js was relocated to a git-ignored build artifact
@@ -142,7 +143,12 @@ function gitOutput(args, cwd) {
   }
 }
 
-export function trackedFiles(cwd = process.cwd()) {
+// cwd defaults anchor to the repo checkout (not process.cwd()): the hygiene
+// rules and their allowlists are written against repo-relative paths, so a
+// caller running from a subdirectory (e.g. the per-directory test shards)
+// would otherwise scan against mis-rooted paths and self-match the rule
+// definitions in this very file.
+export function trackedFiles(cwd = REPO_ROOT) {
   const deleted = new Set(gitOutput(["ls-files", "--deleted"], cwd).split(/\r?\n/).filter(Boolean));
   return gitOutput(["ls-files"], cwd)
     .split(/\r?\n/)
@@ -150,11 +156,11 @@ export function trackedFiles(cwd = process.cwd()) {
     .filter((path) => !deleted.has(path));
 }
 
-export function activeSourceFiles(cwd = process.cwd()) {
+export function activeSourceFiles(cwd = REPO_ROOT) {
   return trackedFiles(cwd).filter(isActiveSourcePath);
 }
 
-export function sourceStatePathFindings(paths, { cwd = process.cwd() } = {}) {
+export function sourceStatePathFindings(paths, { cwd = REPO_ROOT } = {}) {
   const findings = [];
   for (const path of paths.filter(isActiveSourcePath)) {
     const fullPath = `${cwd}/${path}`;
@@ -176,7 +182,7 @@ export function sourceStatePathFindings(paths, { cwd = process.cwd() } = {}) {
   return findings;
 }
 
-export function sourceAntipatternFindings(paths, { cwd = process.cwd() } = {}) {
+export function sourceAntipatternFindings(paths, { cwd = REPO_ROOT } = {}) {
   const findings = [];
   for (const path of paths.filter(isActiveSourcePath)) {
     const fullPath = `${cwd}/${path}`;
@@ -237,7 +243,7 @@ export function formatHygieneReport(findings) {
   return lines.join("\n");
 }
 
-export function runSourceHygiene({ cwd = process.cwd(), allowedLegacy = DEFAULT_ALLOWED_LEGACY } = {}) {
+export function runSourceHygiene({ cwd = REPO_ROOT, allowedLegacy = DEFAULT_ALLOWED_LEGACY } = {}) {
   const findings = trackedHygieneFindings(trackedFiles(cwd), { allowedLegacy });
   const active = activeSourceFiles(cwd);
   const sourceStateFindings = sourceStatePathFindings(active, { cwd });

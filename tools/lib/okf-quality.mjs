@@ -1,7 +1,15 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { REPO_ROOT } from "./state-paths.mjs";
+
+// Relative corpus/pack roots anchor to the REPO checkout, not process.cwd():
+// the defaults ("okf", "domain-packs") name repo directories, and resolving
+// them against cwd made every consumer (and test) silently depend on being
+// run from the repo root — the per-directory test sharding runs with cwd at
+// tools/, so cwd-anchored defaults would resolve to nothing there.
+const fromRepoRoot = (path) => (isAbsolute(path) ? path : resolve(REPO_ROOT, path));
 
 export const QUALITY_SCHEMA_VERSION = "okf-quality.v1";
 export const STATUSES = ["L0", "L1", "L2", "L3", "L4", "L5"];
@@ -48,11 +56,11 @@ async function walk(dir, acc = []) {
 }
 
 export async function discoverOkfBundles({ root = "okf", spec } = {}) {
-  const base = resolve(root);
+  const base = fromRepoRoot(root);
   if (spec) {
     const direct = resolve(spec);
     if (existsSync(join(direct, "index.md"))) return [direct];
-    const under = resolve(root, spec);
+    const under = resolve(base, spec);
     if (existsSync(join(under, "index.md"))) return [under];
     throw new Error(`OKF spec not found: ${spec}`);
   }
@@ -151,7 +159,7 @@ export const ENRICH_PLAN_SCHEMA_VERSION = "okf-enrichment-plan.v1";
 export const SHARD_SCHEMA_VERSION = "okf-enrichment-shard.v1";
 
 export async function loadDomainPacks({ root = "domain-packs" } = {}) {
-  const base = resolve(root);
+  const base = fromRepoRoot(root);
   if (!existsSync(base)) return [];
   const packs = [];
   for (const ent of await readdir(base, { withFileTypes: true })) {
