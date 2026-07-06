@@ -213,6 +213,17 @@ function buildCompatGuardrailSection(adapterId, { protectFiles = [], disableTool
   return ["# Guardrails", ...lines].join("\n");
 }
 
+// Claude Code refuses --permission-mode bypassPermissions (which the
+// write-enabled claude adapter uses) under root/sudo unless IS_SANDBOX signals
+// a controlled environment. The harness IS that sandbox — an env-allowlisted,
+// workspace-scoped child — and CI/worker containers routinely run as root, so a
+// write-enabled claude harness run would otherwise die at spawn. Scoped to the
+// claude adapter running as root; a no-op everywhere else (uid injectable for
+// tests, since the real getuid is process-global).
+function claudeSandboxEnv(adapterId, uid = process.getuid?.()) {
+  return adapterId === "claude" && uid === 0 ? { IS_SANDBOX: "1" } : {};
+}
+
 export const __test = {
   createLineBuffer,
   loadGeConfig,
@@ -222,6 +233,7 @@ export const __test = {
   buildCompatGuardrailSection,
   buildInteractionSection,
   watchInteractionRequests,
+  claudeSandboxEnv,
 };
 
 function materializeWorkspaceCommandShims({ workspaceDir, repoRoot }) {
@@ -554,6 +566,7 @@ export async function runHarnessTask({
           GE_HARNESS_RUN_ID: run.id,
           GE_HARNESS_PROJECT_ID: harnessProject.id,
           GE_HARNESS_REAL_WORKSPACE: cwd,
+          ...claudeSandboxEnv(plan.adapterId),
           ...secretEnv,
         },
       }),
