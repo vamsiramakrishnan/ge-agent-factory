@@ -38,22 +38,17 @@ test("the checked-in stylesheets match the generator (repo is not stale)", () =>
   expect(result.ok).toBe(true);
 });
 
-test("$green-200 keeps its shipped value, now traced to PALETTE.tertiarySwatchDark", () => {
-  // setup.scss ships $green-200 darker than --color-tertiary on purpose (the
-  // tip-callout accent); palette.mjs carries it as tertiarySwatchDark and
-  // TOKEN_TABLE maps the ramp entry to that key — no raw hex pins remain
-  // anywhere in the table.
-  expect(renderRegion("setup.scss")).toContain("$green-200: #0d6d3a;");
-  expect(PALETTE.tertiarySwatchDark).toBe("#0d6d3a");
-  const row = TOKEN_TABLE.find((r) => r.name === "$green-200");
-  expect(row?.key).toBe("tertiarySwatchDark");
-  expect(row?.raw).toBeUndefined();
+test("the palette region renders keyed values and carries no raw hex pins", () => {
+  // Every row traces to a PALETTE key rather than a hardcoded hex; the
+  // generated region prints the resolved value.
+  expect(renderRegion("tokens.css")).toContain("--color-primary: #00408b;");
+  expect(PALETTE.primary).toBe("#00408b");
   expect(TOKEN_TABLE.some((r) => r.raw && /^#/.test(r.raw))).toBe(false);
 });
 
 test("splitRegion throws on missing, reversed, and duplicated markers", () => {
-  const target = TARGETS.find((t) => t.id === "setup.scss");
-  expect(() => splitRegion("$blue-000: #4285f4;\n", target)).toThrow(/missing generated-region marker/);
+  const target = TARGETS.find((t) => t.id === "tokens.css");
+  expect(() => splitRegion("--color-primary: #00408b;\n", target)).toThrow(/missing generated-region marker/);
   expect(() => splitRegion(`${target.end}\nx\n${target.begin}\n`, target)).toThrow(/END marker precedes BEGIN/);
   expect(() => splitRegion(`${target.begin}\n${target.end}\n${target.begin}\n`, target)).toThrow(/duplicated/);
 });
@@ -66,21 +61,21 @@ test("checkTokens flags a hand-edited hex inside a marked region and writeTokens
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, readFileSync(join(ROOT, target.relPath), "utf8"));
     }
-    const setupPath = join(tmp, "docs/_sass/custom/setup.scss");
-    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #00408b;", "$blue-200: #ff0000;"));
+    const cssPath = join(tmp, "packages/design/src/tokens.css");
+    writeFileSync(cssPath, readFileSync(cssPath, "utf8").replace("--color-primary: #00408b;", "--color-primary: #ff0000;"));
 
     const drifted = checkTokens(tmp);
     expect(drifted.ok).toBe(false);
-    expect(drifted.findings.map((f) => f.file)).toEqual(["docs/_sass/custom/setup.scss"]);
+    expect(drifted.findings.map((f) => f.file)).toEqual(["packages/design/src/tokens.css"]);
     const report = formatCheckReport(drifted);
-    expect(report).toContain("-$blue-200: #ff0000;");
-    expect(report).toContain("+$blue-200: #00408b;");
+    expect(report).toContain("-  --color-primary: #ff0000;");
+    expect(report).toContain("+  --color-primary: #00408b;");
 
     const { changed } = writeTokens(tmp);
-    expect(changed).toEqual(["docs/_sass/custom/setup.scss"]);
+    expect(changed).toEqual(["packages/design/src/tokens.css"]);
     expect(checkTokens(tmp).ok).toBe(true);
     // The repaired copy is byte-identical to the checked-in file.
-    expect(readFileSync(setupPath, "utf8")).toBe(readFileSync(join(ROOT, "docs/_sass/custom/setup.scss"), "utf8"));
+    expect(readFileSync(cssPath, "utf8")).toBe(readFileSync(join(ROOT, "packages/design/src/tokens.css"), "utf8"));
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

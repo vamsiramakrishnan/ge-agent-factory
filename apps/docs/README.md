@@ -84,7 +84,7 @@ published set can't drift from what agents see.
 `src/styles/custom.css` derives everything from the product's canonical
 design sources — the "Modernist Functionalism" chrome palette in
 `packages/design/src/palette.mjs` (Braun Blue primary `#00408b`, warm
-neutrals; same palette as `docs/_sass/color_schemes/ge.scss`) and the
+neutrals) and the
 status→color vocabulary in `packages/design/src/status-ramp.mjs`, exposed to
 components as `--ge-status-*` custom properties. Hanken Grotesk carries
 headings/chrome, JetBrains Mono code (self-hosted via Fontsource); dark mode

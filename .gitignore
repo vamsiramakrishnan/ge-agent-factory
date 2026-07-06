@@ -16,10 +16,6 @@ dist
 dist-ssr
 **/dist
 **/dist-ssr
-docs/_site/
-docs/.jekyll-cache/
-docs/.bundle/
-docs/vendor/bundle/
 *.local
 **/.local
 

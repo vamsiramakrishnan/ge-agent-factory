@@ -11,11 +11,9 @@
 // tools/lib/docs-diagram-theme.mjs — the Mermaid diagram theme), so it is
 // the copy the others are generated FROM. Change a color in palette.mjs,
 // run `bun run docs:tokens`, and commit the regenerated regions of:
-//   - packages/design/src/tokens.css     (the --color-* @theme block ONLY;
-//     the Tailwind theme fonts and component classes around it stay
-//     hand-written)
-//   - docs/_sass/color_schemes/ge.scss   (the full variable block)
-//   - docs/_sass/custom/setup.scss       (the $blue-*/$green-* swatch ramp)
+//   - packages/design/src/tokens.css     (the --color-* @theme block and the
+//     status-ramp block ONLY; the Tailwind theme fonts and component classes
+//     around them stay hand-written)
 //
 // The name→token mapping lives here as ONE explicit table (TOKEN_TABLE)
 // pinning name↔value pairs exactly — unlike the retired value-set regex
@@ -40,9 +38,6 @@ const ROOT = join(HERE, "..", "..", "..");
 // variable name, the palette key it is pinned to (or a `raw` literal for the
 // few non-palette lines a region carries), and an optional trailing comment
 // rendered verbatim. Row order is emission order.
-//
-// $green-200 ships darker than --color-tertiary on purpose (the tip-callout
-// accent) — it traces to PALETTE.tertiarySwatchDark, not tertiarySwatch.
 export const TOKEN_TABLE = [
   // ── packages/design/src/tokens.css — the --color-* @theme block ──
   { file: "tokens.css", name: "--color-primary", key: "primary" },
@@ -61,34 +56,6 @@ export const TOKEN_TABLE = [
   { file: "tokens.css", name: "--color-tertiary", key: "tertiary" },
   { file: "tokens.css", name: "--color-tertiary-container", key: "tertiaryContainer" },
   { file: "tokens.css", name: "--color-outline-variant", key: "outlineVariant" },
-
-  // ── docs/_sass/color_schemes/ge.scss — the full variable block ──
-  { file: "ge.scss", name: "$color-scheme", raw: "ge" },
-  { file: "ge.scss", blank: true },
-  { file: "ge.scss", name: "$body-background-color", key: "surface", comment: "--color-surface" },
-  { file: "ge.scss", name: "$body-heading-color", key: "onSurface", comment: "--color-on-surface" },
-  { file: "ge.scss", name: "$body-text-color", key: "secondaryInk", comment: "secondary ink, still AA on white" },
-  { file: "ge.scss", name: "$link-color", key: "primary", comment: "--color-primary" },
-  { file: "ge.scss", name: "$nav-child-link-color", key: "secondaryInk" },
-  { file: "ge.scss", name: "$sidebar-color", key: "background", comment: "--color-background" },
-  { file: "ge.scss", name: "$base-button-color", key: "surfaceContainerLow", comment: "--color-surface-container-low" },
-  { file: "ge.scss", name: "$btn-primary-color", key: "primary" },
-  { file: "ge.scss", name: "$code-background-color", key: "surfaceContainerLow" },
-  { file: "ge.scss", name: "$feedback-color", raw: "darken($sidebar-color, 3%)" },
-  { file: "ge.scss", name: "$table-background-color", key: "surface" },
-  { file: "ge.scss", name: "$search-background-color", key: "surface" },
-  { file: "ge.scss", name: "$search-result-preview-color", key: "secondaryInk" },
-  { file: "ge.scss", name: "$border-color", key: "outlineVariant", comment: "--color-outline-variant" },
-
-  // ── docs/_sass/custom/setup.scss — the $blue-*/$green-* swatch ramp ──
-  { file: "setup.scss", name: "$blue-000", key: "primaryContainer" },
-  { file: "setup.scss", name: "$blue-100", key: "primaryContainerDark" },
-  { file: "setup.scss", name: "$blue-200", key: "primarySwatch" },
-  { file: "setup.scss", name: "$blue-300", key: "primaryDark" },
-  { file: "setup.scss", name: "$green-000", key: "tertiaryContainerBright" },
-  { file: "setup.scss", name: "$green-100", key: "tertiaryContainerDark" },
-  { file: "setup.scss", name: "$green-200", key: "tertiarySwatchDark" },
-  { file: "setup.scss", name: "$green-300", key: "tertiaryDark" },
 ];
 
 const CSS_BEGIN = "  /* BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens` */";
@@ -112,11 +79,6 @@ function statusRampRows() {
   }
   return rows;
 }
-// NB: the SCSS markers are ASCII-only on purpose — Jekyll's Ruby Sass
-// converter (jekyll-sass-converter 1.5.x) parses _sass files as US-ASCII and
-// dies on multibyte characters like an em-dash.
-const SCSS_BEGIN = "// BEGIN GENERATED: palette -- do not edit; run `bun run docs:tokens`";
-const SCSS_END = "// END GENERATED: palette";
 
 export const TARGETS = [
   {
@@ -133,20 +95,6 @@ export const TARGETS = [
     end: STATUS_CSS_END,
     rows: statusRampRows,
     renderLine: (row) => `  ${row.name}: ${row.value};`,
-  },
-  {
-    id: "ge.scss",
-    relPath: "docs/_sass/color_schemes/ge.scss",
-    begin: SCSS_BEGIN,
-    end: SCSS_END,
-    renderLine: (row) => `${row.name}: ${valueOf(row)};${row.comment ? ` // ${row.comment}` : ""}`,
-  },
-  {
-    id: "setup.scss",
-    relPath: "docs/_sass/custom/setup.scss",
-    begin: SCSS_BEGIN,
-    end: SCSS_END,
-    renderLine: (row) => `${row.name}: ${valueOf(row)};`,
   },
 ];
 

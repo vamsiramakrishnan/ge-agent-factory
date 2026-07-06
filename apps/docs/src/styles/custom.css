@@ -3,8 +3,7 @@
  * (chrome) and packages/design/src/status-ramp.mjs (semantic status hues).
  * Those two files are THE canonical source; every hex below is either
  * copied from them verbatim or is a documented light/dark rung along one of
- * their hues (same contract as docs/_sass/custom/setup.scss's derived
- * swatches). If the palette changes, change palette.mjs first and
+ * their hues. If the palette changes, change palette.mjs first and
  * re-derive here.
  *
  * Visual language is Braun/Dieter Rams industrial functionalism: hairlines
@@ -209,6 +208,60 @@ h3 {
 
 .site-title {
   font-weight: 700;
+}
+
+/* ── Header wordmark (gaf-ui-002 §01) — a machined monogram plate + the
+ * "ge agent factory" logotype. The plate is the header's single accent
+ * moment (Braun's "one lit element"): navy fill, the one place blue is not
+ * reserved for a live/interactive state because it IS the brand mark, not
+ * chrome. The logotype stays ink so the wordmark reads as type, not a link,
+ * until you hover it. Two type families, one lockup — mono for the machine
+ * monogram, the display face for the name — never a third typeface. ─────── */
+.ge-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ge-space-3);
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--sl-color-white);
+}
+
+.ge-monogram {
+  display: grid;
+  place-items: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  flex-shrink: 0;
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f2f4f8; /* near-white — >8:1 on the navy plate in both themes */
+  background: var(--sl-color-accent); /* Braun Blue #00408b */
+  border-radius: var(--ge-radius-sm);
+}
+
+.ge-wordmark-text {
+  font-family: var(--ge-display-font);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+  color: var(--sl-color-white);
+  transition: color 120ms ease;
+}
+
+/* Interactivity surfaces only on touch — blue arrives the moment you hover,
+ * the same rule the rest of the site follows. */
+.ge-wordmark:hover .ge-wordmark-text,
+.ge-wordmark:focus-visible .ge-wordmark-text {
+  color: var(--sl-color-text-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ge-wordmark-text {
+    transition: none;
+  }
 }
 
 /* Sidebar group labels are engraved captions — the same industrial-label
@@ -592,6 +645,43 @@ button > kbd {
   line-height: 0.95;
 }
 
+/* ── Motion — one deliberate entrance on the landing hero, nothing that
+ * loops or repeats on navigation. The header wordmark and every below-fold
+ * card stay still; motion here orients the eye down the hero once, then gets
+ * out of the way (Rams: unobtrusive). A single rise+settle on a fast-out
+ * ease, staggered a beat apart, and fully removed for reduced-motion. ────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ge-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero h1,
+  .hero .tagline,
+  .hero .actions,
+  .ge-hero-panel {
+    animation: ge-rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hero .tagline {
+    animation-delay: 90ms;
+  }
+
+  .hero .actions {
+    animation-delay: 180ms;
+  }
+
+  .ge-hero-panel {
+    animation-delay: 260ms;
+  }
+}
+
 .hero .tagline {
   max-width: 58rem;
   font-size: clamp(1.05rem, 2vw, 1.35rem);
@@ -687,14 +777,32 @@ button > kbd {
   margin: 1.25rem 0;
 }
 
-.ge-logo-row img {
+/* The "works with" shelf — real assistant marks (Claude, Gemini, Codex,
+ * Antigravity, MCP), tonally unified into one ink so a row of five brands
+ * reads as one system instead of five competing color logos (color is
+ * reserved for semantics here, not decoration). Each mark is a CSS mask so
+ * its color follows the site theme exactly — the tile carries the hairline
+ * and fill, the mask carries the glyph. The SVGs self-theme as <img> too, so
+ * the same files render correctly in the README on GitHub. */
+.ge-logo {
+  display: grid;
+  place-items: center;
   height: 3.5rem;
-  width: 100%;
-  object-fit: contain;
-  padding: var(--ge-space-3);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-md);
   background: var(--sl-color-gray-6);
+}
+
+.ge-logo-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: var(--sl-color-gray-2);
+  -webkit-mask: var(--m) center / contain no-repeat;
+  mask: var(--m) center / contain no-repeat;
+}
+
+:root[data-theme="light"] .ge-logo-mark {
+  background-color: var(--sl-color-gray-1);
 }
 
 .ge-screenshot-wall {
@@ -759,4 +867,259 @@ button > kbd {
   background-color: var(--sl-color-accent);
   border-radius: var(--ge-radius-sm);
   box-shadow: none;
+}
+
+/* ── Ramsian Starlight shell pass (gaf-ui-002) ─────────────────────────────
+ * The screenshots specify the documentation site as a white instrument panel:
+ * 12-column discipline, 4px module, hairlines over shadows, numerals that line
+ * up, and color that only means action/status. This block deliberately targets
+ * Starlight's outer chrome so synced markdown inherits the same rules without
+ * custom page markup. */
+:root {
+  --sl-nav-height: 4rem;
+  --ge-rule: 1px solid var(--sl-color-gray-5);
+  --ge-rule-strong: 2px solid var(--sl-color-white);
+}
+
+body {
+  background:
+    linear-gradient(90deg, transparent calc(100% - 1px), color-mix(in srgb, var(--sl-color-gray-5) 45%, transparent) 0) 0 0 / calc(100% / 12) 100%,
+    var(--sl-color-black);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Header: solid surface, never glass. */
+.header {
+  border: var(--ge-rule);
+  border-radius: var(--ge-radius-md);
+  padding-inline: var(--ge-space-3);
+  background: var(--sl-color-black);
+}
+
+header.header {
+  box-shadow: none;
+}
+
+.header .right-group,
+.header .social-icons {
+  gap: var(--ge-space-4);
+}
+
+.header .social-icons::after {
+  border-color: var(--sl-color-gray-5);
+}
+
+.header .social-icons a {
+  color: var(--sl-color-white);
+  font-family: var(--ge-display-font);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.header .social-icons a:hover {
+  color: var(--sl-color-text-accent);
+  opacity: 1;
+}
+
+/* Physical two-position theme switch, replacing the default three-way select. */
+.ge-theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ge-space-2);
+  color: var(--sl-color-gray-2);
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  text-transform: lowercase;
+}
+
+.ge-theme-toggle {
+  position: relative;
+  width: 3rem;
+  height: 1.5rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  background: var(--sl-color-gray-6);
+  cursor: pointer;
+}
+
+.ge-theme-knob {
+  position: absolute;
+  inset-block-start: 0.1875rem;
+  inset-inline-start: 0.1875rem;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 999px;
+  background: var(--sl-color-black);
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.ge-theme-switch[data-theme-choice="dark"] .ge-theme-knob {
+  transform: translateX(1.5rem);
+  background: var(--sl-color-white);
+}
+
+/* Content rails: linework instead of floating cards. */
+main > .content-panel,
+.content-panel + .content-panel {
+  border-top: var(--ge-rule-strong);
+}
+
+.sidebar-pane,
+.right-sidebar-container {
+  border-color: var(--sl-color-gray-5);
+  box-shadow: none;
+}
+
+.right-sidebar-panel a[aria-current="true"],
+.right-sidebar-panel a[aria-current="location"] {
+  border-inline-start: 2px solid var(--sl-color-accent);
+  color: var(--sl-color-text-accent);
+  font-weight: 600;
+}
+
+/* Tables: horizontal hairlines only. */
+.sl-markdown-content table {
+  border: var(--ge-rule);
+  border-collapse: collapse;
+  border-radius: var(--ge-radius-md);
+  overflow: hidden;
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+  border-inline: 0;
+  border-block: 1px solid var(--sl-color-gray-5);
+  padding: var(--ge-space-3) var(--ge-space-4);
+  vertical-align: middle;
+}
+
+.sl-markdown-content tbody tr:hover {
+  background: transparent;
+}
+
+.sl-markdown-content tbody tr:focus-within,
+.sl-markdown-content tbody tr:hover {
+  box-shadow: inset 2px 0 0 var(--sl-color-accent);
+}
+
+/* Pagination becomes a measured footer module. */
+.pagination-links {
+  padding: var(--ge-space-5);
+  border: var(--ge-rule);
+  border-radius: var(--ge-radius-md);
+}
+
+.pagination-links a {
+  min-height: 6rem;
+  border-radius: var(--ge-radius);
+  background: transparent;
+}
+
+.pagination-links a svg {
+  display: none;
+}
+
+.pagination-links a::before,
+.pagination-links a::after {
+  font-family: var(--sl-font-mono);
+  color: var(--sl-color-gray-3);
+}
+
+.pagination-links a[rel="prev"]::before { content: "← previous"; }
+.pagination-links a[rel="next"]::before { content: "next →"; }
+.pagination-links a[rel="next"] { text-align: end; }
+.pagination-links a[rel="next"]::before { order: -1; }
+
+/* Footer colophon: inverted surface, vent grille, lowercase provenance. */
+.ge-footer {
+  margin-top: var(--ge-space-7);
+  padding: var(--ge-space-5) 0 0;
+  border-top: var(--ge-rule-strong);
+}
+
+.ge-footer-measure {
+  height: 2rem;
+  margin-bottom: var(--ge-space-5);
+  background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--sl-color-white) 35%, transparent) 0 1px, transparent 1px 8px);
+}
+
+.ge-footer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ge-space-3);
+  margin: var(--ge-space-5) 0;
+  padding-top: var(--ge-space-4);
+  border-top: var(--ge-rule);
+  color: var(--sl-color-gray-3);
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-sm);
+  text-transform: lowercase;
+}
+
+.ge-footer-main {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1.2fr) minmax(0, 2fr);
+  gap: var(--ge-space-6);
+  padding: var(--ge-space-6) 0;
+  border-top: var(--ge-rule);
+}
+
+.ge-footer-brand p {
+  max-width: 22rem;
+  color: var(--sl-color-gray-2);
+}
+
+.ge-footer-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ge-space-5);
+}
+
+.ge-footer-nav div {
+  display: grid;
+  gap: var(--ge-space-2);
+}
+
+.ge-footer-nav span,
+.ge-footer-bottom {
+  color: var(--sl-color-gray-3);
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-sm);
+  text-transform: lowercase;
+}
+
+.ge-footer-nav a {
+  color: var(--sl-color-gray-2);
+  text-decoration: none;
+}
+
+.ge-footer-nav a:hover {
+  color: var(--sl-color-text-accent);
+}
+
+.ge-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ge-space-4);
+  padding: var(--ge-space-4) 0 var(--ge-space-6);
+  border-top: var(--ge-rule);
+}
+
+.ge-footer-bottom i {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-end: var(--ge-space-2);
+  border-radius: 999px;
+  background: var(--sl-color-accent);
+}
+
+@media (max-width: 50rem) {
+  body { background-image: none; }
+  .header { border-inline: 0; border-radius: 0; }
+  .ge-footer-main,
+  .ge-footer-nav { grid-template-columns: 1fr; }
+  .ge-footer-bottom { flex-direction: column; }
 }

@@ -1,0 +1,46 @@
+---
+---
+
+<starlight-theme-select class="ge-theme-switch" aria-label={Astro.locals.t('themeSelect.accessibleLabel')}>
+  <span class="ge-theme-label" aria-hidden="true">light</span>
+  <button type="button" class="ge-theme-toggle" aria-pressed="false" aria-label="Switch between light and dark theme">
+    <span class="ge-theme-knob" aria-hidden="true"></span>
+  </button>
+</starlight-theme-select>
+
+<script is:inline>
+  StarlightThemeProvider.updatePickers();
+</script>
+
+<script>
+  type Theme = 'dark' | 'light';
+  const storageKey = 'starlight-theme';
+  const parseTheme = (theme: unknown): Theme => (theme === 'dark' ? 'dark' : 'light');
+  const getPreferredColorScheme = (): Theme =>
+    matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  const loadTheme = (): Theme => {
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
+    return stored === 'light' || stored === 'dark' ? stored : getPreferredColorScheme();
+  };
+  function storeTheme(theme: Theme): void {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(storageKey, theme);
+  }
+  function applyTheme(theme: Theme, root: HTMLElement): void {
+    document.documentElement.dataset.theme = theme;
+    StarlightThemeProvider.updatePickers(theme);
+    root.dataset.themeChoice = theme;
+    const button = root.querySelector<HTMLButtonElement>('button');
+    if (button) button.setAttribute('aria-pressed', String(theme === 'dark'));
+  }
+  class StarlightThemeSelect extends HTMLElement {
+    connectedCallback(): void {
+      applyTheme(loadTheme(), this);
+      this.querySelector('button')?.addEventListener('click', () => {
+        const next = parseTheme(document.documentElement.dataset.theme) === 'light' ? 'dark' : 'light';
+        storeTheme(next);
+        applyTheme(next, this);
+      });
+    }
+  }
+  customElements.define('starlight-theme-select', StarlightThemeSelect);
+</script>

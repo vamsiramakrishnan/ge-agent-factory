@@ -70,9 +70,8 @@ const REPO_URL = "https://github.com/vamsiramakrishnan/ge-agent-factory";
 const EDIT_URL = `${REPO_URL}/edit/main/docs`;
 const BLOB_URL = `${REPO_URL}/blob/main`;
 
-// Trees that are site-internal or deliberately unpublished — the same set the
-// Jekyll site excluded (docs/_config.yml `exclude`), so site scope is stable
-// across the migration. Links into these trees become GitHub blob URLs.
+// Trees that are site-internal or deliberately unpublished. Links into these
+// trees become GitHub blob URLs.
 const SKIP_DIRS = new Set([
   "_includes",
   "_layouts",
