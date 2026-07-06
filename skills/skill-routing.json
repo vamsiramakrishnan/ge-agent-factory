@@ -515,7 +515,8 @@
         "okf.enrich.generate",
         "okf.enrich.apply",
         "okf.enrich.shard",
-        "okf.eval.verify"
+        "okf.eval.verify",
+        "improve"
       ],
       "docs": [
         "skills/enriching-okf-blueprints/references/enrichment-rules.md"
@@ -590,6 +591,35 @@
       "engines": [],
       "docs": [
         "docs/reference/agent-operability.md",
+        "docs/reference/cli.md"
+      ]
+    },
+    "browsing-the-library": {
+      "triggers": [
+        "library",
+        "blueprint",
+        "catalog",
+        "browse agents",
+        "find an agent",
+        "create from library",
+        "pre-built agent"
+      ],
+      "composes": [
+        "authoring-okf-specs",
+        "running-factory",
+        "installing-the-factory"
+      ],
+      "commands": [
+        "library.stats",
+        "library.search",
+        "library.inspect",
+        "library.status",
+        "create.fromLibrary"
+      ],
+      "engines": [
+        "@ge/blueprint-library"
+      ],
+      "docs": [
         "docs/reference/cli.md"
       ]
     }

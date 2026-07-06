@@ -52,11 +52,14 @@ describe("harness runner config", () => {
 });
 
 describe("interaction-form bridge (non-Antigravity adapters)", () => {
-  test("buildInteractionSection is claude-only and requires an interaction dir", () => {
+  test("buildInteractionSection fires for interaction-capable adapters with a dir", () => {
+    // claude and codex declare supportsInteraction; antigravity has its own
+    // native hook; gemini has no bridge.
     expect(__test.buildInteractionSection("claude", "/tmp/x")).toContain("request_user_input");
+    expect(__test.buildInteractionSection("codex", "/tmp/x")).toContain("request_user_input");
     expect(__test.buildInteractionSection("claude", null)).toBeNull();
     expect(__test.buildInteractionSection("antigravity-sdk", "/tmp/x")).toBeNull();
-    expect(__test.buildInteractionSection("codex", "/tmp/x")).toBeNull();
+    expect(__test.buildInteractionSection("gemini", "/tmp/x")).toBeNull();
   });
 
   test("watchInteractionRequests surfaces each request file once", async () => {
@@ -94,5 +97,21 @@ describe("claude adapter interaction wiring", () => {
     expect(config.mcpServers["ge-interaction"].args[0]).toContain("claude-interaction-mcp.mjs");
     expect(wired).toContain("--allowedTools");
     expect(wired).toContain("mcp__ge-interaction__request_user_input");
+  });
+
+  test("codex buildArgs registers the bridge via -c mcp_servers overrides only with an interaction dir", async () => {
+    const { AGENT_DEFS, agentSupportsInteraction } = await import("./agents.js");
+    expect(agentSupportsInteraction("codex")).toBe(true);
+    const codex = AGENT_DEFS.find((d) => d.id === "codex");
+    const plain = codex.buildArgs("prompt", {});
+    expect(plain.join(" ")).not.toContain("mcp_servers");
+    const wired = codex.buildArgs("prompt", { interactionDir: "/tmp/ix" });
+    // Codex -c values are JSON; the server id is TOML-safe (underscore).
+    const argJoin = wired.join("\n");
+    expect(argJoin).toContain("mcp_servers.ge_interaction.command=");
+    const envArg = wired.find((a) => a.startsWith("mcp_servers.ge_interaction.env="));
+    expect(JSON.parse(envArg.split("=").slice(1).join("=")).GE_HARNESS_INTERACTION_DIR).toBe("/tmp/ix");
+    const argsArg = wired.find((a) => a.startsWith("mcp_servers.ge_interaction.args="));
+    expect(JSON.parse(argsArg.split("=").slice(1).join("="))[0]).toContain("claude-interaction-mcp.mjs");
   });
 });

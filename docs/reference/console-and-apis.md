@@ -95,6 +95,7 @@ returns `202 { jobId, command }`; stream progress via
 | `GET /api/ge/systems/bindings` | `ge systems bindings` | List stored live-system bindings (.ge/systems/bindings.json) | `read-only` | — |
 | `POST /api/ge/systems/unbind` | `ge systems unbind` | Remove a system's live binding from .ge/systems/bindings.json | `starts-local-workloads` | `node` on PATH |
 | `GET /api/ge/byo/doctor` | `ge byo doctor` | Validate a BYO manifest (ge.byo.yaml) and report the full apply plan — appliable vs planned-only vs invalid | `read-only` | `node` on PATH |
+| `POST /api/ge/improve` | `ge improve` | Self-improvement loop: enrich an agent's OKF blueprint toward a target quality level (audit → enrich → verify → re-audit), then build+judge | `writes-repo` | `node` on PATH |
 | `POST /api/ge/agents/register` | `ge agents register` | Register an OKF bundle as a tracked agent: compile it, flip provenance draft→registered (version +1), and refresh the generated catalog | `writes-repo` | `bun` on PATH |
 | `POST /api/ge/create` | `ge create` | Materialize a receipt-backed agent workspace from a resolved Agent Library blueprint (OKF contract copy, stub app/twins/evals/proof scaffolding, ge.lock.json) | `writes-repo` | `bun` on PATH |
 | `POST /api/ge/mcp/deploy` | `ge mcp deploy` | Deploy per-department MCP services | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, serviceAccount, dataBucket · cloud auth · writable `.ge.json` |

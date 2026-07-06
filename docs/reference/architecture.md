@@ -175,7 +175,8 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`authoring-okf-specs`](../../skills/authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track`, `ge okf skill` | [`@ge/okf`](../../packages/okf/) | [`okf.md`](okf.md), [`agent-lifecycle.md`](agent-lifecycle.md) |
 | [`bringing-your-own`](../../skills/bringing-your-own/) | `byo_customization` | `ge byo doctor`, `ge byo apply`, `ge systems bind`, `ge systems bindings`, `ge systems unbind`, `ge systems synth`, `ge evals import`, `ge models doctor`, `ge systems list`, `ge systems doctor` | [`@ge/byo-systems`](../../packages/byo-systems/) | [`bring-your-own-systems.md`](../cookbooks/bring-your-own-systems.md), [`cli.md`](cli.md) |
 | [`observing-runs`](../../skills/observing-runs/) | `run_observation` | `ge agents status`, `ge agents logs`, `ge agents track`, `ge evals coverage`, `ge doctor`, `ge daemon start` | — | [`agent-operability.md`](agent-operability.md), [`cli.md`](cli.md) |
-| [`enriching-okf-blueprints`](../../skills/enriching-okf-blueprints/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify` | — | [`enrichment-rules.md`](../../skills/enriching-okf-blueprints/references/enrichment-rules.md) |
+| [`browsing-the-library`](../../skills/browsing-the-library/) | — | `ge library stats`, `ge library search`, `ge library inspect`, `ge library status`, `ge create` | [`@ge/blueprint-library`](../../packages/blueprint-library/) | [`cli.md`](cli.md) |
+| [`enriching-okf-blueprints`](../../skills/enriching-okf-blueprints/) | — | `ge okf quality audit`, `ge okf enrich plan`, `ge okf enrich generate`, `ge okf enrich apply`, `ge okf enrich shard`, `ge okf eval verify`, `ge improve` | — | [`enrichment-rules.md`](../../skills/enriching-okf-blueprints/references/enrichment-rules.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ---

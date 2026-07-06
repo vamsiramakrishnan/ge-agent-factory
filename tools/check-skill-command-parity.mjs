@@ -29,11 +29,6 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // re-judge; "we forgot" is not a reason. Trim an entry the moment a skill
 // routes the command.
 const EXEMPT = {
-  "create.fromLibrary": "library browse/create surface — no dedicated operator skill yet; goes with the library.* group below (candidate: a browsing-the-library skill)",
-  "library.stats": "library browse surface — see create.fromLibrary",
-  "library.search": "library browse surface — see create.fromLibrary",
-  "library.inspect": "library browse surface — see create.fromLibrary",
-  "library.status": "library browse surface — see create.fromLibrary",
   "console.deploy": "console packaging deploy — deliberately CLI/console-only (widening deploys to assistants is a separate deliberate act, same stance as the MCP surface)",
   "console.doctor": "console packaging doctor — read-only companion of console.deploy, same stance",
 };

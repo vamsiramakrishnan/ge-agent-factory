@@ -105,11 +105,26 @@ export const AGENT_DEFS = [
       { id: "gpt-5.5", label: "gpt-5.5" },
       { id: "gpt-5.4", label: "gpt-5.4" },
     ],
+    // Interaction-form parity with the Antigravity driver, via Codex's own MCP
+    // support. Codex takes `-c key=value` config overrides (values parsed as
+    // JSON), so the same request_user_input bridge is registered as an
+    // mcp_servers entry when a run has an interaction dir. TOML bare keys can't
+    // contain hyphens, so the server id is `ge_interaction` here (the bridge
+    // script is identical). Wired per Codex's documented config surface;
+    // live behavior on a real codex binary is not exercised in CI (same status
+    // as the claude adapter's --mcp-config path).
+    supportsInteraction: true,
     buildArgs: (_prompt, options = {}) => {
       const args = ["exec", "--json", "--skip-git-repo-check"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--full-auto");
       if (options.cwd) args.push("-C", options.cwd);
       if (options.model && options.model !== "default") args.push("--model", options.model);
+      if (options.interactionDir) {
+        const bridge = new URL("../scripts/claude-interaction-mcp.mjs", import.meta.url).pathname;
+        args.push("-c", `mcp_servers.ge_interaction.command=${JSON.stringify(process.execPath)}`);
+        args.push("-c", `mcp_servers.ge_interaction.args=${JSON.stringify([bridge])}`);
+        args.push("-c", `mcp_servers.ge_interaction.env=${JSON.stringify({ GE_HARNESS_INTERACTION_DIR: options.interactionDir })}`);
+      }
       return args;
     },
     promptViaStdin: true,
@@ -124,6 +139,7 @@ export const AGENT_DEFS = [
       { id: "sonnet", label: "Sonnet" },
       { id: "opus", label: "Opus" },
     ],
+    supportsInteraction: true,
     buildArgs: (_prompt, options = {}) => {
       const args = ["-p", "--output-format", "stream-json", "--verbose"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--permission-mode", "bypassPermissions");
@@ -240,9 +256,18 @@ export function runtimeAdapterContract(def) {
     streamFormat: def.streamFormat || "plain",
     supportsResume: Boolean(def.supportsResume),
     supportsUsage: def.streamFormat === "json-lines",
+    supportsInteraction: Boolean(def.supportsInteraction),
     envPolicy: "allowlist-plus-scoped-secrets",
     requiredSecretNames: Array.isArray(def.requiredSecretNames) ? def.requiredSecretNames : [],
     capabilities: capabilityForAgent(def.id).primary,
     permissionProfiles: Object.values(PERMISSION_PROFILES),
   };
+}
+
+// Whether an adapter speaks the interaction-form protocol through the
+// request_user_input MCP bridge (claude via --mcp-config, codex via -c
+// mcp_servers). Declarative capability, so the harness runner drives the
+// prompt section + request watcher off this instead of hardcoding adapter ids.
+export function agentSupportsInteraction(id) {
+  return Boolean(AGENT_DEFS.find((def) => def.id === id)?.supportsInteraction);
 }

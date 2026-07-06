@@ -7,7 +7,7 @@ import { basename, delimiter, join, resolve, sep } from "node:path";
 import { loadConfig } from "c12";
 import { splitLines } from "@ge/runtime/events";
 import { readDotEnv } from "./dotenv.mjs";
-import { detectAgents, getAgentDef } from "./agents.js";
+import { agentSupportsInteraction, detectAgents, getAgentDef } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { openJournal, recordRun } from "./harness-journal.js";
 import { writeJson } from "@ge/std/json-io";
@@ -150,13 +150,14 @@ async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
   };
 }
 
-// Interaction-form support on the Claude Code adapter: tell the model the
-// request_user_input bridge exists and when to use it. The Antigravity driver
-// has its own native interaction hook (and its own instructions); other
-// adapters have no bridge, so no section. Returns null unless (claude +
-// interaction dir) — existing prompts are byte-unchanged.
+// Interaction-form support for adapters that speak the request_user_input MCP
+// bridge (claude, codex — the declarative supportsInteraction capability): tell
+// the model the bridge exists and when to use it. The Antigravity driver has
+// its own native interaction hook (and its own instructions). Returns null for
+// adapters without the capability, or with no interaction dir — existing
+// prompts are byte-unchanged.
 function buildInteractionSection(adapterId, interactionDir) {
-  if (adapterId !== "claude" || !interactionDir) return null;
+  if (!interactionDir || !agentSupportsInteraction(adapterId)) return null;
   return [
     "# Asking the operator",
     "When you need structured input from the human operator — interview answers, choices between options, confirmations — call the `request_user_input` tool (ge-interaction MCP server). It renders a form in the operator's console and blocks until they answer. Never invent answers the operator should give; ask instead.",

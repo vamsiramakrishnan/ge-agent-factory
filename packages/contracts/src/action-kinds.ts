@@ -83,6 +83,9 @@ export const GeCommandIdSchema = z.enum([
   "okf.skill",
   "agents.register",
   "agents.track",
+  // Self-improvement loop (audit → enrich → verify → re-audit toward a target
+  // quality level; tools/lib/improve.mjs):
+  "improve",
   // OKF quality + enrichment (blueprint upgrade factory, merged 2026-07-05):
   "okf.quality.audit",
   "okf.enrich.plan",
