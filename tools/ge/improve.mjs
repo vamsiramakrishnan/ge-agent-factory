@@ -22,6 +22,9 @@ function renderImprove(r) {
     const delta = it.scoreAfter - it.scoreBefore;
     const move = it.dryRun ? pc.dim("(preview)") : delta > 0 ? pc.green(`+${delta}`) : pc.yellow(`${delta}`);
     out(`  ${pc.dim(`#${it.n}`)} +${it.generated} eval(s)${it.dryRun ? "" : ` applied ${it.applied}`} · score ${it.scoreBefore}→${it.scoreAfter} ${move}${it.note ? pc.dim(`  ${it.note}`) : ""}`);
+    // Surface the static eval-verification signal (never blocks, but never hidden).
+    if (it.evalVerifyError) out(`      ${pc.yellow("▲")} eval verify errored: ${it.evalVerifyError}`);
+    else if (it.evalErrors) out(`      ${pc.yellow("▲")} ${it.evalErrors} eval-verification error(s) in the written evals (ge okf eval verify --spec ${r.specId})`);
   }
   if (r.remainingGaps.length) {
     out(pc.dim(`  ${r.remainingGaps.length} gap(s) remaining:`));

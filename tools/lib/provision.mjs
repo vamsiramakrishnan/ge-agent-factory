@@ -132,6 +132,10 @@ export function createProvisionOps({
           // The eval-judge model, forwarded the same way so a .ge.json judgeModel
           // reaches the remote generator's eval_config.yaml (parity with local).
           ...(cfg.judgeModel ? { judgeModel: cfg.judgeModel } : {}),
+          // The harness review/refine model — provisionLocal pins it from
+          // cfg.refinementModel, so forward it remotely too or the cloud harness
+          // silently runs review/refine on agentModel instead.
+          ...(cfg.refinementModel ? { refinementModel: cfg.refinementModel } : {}),
           ...(maxOutputTokens != null && String(maxOutputTokens).trim() !== ""
             ? { maxOutputTokens: Number(maxOutputTokens) }
             : {}),

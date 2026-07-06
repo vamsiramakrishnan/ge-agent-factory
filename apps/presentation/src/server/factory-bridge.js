@@ -712,6 +712,7 @@ export async function submitFactoryRun(request) {
         // an operator-set output-token budget so the worker stages match local builds.
         ...(request.model ? { model: String(request.model) } : {}),
         ...(request.judgeModel ? { judgeModel: String(request.judgeModel) } : {}),
+        ...(request.refinementModel ? { refinementModel: String(request.refinementModel) } : {}),
         ...(request.maxOutputTokens != null && String(request.maxOutputTokens).trim() !== ""
           ? { maxOutputTokens: Number(request.maxOutputTokens) }
           : {}),

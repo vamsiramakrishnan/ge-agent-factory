@@ -108,16 +108,21 @@ export async function validateAgentContract(workspaceDir) {
     check("agent:no_generic_mock_naming", !/list_mock_systems|query_mock_|mock data source/i.test(toolsText), "tools avoid generic mock-source naming"),
     check("agent:no_google_auth_required", !/google\.auth\.default|GOOGLE_GENAI_USE_VERTEXAI/.test(agentText + toolsText), "local mock agent does not require Google auth"),
     check("agent:pyproject_adk", /google-adk/.test(pyprojectText), "pyproject declares google-adk dependency"),
-    // Review point: generated agents must run on the CONFIGURED model — the
-    // centralized agentModel knob (GE_AGENT_MODEL, default gemini-3.5-flash).
-    // Asserting against the resolved value (not a literal) keeps this gate in
-    // agreement with a deliberate model override instead of fighting it. The
-    // check id keeps its historical name for ledger/skill-doc continuity.
-    check(
+    // Review point: a generated agent must run on the model the workspace was
+    // BUILT with — recorded in its own manifest (useCaseSpec.agentQualityPlan.
+    // adkCapabilities.model), falling back to DEFAULT_AGENT_MODEL. Reading the
+    // workspace's own record (not process.env.GE_AGENT_MODEL) keeps validity
+    // self-contained: a fixed workspace validates the same regardless of the
+    // validator's environment. The check id keeps its historical name for
+    // ledger/skill-doc continuity.
+    ((expectedModel, foundModel) => check(
       "agent:model_is_gemini_3_5_flash",
-      new RegExp(`model\\s*=\\s*["']${(process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`).test(agentText),
-      `agent.py uses model='${(process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL).trim()}'`,
-      { foundModel: agentText.match(/model\s*=\s*["']([^"']+)["']/)?.[1] || null },
+      foundModel === expectedModel,
+      `agent.py uses the workspace's declared model (${expectedModel})`,
+      { foundModel, expectedModel },
+    ))(
+      String(useCaseSpec?.agentQualityPlan?.adkCapabilities?.model || DEFAULT_AGENT_MODEL).trim(),
+      agentText.match(/model\s*=\s*["']([^"']+)["']/)?.[1] || null,
     ),
     // Review point: never ship the 2048 boilerplate. Unset (model default) is fine;
     // a deliberate, use-case-sized bound is fine. Only an exact 2048 fails.

@@ -104,12 +104,17 @@ export async function improveSpec({
       return { n: iterations.length + 1, generated: 0, applied: 0, scoreBefore, scoreAfter: scoreBefore, statusAfter: report.currentStatus, note: "no further obligations to add", stop: true };
     }
     const applied = await applyEnrichmentPatch({ patch, write, root, force: true });
+    // Static eval verification is informational (never blocks the loop), but it
+    // must be SURFACED, not swallowed: it is the only automatic check that the
+    // enrichment evals we just wrote are well-formed. Report both the error
+    // count and any hard failure of the verifier itself.
     let evalErrors = null;
+    let evalVerifyError = null;
     try {
       const verify = await verifyOkfEvals({ spec, root });
       evalErrors = verify?.summary?.errors ?? null;
-    } catch {
-      evalErrors = null; // static verify is informational; a failure here never blocks the loop
+    } catch (error) {
+      evalVerifyError = error.message;
     }
     // Only a real write changes the corpus, so only then does re-auditing move.
     if (write) report = await auditSpec(dir);
@@ -123,6 +128,7 @@ export async function improveSpec({
       scoreAfter,
       statusAfter: report.currentStatus,
       evalErrors,
+      ...(evalVerifyError ? { evalVerifyError } : {}),
       addedEvals: (patch.adds.evals || []).map((entry) => entry.path),
       // Stop the write loop when a batch fails to move the score forward.
       stop: write ? scoreAfter <= scoreBefore : true,

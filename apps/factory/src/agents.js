@@ -108,18 +108,22 @@ export const AGENT_DEFS = [
     // Interaction-form parity with the Antigravity driver, via Codex's own MCP
     // support. Codex takes `-c key=value` config overrides (values parsed as
     // JSON), so the same request_user_input bridge is registered as an
-    // mcp_servers entry when a run has an interaction dir. TOML bare keys can't
-    // contain hyphens, so the server id is `ge_interaction` here (the bridge
-    // script is identical). Wired per Codex's documented config surface;
-    // live behavior on a real codex binary is not exercised in CI (same status
-    // as the claude adapter's --mcp-config path).
+    // mcp_servers entry. TOML bare keys can't contain hyphens, so the server id
+    // is `ge_interaction` (the bridge script is identical).
+    //
+    // OPT-IN, unlike claude: the claude --mcp-config path was verified against a
+    // real binary, this `-c mcp_servers` path was NOT. Since the daemon sets an
+    // interaction dir on EVERY run, injecting these `-c` args unconditionally
+    // would put unverified overrides on every codex run — a wrong `-c` could
+    // break unrelated codex jobs. So it only activates with
+    // GE_HARNESS_CODEX_INTERACTION set, until it is confirmed against real codex.
     supportsInteraction: true,
     buildArgs: (_prompt, options = {}) => {
       const args = ["exec", "--json", "--skip-git-repo-check"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--full-auto");
       if (options.cwd) args.push("-C", options.cwd);
       if (options.model && options.model !== "default") args.push("--model", options.model);
-      if (options.interactionDir) {
+      if (options.interactionDir && codexInteractionEnabled()) {
         const bridge = new URL("../scripts/claude-interaction-mcp.mjs", import.meta.url).pathname;
         args.push("-c", `mcp_servers.ge_interaction.command=${JSON.stringify(process.execPath)}`);
         args.push("-c", `mcp_servers.ge_interaction.args=${JSON.stringify([bridge])}`);
@@ -264,10 +268,19 @@ export function runtimeAdapterContract(def) {
   };
 }
 
+// Codex's -c mcp_servers interaction path is opt-in until verified against a
+// real codex binary (see the codex adapter comment) — so its runtime capability
+// is env-gated even though the static def declares it.
+export function codexInteractionEnabled() {
+  return ["1", "true", "yes", "on"].includes(String(process.env.GE_HARNESS_CODEX_INTERACTION || "").toLowerCase());
+}
+
 // Whether an adapter speaks the interaction-form protocol through the
 // request_user_input MCP bridge (claude via --mcp-config, codex via -c
 // mcp_servers). Declarative capability, so the harness runner drives the
 // prompt section + request watcher off this instead of hardcoding adapter ids.
+// codex is gated behind codexInteractionEnabled() until its path is verified.
 export function agentSupportsInteraction(id) {
+  if (id === "codex") return codexInteractionEnabled();
   return Boolean(AGENT_DEFS.find((def) => def.id === id)?.supportsInteraction);
 }

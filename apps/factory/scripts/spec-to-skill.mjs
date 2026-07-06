@@ -35,12 +35,12 @@ import { fileURLToPath } from "node:url";
 
 import { stringify as stringifyYaml } from "yaml";
 import { findUseCase, slug } from "@ge/okf";
+import { getUseCases } from "../src/use-cases.js";
 import { deriveAnswerableQueries, deriveTestMechanisms, specDocuments } from "./lib/okf-capabilities.mjs";
 import { bullets, entityFields, fieldName, mdTable } from "./factory/okf/markdown.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = resolve(SCRIPT_DIR, "..");
-const CATALOG_PATH = resolve(APP_ROOT, "generated", "use-cases.generated.json");
 
 export function parseArgs(argv) {
   const args = {};
@@ -418,9 +418,13 @@ async function loadSpec(args) {
     return spec.generationSpec ? spec : spec.spec || spec;
   }
   if (!args.id) throw new Error("Provide --id <useCaseId> or --spec <path.json>.");
-  const catalog = JSON.parse(await readFile(CATALOG_PATH, "utf8"));
-  const spec = findUseCase(catalog, args.id);
-  if (!spec) throw new Error(`Use case '${args.id}' not found in ${CATALOG_PATH}.`);
+  // Load the catalog through getUseCases() (the autosync loader every catalog
+  // consumer uses), NOT a raw read of the git-ignored build artifact — so on a
+  // fresh checkout / CI clone / worker that hasn't run `mise run catalog` this
+  // regenerates a missing/stale catalog instead of ENOENT-ing. (The direct-read
+  // footgun this session fixed in `factory from-usecase`, avoided here too.)
+  const spec = findUseCase(getUseCases(), args.id);
+  if (!spec) throw new Error(`Use case '${args.id}' not found in the catalog.`);
   return spec;
 }
 
