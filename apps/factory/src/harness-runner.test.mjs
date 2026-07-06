@@ -83,6 +83,15 @@ describe("interaction-form bridge (non-Antigravity adapters)", () => {
   });
 });
 
+describe("claude sandbox env (root bypassPermissions)", () => {
+  test("sets IS_SANDBOX only for the claude adapter running as root", () => {
+    expect(__test.claudeSandboxEnv("claude", 0)).toEqual({ IS_SANDBOX: "1" });
+    expect(__test.claudeSandboxEnv("claude", 1000)).toEqual({});
+    expect(__test.claudeSandboxEnv("codex", 0)).toEqual({});
+    expect(__test.claudeSandboxEnv("antigravity-sdk", 0)).toEqual({});
+  });
+});
+
 describe("claude adapter interaction wiring", () => {
   test("buildArgs adds the MCP bridge only when an interaction dir is present", async () => {
     const { AGENT_DEFS } = await import("./agents.js");
