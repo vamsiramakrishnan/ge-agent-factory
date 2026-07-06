@@ -86,20 +86,20 @@ existing `docs/*.md` page needs nothing extra — but a **new top-level**
 the site (and its link rewriting) still builds.
 
 Then `bun run test:gated` (`node tools/check-test-results.mjs`) for the full
-suite — it wraps `bun test apps tools packages`, cross-references failures
-against the checked-in `tools/known-test-failures.json`, and exits non-zero
-**only** if a test fails that isn't already in that list. That replaces the
-old "judge by the set of failing test names, not the raw count" manual
-practice with a structural check: a name you don't recognize is a regression
-by construction (the tool will tell you), a name already in the list is not
-yours to fix. If a known-failing test starts passing, the tool reports it
-separately (informational) — trim it from `known-test-failures.json` once
-you've confirmed why. One current entry
-(`round-trip recovers tool names, systems, and workflow step order`, and its
-sibling `capability spine: ...`) is a real bug in `spec-to-okf.mjs` (an
-id-mangling round-trip discrepancy), not an environment gap — see the `notes`
-field in `known-test-failures.json` — kept in the list so it doesn't block
-unrelated work, but it's an open bug, not accepted behavior.
+suite — it runs one `bun test` per directory shard (each app under `apps/`,
+plus `tools/` and `packages/`; see `planTestShards` in
+`tools/lib/test-results.mjs` for why a single repo-root scan is not safe
+under a 4096 file-descriptor rlimit), merges the shards' JUnit reports,
+cross-references failures against the checked-in
+`tools/known-test-failures.json`, and exits non-zero **only** if a test
+fails that isn't already in that list. That replaces the old "judge by the
+set of failing test names, not the raw count" manual practice with a
+structural check: a name you don't recognize is a regression by construction
+(the tool will tell you), a name already in the list is not yours to fix. If
+a known-failing test starts passing, the tool reports it separately
+(informational) — trim it from `known-test-failures.json` once you've
+confirmed why. The list is currently empty; keep it that way by preferring a
+hermetic-test or code fix over parking a new entry.
 
 One test file (`packages/runtime/src/index.test.mjs`) crashes outright on
 a Bun limitation (nested `describe()`/`test()` — [bun#5090](https://github.com/oven-sh/bun/issues/5090))

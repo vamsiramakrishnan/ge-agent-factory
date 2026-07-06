@@ -1569,13 +1569,16 @@ async function cmdFromUseCase(dir, flags) {
   let useCase;
 
   if (useCaseId) {
-    const catalogPath = join(resolve("."), "src", "use-cases.js");
     try {
-      const mod = await import(`file://${catalogPath}`);
-      useCase = findUseCase(mod.getUseCases(), useCaseId);
+      // The statically-imported loader (../src/use-cases.js, module-relative)
+      // — NOT a cwd-derived dynamic import, which only resolved when the
+      // process happened to run from apps/factory and broke `factory
+      // from-usecase` from any other directory. getUseCases() can still throw
+      // (catalog regeneration failure), which the catch below wraps.
+      useCase = findUseCase(getUseCases(), useCaseId);
       if (!useCase) {
         const needle = normalizeUseCaseLookup(useCaseId);
-        const matches = mod.getUseCases().filter((u) => {
+        const matches = getUseCases().filter((u) => {
           const id = normalizeUseCaseLookup(u.id);
           const title = normalizeUseCaseLookup(u.title);
           const source = normalizeUseCaseLookup(u.sourcePath || "");

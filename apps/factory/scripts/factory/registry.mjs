@@ -317,6 +317,13 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         systems: str("Comma-separated source systems"),
         "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
         "run-tests-after-refine": str("Run smoke tests after refine (true/false)"),
+        // Same harness toggles as quality-gate: without a declared flag, citty
+        // drops --harness-review false and the ambient-credentials auto-detect
+        // decides — making the review stage impossible to opt out of.
+        "harness-review": str("Run harness review after the build ('true'/'false'; default: auto — on when GEMINI_API_KEY/Vertex env is present)"),
+        review: str("Alias for --harness-review"),
+        "harness-refine": str("Run harness refine after review ('true'/'false'; default: follows --harness-review)"),
+        refine: str("Alias for --harness-refine"),
         out: str("Write the run report to this path"),
       }, handlers.fromUseCase),
     quickstart: dirCmd("quickstart", "Zero-flag local pipeline for a brand-new workspace: init -> schema -> generate -> tools -> test",

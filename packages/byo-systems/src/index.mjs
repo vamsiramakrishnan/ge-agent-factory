@@ -31,7 +31,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { delimiter, join, dirname } from "node:path";
 import { defaultBindingsDir, readBindings, validateBinding } from "./bindings.mjs";
 
 export * from "./bindings.mjs";
@@ -240,6 +240,17 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
     const overlayScope = resolveOverlayScope({ mode, overlayBackend, env: process.env });
     const env = { ...process.env };
     if (overlayScope.injected) env.GE_SIMULATOR_OVERLAY_BACKEND = overlayScope.backend;
+    // simulator_runtime is a zero-dependency pure-Python package that lives in
+    // this repo (packages/simulator-runtime). Prepending it to PYTHONPATH lets
+    // synthesis run with a bare python3 on a fresh checkout — no venv or
+    // `pip install` provisioning step — and pins the repo's copy even when an
+    // installed one exists elsewhere on the interpreter's path.
+    if (repoRoot) {
+      const runtimePath = join(repoRoot, "packages", "simulator-runtime");
+      if (existsSync(runtimePath)) {
+        env.PYTHONPATH = [runtimePath, env.PYTHONPATH].filter(Boolean).join(delimiter);
+      }
+    }
     const child = spawn(
       resolvedPython,
       synthesisArgv({ script, promote, repoRoot }),
