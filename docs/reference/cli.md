@@ -1178,6 +1178,27 @@ Apply the safe (appliable) subset of a BYO manifest; --dry-run reports the plan 
 | `--manifest` | string | Path to the ge.byo.yaml manifest |
 | `--dry-run` | boolean | Print what would be applied; execute nothing |
 
+### `ge harness`
+
+Harness integration: wire factory gates into the assistant's own hook system
+
+### `ge harness hooks`
+
+Post-action checks inside the harness session: install · show
+
+### `ge harness hooks install`
+
+Write this repo's post-action checks into a harness's hook config (supported: claude)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--harness` | string | Harness to configure (default claude → .claude/settings.json) |
+| `--dry-run` | boolean | Show the merge without writing |
+
+### `ge harness hooks show`
+
+Show the hook plan `install` would apply, per harness
+
 ### `ge models`
 
 Model provider readiness: doctor

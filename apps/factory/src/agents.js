@@ -128,6 +128,23 @@ export const AGENT_DEFS = [
       const args = ["-p", "--output-format", "stream-json", "--verbose"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--permission-mode", "bypassPermissions");
       if (options.model && options.model !== "default") args.push("--model", options.model);
+      // Interaction-form parity with the Antigravity driver: when a run has an
+      // interaction dir (console interview / any form-capable run), expose the
+      // request_user_input MCP bridge that round-trips question forms through
+      // the same requests/-responses/ protocol the console UI answers.
+      if (options.interactionDir) {
+        const bridge = new URL("../scripts/claude-interaction-mcp.mjs", import.meta.url).pathname;
+        args.push("--mcp-config", JSON.stringify({
+          mcpServers: {
+            "ge-interaction": {
+              command: process.execPath,
+              args: [bridge],
+              env: { GE_HARNESS_INTERACTION_DIR: options.interactionDir },
+            },
+          },
+        }));
+        args.push("--allowedTools", "mcp__ge-interaction__request_user_input");
+      }
       return args;
     },
     promptViaStdin: true,

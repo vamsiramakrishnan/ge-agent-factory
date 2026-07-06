@@ -30,9 +30,13 @@ dist-ssr
 *.sln
 *.sw?
 
-# Tooling state (don't commit any of this)
-.claude
-*.claude/
+# Tooling state (don't commit any of this) — EXCEPT .claude/settings.json,
+# the repo-shared Claude Code config (hooks installed by `ge harness hooks
+# install`); personal overrides belong in .claude/settings.local.json, which
+# stays ignored with the rest of the directory.
+.claude/*
+?*.claude/
+!.claude/settings.json
 .superpowers/
 .antigravitycli/
 .codex/

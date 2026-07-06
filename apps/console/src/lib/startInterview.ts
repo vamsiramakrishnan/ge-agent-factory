@@ -170,12 +170,12 @@ export async function startInterview({
     kind: "harness.run",
     input: {
       workspaceDir: ".",
-      // The interview stage needs the interaction-form protocol, which only the
-      // Antigravity SDK adapter speaks — pinned here rather than following the
-      // configurable harnessAgent default. The model is deliberately omitted:
-      // the daemon fills it from the centralized refinementModel config
-      // (tools/lib/daemon/harness-run.mjs resolveHarnessRunInput).
-      agent: "antigravity-sdk",
+      // Agent and model are deliberately omitted: the daemon resolves both from
+      // the centralized config (harnessAgent → antigravity-sdk by default,
+      // refinementModel — tools/lib/daemon/harness-run.mjs
+      // resolveHarnessRunInput). The interaction-form protocol works on the
+      // Antigravity adapter natively and on the Claude adapter via the
+      // request_user_input MCP bridge (claude-interaction-mcp.mjs).
       stage: "interview,spec_generation,mock_data,simulation,eval",
       permissionProfile: "workspace-write",
       vertex: true,

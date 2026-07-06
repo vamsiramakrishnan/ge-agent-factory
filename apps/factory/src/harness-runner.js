@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { parseList } from "@ge/std/list";
 import { randomUUID } from "node:crypto";
-import { chmodSync, existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, delimiter, join, resolve, sep } from "node:path";
 import { loadConfig } from "c12";
@@ -150,6 +150,53 @@ async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
   };
 }
 
+// Interaction-form support on the Claude Code adapter: tell the model the
+// request_user_input bridge exists and when to use it. The Antigravity driver
+// has its own native interaction hook (and its own instructions); other
+// adapters have no bridge, so no section. Returns null unless (claude +
+// interaction dir) — existing prompts are byte-unchanged.
+function buildInteractionSection(adapterId, interactionDir) {
+  if (adapterId !== "claude" || !interactionDir) return null;
+  return [
+    "# Asking the operator",
+    "When you need structured input from the human operator — interview answers, choices between options, confirmations — call the `request_user_input` tool (ge-interaction MCP server). It renders a form in the operator's console and blocks until they answer. Never invent answers the operator should give; ask instead.",
+  ].join("\n");
+}
+
+// Watch the interaction dir's requests/ for forms written by an adapter-side
+// bridge (claude-interaction-mcp.mjs) and surface each as the SAME
+// antigravity.interaction_request status event the console's Interview view
+// already renders. The Antigravity driver reports its own requests on stderr,
+// so the watcher only runs for other adapters. Returns a stop() disposer.
+function watchInteractionRequests({ interactionDir, onRequest, pollMs = 500 }) {
+  const requestsDir = join(interactionDir, "requests");
+  const seen = new Set();
+  const scan = () => {
+    let entries = [];
+    try {
+      entries = readdirSync(requestsDir).filter((name) => name.endsWith(".json"));
+    } catch {
+      return; // dir may not exist until the bridge's first question
+    }
+    for (const name of entries) {
+      if (seen.has(name)) continue;
+      seen.add(name);
+      try {
+        const request = JSON.parse(readFileSync(join(requestsDir, name), "utf8"));
+        if (request?.id && request?.form) onRequest(request);
+      } catch {
+        seen.delete(name); // partially-written file — retry on the next tick
+      }
+    }
+  };
+  const timer = setInterval(scan, pollMs);
+  timer.unref?.();
+  return () => {
+    clearInterval(timer);
+    scan(); // final sweep so a request written just before exit still surfaces
+  };
+}
+
 // Prompt-level guardrail fallback for adapters without the Antigravity SDK's
 // native protect-file/disable-tool enforcement (the Claude Code, Codex, and
 // Gemini CLI compat adapters): state the constraints in the prompt so a
@@ -172,6 +219,8 @@ export const __test = {
   resolveVertexDefaults,
   buildSubagentPlanSection,
   buildCompatGuardrailSection,
+  buildInteractionSection,
+  watchInteractionRequests,
 };
 
 function materializeWorkspaceCommandShims({ workspaceDir, repoRoot }) {
@@ -397,6 +446,9 @@ export async function runHarnessTask({
     // Additive: on non-Antigravity adapters, protect-file/disable-tool
     // constraints are stated in the prompt instead of silently dropped.
     buildCompatGuardrailSection(plan.adapterId, { protectFiles, disableTools }),
+    // Additive: on the Claude adapter with an interaction dir, point the model
+    // at the request_user_input form bridge.
+    buildInteractionSection(plan.adapterId, process.env.GE_HARNESS_INTERACTION_DIR || null),
   ].filter(Boolean).join("\n");
 
   const binDir = materializeWorkspaceCommandShims({ workspaceDir: cwd, repoRoot: resolvedRepoRoot });
@@ -468,7 +520,8 @@ export async function runHarnessTask({
     const sdir = saveDir || process.env.GE_HARNESS_SAVE_DIR || null;
     if (sdir) sdkCaps.saveDir = sdir;
   }
-  const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, ...sdkCaps });
+  const interactionDir = process.env.GE_HARNESS_INTERACTION_DIR || null;
+  const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, interactionDir, ...sdkCaps });
 
   return await new Promise((resolveRun) => {
     let stdout = "";
@@ -520,6 +573,22 @@ export async function runHarnessTask({
     emit("status", { label: "spawned", agentId: def.id, pid: child.pid });
     journal.event({ type: "stage_started", level: "info" });
 
+    // Non-Antigravity adapters raise interaction forms through the on-disk
+    // bridge; surface each request as the status event the console renders.
+    // (The Antigravity driver reports its own requests on stderr.)
+    let stopInteractionWatch = null;
+    if (interactionDir && plan.adapterId !== "antigravity-sdk") {
+      stopInteractionWatch = watchInteractionRequests({
+        interactionDir,
+        onRequest: (request) => {
+          const raw = { type: "antigravity.interaction_request", interactionId: request.id, form: request.form };
+          const ev = { type: "status", label: raw.type, raw };
+          normalizedEvents.push(ev);
+          emit("status", ev);
+        },
+      });
+    }
+
     let timeout = null;
     if (timeoutSec > 0) {
       timeout = setTimeout(() => {
@@ -548,11 +617,13 @@ export async function runHarnessTask({
     });
     child.on("error", (error) => {
       if (timeout) clearTimeout(timeout);
+      if (stopInteractionWatch) stopInteractionWatch();
       emit("error", { code: "SPAWN_FAILED", message: error.message });
       resolveRun({ ok: false, status: "failed", code: 1, signal: null, stdout, stderr, text: normalizedEvents.filter((ev) => ev.type === "text_delta").map((ev) => ev.delta).join(""), events: run.events, agentEvents: normalizedEvents, plan });
     });
     child.on("close", (code, signal) => {
       if (timeout) clearTimeout(timeout);
+      if (stopInteractionWatch) stopInteractionWatch();
       for (const parsed of parser.flush()) {
         const ev = normalizeAgentEvent(parsed);
         normalizedEvents.push(ev);

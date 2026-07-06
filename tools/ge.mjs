@@ -49,6 +49,7 @@ import { ledger } from "./ge/ledger.mjs";
 import { apply } from "./ge/apply.mjs";
 import { okf } from "./ge/okf.mjs";
 import { library } from "./ge/library.mjs";
+import { harness } from "./ge/harness.mjs";
 import { systems } from "./ge/systems.mjs";
 import { byo } from "./ge/byo.mjs";
 import { models } from "./ge/models.mjs";
@@ -59,7 +60,7 @@ import { shouldPromptForInitProject, GE_INIT_NO_PROJECT_MESSAGE } from "./ge/ini
 // ── root: bare `ge` → the three-question board + next step ───────────────────
 // citty invokes the root `run` even when a subcommand matches, so only render the
 // board when the first positional is NOT one of our subcommands.
-const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "passport", "status", "drive", "bench", "evals", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "console", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply", "okf", "library", "systems", "byo", "models", "create", "completions"]);
+const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "passport", "status", "drive", "bench", "evals", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "console", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply", "okf", "library", "systems", "byo", "models", "create", "completions", "harness"]);
 
 // The board answers three questions before anything else: where am I on
 // capture → prove → handoff, what blocks me, and the exact next command.
@@ -147,7 +148,7 @@ const root = defineCommand({
     // noun groups
     infra, images, data, mcp, agents, daemon, state, ledger,
     okf, library, systems,
-    byo,
+    byo, harness,
     models, console: consoleCommand,
     // declarative reconcile
     apply,

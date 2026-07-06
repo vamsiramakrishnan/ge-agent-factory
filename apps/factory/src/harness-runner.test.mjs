@@ -50,3 +50,49 @@ describe("harness runner config", () => {
     expect(parsed.events[0].preview).toBe("hello");
   });
 });
+
+describe("interaction-form bridge (non-Antigravity adapters)", () => {
+  test("buildInteractionSection is claude-only and requires an interaction dir", () => {
+    expect(__test.buildInteractionSection("claude", "/tmp/x")).toContain("request_user_input");
+    expect(__test.buildInteractionSection("claude", null)).toBeNull();
+    expect(__test.buildInteractionSection("antigravity-sdk", "/tmp/x")).toBeNull();
+    expect(__test.buildInteractionSection("codex", "/tmp/x")).toBeNull();
+  });
+
+  test("watchInteractionRequests surfaces each request file once", async () => {
+    const { mkdtempSync, mkdirSync: mkdir, writeFileSync: write, rmSync: rm } = await import("node:fs");
+    const { join: j } = await import("node:path");
+    const { tmpdir } = await import("node:os");
+    const dir = mkdtempSync(j(tmpdir(), "ge-interactions-"));
+    try {
+      mkdir(j(dir, "requests"), { recursive: true });
+      const seen = [];
+      const stop = __test.watchInteractionRequests({ interactionDir: dir, pollMs: 20, onRequest: (r) => seen.push(r.id) });
+      write(j(dir, "requests", "interaction-1.json"), JSON.stringify({ id: "interaction-1", form: { questions: [] } }));
+      await new Promise((r) => setTimeout(r, 80));
+      write(j(dir, "requests", "interaction-2.json"), JSON.stringify({ id: "interaction-2", form: { questions: [] } }));
+      await new Promise((r) => setTimeout(r, 80));
+      stop();
+      expect(seen).toEqual(["interaction-1", "interaction-2"]);
+    } finally {
+      rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("claude adapter interaction wiring", () => {
+  test("buildArgs adds the MCP bridge only when an interaction dir is present", async () => {
+    const { AGENT_DEFS } = await import("./agents.js");
+    const claude = AGENT_DEFS.find((d) => d.id === "claude");
+    const plain = claude.buildArgs("prompt", {});
+    expect(plain.join(" ")).not.toContain("--mcp-config");
+    const wired = claude.buildArgs("prompt", { interactionDir: "/tmp/ix" });
+    const mcpIndex = wired.indexOf("--mcp-config");
+    expect(mcpIndex).toBeGreaterThan(-1);
+    const config = JSON.parse(wired[mcpIndex + 1]);
+    expect(config.mcpServers["ge-interaction"].env.GE_HARNESS_INTERACTION_DIR).toBe("/tmp/ix");
+    expect(config.mcpServers["ge-interaction"].args[0]).toContain("claude-interaction-mcp.mjs");
+    expect(wired).toContain("--allowedTools");
+    expect(wired).toContain("mcp__ge-interaction__request_user_input");
+  });
+});
