@@ -52,8 +52,12 @@ export function resumePlanFor(run) {
   if (run.kind === "repair.run") {
     if (["blocked", "paused", "failed"].includes(run.status) && output.run && items.length) {
       const blocked = items.find((item) => item.status === "blocked");
-      const pending = items.find((item) => ["pending", "doctor_running", "repairing"].includes(item.status));
-      const nextAction = pending ? "resume_repair" : blocked ? "resume_repair" : "resume_repair";
+      // A repair run resumes the same way regardless of whether it stopped on a
+      // blocked item or an in-flight (pending/doctor_running/repairing) one, so
+      // nextAction is unconditional here. `blocked` still drives the reason
+      // string below. (This collapses a former three-branch ternary whose arms
+      // all evaluated to "resume_repair".)
+      const nextAction = "resume_repair";
       return {
         ...base,
         state: run.status === "paused" ? "paused" : "blocked",
