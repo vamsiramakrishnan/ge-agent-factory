@@ -152,15 +152,20 @@ describe("runtime resume plan", () => {
   });
 
   test("harness run input resolves Vertex project and global location from config", () => {
+    // Hermetic: the project arrives through the config-resolution machinery's
+    // flag layer (query → loadConfig → cfg.project) rather than ambient
+    // gcloud/.ge.json state, so the test means the same thing on an
+    // unprovisioned runner and on a configured workstation.
     const resolved = __test.resolveHarnessRunInput({
       workspaceDir: ".",
       agent: "antigravity-sdk",
       stage: "interview,spec_generation",
       message: "Interview a use case.",
       vertex: true,
+      query: { project: "cfg-test-project" },
     });
 
-    expect(resolved.project).toBeTruthy();
+    expect(resolved.project).toBe("cfg-test-project");
     expect(resolved.location).toBeTruthy();
   });
 

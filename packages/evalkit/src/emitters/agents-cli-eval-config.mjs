@@ -62,12 +62,18 @@ function rubricLines(rubrics) {
   return rubrics.map((rubric) => `- ${rubric.rubric_id}: ${rubric.rubric_content.text_property}`);
 }
 
+// The one default judge model id this package owns. Callers with access to
+// operator config pass the resolved cfg.judgeModel/GE_JUDGE_MODEL instead
+// (evalkit is a package — it never reads .ge.json or process.env itself).
+export const DEFAULT_JUDGE_MODEL = "gemini-flash-latest";
+
 /**
  * Render tests/eval/eval_config.yaml for a behavior contract.
  * `multiTurn` adds the multi-turn tool-use metric (GE suites are single-turn
- * by construction today, so it defaults off).
+ * by construction today, so it defaults off). `judgeModel` overrides the
+ * LLM-judge model id (default DEFAULT_JUDGE_MODEL, byte-identical output).
  */
-export function renderEvalConfigYaml(contract = null, { multiTurn = false } = {}) {
+export function renderEvalConfigYaml(contract = null, { multiTurn = false, judgeModel = DEFAULT_JUDGE_MODEL } = {}) {
   const criteria = renderEvalConfig(contract).criteria;
   const toolUse = criteria.rubric_based_tool_use_quality_v1;
   const finalResponse = criteria.rubric_based_final_response_quality_v1;
@@ -104,7 +110,7 @@ export function renderEvalConfigYaml(contract = null, { multiTurn = false } = {}
       {
         name: BEHAVIOR_CONTRACT_JUDGE_METRIC,
         prompt_template: promptTemplate,
-        judge_model: "gemini-flash-latest",
+        judge_model: judgeModel,
         // 5 judge samples per case, aggregated by the eval service — the
         // platform-native replacement for the retired judge_panel.json.
         judge_model_sampling_count: 5,

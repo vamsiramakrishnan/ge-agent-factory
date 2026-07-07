@@ -31,7 +31,7 @@ export async function prepareDrive(cfg, { cassette, recordCassette, targetAgent,
       expectedAgentId: targetAgent ?? null,
     };
     const recordedTurns = parsed.turns.map((turn) => turn.request?.body?.query?.text).filter(Boolean);
-    return { runner, target, recordedTurns };
+    return { runner, target, recordedTurns, recorder: null };
   }
   // BYO agent: any deployed engine/assistant is drivable — the engine comes
   // from config or the --ge-app override (full resource name or bare id) and
@@ -39,7 +39,18 @@ export async function prepareDrive(cfg, { cassette, recordCassette, targetAgent,
   const target = resolveLiveTarget(cfg, { expectedAgentId: targetAgent ?? null, ...(assistant ? { assistant } : {}) });
   const recorder = recordCassette ? createCassetteRecorder(recordCassette, { target: { project: target.project, location: target.location, engine: target.engine, assistant: target.assistant } }) : null;
   const runner = await createLiveRunner(target, { recorder });
-  return { runner, target, recordedTurns: [] };
+  // The recorder is returned so callers can append the run's OTel spans as
+  // `span` records once the conversation finishes (spans end after the last
+  // chunk, so they cannot stream inline with it).
+  return { runner, target, recordedTurns: [], recorder };
+}
+
+// Append a finished transcript's OTel trace to the cassette that recorded the
+// run — the fourth record type (see cassette.mjs). No-op without both halves.
+export function recordTranscriptSpans(recorder, transcript) {
+  if (!recorder || !transcript?.trace?.spans?.length) return 0;
+  for (const span of transcript.trace.spans) recorder.span(span);
+  return transcript.trace.spans.length;
 }
 
 // `dir` is injectable so tests (and callers with their own state root) never
@@ -86,7 +97,7 @@ export async function runDrive(cfg, {
   strictResponder = false,
   onTurn = () => {},
 } = {}) {
-  const { runner, target, recordedTurns } = await prepareDrive(cfg, { cassette, recordCassette, targetAgent, assistant });
+  const { runner, target, recordedTurns, recorder } = await prepareDrive(cfg, { cassette, recordCassette, targetAgent, assistant });
   const scriptTurns = (turns && turns.length ? turns : recordedTurns).map((text) => ({ text }));
   if (!scriptTurns.length) {
     throw liveError("GELIVE004", "nothing to drive: no script turns and the cassette recorded none", {
@@ -103,6 +114,7 @@ export async function runDrive(cfg, {
       startedAt: new Date().toISOString(),
       onTurn,
     });
+    recordTranscriptSpans(recorder, result.transcript);
     const transcriptPath = saveTranscript(result.transcript);
     const recorded = record ? recordTranscriptAsEvalCase(result.transcript, { evalsetPath: record, caseId: recordId }) : null;
     return {

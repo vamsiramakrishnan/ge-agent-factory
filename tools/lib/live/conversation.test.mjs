@@ -77,3 +77,25 @@ test("slow cassette preserves recorded latency in the transcript", async () => {
   expect(transcript.turns[0].stream.maxInterChunkGapMs).toBe(4200);
   expect(transcript.turns[0].stream.fullResponseMs).toBe(7700);
 });
+
+test("every conversation carries an OTel trace: root span + one CLIENT span per turn", async () => {
+  const runner = createCassetteRunner(join(FIXTURES, "success.ndjson"));
+  const { transcript } = await runConversation(runner, TURNS, {
+    target: { ...TARGET, expectedAgentId: "agent-benefits" },
+    id: "t-trace",
+  });
+  expect(transcript.trace.traceId).toMatch(/^[0-9a-f]{32}$/);
+  const spans = transcript.trace.spans;
+  const root = spans.find((s) => s.name === "ge.live.conversation");
+  const turnSpans = spans.filter((s) => s.name === "ge.live.turn");
+  expect(root).toBeTruthy();
+  expect(turnSpans).toHaveLength(TURNS.length);
+  for (const span of turnSpans) {
+    expect(span.parentSpanId).toBe(root.spanId);
+    expect(span.traceId).toBe(transcript.trace.traceId);
+    expect(span.kind).toBe("SPAN_KIND_CLIENT");
+  }
+  expect(root.status.code).toBe("STATUS_CODE_OK");
+  // The transcript (with its trace block) still validates against the schema.
+  expect(validateTranscript(transcript).ok).toBe(true);
+});

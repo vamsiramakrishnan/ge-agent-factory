@@ -54,8 +54,12 @@ Every `ge` command accepts these shared flags (omitted from the per-command tabl
 |---|---|---|
 | `--json` | boolean | Machine-readable JSON result on stdout |
 | `--project` / `--gcp-project` | string | GCP project id |
+| `--projectNumber` / `--project-number` | string | GCP project number (Agent Identity principalSet) |
 | `--region` | string | Region (default us-central1) |
 | `--agentIdentityOrgId` | string | Organization ID for Agent Identity principalSet trust domain |
+| `--bucket` | string | Artifact bucket override (default <project>-ge-agent-factory) |
+| `--gatewayUrl` / `--gateway-url` | string | Gateway URL for direct-HTTPS calls (no proxy tunnel) |
+| `--geApp` / `--ge-app` | string | Gemini Enterprise app/engine id |
 
 ### `ge`
 
@@ -174,6 +178,7 @@ Talk to the shipped agent over its live assist surface — per-turn timing/respo
 
 | Flag | Type | Description |
 |---|---|---|
+| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
 | `--turns` | string | Drive non-interactively from inline turns (one user turn per line/newline) instead of --script — the transport for programmatic callers |
 | `--script` | string | Drive non-interactively: file with one user turn per line (# comments allowed) |
 | `--cassette` | string | Replay a recorded cassette instead of calling the live surface (no cloud, deterministic) |
@@ -183,7 +188,6 @@ Talk to the shipped agent over its live assist surface — per-turn timing/respo
 | `--targetAgent` | string | Expected responding agent id — responder identity is asserted against the stream |
 | `--assistant` | string | Assistant id on the engine (default default_assistant) — plug any deployed agent, factory-built or not |
 | `--strictResponder` | boolean | Fail when responder identity cannot be verified (default: warn) |
-| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
 
 ### `ge bench`
 
@@ -191,6 +195,7 @@ Load the live assist surface within hard cost guards and verdict the latency/err
 
 | Flag | Type | Description |
 |---|---|---|
+| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
 | `--sessions` | string | Number of independent conversations (default 5; hard-capped by live.bench guards) |
 | `--turns` | string | Turns per conversation (default 2) |
 | `--concurrency` | string | Concurrency sweep, e.g. 1,2,4 (default 1) |
@@ -200,7 +205,6 @@ Load the live assist surface within hard cost guards and verdict the latency/err
 | `--strictResponder` | boolean | Treat unverifiable responder identity as failure |
 | `--export` | string | Export a load script instead of running: k6 |
 | `--yes` | boolean | Confirm a LIVE bench run (real traffic, real cost) — refused without it |
-| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
 
 ### `ge evals`
 
@@ -344,11 +348,11 @@ Show each config value and where it came from (flag · env · .ge.json · defaul
 | Flag | Type | Description |
 |---|---|---|
 | `--projectNumber` | string | GCP project number override |
+| `--bucket` | string | GCS bucket override |
 | `--gatewayUrl` | string | Factory gateway URL override |
 | `--geApp` | string | Gemini Enterprise app id override |
 | `--mode` | string | Operating mode override (local\|remote) |
 | `--agentsRepo` | string | Generated-agents git repo override |
-| `--bucket` | string | GCS bucket override |
 
 ### `ge pipeline`
 
@@ -827,7 +831,7 @@ Next action per work item from the ledger + pipeline state machine
 
 ### `ge okf`
 
-OKF knowledge substrate: compile · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair
+OKF knowledge substrate: compile · skill · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair
 
 ### `ge okf audit`
 
@@ -993,6 +997,16 @@ Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant reso
 | `--out` | string |  |
 | `--all` | boolean | Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars |
 | `--variant-base` | string | Base bundle directory for a variant bundle (default: sibling directory named after the root's variant_of id) |
+
+### `ge okf skill`
+
+Compile an agent spec into an Agent Skill package (SKILL.md + references + scripts + assets) — the skill-based alternative to generated ADK runtime code
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Use case id from the generated catalog |
+| `--spec` | string | Path to an agent spec JSON (alternative to --id) |
+| `--out` | string | Output skill directory (default apps/factory/artifacts/skills/<id>) |
 
 ### `ge okf customize`
 
@@ -1167,6 +1181,41 @@ Apply the safe (appliable) subset of a BYO manifest; --dry-run reports the plan 
 |---|---|---|
 | `--manifest` | string | Path to the ge.byo.yaml manifest |
 | `--dry-run` | boolean | Print what would be applied; execute nothing |
+
+### `ge harness`
+
+Harness integration: wire factory gates into the assistant's own hook system
+
+### `ge harness hooks`
+
+Post-action checks inside the harness session: install · show
+
+### `ge harness hooks install`
+
+Write this repo's post-action checks into a harness's hook config (supported: claude)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--harness` | string | Harness to configure (default claude → .claude/settings.json) |
+| `--dry-run` | boolean | Show the merge without writing |
+
+### `ge harness hooks show`
+
+Show the hook plan `install` would apply, per harness
+
+### `ge improve`
+
+Self-improvement loop: enrich an agent's blueprint toward a target quality level (audit → enrich → verify → re-audit), then build+judge
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Agent/spec id under the OKF corpus root |
+| `--spec` | string | Alias for --id |
+| `--target` | string | Target quality level L0–L5 (default L4) |
+| `--write` | boolean | Run the closed loop and enrich the corpus (default: preview one batch) |
+| `--max-iterations` | string | Loop cap when writing (default 5) |
+| `--max-evals` | string | Obligations added per iteration (default 5) |
+| `--root` | string | OKF corpus root (default okf) |
 
 ### `ge models`
 

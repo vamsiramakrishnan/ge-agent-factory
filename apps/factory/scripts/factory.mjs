@@ -43,7 +43,7 @@ import { renderYamlValue, snowfakeryFakeForColumn } from "@ge/synthkit/snowfaker
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { deriveSchemaFromUseCase } from "./factory/use-case/schema-derivation.mjs";
-import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
+import { harnessJudgeSchema, harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
 import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
 import { canonicalSystemId, safePyName, snakeCase, titleCase, validPythonIdentifierName } from "@ge/std/naming";
@@ -64,13 +64,21 @@ import { DOMAIN_CATALOG, DOMAIN_SUMMARY } from "../src/domains.generated.js";
 import { APP_ROOT, GENERATOR_DATA_ROOT } from "../src/state-paths.js";
 import { DEFAULT_AGENT_MODEL, assertKnownModel } from "../src/known-models.js";
 import { sourceTimestamp } from "../src/source-clock.js";
-import { cmdHarnessReview as harnessCmdReview, cmdHarnessRefine as harnessCmdRefine } from "./factory/harness/harness.mjs";
+import { cmdHarnessReview as harnessCmdReview, cmdHarnessRefine as harnessCmdRefine, cmdHarnessJudge as harnessCmdJudge } from "./factory/harness/harness.mjs";
 import { cmdMcp as lifecycleCmdMcp, cmdDeploy as lifecycleCmdDeploy, cmdDeployStatus as lifecycleCmdDeployStatus, cmdVerifyLive as lifecycleCmdVerifyLive, cmdRegister as lifecycleCmdRegister, cmdPublish as lifecycleCmdPublish } from "./factory/lifecycle/deploy.mjs";
 
-// Model for all generated agents. Override with GE_AGENT_MODEL. Validated against
+// Model for all generated agents. Override with GE_AGENT_MODEL (the env form of
+// the centralized agentModel config field — tools/lib/config-schema.mjs; the `ge`
+// layer exports it from .ge.json before spawning this generator). Validated against
 // the known-models allowlist so an invalid id fails generation here rather than
 // 404-ing at agent runtime after cloud resources are provisioned.
 const AGENT_MODEL = assertKnownModel(process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL);
+
+// Model for the LLM-judge metric in every generated eval_config.yaml. Env form
+// of the centralized judgeModel config field (tools/lib/config-schema.mjs);
+// default mirrors evalkit's DEFAULT_JUDGE_MODEL so unchanged setups emit
+// byte-identical output.
+const JUDGE_MODEL = process.env.GE_JUDGE_MODEL || "gemini-flash-latest";
 
 // max_output_tokens for generated agents. We deliberately do NOT ship a hardcoded
 // number: right-sizing the output budget is a use-case decision the Antigravity
@@ -780,7 +788,7 @@ async function writeAgentsCliEvalArtifacts(dir, behaviorContract, agentsCliEvalS
     await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.train.json"), splitDatasets.train);
     await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.validation.json"), splitDatasets.validation);
   }
-  await writeText(join(dir, "tests", "eval", "eval_config.yaml"), renderEvalConfigYaml(behaviorContract));
+  await writeText(join(dir, "tests", "eval", "eval_config.yaml"), renderEvalConfigYaml(behaviorContract, { judgeModel: JUDGE_MODEL }));
   return evalSetPath;
 }
 
@@ -1229,7 +1237,7 @@ const harnessDeps = () => ({
   readJson, manifestPath, fail, ok, mkdir, writeText, writeJson,
   loadPipeline, savePipeline, markStep, nextCommandFor,
   runHarnessTask, REPO_ROOT, HARNESS_DATA_ROOT,
-  harnessReviewSchema, harnessRefineSchema,
+  harnessReviewSchema, harnessRefineSchema, harnessJudgeSchema,
   wantsVertex, truthyFlag, envOff,
   harnessResponseSchemaFile, reviewFanoutOptions,
   basename, GENERATED_AT,
@@ -1238,6 +1246,10 @@ const harnessDeps = () => ({
 
 async function cmdHarnessReview(dir, flags) {
   return harnessCmdReview(dir, flags, harnessDeps());
+}
+
+async function cmdHarnessJudge(dir, flags) {
+  return harnessCmdJudge(dir, flags, harnessDeps());
 }
 
 // Resolve the bundled response-schema asset for a harness stage. Returns null
@@ -1557,13 +1569,16 @@ async function cmdFromUseCase(dir, flags) {
   let useCase;
 
   if (useCaseId) {
-    const catalogPath = join(resolve("."), "src", "use-cases.js");
     try {
-      const mod = await import(`file://${catalogPath}`);
-      useCase = findUseCase(mod.getUseCases(), useCaseId);
+      // The statically-imported loader (../src/use-cases.js, module-relative)
+      // — NOT a cwd-derived dynamic import, which only resolved when the
+      // process happened to run from apps/factory and broke `factory
+      // from-usecase` from any other directory. getUseCases() can still throw
+      // (catalog regeneration failure), which the catch below wraps.
+      useCase = findUseCase(getUseCases(), useCaseId);
       if (!useCase) {
         const needle = normalizeUseCaseLookup(useCaseId);
-        const matches = mod.getUseCases().filter((u) => {
+        const matches = getUseCases().filter((u) => {
           const id = normalizeUseCaseLookup(u.id);
           const title = normalizeUseCaseLookup(u.title);
           const source = normalizeUseCaseLookup(u.sourcePath || "");
@@ -2127,6 +2142,7 @@ async function main() {
       qualityGate: cmdQualityGate,
       harnessReview: cmdHarnessReview,
       harnessRefine: cmdHarnessRefine,
+      harnessJudge: cmdHarnessJudge,
       serve: cmdServe,
       dataPlan: cmdDataPlan,
       sourceIntegrationPlan: cmdSourceIntegrationPlan,

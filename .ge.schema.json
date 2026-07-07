@@ -130,6 +130,30 @@
       "description": "Flag: --simulatorOverlayBackend. Env: GE_SIMULATOR_OVERLAY_BACKEND. Default: \"memory\".",
       "default": "memory"
     },
+    "agentModel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --agentModel. Env: GE_AGENT_MODEL. Default: \"gemini-3.5-flash\".",
+      "default": "gemini-3.5-flash"
+    },
+    "harnessAgent": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --harnessAgent. Env: GE_HARNESS_AGENT. Default: \"antigravity-sdk\".",
+      "default": "antigravity-sdk"
+    },
+    "synthesisModel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --synthesisModel. Env: GE_SYNTHESIS_MODEL. Default: \"gemini-3.5-flash\".",
+      "default": "gemini-3.5-flash"
+    },
     "refinementModel": {
       "type": [
         "string",

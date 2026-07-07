@@ -7,7 +7,7 @@ explicit opt-in. Source of truth: `tools/lib/live/cassette.mjs`
 
 ## Format
 
-NDJSON — one JSON record per line, in stream order. Three record types:
+NDJSON — one JSON record per line, in stream order. Four record types:
 
 ```
 {"type":"meta","version":1,"target":{"project":"…","location":"…","engine":"…","assistant":"…"},"recordedAt":"…"}
@@ -15,6 +15,7 @@ NDJSON — one JSON record per line, in stream order. Three record types:
 {"type":"chunk","turn":0,"atMs":0,"json":{…StreamAssistResponse…}}
 {"type":"chunk","turn":0,"atMs":412,"json":{…}}
 {"type":"request","turn":1,"session":"projects/…/sessions/abc","body":{…}}
+{"type":"span","span":{…OTLP/JSON span…}}
 ```
 
 - **`meta`** — must be present (first line by convention): cassette version,
@@ -25,6 +26,12 @@ NDJSON — one JSON record per line, in stream order. Three record types:
   text lives at `body.query.text`).
 - **`chunk`** — the verbatim `StreamAssistResponse` JSON for that turn, with
   `atMs`: the chunk's time offset from the start of the turn's stream.
+- **`span`** — the run's OTel trace in OTLP/JSON shape (source of truth:
+  `tools/lib/live/otel-spans.mjs`): one root `ge.live.conversation` span plus
+  one `ge.live.turn` CLIENT span per turn, appended after the stream once the
+  spans end. Annotation records: replay ignores them (a replay records its own
+  trace), and the same spans also land in the transcript's `trace` block, so a
+  cassette doubles as a shippable trace for any OTLP collector.
 
 Rules the parser enforces (violations raise `GELIVE004` with a re-record
 fix): every line valid JSON, chunks only after their turn's request, turns

@@ -557,14 +557,17 @@ export async function runFactoryPlan({ repoRoot, dataRoot, planPath, options = {
         await events.emit({ type: "stage_started", stage: "harness_reviewed", workspaceId: result.workspaceId, ...progress });
         const workspaceDir = result.workspacePath || join(projectsDir, result.workspaceId);
         const reviewArgs = ["harness-review", "--dir", workspaceDir];
-        const provider = options["harness-provider"] || options.provider || "antigravity-sdk";
+        // Adapter + model resolve caller option → env (the centralized
+        // GE_HARNESS_AGENT/GE_REFINEMENT_MODEL knobs) → the historical default,
+        // so claude/codex/gemini can drive review without per-call flags.
+        const provider = options["harness-provider"] || options.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
         if (provider) reviewArgs.push("--provider", provider);
         if (options.vertex) reviewArgs.push("--vertex", String(options.vertex));
         if (options.project || options["gcp-project"]) reviewArgs.push("--project", options.project || options["gcp-project"]);
         if (options.location || options.region) reviewArgs.push("--location", options.location || options.region);
         // Always pin the harness review model (default gemini-3.5-flash) so review runs
         // on the same model locally and remotely, even when no --model flag was passed.
-        reviewArgs.push("--model", options.model || DEFAULT_AGENT_MODEL);
+        reviewArgs.push("--model", options.model || process.env.GE_REFINEMENT_MODEL || DEFAULT_AGENT_MODEL);
         const reviewed = runGeMock(repoRoot, reviewArgs, { verbose });
         result.status = "harness_reviewed";
         result.harnessReview = {
@@ -583,12 +586,12 @@ export async function runFactoryPlan({ repoRoot, dataRoot, planPath, options = {
         await events.emit({ type: "stage_started", stage: "harness_refined", workspaceId: result.workspaceId, ...progress });
         const workspaceDir = result.workspacePath || join(projectsDir, result.workspaceId);
         const refineArgs = ["harness-refine", "--dir", workspaceDir];
-        const provider = options["harness-provider"] || options.provider || "antigravity-sdk";
+        const provider = options["harness-provider"] || options.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
         if (provider) refineArgs.push("--provider", provider);
         if (options.vertex) refineArgs.push("--vertex", String(options.vertex));
         if (options.project || options["gcp-project"]) refineArgs.push("--project", options.project || options["gcp-project"]);
         if (options.location || options.region) refineArgs.push("--location", options.location || options.region);
-        refineArgs.push("--model", options.model || DEFAULT_AGENT_MODEL);
+        refineArgs.push("--model", options.model || process.env.GE_REFINEMENT_MODEL || DEFAULT_AGENT_MODEL);
         const refined = runGeMock(repoRoot, refineArgs, { verbose });
         result.status = "harness_refined";
         result.harnessRefine = {

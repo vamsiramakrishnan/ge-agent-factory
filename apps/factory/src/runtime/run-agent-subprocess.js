@@ -10,6 +10,7 @@
 // explicitly rather than imported, so this module has no implicit dependency on server.js.
 import { spawn } from "node:child_process";
 import { createOutputParser, detectFormat } from "../output-parsers.js";
+import { spawnEnvForAgent } from "../agents.js";
 
 export function spawnAndStreamAgentSubprocess({
   def,
@@ -41,6 +42,10 @@ export function spawnAndStreamAgentSubprocess({
       GE_HARNESS_WORKSPACE: cwd,
       GE_HARNESS_BIN: workspaceBin,
       GE_HARNESS_REPO_ROOT: repoRoot,
+      // Adapter-specific spawn env (claude's IS_SANDBOX under root) — the same
+      // helper the daemon spawn path uses, so bypassPermissions never refuses on
+      // this console-server path while succeeding on the daemon one.
+      ...spawnEnvForAgent(def),
       ...secretEnv,
     }, cwd),
     stdio: ["pipe", "pipe", "pipe"],

@@ -13,6 +13,22 @@ describe("GE command registry contracts", () => {
     }
   });
 
+  // GPS-style guidance is a CONTRACT, not a convention: EVERY command carries
+  // guide.when (when to reach for it) + guide.next (concrete next commands),
+  // so every surface — CLI render, console, skills, MCP descriptions — can
+  // tell the operator what to do next. The grandfather backlog is paid off:
+  // commands that predate the inline `guide` field get theirs from the
+  // COMMAND_GUIDES backfill in registry.mjs. No exemptions remain.
+  test("every command carries GPS guidance (guide.when + guide.next)", () => {
+    const missing = [];
+    for (const id of commandIds()) {
+      const guide = GE_COMMANDS[id].guide;
+      const hasGuide = Boolean(guide && typeof guide.when === "string" && guide.when.length && Array.isArray(guide.next) && guide.next.length);
+      if (!hasGuide) missing.push(id);
+    }
+    expect(missing).toEqual([]);
+  });
+
   test("every command argv builder returns a concrete ge argv", () => {
     for (const id of commandIds()) {
       const command = GE_COMMANDS[id];

@@ -44,6 +44,12 @@ function deployEnvVars(cfg) {
   if (overlayBackend && overlayBackend !== "memory") {
     vars.push(`GE_SIMULATOR_OVERLAY_BACKEND=${overlayBackend}`);
   }
+  // The MCP tool-plane's synthesis-sketch model (synthesis_sketch.py reads
+  // GE_SYNTHESIS_MODEL). synthesisModel is a CONFIG_FIELDS scalar, so forward it
+  // to the deployed service or a .ge.json synthesisModel is a no-op on the cloud
+  // MCP plane (it would only ever apply to a local process).
+  const synthesisModel = cfg.synthesisModel || process.env.GE_SYNTHESIS_MODEL;
+  if (synthesisModel) vars.push(`GE_SYNTHESIS_MODEL=${synthesisModel}`);
   return vars.join(",");
 }
 

@@ -127,7 +127,21 @@ export function createProvisionOps({
           // Top-level like `refine`; the bridge (submitFactoryRun) folds these into the
           // worker payload.options and the from-usecase generation so remote builds pin
           // the same model (default gemini-3.5-flash) + output-token budget as local.
-          ...(model ? { model } : {}),
+          // cfg.agentModel carries the centralized flag→env→.ge.json→default resolution.
+          ...(model || cfg.agentModel ? { model: model || cfg.agentModel } : {}),
+          // The eval-judge model, forwarded the same way so a .ge.json judgeModel
+          // reaches the remote generator's eval_config.yaml (parity with local).
+          ...(cfg.judgeModel ? { judgeModel: cfg.judgeModel } : {}),
+          // The harness review/refine model — provisionLocal pins it from
+          // cfg.refinementModel, so forward it remotely too or the cloud harness
+          // silently runs review/refine on agentModel instead.
+          ...(cfg.refinementModel ? { refinementModel: cfg.refinementModel } : {}),
+          // The build harness itself (claude/codex/antigravity-sdk). provisionLocal
+          // pins it from cfg.harnessAgent → runOptions["harness-provider"]; forward
+          // it remotely too (bridge reads request.harnessProvider → worker
+          // payload.options.harnessProvider) or the cloud build silently runs on
+          // the antigravity-sdk default regardless of .ge.json harnessAgent.
+          ...(cfg.harnessAgent ? { harnessProvider: cfg.harnessAgent } : {}),
           ...(maxOutputTokens != null && String(maxOutputTokens).trim() !== ""
             ? { maxOutputTokens: Number(maxOutputTokens) }
             : {}),
@@ -217,7 +231,16 @@ export function createProvisionOps({
     process.env.GE_HARNESS_DATA_ROOT = factoryDataRoot;
     // Propagate model / token overrides to the spawned `factory generate` so locally
     // generated agents honor them (parity with the remote worker's commandEnv).
-    if (model) process.env.GE_AGENT_MODEL = model;
+    // Precedence is flag → env → .ge.json → default: cfg.agentModel already
+    // resolves the env/file/default tail, so a --model flag wins and a .ge.json
+    // agentModel is honored when no flag/env override is present.
+    const agentModel = model || cfg.agentModel;
+    if (agentModel) process.env.GE_AGENT_MODEL = agentModel;
+    // The LLM-judge model rendered into each generated eval_config.yaml. The
+    // generator reads GE_JUDGE_MODEL directly (apps/factory/scripts/factory.mjs),
+    // so a .ge.json judgeModel only reaches it if exported here — parity with
+    // GE_AGENT_MODEL above.
+    if (cfg.judgeModel) process.env.GE_JUDGE_MODEL = cfg.judgeModel;
     if (maxOutputTokens != null && String(maxOutputTokens).trim() !== "") {
       process.env.GE_AGENT_MAX_OUTPUT_TOKENS = String(maxOutputTokens);
     }
@@ -232,7 +255,15 @@ export function createProvisionOps({
       runOptions.project = cfg.project;
       runOptions.location = location || cfg.geLocation || "global";
     }
-    if (model) runOptions.model = model;
+    // The harness review/refine model pin (factory.js reads options.model).
+    // Falls back to the centralized refinementModel so the pin follows
+    // .ge.json/GE_REFINEMENT_MODEL instead of a hardcoded default downstream.
+    const harnessModel = model || cfg.refinementModel;
+    if (harnessModel) runOptions.model = harnessModel;
+    // Default harness adapter for the review/refine stages (factory.js reads
+    // options["harness-provider"]); resolved here so .ge.json/GE_HARNESS_AGENT
+    // selects claude/codex/gemini without a per-invocation flag.
+    if (cfg.harnessAgent) runOptions["harness-provider"] = cfg.harnessAgent;
     // Stream this run into the ledger live (ledgerRunId shared with the final ingest,
     // so events arrive as stages complete rather than only at the end). Best-effort.
     if (liveLedger) {
