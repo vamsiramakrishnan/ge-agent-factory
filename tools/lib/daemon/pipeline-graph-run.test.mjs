@@ -1,6 +1,6 @@
 // tools/lib/daemon/pipeline-graph-run.test.mjs — unit coverage for the PURE
 // helpers of the pipeline.run run-kind: childStatusToNodeStatus (child →
-// node-status mapping) and the replaceAll-based id rehoming
+// node-status mapping) and the whole-token id rehoming
 // (rehomeResumePlan / rehomePipelineGraph). The scheduling/async surface
 // (startPipelineTask, attachPipelineResumeChild) is out of scope — it needs
 // live child tasks — so we only pin the deterministic string/enum helpers.
@@ -54,11 +54,34 @@ test("rehomeResumePlan: non-array commands normalise to []", () => {
   expect(rehomeResumePlan({}, "a", "b").commands).toEqual([]);
 });
 
-test("rehomeResumePlan: replaceAll substring-overlap hazard (documents current behavior)", () => {
-  // "pipe-1" is a prefix of "pipe-10", so replaceAll rewrites BOTH occurrences —
-  // "pipe-10" becomes "NEW0". This pins the substring-overlap edge case.
+test("rehomeResumePlan: substitutes whole-token ids without corrupting a longer overlapping id", () => {
+  // "pipe-1" is a prefix of "pipe-10"; the rehome must rewrite only the
+  // standalone "pipe-1" token and leave "pipe-10" untouched (a plain replaceAll
+  // would have produced "NEW0").
   const out = rehomeResumePlan({ commands: ["ge run pipe-1 pipe-10"] }, "pipe-1", "NEW");
-  expect(out.commands).toEqual(["ge run NEW NEW0"]);
+  expect(out.commands).toEqual(["ge run NEW pipe-10"]);
+});
+
+test("rehomeResumePlan: rewrites an id embedded in a path but not a longer sibling id", () => {
+  const out = rehomeResumePlan(
+    { commands: ["cat .ge/runtime/runs/pipe-1/meta.json", "cat .ge/runtime/runs/pipe-10/meta.json"] },
+    "pipe-1",
+    "pipe-2",
+  );
+  expect(out.commands).toEqual([
+    "cat .ge/runtime/runs/pipe-2/meta.json",
+    "cat .ge/runtime/runs/pipe-10/meta.json",
+  ]);
+});
+
+test("rehomeResumePlan: rewrites every standalone occurrence of the id in a command", () => {
+  const out = rehomeResumePlan({ commands: ["ge runs show pipe-1 --json && ge runs resume pipe-1"] }, "pipe-1", "pipe-2");
+  expect(out.commands).toEqual(["ge runs show pipe-2 --json && ge runs resume pipe-2"]);
+});
+
+test("rehomeResumePlan: does not rewrite the id when it is only a suffix of a longer id", () => {
+  const out = rehomeResumePlan({ commands: ["ge run parent-pipe-1"] }, "pipe-1", "NEW");
+  expect(out.commands).toEqual(["ge run parent-pipe-1"]);
 });
 
 test("rehomePipelineGraph: no-op guards", () => {
