@@ -1,4 +1,10 @@
-import { describe, test } from "node:test";
+// Uses bun:test (not node:test) deliberately: mixing node:test's describe/test
+// with the bun:test symbols the root [test].preload pulls in used to make this
+// file crash outright under bun instead of failing individual tests, which hid
+// it from the name-based check-test-results.mjs comparison (bun#5090). Keeping
+// it on bun:test keeps every test here visible to the gate. node:assert still
+// works as the assertion library under bun:test.
+import { describe, test } from "bun:test";
 import assert from "node:assert/strict";
 import {
   inferLevel,
