@@ -7,6 +7,15 @@
 //   - still failing   -> accepted baseline, informational only
 //   - now passing     -> known list is stale, informational only (flagged, not auto-trimmed)
 //
+// Sharding: the suite runs as one `bun test` per directory shard (each app
+// under apps/, plus tools/ and packages/) with that shard as the process cwd,
+// rather than one repo-root invocation. Two reasons (see planTestShards in
+// tools/lib/test-results.mjs): a repo-root scan exceeds a 4096
+// file-descriptor rlimit (EMFILE on sandboxed runners), and one process per
+// app keeps bun's process-global mock.module() from leaking across apps. The
+// shards' JUnit reports are merged before the known-failures comparison, so
+// the gate's verdict is still a single suite-wide set of names.
+//
 // Flake retry: before judging, the test FILES containing newly-failing names are
 // re-run exactly once (a single bounded retry, loudly logged). A name that
 // recovers on the retry is reported as a flake and not counted as a regression;
@@ -24,7 +33,7 @@
 // convention for library code).
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,99 +44,133 @@ import {
   failingTestNamesFromJUnit,
   formatTestResultsReport,
   normalizeKnownFailureEntries,
+  planTestShards,
   staleBugEntries,
 } from "./lib/test-results.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KNOWN_FAILURES_PATH = join(REPO_ROOT, "tools", "known-test-failures.json");
 
-// Same scope as the "test" script in package.json (bun test apps tools packages).
-// Extra argv passed to this script is forwarded to `bun test` as-is, so callers
-// can narrow scope (e.g. `node tools/check-test-results.mjs apps/factory`) the
-// same way they would with `bun run test`.
-const DEFAULT_ARGS = ["apps", "tools", "packages"];
-
 // How long a kind:"bug" entry may sit in known-test-failures.json before the
 // checker starts warning about it on every run.
 const BUG_ENTRY_MAX_AGE_DAYS = 30;
 
+// The apps/ shard roots: one shard (and one bun process) per app directory.
+function discoverAppShards() {
+  return readdirSync(join(REPO_ROOT, "apps"), { withFileTypes: true })
+    .filter((ent) => ent.isDirectory() && existsSync(join(REPO_ROOT, "apps", ent.name, "package.json")))
+    .map((ent) => `apps/${ent.name}`)
+    .sort();
+}
+
 /**
- * Run `bun test` with the JUnit reporter and return the report XML. bun's own
- * console output (pass/fail counts, stack traces) is streamed through so a
- * human/agent reading this command still sees the familiar per-test detail.
+ * Run `bun test` for one shard (cwd at the shard root) with the JUnit
+ * reporter and return the report XML. bun's own console output (pass/fail
+ * counts, stack traces) is streamed through so a human/agent reading this
+ * command still sees the familiar per-test detail. A shard whose filters
+ * match no test files returns { xml: null } instead of throwing — an app
+ * directory without tests is not a gate failure.
  */
-function runBunTest(testArgs) {
+function runBunTestShard({ root, filters, flags = [] }) {
+  const cwd = root === "." ? REPO_ROOT : join(REPO_ROOT, root);
   const tmpDir = mkdtempSync(join(tmpdir(), "ge-test-results-"));
   const junitPath = join(tmpDir, "results.xml");
   try {
     const result = spawnSync(
       "bun",
-      ["test", ...testArgs, "--reporter=junit", `--reporter-outfile=${junitPath}`],
-      { cwd: REPO_ROOT, stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" },
+      ["test", ...filters, ...flags, "--reporter=junit", `--reporter-outfile=${junitPath}`],
+      { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" },
     );
 
     if (result.stdout) process.stdout.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);
 
     if (result.error) {
-      throw new Error(`failed to spawn bun test: ${result.error.message}`);
+      throw new Error(`failed to spawn bun test (shard ${root}): ${result.error.message}`);
     }
 
+    const consoleText = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
     let xml;
     try {
       xml = readFileSync(junitPath, "utf8");
     } catch (err) {
+      // No report + "no test files matched" is an empty shard, not a failure.
+      if (/did not match any test files|0 tests? across 0 files/.test(consoleText)) {
+        return { xml: null, consoleText };
+      }
       throw new Error(
-        `bun test did not produce a JUnit report at ${junitPath} (exit code ${result.status}): ${err.message}`,
+        `bun test (shard ${root}) did not produce a JUnit report at ${junitPath} (exit code ${result.status}): ${err.message}`,
       );
     }
-    return { xml, consoleText: `${result.stdout ?? ""}\n${result.stderr ?? ""}` };
+    return { xml, consoleText };
   } finally {
     rmSync(tmpDir, { recursive: true, force: true });
   }
 }
 
-/**
- * Re-run ONLY the test files containing newly-failing names, once, and return
- * the newly-failing names that passed on the retry ("recovered", i.e. flakes).
- * Anything not recovered — including names that cannot be attributed to a file
- * (e.g. a file that crashed before test collection) — stays a regression; no
- * retry can vouch for it.
- */
-function retryNewlyFailing({ firstXml, newlyFailing }) {
-  const newlySet = new Set(newlyFailing);
-  const nameToFile = new Map(
-    failingTestcasesFromJUnit(firstXml)
-      .filter((tc) => newlySet.has(tc.name))
-      .map((tc) => [tc.name, tc.file]),
-  );
-  const retriableFiles = [...new Set([...nameToFile.values()].filter(Boolean))].sort();
-
-  if (retriableFiles.length === 0) {
-    return { recovered: [], retriedFiles: [] };
+function runShards(shards, flags) {
+  const runs = [];
+  for (const shard of shards) {
+    console.log(`\n── bun test · shard ${shard.root}${shard.filters.length ? ` · ${shard.filters.join(" ")}` : ""} ──`);
+    const { xml, consoleText } = runBunTestShard({ ...shard, flags });
+    if (xml == null) {
+      console.log(`(shard ${shard.root}: no matching test files — skipped)`);
+      continue;
+    }
+    reportSuiteCollectionMismatch(shard.root, xml, extractConsoleFailCount(consoleText));
+    runs.push({ shard, xml });
   }
+  return runs;
+}
 
+/**
+ * Re-run ONLY the test files containing newly-failing names, once per owning
+ * shard, and return the newly-failing names that passed on the retry
+ * ("recovered", i.e. flakes). Anything not recovered — including names that
+ * cannot be attributed to a file (e.g. a file that crashed before test
+ * collection) — stays a regression; no retry can vouch for it.
+ */
+function retryNewlyFailing({ runs, newlyFailing }) {
+  const newlySet = new Set(newlyFailing);
+  // name -> { file, shard }: JUnit file attribution is relative to the shard
+  // cwd, so the retry must re-run each file under the same shard root.
+  const nameToTarget = new Map();
+  for (const { shard, xml } of runs) {
+    for (const tc of failingTestcasesFromJUnit(xml)) {
+      if (newlySet.has(tc.name) && tc.file) nameToTarget.set(tc.name, { file: tc.file, shard });
+    }
+  }
+  const byShardRoot = new Map();
+  for (const { file, shard } of nameToTarget.values()) {
+    if (!byShardRoot.has(shard.root)) byShardRoot.set(shard.root, { shard, files: new Set() });
+    byShardRoot.get(shard.root).files.add(file);
+  }
+  if (byShardRoot.size === 0) return { recovered: [], retriedFiles: [] };
+
+  const retriedFiles = [...byShardRoot.values()].flatMap(({ shard, files }) => [...files].map((f) => `${shard.root}/${f}`)).sort();
   console.log(
-    `\n⟳ flake retry: re-running ${retriableFiles.length} test file(s) containing newly-failing tests ` +
+    `\n⟳ flake retry: re-running ${retriedFiles.length} test file(s) containing newly-failing tests ` +
       `(single retry — a real regression fails twice):`,
   );
-  for (const file of retriableFiles) console.log(`  - ${file}`);
+  for (const file of retriedFiles) console.log(`  - ${file}`);
 
-  const { xml: retryXml } = runBunTest(retriableFiles);
-  const retryFailing = new Set(failingTestNamesFromJUnit(retryXml));
+  const retryFailing = new Set();
+  for (const { shard, files } of byShardRoot.values()) {
+    const { xml } = runBunTestShard({ root: shard.root, filters: [...files].sort() });
+    if (xml == null) continue;
+    for (const name of failingTestNamesFromJUnit(xml)) retryFailing.add(name);
+  }
 
-  const recovered = newlyFailing.filter((name) => nameToFile.get(name) && !retryFailing.has(name));
-  return { recovered, retriedFiles: retriableFiles };
+  const recovered = newlyFailing.filter((name) => nameToTarget.has(name) && !retryFailing.has(name));
+  return { recovered, retriedFiles };
 }
 
 function main() {
   const forwardedArgs = process.argv.slice(2);
-  const testArgs = forwardedArgs.length > 0 ? forwardedArgs : DEFAULT_ARGS;
+  const { shards, flags } = planTestShards(forwardedArgs, { appShards: discoverAppShards() });
 
-  const { xml, consoleText } = runBunTest(testArgs);
-  reportSuiteCollectionMismatch(xml, extractConsoleFailCount(consoleText));
-
-  const actualFailing = failingTestNamesFromJUnit(xml);
+  const runs = runShards(shards, flags);
+  const actualFailing = [...new Set(runs.flatMap(({ xml }) => failingTestNamesFromJUnit(xml)))];
   const knownEntries = normalizeKnownFailureEntries(JSON.parse(readFileSync(KNOWN_FAILURES_PATH, "utf8")));
   const knownFailing = knownEntries.map((entry) => entry.name);
 
@@ -135,7 +178,7 @@ function main() {
 
   if (buckets.newlyFailing.length > 0) {
     const { recovered, retriedFiles } = retryNewlyFailing({
-      firstXml: xml,
+      runs,
       newlyFailing: buckets.newlyFailing,
     });
     if (retriedFiles.length > 0) {
@@ -187,12 +230,12 @@ function extractConsoleFailCount(text) {
   return m ? Number(m[1]) : null;
 }
 
-function reportSuiteCollectionMismatch(xml, consoleFailCount) {
+function reportSuiteCollectionMismatch(shardRoot, xml, consoleFailCount) {
   if (consoleFailCount == null) return;
   const xmlFailCount = failingTestNamesFromJUnit(xml).length;
   if (consoleFailCount > xmlFailCount) {
     console.warn(
-      `\n⚠ bun test reported ${consoleFailCount} failing test(s) but only ${xmlFailCount} appear as failing ` +
+      `\n⚠ bun test (shard ${shardRoot}) reported ${consoleFailCount} failing test(s) but only ${xmlFailCount} appear as failing ` +
         `<testcase> entries in the JUnit report. This usually means a test file crashed before bun could ` +
         `collect any tests in it (invisible to name-based comparison) — check the console output above for ` +
         `files that errored outside of a testcase, e.g. "Unhandled error between tests".`,

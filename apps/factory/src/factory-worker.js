@@ -213,8 +213,9 @@ export function buildStageExecutionPlan(payload) {
     // deterministic code instead of failing the run — parity with local builds.
     harness_refine: payload.options?.refine === false ? [] : (() => {
       // Pin the harness review/refine model so the cloud factory reviews on the same
-      // model as local (default gemini-3.5-flash) — parity with factory.js.
-      const harnessModel = payload.options?.model || DEFAULT_AGENT_MODEL;
+      // model as local — parity with factory.js/provisionLocal, which pin the
+      // refinementModel here (falling back to the agent model, then the default).
+      const harnessModel = payload.options?.refinementModel || payload.options?.model || DEFAULT_AGENT_MODEL;
       const provider = payload.options?.harnessProvider || "antigravity-sdk";
       return [
         ["node", ["scripts/verify-harness-runtime.mjs", "--dir", workspaceDir, "--provider", provider]],
@@ -232,7 +233,8 @@ export function buildStageExecutionPlan(payload) {
         "scripts/run-deploy-plan.mjs",
         "--workspace-dir", workspaceDir,
         "--project-id", payload.workspaceId,
-        "--repo-root", resolve("."),
+        "--repo-root", resolve("."), // cwd-coupling-ok: the cloud worker runs with WORKDIR pinned by the Dockerfile, so cwd is the deterministic repo root
+
         "--target", payload.options?.targetRuntime || "agent_runtime",
       ]],
     ],
@@ -869,6 +871,10 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
     // Pin the generated-agent model on remote (default gemini-3.5-flash) and forward
     // an operator-set output-token budget so `factory generate` matches local builds.
     GE_AGENT_MODEL: payload.options?.model || process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL,
+    // The eval-judge model for the generated eval_config.yaml. commandEnv already
+    // inherits process.env.GE_JUDGE_MODEL via the spread above; a per-run
+    // payload.options.judgeModel (operator .ge.json → submit) overrides it.
+    ...(payload.options?.judgeModel ? { GE_JUDGE_MODEL: String(payload.options.judgeModel) } : {}),
     ...(payload.options?.maxOutputTokens != null
       ? { GE_AGENT_MAX_OUTPUT_TOKENS: String(payload.options.maxOutputTokens) }
       : {}),
@@ -877,7 +883,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
   // Mirror streamed command output into the ledger as live `stage_log` frames (remote).
   const logTap = makeLedgerLogTap(payload, sink.log);
   for (const [cmd, args] of plan.commands) {
-    const cwd = cmd === "uv" || cmd === "bash" ? payload.workspaceDir : resolve(".");
+    const cwd = cmd === "uv" || cmd === "bash" ? payload.workspaceDir : resolve("."); // cwd-coupling-ok: worker WORKDIR is Dockerfile-pinned to the repo root
     const result = await execStream(cmd, args, { cwd, env: commandEnv, onEvent: logTap.onEvent, meta });
     outputs.push({
       cmd,

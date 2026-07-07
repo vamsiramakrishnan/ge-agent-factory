@@ -5,7 +5,9 @@ import { defineCommand } from "citty";
 import pc from "picocolors";
 import { readOkfBundle, baseConformance, renderConcept, writeConceptFile } from "../../packages/okf/src/index.mjs";
 import { specToOkf } from "../../apps/factory/scripts/spec-to-okf.mjs";
+import { specToSkill } from "../../apps/factory/scripts/spec-to-skill.mjs";
 import { okfToSpec } from "../../apps/factory/scripts/okf-to-spec.mjs";
+import { getUseCases } from "../../apps/factory/src/use-cases.js";
 import { compileOkfBundle, toDxError } from "../../packages/okf/src/compile/index.mjs";
 import { customizeVariant, parsePairs } from "../lib/okf-lifecycle.mjs";
 import { applyEnrichmentPatch, auditQuality, generateEnrichmentPatch, generateEnrichmentPlan, loadDomainPacks, matchDomainPacksForSpec, renderQualityMarkdown, renderEnrichmentShardPrompt, shardEnrichmentPlan, verifyOkfEvals } from "../lib/okf-quality.mjs";
@@ -53,8 +55,10 @@ function renderExplain(r){ out(ui.title(`${r.concept.type}: ${r.concept.title||r
 async function writeSpec(outPath, spec){ await mkdir(dirname(outPath),{recursive:true}); await writeFile(outPath, JSON.stringify(spec,null,2)+"\n"); }
 async function writeJson(outPath, value){ await mkdir(dirname(outPath),{recursive:true}); await writeFile(outPath, JSON.stringify(value,null,2)+"\n"); }
 async function compileAllCatalogSpecs(outDir){
-  const catalogPath = resolve("apps/factory/generated/use-cases.generated.json");
-  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+  // getUseCases() is the shared autosync loader (guided error on a missing
+  // git-ignored artifact) and is REPO_ROOT-anchored — never a cwd-relative raw
+  // read, which broke `ge okf compile --all` when invoked outside the repo root.
+  const catalog = getUseCases();
   const specs = Array.isArray(catalog) ? catalog : catalog.useCases || catalog.items || Object.values(catalog);
   const bundles = [];
   const failures = [];
@@ -78,7 +82,7 @@ async function compileAllCatalogSpecs(outDir){
       failures.push({ id, error: error?.message || String(error) });
     }
   }
-  const summary = { apiVersion:"ge.dev/v1", kind:"OkfBulkCompileResult", source:catalogPath, out:outDir, requested:specs.length, generated:bundles.length, failed:failures.length, totalConcepts, bundles, failures };
+  const summary = { apiVersion:"ge.dev/v1", kind:"OkfBulkCompileResult", source:"use-case-catalog (getUseCases)", out:outDir, requested:specs.length, generated:bundles.length, failed:failures.length, totalConcepts, bundles, failures };
   await writeJson(join(outDir, "bulk-okf-summary.json"), summary);
   return summary;
 }
@@ -175,6 +179,29 @@ const customize=defineCommand({
     emit(args, result, renderCustomize);
   }),
 });
+// `ge okf skill` — compile an agent spec into an Agent Skill package
+// (SKILL.md + references/ + scripts/ + assets/, progressive disclosure): the
+// alternative consumption path to bespoke ADK agent generation, loadable by any
+// skill-capable assistant (Claude Code, Codex, Antigravity, Gemini CLI).
+function renderSkill(r){
+  out(ui.title("Agent Skill", r.name));
+  out(ui.kv([["package", pc.dim(r.skill)], ["files", String(r.fileCount)]]));
+  for (const f of r.files) out(pc.dim(`  ${f}`));
+  out(ui.next(`node ${r.skill}/scripts/check-coverage.mjs`, "verify the packaged spec is internally consistent"));
+}
+const skill=defineCommand({
+  meta:{name:"skill",description:"Compile an agent spec into an Agent Skill package (SKILL.md + references + scripts + assets) — the skill-based alternative to generated ADK runtime code"},
+  args:{
+    ...common,
+    id:{type:"string",description:"Use case id from the generated catalog"},
+    spec:{type:"string",description:"Path to an agent spec JSON (alternative to --id)"},
+    out:{type:"string",description:"Output skill directory (default apps/factory/artifacts/skills/<id>)"},
+  },
+  run: guarded(async ({args})=>{
+    if(!args.id && !args.spec) throw new Error("usage: ge okf skill --id <useCaseId> | --spec <path.json> [--out <dir>]");
+    emit(args, await specToSkill({ id: args.id, spec: args.spec, out: args.out }), renderSkill);
+  }),
+});
 const repair=defineCommand({ meta:{name:"repair",description:"Conservatively repair navigability (missing indexes/log); dry-run by default"}, args:{...common,bundle:{type:"positional",required:true}, dryRun:{type:"boolean",default:true}}, async run({args}){ const bundle=await readOkfBundle(resolve(args.bundle)); const writes=[]; if(!bundle.indexes.some(i=>i.path==="index.md")) writes.push({path:join(args.bundle,"index.md"), body:renderConcept({okf_version:"0.1",type:"Knowledge Bundle",title:"OKF Bundle"},"# Concepts\n")}); if(!bundle.logs.some(l=>l.path==="log.md")) writes.push({path:join(args.bundle,"log.md"), body:"# 2026-07-03\n\n- Initialized OKF log.\n"}); if(!args.dryRun) for(const w of writes) await writeConceptFile(w.path,w.body); emit(args,{dryRun:args.dryRun,writes:writes.map(w=>w.path)},r=>out(JSON.stringify(r,null,2))); }});
-export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair"}, subCommands:{audit,quality,"domain-packs":domainPacks,enrich,eval:evalGroup,graph,explain,compile,customize,diff,repair} });
+export const okf = defineCommand({ meta:{name:"okf",description:"OKF knowledge substrate: compile · skill · customize · audit · quality · enrich · eval · domain-packs · graph · explain · diff · repair"}, subCommands:{audit,quality,"domain-packs":domainPacks,enrich,eval:evalGroup,graph,explain,compile,skill,customize,diff,repair} });
 export const __test = { graphFromBundle, auditBundle, explainConcept, coverageFromGraph };

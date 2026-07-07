@@ -6,7 +6,16 @@ import { generateLibraryIndex, searchBlueprints, resolveBlueprint, createFromLib
 
 describe("agent library", () => {
   test("generates a searchable index with AML blueprint metadata", async () => {
-    const index = await generateLibraryIndex();
+    // Write to a temp path: the default out is the TRACKED okf/library/index.json,
+    // and regenerating it stamps a fresh generatedAt — with the default, every
+    // test run dirties the working tree with pure timestamp churn.
+    const dir = await mkdtemp(join(tmpdir(), "ge-library-index-"));
+    let index;
+    try {
+      index = await generateLibraryIndex({ out: join(dir, "index.json") });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
     expect(index.schemaVersion).toBe("agent-library.v1");
     expect(index.counts.blueprints).toBeGreaterThan(300);
     const rows = await searchBlueprints("aml");

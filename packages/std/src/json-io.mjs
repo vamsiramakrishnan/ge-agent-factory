@@ -44,6 +44,32 @@ export async function readJsonAsync(path, fallback = null, { rethrowUnexpected =
   }
 }
 
+// Read a JSON file that is *optionally* present, without conflating "absent"
+// and "corrupt". Returns `null` only when the file genuinely does not exist;
+// a present-but-unparseable file THROWS instead of silently becoming null.
+//
+// This is the primitive for optional sidecars/state: the common inline shape
+// `if (!existsSync(p)) return null; try { JSON.parse(readFileSync(p)) } catch { return null }`
+// hides a real parse failure behind the same value used for "no file", so a
+// corrupt artifact silently drops the feature that depended on it while the run
+// still reports success (blindspot audit, class: silent-degradation). Route
+// optional reads through here so absent and corrupt can never collapse.
+export function readOptionalJson(path) {
+  if (!path || !existsSync(path)) return null; // genuinely absent
+  let raw;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch (error) {
+    if (error?.code === "ENOENT") return null; // raced deletion — treat as absent
+    throw error; // a real read error (permissions, is-a-directory, …) must surface
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`readOptionalJson: ${path} exists but is not valid JSON — ${error.message}`);
+  }
+}
+
 // A temp-file counter that, with the pid, makes temp names unique without
 // Math.random (keeps generation deterministic and avoids collisions).
 let tmpSeq = 0;

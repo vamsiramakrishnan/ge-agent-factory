@@ -181,6 +181,93 @@ export function bucketTestResults(actualFailing, knownFailing) {
 }
 
 /**
+ * Plan the per-directory shards for a gated test run.
+ *
+ * Why shards exist at all: `bun test` scans every file under its cwd before
+ * filtering, and a repo-root scan (~30k files once the okf/ corpus and
+ * generated-agents/ are counted) exceeds a 4096 file-descriptor rlimit — the
+ * kind sandboxed/containerized runners commonly pin — killing the run with
+ * EMFILE before a single test executes. Running one `bun test` per top-level
+ * directory (and per app, which also isolates cross-app module-mock leakage
+ * like bun's process-global mock.module) keeps each scan a few thousand files.
+ *
+ * @param {string[]} args - argv forwarded to the checker: path filters and/or
+ *   `-`-prefixed flags. Paths map onto their owning shard: `apps/factory/x` →
+ *   shard `apps/factory` with filter `x`; `tools/lib/y.test.mjs` → shard
+ *   `tools` with filter `lib/y.test.mjs`. A path that doesn't start with a
+ *   known shard root falls back to a repo-root shard (previous behavior).
+ *   Value-taking Bun flags in space-separated form (`--test-name-pattern spec`,
+ *   `--timeout 20000`) keep their value as part of the flag, not as a path
+ *   filter — otherwise the value would be misread as a shard path and the
+ *   flag would reach Bun without its argument.
+ * @param {{ appShards: string[] }} options - shard roots under apps/
+ *   (e.g. ["apps/console", "apps/factory"]), enumerated by the caller.
+ * @returns {{ shards: { root: string, filters: string[] }[], flags: string[] }}
+ *   `root` is repo-relative ("." = repo root); an empty `filters` means the
+ *   whole shard.
+ */
+// Bun test flags that take a following value as a separate argv token (see
+// https://bun.com/docs/test). The `--flag=value` inline form is self-contained
+// and needs no special handling.
+const BUN_VALUE_FLAGS = new Set([
+  "-t", "--test-name-pattern",
+  "--timeout",
+  "--rerun-each",
+  "--reporter", "--reporter-outfile",
+  "--concurrency",
+]);
+
+export function planTestShards(args, { appShards }) {
+  const flags = [];
+  const paths = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg.startsWith("-")) {
+      flags.push(arg);
+      // A value-taking flag consumes the next token as its value, so that token
+      // is neither a path filter nor a bare flag.
+      if (BUN_VALUE_FLAGS.has(arg) && i + 1 < args.length && !args[i + 1].startsWith("-")) {
+        flags.push(args[i + 1]);
+        i += 1;
+      }
+    } else {
+      paths.push(arg.replace(/^\.\//, "").replace(/\/+$/, ""));
+    }
+  }
+
+  if (paths.length === 0) {
+    return {
+      shards: [...appShards, "tools", "packages"].map((root) => ({ root, filters: [] })),
+      flags,
+    };
+  }
+
+  // shard root -> filter list; a null in the list means "the whole shard".
+  const byRoot = new Map();
+  const add = (root, filter) => {
+    if (!byRoot.has(root)) byRoot.set(root, []);
+    byRoot.get(root).push(filter);
+  };
+  for (const path of paths) {
+    const segments = path.split("/");
+    if (segments[0] === "apps") {
+      if (segments.length === 1) for (const root of appShards) add(root, null);
+      else add(`apps/${segments[1]}`, segments.slice(2).join("/") || null);
+    } else if (segments[0] === "tools" || segments[0] === "packages") {
+      add(segments[0], segments.slice(1).join("/") || null);
+    } else {
+      add(".", path);
+    }
+  }
+
+  const shards = [...byRoot.entries()].map(([root, filters]) => ({
+    root,
+    filters: filters.includes(null) ? [] : filters,
+  }));
+  return { shards, flags };
+}
+
+/**
  * Render a human-readable report for the three buckets.
  * @param {ReturnType<typeof bucketTestResults>} buckets
  */

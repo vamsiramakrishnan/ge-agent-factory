@@ -57,7 +57,7 @@ const HANDLERS = {
   // The golden path — same core functions as `ge capture/prove/handoff`.
   "capture":       (a) => core.capture(cfg(), { from: a.from }),
   "prove":         (a) => core.prove(cfg(), { id: a.id, target: a.target, force: a.force }),
-  "handoff":       (a) => core.handoff(cfg(), { target: a.target || "agents-cli", ids: a.ids, startStage: a.startStage, targetStage: a.targetStage, noProxy: a.noProxy }),
+  "handoff":       (a) => core.handoff(cfg(), { target: a.target || "agents-cli", ids: a.ids, startStage: a.startStage, targetStage: a.targetStage, noProxy: a.noProxy, force: a.force }),
   "usecases.list": (a) => core.listUsecases(a),
   "doctor":        () => core.doctor(cfg()),
   "status":        (a) => core.status(cfg(), { noProxy: a.noProxy }),
@@ -142,6 +142,13 @@ const HANDLERS = {
       });
     }
     return summary;
+  },
+  // Spec → Agent Skill package — the same core as `ge okf skill`
+  // (apps/factory/scripts/spec-to-skill.mjs; dynamic apps-layer import like
+  // data.synth above, so it loads only when the tool is called).
+  "okf.skill": async (a) => {
+    const { specToSkill } = await import("../apps/factory/scripts/spec-to-skill.mjs");
+    return specToSkill({ id: a.id, spec: a.spec, out: a.out });
   },
   // OKF agent lifecycle — the same return/throw core as `ge okf customize` /
   // `ge agents register` / `ge agents track` (tools/lib/okf-lifecycle.mjs).
@@ -264,6 +271,11 @@ const HANDLERS = {
   "okf.quality.audit": async (a) => {
     const { auditQuality } = await import("./lib/okf-quality.mjs");
     return auditQuality({ all: Boolean(a.all), spec: a.spec });
+  },
+  // The self-improvement loop — same core as `ge improve` (tools/lib/improve.mjs).
+  "improve": async (a) => {
+    const { improveSpec } = await import("./lib/improve.mjs");
+    return improveSpec({ spec: a.id, target: a.target, write: Boolean(a.write), maxIterations: a.maxIterations });
   },
   "okf.enrich.plan": async (a) => {
     const { generateEnrichmentPlan } = await import("./lib/okf-quality.mjs");

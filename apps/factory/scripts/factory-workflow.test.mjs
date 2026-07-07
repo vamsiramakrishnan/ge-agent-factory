@@ -238,7 +238,11 @@ function generateAgent(usecase) {
   // from-usecase runs init + schema + generate + tools + test. Re-running tools with
   // --force-agent guarantees a fresh agent.py from the current emitter. The internal
   // pytest run is tolerated (it passes), but the long bun timeout below covers it.
-  execFileSync("node", [GE_MOCK, "from-usecase", "--dir", dir, "--usecase", usecase, "--rows", "12", "--seed", "42"], { env, stdio: "ignore", cwd: APP_DIR });
+  // --harness-review false: this test exercises the deterministic emitter only;
+  // without the pin, from-usecase auto-enables the Antigravity review whenever an
+  // ambient GEMINI_API_KEY/Vertex env exists and then fails on machines without
+  // the google.antigravity Python runtime.
+  execFileSync("node", [GE_MOCK, "from-usecase", "--dir", dir, "--usecase", usecase, "--rows", "12", "--seed", "42", "--harness-review", "false"], { env, stdio: "ignore", cwd: APP_DIR });
   execFileSync("node", [GE_MOCK, "tools", "--dir", dir, "--force-agent", "true"], { env, stdio: "ignore", cwd: APP_DIR });
   const agentPy = readFileSync(join(dir, "app", "agent.py"), "utf8");
   const toolsPy = readFileSync(join(dir, "app", "tools.py"), "utf8");

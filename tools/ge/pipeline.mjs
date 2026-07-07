@@ -145,6 +145,7 @@ export const pipelineRunCmd = defineCommand({
   args: runArgs,
   run: guarded(async ({ args }) => {
     const port = await requireDaemon(args);
+    const cfg = cfgFrom(args);
     const attempts = Number(args.attempts || 3);
     const task = await daemonRequest(port, "/api/tasks", {
       method: "POST",
@@ -160,14 +161,17 @@ export const pipelineRunCmd = defineCommand({
         runPreview: !!args["run-preview"],
         executeFactory: !!args["with-factory"],
         useAntigravity: !args["no-antigravity"],
-        harnessAgent: args["harness-agent"] || "antigravity-sdk",
-        harnessModel: args.model || "gemini-3.5-flash",
+        // Centralized defaults (tools/lib/config-schema.mjs): the harness
+        // adapter and its model resolve flag → env → .ge.json → default
+        // instead of hardcoding antigravity-sdk/gemini-3.5-flash here.
+        harnessAgent: args["harness-agent"] || cfg.harnessAgent,
+        harnessModel: args.model || cfg.refinementModel,
         harnessLocation: args.location || "global",
         query: {
           project: args.project,
           region: args.region,
           location: args.location || "global",
-          model: args.model || "gemini-3.5-flash",
+          model: args.model || cfg.refinementModel,
           agentIdentityOrgId: args.agentIdentityOrgId,
         },
       },
@@ -229,8 +233,8 @@ export const pipelineGraphCmd = defineCommand({
       },
       executeFactory: !!args["with-factory"],
       useAntigravity: !args["no-antigravity"],
-      harnessAgent: args["harness-agent"] || "antigravity-sdk",
-      harnessModel: args.model || "gemini-3.5-flash",
+      harnessAgent: args["harness-agent"] || cfg.harnessAgent,
+      harnessModel: args.model || cfg.refinementModel,
       harnessLocation: args.location || "global",
     });
     emit(args, graph, renderPipelineGraph);

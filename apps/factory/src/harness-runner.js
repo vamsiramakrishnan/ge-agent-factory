@@ -1,16 +1,16 @@
 import { spawn } from "node:child_process";
 import { parseList } from "@ge/std/list";
 import { randomUUID } from "node:crypto";
-import { chmodSync, existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, delimiter, join, resolve, sep } from "node:path";
 import { loadConfig } from "c12";
 import { splitLines } from "@ge/runtime/events";
 import { readDotEnv } from "./dotenv.mjs";
-import { detectAgents, getAgentDef } from "./agents.js";
+import { AGENT_DEFS, agentSupportsInteraction, detectAgents, getAgentDef, spawnEnvForAgent } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { openJournal, recordRun } from "./harness-journal.js";
-import { writeJson } from "@ge/std/json-io";
+import { readOptionalJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
 import { createOutputParser, detectFormat } from "./output-parsers.js";
 import { readSecretsEnv } from "./secrets.js";
@@ -27,10 +27,12 @@ import {
 // emits (artifacts/agent-workflow.json); additive — returns null when absent so
 // the existing prompt is unchanged for workspaces generated before this landed.
 function buildSpecWorkflowSection(workspaceDir) {
-  try {
-    const sidecar = join(workspaceDir, "artifacts", "agent-workflow.json");
-    if (!existsSync(sidecar)) return null;
-    const wf = JSON.parse(readFileSync(sidecar, "utf8"));
+  // readOptionalJson returns null only when the sidecar is ABSENT (older
+  // workspaces); a present-but-corrupt agent-workflow.json throws so we never
+  // silently drop the workflow-validation section on an otherwise-green run.
+  const wf = readOptionalJson(join(workspaceDir, "artifacts", "agent-workflow.json"));
+  if (!wf) return null;
+  {
     const lines = ["# Spec workflow to validate against"];
     lines.push(`Expected agent topology: ${wf.topology}.`);
     if (wf.topology === "single") {
@@ -51,8 +53,6 @@ function buildSpecWorkflowSection(workspaceDir) {
     lines.push("- The three guardrail callbacks (initialize_workflow_state, enforce_tool_contract, capture_tool_evidence) must be present and wired.");
     lines.push("Verify the generated topology matches this spec and correct app/agent.py if it does not (tools.py must stay unchanged).");
     return lines.join("\n");
-  } catch {
-    return null;
   }
 }
 
@@ -63,10 +63,12 @@ function buildSpecWorkflowSection(workspaceDir) {
 // tools reachable in the topology) and that every Eval Scenario's mechanisms are
 // callable. Additive — returns null when the sidecar is absent (older workspaces).
 function buildSpecCoverageSection(workspaceDir) {
-  try {
-    const sidecar = join(workspaceDir, "artifacts", "okf-coverage.json");
-    if (!existsSync(sidecar)) return null;
-    const cov = JSON.parse(readFileSync(sidecar, "utf8"));
+  // readOptionalJson: absent sidecar → null (older workspaces); a present-but-
+  // corrupt okf-coverage.json throws rather than masquerading as "no coverage"
+  // and silently dropping the OKF-spine validation on a green run.
+  const cov = readOptionalJson(join(workspaceDir, "artifacts", "okf-coverage.json"));
+  if (!cov) return null;
+  {
     const queries = Array.isArray(cov.queries) ? cov.queries : [];
     const tests = Array.isArray(cov.tests) ? cov.tests : [];
     if (!queries.length && !tests.length) return null;
@@ -87,8 +89,6 @@ function buildSpecCoverageSection(workspaceDir) {
     }
     lines.push("If any query's tool or any test's mechanism is NOT reachable/callable in app/agent.py, that is a COVERAGE GAP: when write-enabled, correct app/agent.py to wire the missing tool into the right stage; otherwise flag the gap precisely. tools.py must stay unchanged.");
     return lines.join("\n");
-  } catch {
-    return null;
   }
 }
 
@@ -130,7 +130,10 @@ function buildSubagentPlanSection(workspaceDir, { subagentsAvailable = false } =
 // repoRoot (the location resolveVertexDefaults always defaulted to); it does not
 // walk above the repo, which only ever risked picking up a stray external .ge.json.
 async function loadGeConfig(repoRoot) {
-  const { config } = await loadConfig({ cwd: resolve(repoRoot || process.cwd()), configFile: ".ge.json" });
+  // repoRoot is always threaded from an anchored caller (the daemon/CLI resolve
+  // it before calling); the process.cwd() fallback only applies to a bare direct
+  // call and preserves the historical default.
+  const { config } = await loadConfig({ cwd: resolve(repoRoot || process.cwd()), configFile: ".ge.json" }); // cwd-coupling-ok: repoRoot always threaded; cwd is a legacy fallback only
   return config || {};
 }
 
@@ -150,12 +153,92 @@ async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
   };
 }
 
+// Interaction-form support for adapters that speak the request_user_input MCP
+// bridge (claude, codex — the declarative supportsInteraction capability): tell
+// the model the bridge exists and when to use it. The Antigravity driver has
+// its own native interaction hook (and its own instructions). Returns null for
+// adapters without the capability, or with no interaction dir — existing
+// prompts are byte-unchanged.
+function buildInteractionSection(adapterId, interactionDir) {
+  if (!interactionDir || !agentSupportsInteraction(adapterId)) return null;
+  return [
+    "# Asking the operator",
+    "When you need structured input from the human operator — interview answers, choices between options, confirmations — call the `request_user_input` tool (ge-interaction MCP server). It renders a form in the operator's console and blocks until they answer. Never invent answers the operator should give; ask instead.",
+  ].join("\n");
+}
+
+// Watch the interaction dir's requests/ for forms written by an adapter-side
+// bridge (claude-interaction-mcp.mjs) and surface each as the SAME
+// antigravity.interaction_request status event the console's Interview view
+// already renders. The Antigravity driver reports its own requests on stderr,
+// so the watcher only runs for other adapters. Returns a stop() disposer.
+function watchInteractionRequests({ interactionDir, onRequest, pollMs = 500 }) {
+  const requestsDir = join(interactionDir, "requests");
+  const seen = new Set();
+  const scan = () => {
+    let entries = [];
+    try {
+      entries = readdirSync(requestsDir).filter((name) => name.endsWith(".json"));
+    } catch {
+      return; // dir may not exist until the bridge's first question
+    }
+    for (const name of entries) {
+      if (seen.has(name)) continue;
+      seen.add(name);
+      try {
+        const request = JSON.parse(readFileSync(join(requestsDir, name), "utf8"));
+        if (request?.id && request?.form) onRequest(request);
+      } catch {
+        seen.delete(name); // partially-written file — retry on the next tick
+      }
+    }
+  };
+  const timer = setInterval(scan, pollMs);
+  timer.unref?.();
+  return () => {
+    clearInterval(timer);
+    scan(); // final sweep so a request written just before exit still surfaces
+  };
+}
+
+// Prompt-level guardrail fallback for adapters without the Antigravity SDK's
+// native protect-file/disable-tool enforcement (the Claude Code, Codex, and
+// Gemini CLI compat adapters): state the constraints in the prompt so a
+// write-enabled run on those adapters still respects them. Returns null for
+// the native adapter or when nothing is constrained — existing prompts are
+// byte-unchanged.
+function buildCompatGuardrailSection(adapterId, { protectFiles = [], disableTools = [] } = {}) {
+  if (adapterId === "antigravity-sdk") return null;
+  const lines = [];
+  if (protectFiles.length) lines.push(`- Do NOT modify these protected files: ${protectFiles.join(", ")}. Treat them as read-only.`);
+  if (disableTools.length) lines.push(`- These capabilities are disabled for this run — never perform them: ${disableTools.join(", ")}.`);
+  if (!lines.length) return null;
+  return ["# Guardrails", ...lines].join("\n");
+}
+
+// Claude Code refuses --permission-mode bypassPermissions (which the
+// write-enabled claude adapter uses) under root/sudo unless IS_SANDBOX signals
+// a controlled environment. The harness IS that sandbox — an env-allowlisted,
+// workspace-scoped child — and CI/worker containers routinely run as root, so a
+// write-enabled claude harness run would otherwise die at spawn. Scoped to the
+// claude adapter running as root; a no-op everywhere else (uid injectable for
+// tests, since the real getuid is process-global). Delegates to the adapter's
+// own spawnEnv (agents.js) so the daemon path here and the console spawn path
+// (run-agent-subprocess.js) share one definition of the compensation.
+function claudeSandboxEnv(adapterId, uid = process.getuid?.()) {
+  return spawnEnvForAgent(AGENT_DEFS.find((def) => def.id === adapterId), uid);
+}
+
 export const __test = {
   createLineBuffer,
   loadGeConfig,
   parseAntigravityStatusLines,
   resolveVertexDefaults,
   buildSubagentPlanSection,
+  buildCompatGuardrailSection,
+  buildInteractionSection,
+  watchInteractionRequests,
+  claudeSandboxEnv,
 };
 
 function materializeWorkspaceCommandShims({ workspaceDir, repoRoot }) {
@@ -378,6 +461,12 @@ export async function runHarnessTask({
     // Additive: when the run is write-enabled and validation sidecars exist,
     // direct the harness to fan the independent checks out to subagents.
     buildSubagentPlanSection(cwd, { subagentsAvailable }),
+    // Additive: on non-Antigravity adapters, protect-file/disable-tool
+    // constraints are stated in the prompt instead of silently dropped.
+    buildCompatGuardrailSection(plan.adapterId, { protectFiles, disableTools }),
+    // Additive: on the Claude adapter with an interaction dir, point the model
+    // at the request_user_input form bridge.
+    buildInteractionSection(plan.adapterId, process.env.GE_HARNESS_INTERACTION_DIR || null),
   ].filter(Boolean).join("\n");
 
   const binDir = materializeWorkspaceCommandShims({ workspaceDir: cwd, repoRoot: resolvedRepoRoot });
@@ -449,7 +538,8 @@ export async function runHarnessTask({
     const sdir = saveDir || process.env.GE_HARNESS_SAVE_DIR || null;
     if (sdir) sdkCaps.saveDir = sdir;
   }
-  const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, ...sdkCaps });
+  const interactionDir = process.env.GE_HARNESS_INTERACTION_DIR || null;
+  const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, interactionDir, ...sdkCaps });
 
   return await new Promise((resolveRun) => {
     let stdout = "";
@@ -481,6 +571,7 @@ export async function runHarnessTask({
           GE_HARNESS_RUN_ID: run.id,
           GE_HARNESS_PROJECT_ID: harnessProject.id,
           GE_HARNESS_REAL_WORKSPACE: cwd,
+          ...claudeSandboxEnv(plan.adapterId),
           ...secretEnv,
         },
       }),
@@ -500,6 +591,22 @@ export async function runHarnessTask({
     });
     emit("status", { label: "spawned", agentId: def.id, pid: child.pid });
     journal.event({ type: "stage_started", level: "info" });
+
+    // Non-Antigravity adapters raise interaction forms through the on-disk
+    // bridge; surface each request as the status event the console renders.
+    // (The Antigravity driver reports its own requests on stderr.)
+    let stopInteractionWatch = null;
+    if (interactionDir && plan.adapterId !== "antigravity-sdk") {
+      stopInteractionWatch = watchInteractionRequests({
+        interactionDir,
+        onRequest: (request) => {
+          const raw = { type: "antigravity.interaction_request", interactionId: request.id, form: request.form };
+          const ev = { type: "status", label: raw.type, raw };
+          normalizedEvents.push(ev);
+          emit("status", ev);
+        },
+      });
+    }
 
     let timeout = null;
     if (timeoutSec > 0) {
@@ -529,11 +636,13 @@ export async function runHarnessTask({
     });
     child.on("error", (error) => {
       if (timeout) clearTimeout(timeout);
+      if (stopInteractionWatch) stopInteractionWatch();
       emit("error", { code: "SPAWN_FAILED", message: error.message });
       resolveRun({ ok: false, status: "failed", code: 1, signal: null, stdout, stderr, text: normalizedEvents.filter((ev) => ev.type === "text_delta").map((ev) => ev.delta).join(""), events: run.events, agentEvents: normalizedEvents, plan });
     });
     child.on("close", (code, signal) => {
       if (timeout) clearTimeout(timeout);
+      if (stopInteractionWatch) stopInteractionWatch();
       for (const parsed of parser.flush()) {
         const ev = normalizeAgentEvent(parsed);
         normalizedEvents.push(ev);

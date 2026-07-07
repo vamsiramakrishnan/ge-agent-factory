@@ -43,6 +43,26 @@ const CitationSchema = z.object({
   uri: z.string().optional(),
 });
 
+// OTLP/JSON-shaped span (see otel-spans.mjs): hex ids, nanosecond timestamps
+// as strings, attributes as {key, value} pairs. Kept permissive on the value
+// side — the shape authority is the OTLP spec, not this schema.
+const OtlpSpanSchema = z.object({
+  traceId: z.string(),
+  spanId: z.string(),
+  parentSpanId: z.string().optional(),
+  name: z.string(),
+  kind: z.string(),
+  startTimeUnixNano: z.string(),
+  endTimeUnixNano: z.string(),
+  attributes: z.array(z.object({ key: z.string(), value: z.record(z.string(), z.any()) })).optional(),
+  events: z.array(z.object({
+    name: z.string(),
+    timeUnixNano: z.string(),
+    attributes: z.array(z.object({ key: z.string(), value: z.record(z.string(), z.any()) })).optional(),
+  })).optional(),
+  status: z.object({ code: z.string(), message: z.string().optional() }),
+});
+
 const TranscriptTurnSchema = z.object({
   index: z.number().int().min(0),
   user: z.object({ text: z.string(), at: z.string().optional() }),
@@ -95,6 +115,15 @@ export const TranscriptSchema = z.object({
     totalMs: z.number().nullable(),
   }),
   invocationTools: z.array(z.string()),
+  // The run's OTel trace: one root ge.live.conversation span + a CLIENT span
+  // per turn (first-token events, tool/citation/timing attributes). Optional so
+  // transcripts recorded before the span layer stay valid.
+  trace: z
+    .object({
+      traceId: z.string(),
+      spans: z.array(OtlpSpanSchema),
+    })
+    .optional(),
   verdict: z
     .object({
       ok: z.boolean(),
@@ -213,7 +242,7 @@ export function foldTurnChunks({ index, userText, chunks, sessionBefore = null }
 
 // ── Transcript assembly ─────────────────────────────────────────────────────
 
-export function buildTranscript({ id, target, runner, replay, turns, responder, startedAt = null, cassettePath }) {
+export function buildTranscript({ id, target, runner, replay, turns, responder, startedAt = null, cassettePath, trace = null }) {
   const sessionAfterLast = turns.length ? turns[turns.length - 1].sessionAfter : null;
   const invocationTools = [];
   const assistTokens = [];
@@ -240,6 +269,7 @@ export function buildTranscript({ id, target, runner, replay, turns, responder, 
     turns,
     timings: { startedAt, totalMs },
     invocationTools,
+    ...(trace ? { trace } : {}),
     raw: {
       ...(cassettePath ? { cassettePath } : {}),
       ...(assistTokens.length ? { assistTokens } : {}),

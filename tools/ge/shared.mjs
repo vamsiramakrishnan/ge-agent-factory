@@ -39,11 +39,20 @@ export const cfgFrom = (a) => core.loadConfig({
 // `--force-agent true`) for backwards compatibility with existing scripts;
 // both styles are supported and neither will be removed — check a given
 // command's `--help` for which style it uses.
+// INVARIANT: every field cfgFrom(a) reads MUST be declared here (or on the
+// individual command). citty silently reclassifies an undeclared flag as
+// boolean `true` and drops its value, so a config override read by cfgFrom but
+// missing from this bundle is silently lost. tools/ge/shared-cfg-parity.test.mjs
+// statically enforces cfgFrom's read set ⊆ Object.keys(common).
 export const common = {
   json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
   project: { type: "string", description: "GCP project id", alias: ["gcp-project"] },
+  projectNumber: { type: "string", description: "GCP project number (Agent Identity principalSet)", alias: ["project-number"] },
   region: { type: "string", description: "Region (default us-central1)" },
   agentIdentityOrgId: { type: "string", description: "Organization ID for Agent Identity principalSet trust domain" },
+  bucket: { type: "string", description: "Artifact bucket override (default <project>-ge-agent-factory)" },
+  gatewayUrl: { type: "string", description: "Gateway URL for direct-HTTPS calls (no proxy tunnel)", alias: ["gateway-url"] },
+  geApp: { type: "string", description: "Gemini Enterprise app/engine id", alias: ["ge-app"] },
 };
 
 // Render: --json prints the structured result; otherwise call the human renderer.

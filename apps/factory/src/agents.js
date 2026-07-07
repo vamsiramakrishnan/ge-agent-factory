@@ -105,11 +105,30 @@ export const AGENT_DEFS = [
       { id: "gpt-5.5", label: "gpt-5.5" },
       { id: "gpt-5.4", label: "gpt-5.4" },
     ],
+    // Interaction-form parity with the Antigravity driver, via Codex's own MCP
+    // support. Codex takes `-c key=value` config overrides (values parsed as
+    // JSON), so the same request_user_input bridge is registered as an
+    // mcp_servers entry. TOML bare keys can't contain hyphens, so the server id
+    // is `ge_interaction` (the bridge script is identical).
+    //
+    // OPT-IN, unlike claude: the claude --mcp-config path was verified against a
+    // real binary, this `-c mcp_servers` path was NOT. Since the daemon sets an
+    // interaction dir on EVERY run, injecting these `-c` args unconditionally
+    // would put unverified overrides on every codex run — a wrong `-c` could
+    // break unrelated codex jobs. So it only activates with
+    // GE_HARNESS_CODEX_INTERACTION set, until it is confirmed against real codex.
+    supportsInteraction: true,
     buildArgs: (_prompt, options = {}) => {
       const args = ["exec", "--json", "--skip-git-repo-check"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--full-auto");
       if (options.cwd) args.push("-C", options.cwd);
       if (options.model && options.model !== "default") args.push("--model", options.model);
+      if (options.interactionDir && codexInteractionEnabled()) {
+        const bridge = new URL("../scripts/claude-interaction-mcp.mjs", import.meta.url).pathname;
+        args.push("-c", `mcp_servers.ge_interaction.command=${JSON.stringify(process.execPath)}`);
+        args.push("-c", `mcp_servers.ge_interaction.args=${JSON.stringify([bridge])}`);
+        args.push("-c", `mcp_servers.ge_interaction.env=${JSON.stringify({ GE_HARNESS_INTERACTION_DIR: options.interactionDir })}`);
+      }
       return args;
     },
     promptViaStdin: true,
@@ -124,10 +143,34 @@ export const AGENT_DEFS = [
       { id: "sonnet", label: "Sonnet" },
       { id: "opus", label: "Opus" },
     ],
+    supportsInteraction: true,
+    // Claude Code refuses `--permission-mode bypassPermissions` under uid 0
+    // unless IS_SANDBOX=1. buildArgs emits bypassPermissions for any non-review
+    // profile, so the compensating env must travel WITH the adapter — as a
+    // property here, merged at every spawn site (spawnEnvForAgent) — not as a
+    // per-call-site convention that one of two twin spawn paths can forget.
+    spawnEnv: ({ uid } = {}) => (uid === 0 ? { IS_SANDBOX: "1" } : {}),
     buildArgs: (_prompt, options = {}) => {
       const args = ["-p", "--output-format", "stream-json", "--verbose"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--permission-mode", "bypassPermissions");
       if (options.model && options.model !== "default") args.push("--model", options.model);
+      // Interaction-form parity with the Antigravity driver: when a run has an
+      // interaction dir (console interview / any form-capable run), expose the
+      // request_user_input MCP bridge that round-trips question forms through
+      // the same requests/-responses/ protocol the console UI answers.
+      if (options.interactionDir) {
+        const bridge = new URL("../scripts/claude-interaction-mcp.mjs", import.meta.url).pathname;
+        args.push("--mcp-config", JSON.stringify({
+          mcpServers: {
+            "ge-interaction": {
+              command: process.execPath,
+              args: [bridge],
+              env: { GE_HARNESS_INTERACTION_DIR: options.interactionDir },
+            },
+          },
+        }));
+        args.push("--allowedTools", "mcp__ge-interaction__request_user_input");
+      }
       return args;
     },
     promptViaStdin: true,
@@ -223,9 +266,36 @@ export function runtimeAdapterContract(def) {
     streamFormat: def.streamFormat || "plain",
     supportsResume: Boolean(def.supportsResume),
     supportsUsage: def.streamFormat === "json-lines",
+    supportsInteraction: Boolean(def.supportsInteraction),
     envPolicy: "allowlist-plus-scoped-secrets",
     requiredSecretNames: Array.isArray(def.requiredSecretNames) ? def.requiredSecretNames : [],
     capabilities: capabilityForAgent(def.id).primary,
     permissionProfiles: Object.values(PERMISSION_PROFILES),
   };
+}
+
+// Codex's -c mcp_servers interaction path is opt-in until verified against a
+// real codex binary (see the codex adapter comment) — so its runtime capability
+// is env-gated even though the static def declares it.
+export function codexInteractionEnabled() {
+  return ["1", "true", "yes", "on"].includes(String(process.env.GE_HARNESS_CODEX_INTERACTION || "").toLowerCase());
+}
+
+// Whether an adapter speaks the interaction-form protocol through the
+// request_user_input MCP bridge (claude via --mcp-config, codex via -c
+// mcp_servers). Declarative capability, so the harness runner drives the
+// prompt section + request watcher off this instead of hardcoding adapter ids.
+// codex is gated behind codexInteractionEnabled() until its path is verified.
+export function agentSupportsInteraction(id) {
+  if (id === "codex") return codexInteractionEnabled();
+  return Boolean(AGENT_DEFS.find((def) => def.id === id)?.supportsInteraction);
+}
+
+// The extra spawn env an adapter needs for the current process uid — the single
+// source of truth for adapter-specific environment compensation (today: claude's
+// IS_SANDBOX under root). EVERY spawn(def.resolvedBin, …) site must merge this,
+// so the sandbox signal can't diverge between the daemon and console spawn paths
+// (blindspot audit, class: env-assumption). uid defaults to the live process.
+export function spawnEnvForAgent(def, uid = typeof process.getuid === "function" ? process.getuid() : undefined) {
+  return typeof def?.spawnEnv === "function" ? (def.spawnEnv({ uid }) || {}) : {};
 }

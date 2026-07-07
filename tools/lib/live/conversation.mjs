@@ -14,6 +14,7 @@
 // assembly live here so every surface gets them identically.
 import { foldTurnChunks, buildTranscript, sessionThreadingBreaks, withVerdict } from "./transcript.mjs";
 import { assertResponder, responderVerdict } from "./responder.mjs";
+import { createTraceRecorder, recordTurnSpan } from "./otel-spans.mjs";
 import { liveError } from "./errors.mjs";
 
 let transcriptCounter = 0;
@@ -29,13 +30,28 @@ export function createConversationSession(runner, {
   expectedAgentId = target?.expectedAgentId ?? null,
   strictResponder = false,
   startedAt = null,
+  trace = createTraceRecorder(),
 } = {}) {
   const transcriptTurns = [];
   const allChunks = [];
   let session = null;
+  // The conversation root span; every turn is a CLIENT child. Recorded in
+  // OTLP/JSON shape (see otel-spans.mjs) and folded into transcript.trace —
+  // this is what makes a drive/prove run correlatable as a trace instead of
+  // only wall-clock numbers in bespoke JSON.
+  const rootSpan = trace.startSpan("ge.live.conversation", {
+    attributes: {
+      "gen_ai.system": "gemini-enterprise",
+      "ge.transcript.id": id,
+      "ge.runner.kind": runner.kind || "unknown",
+      ...(target?.engine ? { "ge.target.engine": target.engine } : {}),
+      ...(target?.assistant ? { "ge.target.assistant": target.assistant } : {}),
+    },
+  });
 
   return {
     id,
+    trace,
     get session() {
       return session;
     },
@@ -45,8 +61,10 @@ export function createConversationSession(runner, {
     // Run one user turn; returns the folded transcript turn.
     async turn(text) {
       const index = transcriptTurns.length;
+      const turnStartMs = Date.now();
       const { chunks } = await runner.runTurn({ index, text, session });
       const folded = foldTurnChunks({ index, userText: text, chunks, sessionBefore: session });
+      recordTurnSpan(trace, { parent: rootSpan, turn: folded, turnStartMs, endTimeMs: Date.now() });
       transcriptTurns.push(folded);
       allChunks.push(...chunks);
       session = folded.sessionAfter;
@@ -92,6 +110,16 @@ export function createConversationSession(runner, {
         }));
       }
 
+      rootSpan.end({
+        attributes: {
+          "ge.turns": transcriptTurns.length,
+          "ge.responder.assertion": responder.assertion,
+          "ge.blockers": blockers.length,
+        },
+        status: blockers.length ? "STATUS_CODE_ERROR" : "STATUS_CODE_OK",
+        ...(blockers.length ? { statusMessage: blockers[0].what || String(blockers[0].message || blockers[0]) } : {}),
+      });
+
       const transcript = withVerdict(
         buildTranscript({
           id,
@@ -102,6 +130,7 @@ export function createConversationSession(runner, {
           responder,
           startedAt,
           cassettePath: runner.path,
+          trace: { traceId: trace.traceId, spans: trace.spans() },
         }),
         blockers,
       );

@@ -2,11 +2,41 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "n
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "bun:test";
-import { readJson, writeJson, updateJson } from "./json-io.mjs";
+import { readJson, readOptionalJson, writeJson, updateJson } from "./json-io.mjs";
 
 function tempDir(name) {
   return mkdtempSync(join(tmpdir(), `ge-json-io-${name}-`));
 }
+
+// readOptionalJson must NOT conflate "absent" (→ null) with "corrupt" (→ throw):
+// that conflation is exactly what silently drops a feature whose sidecar became
+// unparseable while the run still reports success.
+test("readOptionalJson returns null for an absent file", () => {
+  expect(readOptionalJson(join(tmpdir(), "ge-json-io-does-not-exist.json"))).toBeNull();
+  expect(readOptionalJson(null)).toBeNull();
+});
+
+test("readOptionalJson parses a present, valid file", () => {
+  const dir = tempDir("optional-valid");
+  try {
+    const path = join(dir, "ok.json");
+    writeFileSync(path, JSON.stringify({ ok: true }), "utf8");
+    expect(readOptionalJson(path)).toEqual({ ok: true });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("readOptionalJson THROWS on a present-but-corrupt file (never silently null)", () => {
+  const dir = tempDir("optional-corrupt");
+  try {
+    const path = join(dir, "bad.json");
+    writeFileSync(path, "{ not valid json", "utf8");
+    expect(() => readOptionalJson(path)).toThrow(/exists but is not valid JSON/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 test("readJson returns fallback for missing files", () => {
   expect(readJson(join(tmpdir(), "ge-json-io-missing.json"), { ok: false })).toEqual({ ok: false });

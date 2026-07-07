@@ -317,6 +317,29 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         systems: str("Comma-separated source systems"),
         "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
         "run-tests-after-refine": str("Run smoke tests after refine (true/false)"),
+        // Same harness toggles as quality-gate: without a declared flag, citty
+        // drops --harness-review false and the ambient-credentials auto-detect
+        // decides — making the review stage impossible to opt out of.
+        "harness-review": str("Run harness review after the build ('true'/'false'; default: auto — on when GEMINI_API_KEY/Vertex env is present)"),
+        review: str("Alias for --harness-review"),
+        "harness-refine": str("Run harness refine after review ('true'/'false'; default: follows --harness-review)"),
+        refine: str("Alias for --harness-refine"),
+        // The harness review/refine handlers cmdHarnessReview/Refine read these
+        // config flags from the same flags object from-usecase forwards; they
+        // MUST be declared here or citty mis-parses their values (e.g. --project
+        // myproj becomes boolean project:true, dropping "myproj").
+        agent: str("Harness agent/provider id for review/refine (default GE_HARNESS_AGENT or antigravity-sdk)"),
+        provider: str("Alias for --agent"),
+        model: str("Model for the harness review/refine run"),
+        project: str("GCP project for the harness run"),
+        "gcp-project": str("Alias for --project"),
+        location: str("Vertex/GenAI location for the harness run"),
+        region: str("Alias for --location"),
+        vertex: bool("Use Vertex AI for the harness run (default true unless --no-vertex)"),
+        "no-vertex": bool("Disable Vertex AI for the harness run"),
+        "permission-profile": str("Harness permission profile"),
+        "timeout-sec": str("Harness run timeout in seconds"),
+        soft: bool("Degrade gracefully instead of failing when the harness run fails"),
         out: str("Write the run report to this path"),
       }, handlers.fromUseCase),
     quickstart: dirCmd("quickstart", "Zero-flag local pipeline for a brand-new workspace: init -> schema -> generate -> tools -> test",
@@ -404,6 +427,23 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
       "permission-profile": str("Harness permission profile (default 'review')"),
       "timeout-sec": str("Harness run timeout in seconds (default 300)"),
       soft: bool("Degrade gracefully (keep the deterministic generated code) instead of failing when the harness run fails or returns unparseable output"),
+      json: legacyJson,
+    }),
+    "harness-judge": legacy("harness-judge", "Harness-as-judge: grade recorded agent behavior against the behavior contract's rubrics (read-only; deterministic threshold gating)", handlers.harnessJudge, true, {
+      dir: legacyDir,
+      results: str("Path (relative to --dir or absolute) to the cases to judge: a ge drive/prove live transcript, agents-cli eval output, or an array of {prompt, response, toolCalls}"),
+      agent: str("Harness agent/provider id (default GE_HARNESS_AGENT or antigravity-sdk)"),
+      provider: str("Alias for --agent"),
+      model: str("Model for the harness judge run (default 'default')"),
+      project: str("GCP project (default: --gcp-project / GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT)"),
+      "gcp-project": str("Alias for --project"),
+      region: str("Alias for --location"),
+      location: str("Vertex/GenAI location (default: --region / GOOGLE_CLOUD_LOCATION / GOOGLE_GENAI_LOCATION)"),
+      vertex: bool("Use Vertex AI for the harness run (default: true unless --no-vertex)"),
+      "no-vertex": bool("Disable Vertex AI for the harness run"),
+      "permission-profile": str("Harness permission profile (default 'review')"),
+      "timeout-sec": str("Harness run timeout in seconds (default 600)"),
+      soft: bool("Degrade gracefully instead of failing when the harness run fails or returns unparseable output"),
       json: legacyJson,
     }),
     "harness-refine": legacy("harness-refine", "Antigravity harness refine (write-enabled)", handlers.harnessRefine, true, {

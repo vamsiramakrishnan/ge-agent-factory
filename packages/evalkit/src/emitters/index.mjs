@@ -52,5 +52,5 @@ export { emitAdkEvalset, writeAdkEvalset } from "./adk-evalset.mjs";
 export { emitAgentsCliDataset, writeAgentsCliDataset } from "./agents-cli-dataset.mjs";
 export { renderGoldenEvals, renderAgentsCliEvalSet, renderEvalConfig, renderOptimizationConfig } from "./render-eval-artifacts.mjs";
 export { renderEvalDataset, renderSplitEvalDatasets } from "./agents-cli-eval-dataset.mjs";
-export { renderEvalConfigYaml, BEHAVIOR_CONTRACT_JUDGE_METRIC } from "./agents-cli-eval-config.mjs";
+export { renderEvalConfigYaml, BEHAVIOR_CONTRACT_JUDGE_METRIC, DEFAULT_JUDGE_MODEL } from "./agents-cli-eval-config.mjs";
 export { renderHoldoutSplit } from "./holdout.mjs";

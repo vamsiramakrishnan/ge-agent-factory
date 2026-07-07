@@ -1,8 +1,16 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+
+// The library's default roots ("okf", "okf/library/index.json") name repo
+// directories, so relative paths anchor to the repo checkout — located from
+// this module's own path, since packages/* must not import tools/lib — not to
+// process.cwd(), which varies (per-directory test shards, external callers).
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const fromRepoRoot = (path) => (isAbsolute(path) ? path : resolve(REPO_ROOT, path));
 
 export const LIBRARY_SCHEMA_VERSION = "agent-library.v1";
 export const READINESS_STATES = ["draft","contract_valid","workspace_generated","twins_ready","evals_ready","proof_passed","promotion_ready","handed_off"];
@@ -64,7 +72,7 @@ export async function blueprintFromBundle(bundleDir) {
   return {
     id, slug, title: fm.title || slugTitle(slugLeaf), version: "0.1.0", status,
     taxonomy: { vertical: vertical ? slugTitle(String(vertical)) : undefined, department: fm.department, valueStream: subtitle.split("•")[1]?.trim(), domain: subtitle.split("•")[1]?.trim(), businessFunction: fm.persona },
-    okf: { bundlePath: relative(process.cwd(), bundleDir), sourceSpecPath: fm.provenance_source_ref, contentHash, schemaVersion: fm.okf_version || "0.1" },
+    okf: { bundlePath: relative(REPO_ROOT, bundleDir), sourceSpecPath: fm.provenance_source_ref, contentHash, schemaVersion: fm.okf_version || "0.1" },
     behavior: { role: md.match(/\*\*Persona:\*\*\s*([^\n]+)/)?.[1]?.trim() || "Agent operator", objective: fm.description || md.match(/\*\*Objective:\*\*\s*([^\n]+)/)?.[1]?.trim() || "Execute the packaged OKF workflow.", authorityLevel: policies ? "write_with_approval" : "recommend", trigger, layer, humanApprovalPoints: policies ? 1 : 0 },
     inventory: { sourceSystems: systems, entities, fields, toolIntents: tools, workflowSteps: workflow, evals, evidenceRules, anomalies: linesMatching(md, "- **Anomaly").length },
     targets: { local: "ready", adk: "buildable", agentsCli: "buildable", geminiEnterprise: "requires_handoff" },
@@ -73,8 +81,14 @@ export async function blueprintFromBundle(bundleDir) {
   };
 }
 
-export async function generateLibraryIndex({ root = "okf", out = "okf/library/index.json" } = {}) {
-  const rootDir = resolve(root);
+// Compute the library index IN MEMORY from the OKF bundles — no filesystem
+// writes. This is the read-safe core: read surfaces (stats/list/doctor, the MCP
+// read tool, the console GET) must be hermetic, so they compute the index here
+// when the tracked okf/library/index.json is absent instead of regenerating it
+// on disk (which dirtied a git-tracked file from a read path — blindspot audit,
+// class: non-hermetic-write).
+export async function buildLibraryIndex({ root = "okf" } = {}) {
+  const rootDir = fromRepoRoot(root);
   const entries = await readdir(rootDir, { withFileTypes: true });
   const blueprints = [];
   for (const ent of entries) {
@@ -86,7 +100,15 @@ export async function generateLibraryIndex({ root = "okf", out = "okf/library/in
   blueprints.sort((a,b) => a.slug.localeCompare(b.slug));
   const verticals = new Set(blueprints.map(b => b.taxonomy.vertical).filter(Boolean));
   const departments = new Set(blueprints.map(b => b.taxonomy.department).filter(Boolean));
-  const index = { schemaVersion: LIBRARY_SCHEMA_VERSION, generatedAt: new Date().toISOString(), counts: { blueprints: blueprints.length, verticals: verticals.size, departments: departments.size, proven: blueprints.filter(b => b.status === "proven").length, buildable: blueprints.filter(b => b.status === "buildable").length }, blueprints };
+  return { schemaVersion: LIBRARY_SCHEMA_VERSION, generatedAt: new Date().toISOString(), counts: { blueprints: blueprints.length, verticals: verticals.size, departments: departments.size, proven: blueprints.filter(b => b.status === "proven").length, buildable: blueprints.filter(b => b.status === "buildable").length }, blueprints };
+}
+
+// The WRITE surface — only `ge library refresh-index` (an explicit generator
+// verb) calls this. It persists the computed index + its schema to the tracked
+// okf/library/index.json. Never call from a read path.
+export async function generateLibraryIndex({ root = "okf", out = "okf/library/index.json" } = {}) {
+  const index = await buildLibraryIndex({ root });
+  out = fromRepoRoot(out);
   await mkdir(dirname(out), { recursive: true });
   await writeFile(out, JSON.stringify(index, null, 2) + "\n");
   await writeFile(join(dirname(out), "index.schema.json"), JSON.stringify(LibraryIndexJsonSchema, null, 2) + "\n");
@@ -94,8 +116,9 @@ export async function generateLibraryIndex({ root = "okf", out = "okf/library/in
 }
 
 export async function readLibraryIndex({ refresh = false } = {}) {
-  const path = resolve("okf/library/index.json");
-  if (refresh || !existsSync(path)) return generateLibraryIndex();
+  const path = fromRepoRoot("okf/library/index.json");
+  // Absent or refresh → compute in memory (hermetic). Only refresh-index writes.
+  if (refresh || !existsSync(path)) return buildLibraryIndex();
   return JSON.parse(await readFile(path, "utf8"));
 }
 export async function resolveBlueprint(slugOrId) { const index = await readLibraryIndex(); const q = slugOrId.toLowerCase(); const bp = index.blueprints.find(b => b.slug.toLowerCase() === q || b.id.toLowerCase() === q || b.slug.endsWith(`/${q}`)); if (!bp) { const e = new Error(`Blueprint not found: ${slugOrId}`); e.code="GE-LIB-404"; e.hint="ge library search aml"; throw e; } return bp; }
@@ -107,8 +130,8 @@ export async function createFromLibrary({ slug, outDir, overlay, target = "adk",
   if (existsSync(workspace) && !force) throw Object.assign(new Error(`Output directory exists: ${workspace} (pass --force to overwrite generated files)`), { code: "GE-CREATE-EXISTS" });
   await mkdir(workspace, { recursive: true });
   await mkdir(join(workspace,"okf"), { recursive: true });
-  await cp(resolve(bp.okf.bundlePath), join(workspace,"okf","bundle"), { recursive: true, force: true });
-  await writeFile(join(workspace,"okf","agent.okf.md"), await readFile(join(resolve(bp.okf.bundlePath),"index.md"),"utf8"));
+  await cp(fromRepoRoot(bp.okf.bundlePath), join(workspace,"okf","bundle"), { recursive: true, force: true });
+  await writeFile(join(workspace,"okf","agent.okf.md"), await readFile(join(fromRepoRoot(bp.okf.bundlePath),"index.md"),"utf8"));
   await writeFile(join(workspace,"okf","normalized.json"), JSON.stringify({ blueprint: bp, overlay: overlay || null, target }, null, 2)+"\n");
   await mkdir(join(workspace,"app"), { recursive: true });
   await writeFile(join(workspace,"app","agent.py"), `# Generated from ${bp.slug}\nAGENT_TITLE = ${JSON.stringify(bp.title)}\n`);

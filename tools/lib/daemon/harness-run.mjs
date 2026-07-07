@@ -36,7 +36,11 @@ export function safeHarnessRunInput(input = {}) {
   const workspaceDir = resolve(REPO_ROOT, input.workspaceDir || input.workspace || ".");
   const agent = String(input.agent || input.provider || "antigravity-sdk");
   const stage = String(input.stage || "review");
-  const allowedAgents = new Set(["antigravity-sdk", "agy", "gemini", "mock"]);
+  // Every adapter registered in apps/factory/src/agents.js AGENT_DEFS that the
+  // daemon may spawn. claude/codex are the Claude Code CLI and Codex CLI
+  // compatibility adapters — same review/interview stages, prompt-embedded
+  // output schema instead of the Antigravity SDK's native response schema.
+  const allowedAgents = new Set(["antigravity-sdk", "agy", "gemini", "mock", "claude", "codex"]);
   const allowedStages = new Set(["review", "interview", "spec_generation", "mock_data", "data_plan", "simulation", "simulator", "eval", "validate"]);
   return workspaceDir.startsWith(REPO_ROOT)
     && allowedAgents.has(agent)
@@ -120,6 +124,10 @@ export function resolveHarnessRunInput(input = {}) {
   const useVertex = input.vertex !== false;
   return {
     ...input,
+    // Centralized defaults (config-schema.mjs): a caller that omits the
+    // adapter or model gets the .ge.json/env-configured one, not a literal.
+    agent: input.agent || input.provider || cfg.harnessAgent || "antigravity-sdk",
+    model: input.model || cfg.refinementModel || undefined,
     vertex: useVertex,
     project: resolveGcpProject({
       explicit: input.project || input.vertexProject || cfg.project,
@@ -195,7 +203,10 @@ function harnessExecution(run, startLine) {
 export function startHarnessRunTask(input = {}) {
   const resolvedInput = resolveHarnessRunInput(input);
   if (!safeHarnessRunInput(resolvedInput)) throw new Error("harness run input is not classified safe to run");
-  if (resolvedInput.vertex !== false && (!resolvedInput.project || !resolvedInput.location) && !process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
+  // Vertex project/location is an Antigravity/Gemini requirement; the Claude
+  // Code and Codex CLI adapters authenticate through their own CLIs.
+  const needsVertexConfig = !["claude", "codex"].includes(String(resolvedInput.agent || ""));
+  if (needsVertexConfig && resolvedInput.vertex !== false && (!resolvedInput.project || !resolvedInput.location) && !process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
     throw new Error("Antigravity Vertex execution requires project and location. Run `ge init`, set GOOGLE_CLOUD_PROJECT, or provide an API key for Express Mode.");
   }
   const run = createRun({

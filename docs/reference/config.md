@@ -50,8 +50,11 @@ core fields:
 | `harnessPythonPath` | *(env / file only)* | `GE_HARNESS_PYTHON` | — (falls back to a discovered venv, then `python3`) — override the harness interpreter; resolved from the env var only |
 | `allowUnpromoted` | `--force` (on `ge handoff`) | `GE_ALLOW_UNPROMOTED` | `false` — override the promotion gate (visible, deliberate); resolved from the env var only |
 | `simulatorOverlayBackend` | *(env / file only)* | `GE_SIMULATOR_OVERLAY_BACKEND` | `memory` — durable backend (`firestore`/`alloydb`) for BYO-twin overlays shared across Cloud Run instances; a configured value flows to deployed MCP services via `ge mcp deploy`, but the simulator's own Python reader honors only the env var |
-| `refinementModel` | *(env / file only)* | `GE_REFINEMENT_MODEL` | `gemini-3.5-flash` — the model family `ge models doctor` reports as the harness's refinement model |
-| `judgeModel` | *(env / file only)* | `GE_JUDGE_MODEL` | `gemini-flash-latest` — the model family `ge models doctor` reports as the eval judge's model |
+| `agentModel` | `--model` (on `ge agents build`) | `GE_AGENT_MODEL` | `gemini-3.5-flash` — the runtime model in every generated `app/agent.py`; validated against the known-models allowlist at generation time |
+| `harnessAgent` | `--harness-agent` (on `ge pipeline run`/`graph`); `--provider` on `factory harness-*` | `GE_HARNESS_AGENT` | `antigravity-sdk` — the default harness adapter for review/refine/judge/pipeline harness nodes (`antigravity-sdk`, `claude`, `codex`, `gemini`, `agy`, `mock`) |
+| `refinementModel` | `--model` (on `ge pipeline run`/`graph` and the harness commands) | `GE_REFINEMENT_MODEL` | `gemini-3.5-flash` — the model the harness review/refine steps run against |
+| `judgeModel` | *(env / file only)* | `GE_JUDGE_MODEL` | `gemini-flash-latest` — the LLM-judge model rendered into every generated `eval_config.yaml` |
+| `synthesisModel` | *(env / file only)* | `GE_SYNTHESIS_MODEL` | `gemini-3.5-flash` — the MCP tool-plane's LLM synthesis-sketch model; the Python service reads the env var directly |
 
 > `.ge.json` remains an available spelling for every field above per the flag →
 > env → file → default precedence, but `dataBackend`, `consoleReadonly`,
@@ -65,18 +68,17 @@ core fields:
 > (`ge mcp deploy`'s env-var forwarding).
 {: .note }
 
-> `refinementModel` and `judgeModel` are a different case: `buildFactoryConfig()`
-> (`tools/lib/config-schema.mjs`) does carry the resolved value onto `cfg`, and
-> `ge models doctor` reads both — `model.refinement`/`model.judge` checks warn
-> if the value doesn't match a known family (`gemini-*`, `claude-*`, `gpt-*`).
-> `ge byo apply` also writes them: a manifest's `models.refinement`/
-> `models.judge` section merges straight into these two `.ge.json` fields.
-> Neither field yet changes which model actually runs, though — the harness
-> review/refine step pins `DEFAULT_AGENT_MODEL`
-> (`apps/factory/src/known-models.js`) directly, and the eval-judge emitter
-> (`packages/evalkit/src/emitters/agents-cli-eval-config.mjs`) hardcodes
-> `judge_model: "gemini-flash-latest"` literally. Set them to keep `ge models
-> doctor` and a BYO manifest accurate; the actual model selection is roadmap.
+> The model and harness fields are wired end to end: `buildFactoryConfig()`
+> (`tools/lib/config-schema.mjs`) carries the resolved values onto `cfg`, and
+> the consumers read them — `ge agents build` exports `agentModel` to the
+> generator (which validates it against the known-models allowlist) and pins
+> `refinementModel` on the harness review/refine stages; `ge pipeline
+> run`/`graph` and the daemon resolve `harnessAgent`/`refinementModel` for
+> their harness nodes; the eval-artifact renderer threads `judgeModel`
+> (`GE_JUDGE_MODEL`) into every generated `eval_config.yaml`. `ge models
+> doctor` warns when `refinementModel`/`judgeModel` don't match a known family
+> (`gemini-*`, `claude-*`, `gpt-*`), and `ge byo apply` writes both from a
+> manifest's `models.refinement`/`models.judge` section.
 {: .note }
 
 > `.ge.schema.json` is the operator config schema — it is **not** the

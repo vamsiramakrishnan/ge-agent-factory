@@ -129,6 +129,41 @@ export const CONFIG_FIELDS = {
     file: "simulatorOverlayBackend",
     default: "memory",
   },
+  // Runtime model for GENERATED agents (the model= in every emitted
+  // app/agent.py). The generator boundary (apps/factory/scripts/factory.mjs)
+  // reads the env form directly and validates it against the known-models
+  // allowlist (apps/factory/src/known-models.js); tools/lib/provision.mjs
+  // resolves this field and exports GE_AGENT_MODEL to the spawned generator so
+  // a .ge.json value is honored on local and remote builds. Default mirrors
+  // DEFAULT_AGENT_MODEL.
+  agentModel: {
+    flag: "agentModel",
+    env: ["GE_AGENT_MODEL"],
+    file: "agentModel",
+    default: "gemini-3.5-flash",
+  },
+  // Default harness adapter for review/refine/pipeline harness nodes
+  // (antigravity-sdk | claude | codex | gemini | agy | mock — the ids in
+  // apps/factory/src/agents.js AGENT_DEFS). Consumers: tools/ge/pipeline.mjs,
+  // tools/lib/daemon/pipeline-graph-run.mjs and harness-run.mjs resolve it via
+  // cfg; apps/factory (factory.mjs harness commands, factory.js runFactoryPlan)
+  // read the env form directly at their boundary.
+  harnessAgent: {
+    flag: "harnessAgent",
+    env: ["GE_HARNESS_AGENT"],
+    file: "harnessAgent",
+    default: "antigravity-sdk",
+  },
+  // Model the MCP tool-plane's LLM synthesis sketch runs on
+  // (apps/factory/mcp-service/synthesis_sketch.py). The Python service reads
+  // the env var directly (never .ge.json) — this entry exists so the knob
+  // shows up in `ge config explain` / .ge.schema.json, like dataBackend.
+  synthesisModel: {
+    flag: "synthesisModel",
+    env: ["GE_SYNTHESIS_MODEL"],
+    file: "synthesisModel",
+    default: "gemini-3.5-flash",
+  },
   // Model the Antigravity harness's review+refine steps run against
   // (apps/factory/scripts/factory/harness/harness.mjs cmdHarnessReview/
   // cmdHarnessRefine, invoked via apps/factory/scripts/antigravity-sdk-agent.py
@@ -243,7 +278,12 @@ export function buildFactoryConfig({ flags = {}, env = {}, file: rawFile = {} } 
     // Python readers themselves only ever look at the env var.
     simulatorOverlayBackend: scalars.simulatorOverlayBackend,
     // Carried so tools/lib/models-doctor.mjs (`ge models doctor`) can report
-    // the resolved refinement/judge model ids and flag unrecognized families.
+    // the resolved model ids and flag unrecognized families, and so
+    // tools/lib/provision.mjs / the pipeline planners can thread them to the
+    // generator and harness boundaries.
+    agentModel: scalars.agentModel,
+    harnessAgent: scalars.harnessAgent,
+    synthesisModel: scalars.synthesisModel,
     refinementModel: scalars.refinementModel,
     judgeModel: scalars.judgeModel,
     mcpServices: file.mcpServices || {},

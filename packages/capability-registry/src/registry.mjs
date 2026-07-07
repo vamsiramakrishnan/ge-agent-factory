@@ -148,6 +148,7 @@ export const GE_COMMANDS = {
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.startStage) argv.push("--start-stage", String(body.startStage));
       if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
+      if (body.noProxy) argv.push("--no-proxy");
       if (body.force) argv.push("--force");
       return argv;
     },
@@ -621,6 +622,38 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  "okf.skill": {
+    id: "okf.skill",
+    method: "POST",
+    path: "/api/ge/okf/skill",
+    cli: "ge okf skill",
+    label: "Compile spec to Agent Skill",
+    summary: "Compile an agent spec into an Agent Skill package (SKILL.md + references + scripts + assets) — the skill-based alternative to generated ADK runtime code",
+    guide: {
+      when: "an agent should be consumed as a portable skill by a skill-capable assistant (Claude Code, Codex, Antigravity, Gemini CLI) instead of — or alongside — the generated ADK runtime",
+      next: ["node <out>/scripts/check-coverage.mjs"],
+    },
+    risk: "writes-repo",
+    expectedDuration: "under 10s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_okf_skill",
+      description: "Local, deterministic: compile an agent spec (catalog id or spec path) into an Agent Skill package with progressive disclosure — SKILL.md operating summary, references/ (behavior contract, data/systems, example session), scripts/ (check-coverage.mjs + adk_toolset.py, the google-adk >= 1.25 SkillToolset loader), and assets/ (canonical spec + golden evals). Byte-stable for an unchanged spec; loadable by Claude Code, Codex, Antigravity, Gemini CLI, and ADK agents.",
+      params: {
+        id: { type: "string", optional: true, description: "Use case id from the generated catalog" },
+        spec: { type: "string", optional: true, description: "Path to an agent spec JSON (alternative to id)" },
+        out: { type: "string", optional: true, description: "Output skill directory (default apps/factory/artifacts/skills/<id>)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["okf", "skill", "--json"];
+      if (body.id) argv.push("--id", String(body.id));
+      if (body.spec) argv.push("--spec", String(body.spec));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
   // ── OKF blueprint quality + enrichment (merged from main 2026-07-05) ──────
   // The enriching-okf-blueprints skill routes through these six verbs; the
   // skill-matrix gate requires every routed command to be a registry key.
@@ -729,6 +762,40 @@ export const GE_COMMANDS = {
       params: {},
     },
     argv: () => ["models", "doctor", "--json"],
+  },
+  "improve": {
+    id: "improve",
+    method: "POST",
+    path: "/api/ge/improve",
+    cli: "ge improve",
+    label: "Improve an agent",
+    summary: "Self-improvement loop: enrich an agent's OKF blueprint toward a target quality level (audit → enrich → verify → re-audit), then build+judge",
+    guide: {
+      when: "an agent's blueprint is below its target quality level and you want the factory to close the gap by adding fixture-backed evals for the uncovered obligations, iteratively",
+      next: ["ge agents build --ids <id> --local", "ge prove --spec <id> --local"],
+    },
+    risk: "writes-repo",
+    expectedDuration: "under 1m",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_improve",
+      description: "Local, deterministic self-improvement loop for one agent's OKF blueprint. Audits the spec (L0–L5), generates fixture-backed enrichment evals for uncovered obligations toward the target level, applies+verifies them, and re-audits — looping until the level is reached or the score stalls. Preview by default; write:true enriches the corpus. Never fabricates tools/systems/entities. The build+judge (runtime) half is the surfaced next step.",
+      params: {
+        id: { type: "string", description: "Agent/spec id under the OKF corpus root" },
+        target: { type: "string", optional: true, description: "Target quality level L0–L5 (default L4)" },
+        write: { type: "boolean", optional: true, description: "Run the closed loop and enrich the corpus (default: preview one batch)" },
+        maxIterations: { type: "number", optional: true, description: "Loop cap when writing (default 5)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["improve", "--json"];
+      if (body.id) argv.push("--id", String(body.id));
+      if (body.target) argv.push("--target", String(body.target));
+      if (body.write) argv.push("--write");
+      if (body.maxIterations) argv.push("--max-iterations", String(body.maxIterations));
+      return argv;
+    },
   },
   "okf.quality.audit": {
     id: "okf.quality.audit",
@@ -1090,8 +1157,14 @@ export const GE_COMMANDS = {
       else if (body.scope === "all") argv.push("--all");
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.dept) argv.push("--dept", String(body.dept));
+      if (body.concurrency) argv.push("--concurrency", String(body.concurrency));
       if (body.local) argv.push("--local");
       if (body.force) argv.push("--force");
+      if (body.noProxy) argv.push("--no-proxy");
+      if (body.vertex === true) argv.push("--vertex");
+      else if (body.vertex === false) argv.push("--no-vertex");
+      if (body.target) argv.push("--target", String(body.target));
+      if (body.limit) argv.push("--limit", String(body.limit));
       if (body.detach && body.local) argv.push("--detach");
       return argv;
     },
@@ -1204,12 +1277,16 @@ export const GE_COMMANDS = {
     argv: (body = {}) => {
       const argv = ["agents", "sync"];
       if (body.ids) argv.push("--ids", Array.isArray(body.ids) ? body.ids.join(",") : String(body.ids));
+      if (body.force) argv.push("--force");
       if (body.push) argv.push("--push");
       if (body.local) argv.push("--local");
       if (body.remoteMode) argv.push("--remote-mode");
       if (body.remote) argv.push("--remote", String(body.remote));
       if (body.create) argv.push("--create");
-      if (body.noCommit) argv.push("--no-commit");
+      // The declared param is `commit` (default true); the CLI flag is the
+      // negation --no-commit. Honor an explicit commit:false (plus the legacy
+      // noCommit alias) so a console/MCP caller can actually skip the commit.
+      if (body.commit === false || body.noCommit) argv.push("--no-commit");
       return argv;
     },
   },
@@ -1506,6 +1583,62 @@ export const GE_COMMANDS = {
     argv: () => ["console", "doctor"],
   },
 };
+
+// GPS guidance backfill. Every command carries guide.when (when to reach for
+// it) + guide.next (concrete next commands) so every surface — CLI --help,
+// console, skills, MCP descriptions — can orient the operator. New commands
+// carry an inline `guide`; the commands that predate the contract get theirs
+// here, in one readable block, and the registry.test.mjs GPS gate now holds
+// EVERY command to a guide (its grandfather list is empty).
+const COMMAND_GUIDES = {
+  "handoff.plan": { when: "before releasing, to preview the admission verdict and content digests without uploading anything", next: ["ge handoff", "ge passport emit"] },
+  "handoff.package": { when: "you need the release archive on disk (air-gapped transfer or inspection) rather than a direct upload", next: ["ge handoff verify-package <archive>", "ge handoff"] },
+  "handoff.verifyPackage": { when: "a handoff archive arrived out of band and you must confirm it matches its manifest before trusting it", next: ["ge handoff"] },
+  "passport.verify": { when: "you received an agent passport and need to confirm its signatures and digest binding before admitting it", next: ["ge passport admit <id>"] },
+  "prove.live": { when: "an agent is deployed and you want release verification against its real assist surface — identity, threading, tools, citations, timing", next: ["ge drive", "ge bench"] },
+  "evals.compile": { when: "a captured contract or spec needs to become an executable behavior evalset", next: ["ge prove --live", "ge evals coverage"] },
+  "evals.import": { when: "you have a bring-your-own ADK-compatible evalset to run through GE's gates", next: ["ge evals coverage", "ge prove --live"] },
+  "evals.coverage": { when: "you want to see which behavior dimensions your evalset covers and where the gaps are", next: ["ge evals compile", "ge improve --id <id>"] },
+  "up": { when: "standing up a fresh environment — provision infra, data, and tool planes in one step", next: ["ge doctor", "ge agents build"] },
+  "data.up": { when: "the shared data stores need provisioning (Terraform) with their coordinates merged into .ge.json", next: ["ge mcp deploy", "ge doctor"] },
+  "data.synth": { when: "a simulator system twin needs deterministic, pack-consistent seed data", next: ["ge systems doctor", "ge pipeline run"] },
+  "systems.bind": { when: "a contract system should resolve to a live twin/MCP/REST target instead of fixtures", next: ["ge systems bindings", "ge prove --live"] },
+  "systems.bindings": { when: "you want to see which contract systems are bound to live targets", next: ["ge systems bind <system> --to <target>", "ge systems unbind <system>"] },
+  "systems.unbind": { when: "a live binding should be removed and the system returned to its fixture backend", next: ["ge systems bindings"] },
+  "systems.synth": { when: "you need a brand-new simulator system from a natural-language description", next: ["ge systems list", "ge systems bind <system> --to <target>"] },
+  "systems.list": { when: "you want the catalog of built-in simulated systems available to agents", next: ["ge systems synth --description <text>", "ge systems doctor"] },
+  "systems.doctor": { when: "BYO-systems synthesis misbehaves and you need to check the python/CLI/registry toolchain", next: ["ge systems synth --description <text>", "mise run setup"] },
+  "byo.doctor": { when: "before applying a BYO manifest, to see the full appliable/planned/invalid plan", next: ["ge byo apply", "ge byo apply --dry-run"] },
+  "byo.apply": { when: "an enterprise BYO manifest (.ge.json merges, evalset imports, system bindings) should be applied", next: ["ge systems bindings", "ge prove --live"] },
+  "models.doctor": { when: "you want to confirm the configured agent/refinement/judge models resolve and Vertex/ADC are ready — no paid calls", next: ["ge config explain", "ge agents build"] },
+  "okf.quality.audit": { when: "you want the deterministic L0–L5 quality score and gap list for a blueprint", next: ["ge improve --id <id>", "ge okf enrich generate --spec <id>"] },
+  "okf.enrich.plan": { when: "you want the coverage obligations needed to move a blueprint toward a target level", next: ["ge okf enrich generate --spec <id>", "ge improve --id <id> --write"] },
+  "okf.enrich.generate": { when: "you want a reviewable enrichment patch (new fixture-backed evals) before touching the corpus", next: ["ge okf enrich apply --patch <path>", "ge okf eval verify --spec <id>"] },
+  "okf.enrich.apply": { when: "an enrichment patch has been reviewed and should be applied (or dry-run) to the bundle", next: ["ge okf eval verify --spec <id>", "ge okf quality audit --spec <id>"] },
+  "okf.enrich.shard": { when: "a large enrichment plan should be split into bounded parallel work manifests", next: ["ge okf enrich generate --spec <id>"] },
+  "okf.eval.verify": { when: "you need static verification of a blueprint's eval references, fixtures, assertions, and action-tool state coverage", next: ["ge okf quality audit --spec <id>", "ge improve --id <id>"] },
+  "mcp.deploy": { when: "per-department MCP tool services need deploying so agents can call their tools at runtime", next: ["ge mcp doctor", "ge agents build"] },
+  "console.deploy": { when: "the operator console image should be built and bound for this project", next: ["ge console doctor"] },
+  "agents.build": { when: "selected agents should be built through the cloud factory", next: ["ge agents status --watch", "ge handoff"] },
+  "agents.build.local": { when: "you want to build and validate agents on this machine via the local harness — no cloud", next: ["ge prove", "ge agents sync --push"] },
+  "pipeline.run": { when: "you want the full spec→data→simulator→build→eval→preview pipeline as a resumable run", next: ["ge pipeline status <id>", "ge runs events <id> --follow"] },
+  "agents.sync": { when: "locally-generated agent code should be copied into the repository (or the agents repo)", next: ["ge handoff", "ge agents build"] },
+  "daemon.start": { when: "console or detached runs need the local runtime daemon running", next: ["ge status", "mise run console"] },
+  "usecases.list": { when: "you want to browse the agent use-case catalog before generating", next: ["ge pipeline run --scenario <id>", "ge okf skill --id <id>"] },
+  "library.stats": { when: "you want inventory counts for the Agent Library — blueprints, verticals, buildable, proven", next: ["ge library search <query>", "ge create --from-library <slug>"] },
+  "library.search": { when: "you want to find a library blueprint by keyword, vertical, or department", next: ["ge library inspect <slug>", "ge create --from-library <slug>"] },
+  "library.inspect": { when: "you want a single blueprint's full metadata before creating from it", next: ["ge create --from-library <slug>", "ge library status <slug>"] },
+  "library.status": { when: "you want a blueprint's computed lifecycle readiness and next command", next: ["ge create --from-library <slug>", "ge prove"] },
+  "status": { when: "you want the stage tally for already-submitted cloud runs", next: ["ge logs <run>", "ge agents status --watch"] },
+  "logs": { when: "you need a stage's result JSON for a specific run", next: ["ge status", "ge runs events <id> --follow"] },
+  "agents.track": { when: "you want one agent's lifecycle state — provenance, registry presence, live proof", next: ["ge prove --live", "ge okf quality audit --spec <id>"] },
+  "mcp.doctor": { when: "you need per-department MCP service health and Agent Registry entries", next: ["ge mcp deploy", "ge agents build"] },
+  "console.doctor": { when: "you want to check the console Cloud Run service readiness and config", next: ["ge console deploy"] },
+};
+for (const [id, guide] of Object.entries(COMMAND_GUIDES)) {
+  if (!GE_COMMANDS[id]) throw new Error(`COMMAND_GUIDES names an unknown command id: ${id}`);
+  if (!GE_COMMANDS[id].guide) GE_COMMANDS[id].guide = guide;
+}
 
 // Fail every surface at import if the table drifts from the kernel contract.
 assertCapabilityTable(GE_COMMANDS);

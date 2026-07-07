@@ -76,3 +76,27 @@ test("unknown record types are skipped for forward compatibility", () => {
   const cassette = parseCassette('{"type":"meta","version":1}\n{"type":"annotation","note":"future"}\n{"type":"request","turn":0,"session":null,"body":{}}\n');
   expect(cassette.turns).toHaveLength(1);
 });
+
+test("span records round-trip: recorder appends them, parser collects them, replay ignores them", async () => {
+  const { mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { createCassetteRecorder, readCassette, createCassetteRunner } = await import("./cassette.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "ge-cassette-spans-"));
+  const path = join(dir, "spans.ndjson");
+  try {
+    const recorder = createCassetteRecorder(path, { target: { engine: "e" } });
+    recorder.request(0, null, { query: { text: "hi" } });
+    recorder.chunk(0, 0, { answer: { state: "SUCCEEDED", replies: [{ groundedContent: { content: { text: "hello" } } }] } });
+    recorder.span({ traceId: "a".repeat(32), spanId: "b".repeat(16), name: "ge.live.conversation", kind: "SPAN_KIND_INTERNAL", startTimeUnixNano: "0", endTimeUnixNano: "1", status: { code: "STATUS_CODE_OK" } });
+
+    const parsed = readCassette(path);
+    expect(parsed.spans).toHaveLength(1);
+    expect(parsed.spans[0].name).toBe("ge.live.conversation");
+    // Replay is unaffected by the annotation records.
+    const runner = createCassetteRunner(parsed);
+    const { chunks } = await runner.runTurn({ index: 0 });
+    expect(chunks).toHaveLength(1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

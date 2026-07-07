@@ -621,6 +621,7 @@ export async function submitFactoryRun(request) {
       // from env. Unset maxOutputTokens ⇒ omitted from the agent (model default).
       const generateEnv = { ...process.env };
       if (request.model) generateEnv.GE_AGENT_MODEL = String(request.model);
+      if (request.judgeModel) generateEnv.GE_JUDGE_MODEL = String(request.judgeModel);
       if (request.maxOutputTokens != null && String(request.maxOutputTokens).trim() !== "") {
         generateEnv.GE_AGENT_MAX_OUTPUT_TOKENS = String(request.maxOutputTokens);
       }
@@ -710,6 +711,8 @@ export async function submitFactoryRun(request) {
         // Pin the generated-agent + harness-review model (default gemini-3.5-flash) and
         // an operator-set output-token budget so the worker stages match local builds.
         ...(request.model ? { model: String(request.model) } : {}),
+        ...(request.judgeModel ? { judgeModel: String(request.judgeModel) } : {}),
+        ...(request.refinementModel ? { refinementModel: String(request.refinementModel) } : {}),
         ...(request.maxOutputTokens != null && String(request.maxOutputTokens).trim() !== ""
           ? { maxOutputTokens: Number(request.maxOutputTokens) }
           : {}),
