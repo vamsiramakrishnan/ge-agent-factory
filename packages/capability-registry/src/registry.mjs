@@ -148,6 +148,7 @@ export const GE_COMMANDS = {
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.startStage) argv.push("--start-stage", String(body.startStage));
       if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
+      if (body.noProxy) argv.push("--no-proxy");
       if (body.force) argv.push("--force");
       return argv;
     },
@@ -1156,8 +1157,14 @@ export const GE_COMMANDS = {
       else if (body.scope === "all") argv.push("--all");
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.dept) argv.push("--dept", String(body.dept));
+      if (body.concurrency) argv.push("--concurrency", String(body.concurrency));
       if (body.local) argv.push("--local");
       if (body.force) argv.push("--force");
+      if (body.noProxy) argv.push("--no-proxy");
+      if (body.vertex === true) argv.push("--vertex");
+      else if (body.vertex === false) argv.push("--no-vertex");
+      if (body.target) argv.push("--target", String(body.target));
+      if (body.limit) argv.push("--limit", String(body.limit));
       if (body.detach && body.local) argv.push("--detach");
       return argv;
     },
@@ -1270,12 +1277,16 @@ export const GE_COMMANDS = {
     argv: (body = {}) => {
       const argv = ["agents", "sync"];
       if (body.ids) argv.push("--ids", Array.isArray(body.ids) ? body.ids.join(",") : String(body.ids));
+      if (body.force) argv.push("--force");
       if (body.push) argv.push("--push");
       if (body.local) argv.push("--local");
       if (body.remoteMode) argv.push("--remote-mode");
       if (body.remote) argv.push("--remote", String(body.remote));
       if (body.create) argv.push("--create");
-      if (body.noCommit) argv.push("--no-commit");
+      // The declared param is `commit` (default true); the CLI flag is the
+      // negation --no-commit. Honor an explicit commit:false (plus the legacy
+      // noCommit alias) so a console/MCP caller can actually skip the commit.
+      if (body.commit === false || body.noCommit) argv.push("--no-commit");
       return argv;
     },
   },

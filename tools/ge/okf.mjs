@@ -7,6 +7,7 @@ import { readOkfBundle, baseConformance, renderConcept, writeConceptFile } from 
 import { specToOkf } from "../../apps/factory/scripts/spec-to-okf.mjs";
 import { specToSkill } from "../../apps/factory/scripts/spec-to-skill.mjs";
 import { okfToSpec } from "../../apps/factory/scripts/okf-to-spec.mjs";
+import { getUseCases } from "../../apps/factory/src/use-cases.js";
 import { compileOkfBundle, toDxError } from "../../packages/okf/src/compile/index.mjs";
 import { customizeVariant, parsePairs } from "../lib/okf-lifecycle.mjs";
 import { applyEnrichmentPatch, auditQuality, generateEnrichmentPatch, generateEnrichmentPlan, loadDomainPacks, matchDomainPacksForSpec, renderQualityMarkdown, renderEnrichmentShardPrompt, shardEnrichmentPlan, verifyOkfEvals } from "../lib/okf-quality.mjs";
@@ -54,8 +55,10 @@ function renderExplain(r){ out(ui.title(`${r.concept.type}: ${r.concept.title||r
 async function writeSpec(outPath, spec){ await mkdir(dirname(outPath),{recursive:true}); await writeFile(outPath, JSON.stringify(spec,null,2)+"\n"); }
 async function writeJson(outPath, value){ await mkdir(dirname(outPath),{recursive:true}); await writeFile(outPath, JSON.stringify(value,null,2)+"\n"); }
 async function compileAllCatalogSpecs(outDir){
-  const catalogPath = resolve("apps/factory/generated/use-cases.generated.json");
-  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+  // getUseCases() is the shared autosync loader (guided error on a missing
+  // git-ignored artifact) and is REPO_ROOT-anchored — never a cwd-relative raw
+  // read, which broke `ge okf compile --all` when invoked outside the repo root.
+  const catalog = getUseCases();
   const specs = Array.isArray(catalog) ? catalog : catalog.useCases || catalog.items || Object.values(catalog);
   const bundles = [];
   const failures = [];
@@ -79,7 +82,7 @@ async function compileAllCatalogSpecs(outDir){
       failures.push({ id, error: error?.message || String(error) });
     }
   }
-  const summary = { apiVersion:"ge.dev/v1", kind:"OkfBulkCompileResult", source:catalogPath, out:outDir, requested:specs.length, generated:bundles.length, failed:failures.length, totalConcepts, bundles, failures };
+  const summary = { apiVersion:"ge.dev/v1", kind:"OkfBulkCompileResult", source:"use-case-catalog (getUseCases)", out:outDir, requested:specs.length, generated:bundles.length, failed:failures.length, totalConcepts, bundles, failures };
   await writeJson(join(outDir, "bulk-okf-summary.json"), summary);
   return summary;
 }

@@ -144,6 +144,12 @@ export const AGENT_DEFS = [
       { id: "opus", label: "Opus" },
     ],
     supportsInteraction: true,
+    // Claude Code refuses `--permission-mode bypassPermissions` under uid 0
+    // unless IS_SANDBOX=1. buildArgs emits bypassPermissions for any non-review
+    // profile, so the compensating env must travel WITH the adapter — as a
+    // property here, merged at every spawn site (spawnEnvForAgent) — not as a
+    // per-call-site convention that one of two twin spawn paths can forget.
+    spawnEnv: ({ uid } = {}) => (uid === 0 ? { IS_SANDBOX: "1" } : {}),
     buildArgs: (_prompt, options = {}) => {
       const args = ["-p", "--output-format", "stream-json", "--verbose"];
       if (normalizePermissionProfile(options.permissionProfile) !== "review") args.push("--permission-mode", "bypassPermissions");
@@ -283,4 +289,13 @@ export function codexInteractionEnabled() {
 export function agentSupportsInteraction(id) {
   if (id === "codex") return codexInteractionEnabled();
   return Boolean(AGENT_DEFS.find((def) => def.id === id)?.supportsInteraction);
+}
+
+// The extra spawn env an adapter needs for the current process uid — the single
+// source of truth for adapter-specific environment compensation (today: claude's
+// IS_SANDBOX under root). EVERY spawn(def.resolvedBin, …) site must merge this,
+// so the sandbox signal can't diverge between the daemon and console spawn paths
+// (blindspot audit, class: env-assumption). uid defaults to the live process.
+export function spawnEnvForAgent(def, uid = typeof process.getuid === "function" ? process.getuid() : undefined) {
+  return typeof def?.spawnEnv === "function" ? (def.spawnEnv({ uid }) || {}) : {};
 }

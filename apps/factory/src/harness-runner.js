@@ -7,10 +7,10 @@ import { basename, delimiter, join, resolve, sep } from "node:path";
 import { loadConfig } from "c12";
 import { splitLines } from "@ge/runtime/events";
 import { readDotEnv } from "./dotenv.mjs";
-import { agentSupportsInteraction, detectAgents, getAgentDef } from "./agents.js";
+import { AGENT_DEFS, agentSupportsInteraction, detectAgents, getAgentDef, spawnEnvForAgent } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { openJournal, recordRun } from "./harness-journal.js";
-import { writeJson } from "@ge/std/json-io";
+import { readOptionalJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
 import { createOutputParser, detectFormat } from "./output-parsers.js";
 import { readSecretsEnv } from "./secrets.js";
@@ -27,10 +27,12 @@ import {
 // emits (artifacts/agent-workflow.json); additive — returns null when absent so
 // the existing prompt is unchanged for workspaces generated before this landed.
 function buildSpecWorkflowSection(workspaceDir) {
-  try {
-    const sidecar = join(workspaceDir, "artifacts", "agent-workflow.json");
-    if (!existsSync(sidecar)) return null;
-    const wf = JSON.parse(readFileSync(sidecar, "utf8"));
+  // readOptionalJson returns null only when the sidecar is ABSENT (older
+  // workspaces); a present-but-corrupt agent-workflow.json throws so we never
+  // silently drop the workflow-validation section on an otherwise-green run.
+  const wf = readOptionalJson(join(workspaceDir, "artifacts", "agent-workflow.json"));
+  if (!wf) return null;
+  {
     const lines = ["# Spec workflow to validate against"];
     lines.push(`Expected agent topology: ${wf.topology}.`);
     if (wf.topology === "single") {
@@ -51,8 +53,6 @@ function buildSpecWorkflowSection(workspaceDir) {
     lines.push("- The three guardrail callbacks (initialize_workflow_state, enforce_tool_contract, capture_tool_evidence) must be present and wired.");
     lines.push("Verify the generated topology matches this spec and correct app/agent.py if it does not (tools.py must stay unchanged).");
     return lines.join("\n");
-  } catch {
-    return null;
   }
 }
 
@@ -63,10 +63,12 @@ function buildSpecWorkflowSection(workspaceDir) {
 // tools reachable in the topology) and that every Eval Scenario's mechanisms are
 // callable. Additive — returns null when the sidecar is absent (older workspaces).
 function buildSpecCoverageSection(workspaceDir) {
-  try {
-    const sidecar = join(workspaceDir, "artifacts", "okf-coverage.json");
-    if (!existsSync(sidecar)) return null;
-    const cov = JSON.parse(readFileSync(sidecar, "utf8"));
+  // readOptionalJson: absent sidecar → null (older workspaces); a present-but-
+  // corrupt okf-coverage.json throws rather than masquerading as "no coverage"
+  // and silently dropping the OKF-spine validation on a green run.
+  const cov = readOptionalJson(join(workspaceDir, "artifacts", "okf-coverage.json"));
+  if (!cov) return null;
+  {
     const queries = Array.isArray(cov.queries) ? cov.queries : [];
     const tests = Array.isArray(cov.tests) ? cov.tests : [];
     if (!queries.length && !tests.length) return null;
@@ -87,8 +89,6 @@ function buildSpecCoverageSection(workspaceDir) {
     }
     lines.push("If any query's tool or any test's mechanism is NOT reachable/callable in app/agent.py, that is a COVERAGE GAP: when write-enabled, correct app/agent.py to wire the missing tool into the right stage; otherwise flag the gap precisely. tools.py must stay unchanged.");
     return lines.join("\n");
-  } catch {
-    return null;
   }
 }
 
@@ -130,7 +130,10 @@ function buildSubagentPlanSection(workspaceDir, { subagentsAvailable = false } =
 // repoRoot (the location resolveVertexDefaults always defaulted to); it does not
 // walk above the repo, which only ever risked picking up a stray external .ge.json.
 async function loadGeConfig(repoRoot) {
-  const { config } = await loadConfig({ cwd: resolve(repoRoot || process.cwd()), configFile: ".ge.json" });
+  // repoRoot is always threaded from an anchored caller (the daemon/CLI resolve
+  // it before calling); the process.cwd() fallback only applies to a bare direct
+  // call and preserves the historical default.
+  const { config } = await loadConfig({ cwd: resolve(repoRoot || process.cwd()), configFile: ".ge.json" }); // cwd-coupling-ok: repoRoot always threaded; cwd is a legacy fallback only
   return config || {};
 }
 
@@ -219,9 +222,11 @@ function buildCompatGuardrailSection(adapterId, { protectFiles = [], disableTool
 // workspace-scoped child — and CI/worker containers routinely run as root, so a
 // write-enabled claude harness run would otherwise die at spawn. Scoped to the
 // claude adapter running as root; a no-op everywhere else (uid injectable for
-// tests, since the real getuid is process-global).
+// tests, since the real getuid is process-global). Delegates to the adapter's
+// own spawnEnv (agents.js) so the daemon path here and the console spawn path
+// (run-agent-subprocess.js) share one definition of the compensation.
 function claudeSandboxEnv(adapterId, uid = process.getuid?.()) {
-  return adapterId === "claude" && uid === 0 ? { IS_SANDBOX: "1" } : {};
+  return spawnEnvForAgent(AGENT_DEFS.find((def) => def.id === adapterId), uid);
 }
 
 export const __test = {

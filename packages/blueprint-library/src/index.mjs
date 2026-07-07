@@ -81,9 +81,14 @@ export async function blueprintFromBundle(bundleDir) {
   };
 }
 
-export async function generateLibraryIndex({ root = "okf", out = "okf/library/index.json" } = {}) {
+// Compute the library index IN MEMORY from the OKF bundles — no filesystem
+// writes. This is the read-safe core: read surfaces (stats/list/doctor, the MCP
+// read tool, the console GET) must be hermetic, so they compute the index here
+// when the tracked okf/library/index.json is absent instead of regenerating it
+// on disk (which dirtied a git-tracked file from a read path — blindspot audit,
+// class: non-hermetic-write).
+export async function buildLibraryIndex({ root = "okf" } = {}) {
   const rootDir = fromRepoRoot(root);
-  out = fromRepoRoot(out);
   const entries = await readdir(rootDir, { withFileTypes: true });
   const blueprints = [];
   for (const ent of entries) {
@@ -95,7 +100,15 @@ export async function generateLibraryIndex({ root = "okf", out = "okf/library/in
   blueprints.sort((a,b) => a.slug.localeCompare(b.slug));
   const verticals = new Set(blueprints.map(b => b.taxonomy.vertical).filter(Boolean));
   const departments = new Set(blueprints.map(b => b.taxonomy.department).filter(Boolean));
-  const index = { schemaVersion: LIBRARY_SCHEMA_VERSION, generatedAt: new Date().toISOString(), counts: { blueprints: blueprints.length, verticals: verticals.size, departments: departments.size, proven: blueprints.filter(b => b.status === "proven").length, buildable: blueprints.filter(b => b.status === "buildable").length }, blueprints };
+  return { schemaVersion: LIBRARY_SCHEMA_VERSION, generatedAt: new Date().toISOString(), counts: { blueprints: blueprints.length, verticals: verticals.size, departments: departments.size, proven: blueprints.filter(b => b.status === "proven").length, buildable: blueprints.filter(b => b.status === "buildable").length }, blueprints };
+}
+
+// The WRITE surface — only `ge library refresh-index` (an explicit generator
+// verb) calls this. It persists the computed index + its schema to the tracked
+// okf/library/index.json. Never call from a read path.
+export async function generateLibraryIndex({ root = "okf", out = "okf/library/index.json" } = {}) {
+  const index = await buildLibraryIndex({ root });
+  out = fromRepoRoot(out);
   await mkdir(dirname(out), { recursive: true });
   await writeFile(out, JSON.stringify(index, null, 2) + "\n");
   await writeFile(join(dirname(out), "index.schema.json"), JSON.stringify(LibraryIndexJsonSchema, null, 2) + "\n");
@@ -104,7 +117,8 @@ export async function generateLibraryIndex({ root = "okf", out = "okf/library/in
 
 export async function readLibraryIndex({ refresh = false } = {}) {
   const path = fromRepoRoot("okf/library/index.json");
-  if (refresh || !existsSync(path)) return generateLibraryIndex();
+  // Absent or refresh → compute in memory (hermetic). Only refresh-index writes.
+  if (refresh || !existsSync(path)) return buildLibraryIndex();
   return JSON.parse(await readFile(path, "utf8"));
 }
 export async function resolveBlueprint(slugOrId) { const index = await readLibraryIndex(); const q = slugOrId.toLowerCase(); const bp = index.blueprints.find(b => b.slug.toLowerCase() === q || b.id.toLowerCase() === q || b.slug.endsWith(`/${q}`)); if (!bp) { const e = new Error(`Blueprint not found: ${slugOrId}`); e.code="GE-LIB-404"; e.hint="ge library search aml"; throw e; } return bp; }

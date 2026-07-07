@@ -136,6 +136,12 @@ export function createProvisionOps({
           // cfg.refinementModel, so forward it remotely too or the cloud harness
           // silently runs review/refine on agentModel instead.
           ...(cfg.refinementModel ? { refinementModel: cfg.refinementModel } : {}),
+          // The build harness itself (claude/codex/antigravity-sdk). provisionLocal
+          // pins it from cfg.harnessAgent → runOptions["harness-provider"]; forward
+          // it remotely too (bridge reads request.harnessProvider → worker
+          // payload.options.harnessProvider) or the cloud build silently runs on
+          // the antigravity-sdk default regardless of .ge.json harnessAgent.
+          ...(cfg.harnessAgent ? { harnessProvider: cfg.harnessAgent } : {}),
           ...(maxOutputTokens != null && String(maxOutputTokens).trim() !== ""
             ? { maxOutputTokens: Number(maxOutputTokens) }
             : {}),
