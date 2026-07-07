@@ -39,13 +39,25 @@ export function childStatusToNodeStatus(status) {
   return status || "blocked";
 }
 
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Rewrites references to `fromPipelineId` inside a resume plan's command strings
+// so a rehomed child plan points at the parent/new pipeline id. Pipeline ids are
+// whole tokens in these commands (`ge runs resume pipe-1`, `.../runs/pipe-1/...`),
+// so we only substitute `from` where it is NOT part of a longer identifier —
+// guarding both sides against word chars and hyphens. A plain replaceAll would
+// corrupt an overlapping id (rehoming `pipe-1` would rewrite the `pipe-1` prefix
+// inside `pipe-10`); the boundary lookarounds keep `pipe-10` intact.
 export function rehomeResumePlan(plan = null, fromPipelineId = null, toPipelineId = null) {
   if (!plan || !toPipelineId) return plan;
   const from = fromPipelineId ? String(fromPipelineId) : "";
+  const pattern = from ? new RegExp(`(?<![\\w-])${escapeRegExp(from)}(?![\\w-])`, "g") : null;
   return {
     ...plan,
     commands: Array.isArray(plan.commands)
-      ? plan.commands.map((command) => from ? String(command).replaceAll(from, toPipelineId) : String(command))
+      ? plan.commands.map((command) => pattern ? String(command).replace(pattern, () => toPipelineId) : String(command))
       : [],
   };
 }
