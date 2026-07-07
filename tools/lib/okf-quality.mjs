@@ -38,7 +38,13 @@ function parseMatter(raw) {
 }
 function sha256(s) { return `sha256:${createHash("sha256").update(s).digest("hex")}`; }
 function slugPath(p) { return basename(p); }
-function rel(p) { return relative(process.cwd(), p).replaceAll("\\", "/"); }
+// Repo-anchored, not cwd-anchored: bundle dirs come from discoverOkfBundles()
+// (REPO_ROOT-anchored) and `git diff --name-only HEAD` emits repo-root-relative
+// paths, so resolving against process.cwd() made `ge okf audit --changed` and
+// every slug/path in a report depend on the launch directory (the per-directory
+// test shards run at cwd=tools/). Anchor to REPO_ROOT so the output is identical
+// wherever the CLI/daemon is invoked from.
+function rel(p) { return relative(REPO_ROOT, p).replaceAll("\\", "/"); }
 function isActionTool(c) { return c.type === "Agent Tool" && (/\bkind:\*\*\s*action/i.test(c.body) || /\baction[_-]/i.test(c.title || c.id || c.path) || /\bside effects\b/i.test(c.body)); }
 function conceptIdFromHref(href) { return basename(href || "").replace(/\.md$/, "").replaceAll("-", "_"); }
 function refIds(body, sectionTitle) {

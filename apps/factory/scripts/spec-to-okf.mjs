@@ -44,10 +44,10 @@ import {
   fieldName,
   mdTable,
 } from "./factory/okf/markdown.mjs";
+import { getUseCases } from "../src/use-cases.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = resolve(SCRIPT_DIR, "..");
-const CATALOG_PATH = resolve(APP_ROOT, "generated", "use-cases.generated.json");
 
 export function parseArgs(argv) {
   const args = {};
@@ -1126,9 +1126,11 @@ async function loadSpec(args) {
     return spec.generationSpec ? spec : spec.spec || spec;
   }
   if (!args.id) throw new Error("Provide --id <useCaseId> or --spec <path.json>.");
-  const catalog = JSON.parse(await readFile(CATALOG_PATH, "utf8"));
-  const spec = findUseCase(catalog, args.id);
-  if (!spec) throw new Error(`Use case '${args.id}' not found in ${CATALOG_PATH}.`);
+  // Load the catalog through getUseCases() (the autosync loader every catalog
+  // consumer shares) — never a raw read of the git-ignored artifact, which would
+  // ENOENT on a fresh checkout. Parity with the sibling spec-to-skill.mjs.
+  const spec = findUseCase(getUseCases(), args.id);
+  if (!spec) throw new Error(`Use case '${args.id}' not found in the use-case catalog.`);
   return spec;
 }
 

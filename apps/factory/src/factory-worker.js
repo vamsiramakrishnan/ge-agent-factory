@@ -233,7 +233,8 @@ export function buildStageExecutionPlan(payload) {
         "scripts/run-deploy-plan.mjs",
         "--workspace-dir", workspaceDir,
         "--project-id", payload.workspaceId,
-        "--repo-root", resolve("."),
+        "--repo-root", resolve("."), // cwd-coupling-ok: the cloud worker runs with WORKDIR pinned by the Dockerfile, so cwd is the deterministic repo root
+
         "--target", payload.options?.targetRuntime || "agent_runtime",
       ]],
     ],
@@ -882,7 +883,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
   // Mirror streamed command output into the ledger as live `stage_log` frames (remote).
   const logTap = makeLedgerLogTap(payload, sink.log);
   for (const [cmd, args] of plan.commands) {
-    const cwd = cmd === "uv" || cmd === "bash" ? payload.workspaceDir : resolve(".");
+    const cwd = cmd === "uv" || cmd === "bash" ? payload.workspaceDir : resolve("."); // cwd-coupling-ok: worker WORKDIR is Dockerfile-pinned to the repo root
     const result = await execStream(cmd, args, { cwd, env: commandEnv, onEvent: logTap.onEvent, meta });
     outputs.push({
       cmd,

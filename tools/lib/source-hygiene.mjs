@@ -100,6 +100,66 @@ export function codeAntipatternIds(line) {
   return ids;
 }
 
+// ── cwd-coupling guard (blindspot audit, class: cwd-coupling) ────────────────
+// Library/tool modules run under many working directories: the per-directory
+// test shards (cwd=tools/), the long-running daemon and MCP server, the `ge`
+// PATH binary invoked from any subdirectory, and external in-process callers.
+// A module that resolves a path against process.cwd() (or a bare `resolve(".")`,
+// `resolve("./…")`, `relative(process.cwd(), …)`) silently changes behavior with
+// launch location — the okf-quality rel() bug. Library code must anchor to
+// REPO_ROOT (tools/lib/state-paths.mjs) or its own import.meta.url dir instead.
+//
+// Only the process's real CLI entrypoints legitimately key off cwd (that is the
+// user's chosen working directory); they are allowlisted below. Everything else
+// under tools/lib, packages/*/src, apps/*/src is library code.
+const CWD_COUPLING_ENTRYPOINT_ALLOW = new Set([
+  "tools/ge.mjs",
+  "apps/factory/scripts/factory.mjs",
+  "apps/factory/src/cli.js",
+  "apps/console/src/cli.js",
+  "apps/presentation/src/cli.js",
+]);
+
+const CWD_COUPLING_PATTERNS = [
+  {
+    id: "cwd-path-resolution",
+    detail: "Library code must anchor paths to REPO_ROOT (state-paths.mjs) or import.meta.url, not process.cwd(). cwd varies across the daemon, MCP server, test shards, and the `ge` PATH binary.",
+    // process.cwd() used as a path anchor, or resolve(".")/resolve("./…") which
+    // resolve against cwd. `relative(process.cwd(), …)` is the okf-quality shape.
+    match: (line) => /\bresolve\(\s*["']\.["']\s*\)/.test(line)
+      || /\bresolve\(\s*["']\.\/[^"']*["']/.test(line)
+      || /\b(?:relative|resolve|join)\([^)]*\bprocess\.cwd\(\)/.test(line),
+  },
+];
+
+// A module is subject to the cwd-coupling guard when it is library/engine code
+// (not a CLI entrypoint, not a test/doc, not a top-level script the user runs
+// directly). Scoped to the shared cores where a wrong cwd is a silent bug.
+function isCwdGuardedModule(path) {
+  if (CWD_COUPLING_ENTRYPOINT_ALLOW.has(path)) return false;
+  return path.startsWith("tools/lib/")
+    || /^packages\/[^/]+\/src\//.test(path)
+    || /^apps\/[^/]+\/src\//.test(path);
+}
+
+export function cwdCouplingFindings(paths, { cwd = REPO_ROOT } = {}) {
+  const findings = [];
+  for (const path of paths.filter(isActiveSourcePath).filter(isCwdGuardedModule)) {
+    const fullPath = `${cwd}/${path}`;
+    if (!existsSync(fullPath)) continue;
+    const lines = readFileSync(fullPath, "utf8").split(/\r?\n/);
+    lines.forEach((line, index) => {
+      if (line.includes("cwd-coupling-ok:")) return; // documented, reviewed exception
+      for (const pattern of CWD_COUPLING_PATTERNS) {
+        if (pattern.match(line)) {
+          findings.push({ path, line: index + 1, id: pattern.id, detail: pattern.detail, text: line.trim() });
+        }
+      }
+    });
+  }
+  return findings;
+}
+
 function isActiveSourcePath(path) {
   if (!path) return false;
   if (SOURCE_STATE_PATH_ALLOWED_FILES.has(path)) return false;
@@ -124,6 +184,52 @@ export function trackedHygieneFindings(paths, options = {}) {
         break;
       }
     }
+  }
+  return findings;
+}
+
+// ── git-ignored catalog read guard (blindspot audit, class: build-artifact-direct-read) ──
+// The use-case catalog (apps/factory/generated/use-cases.generated.json) is a
+// git-ignored build artifact — absent on any fresh clone / CI runner / worker
+// checkout until `mise run catalog` runs. It has exactly one correct read path,
+// getUseCases() in apps/factory/src/use-cases.js, which autosyncs-on-first-use
+// (or throws a guided error). A raw JSON.parse(readFile(...that path...)) dies
+// with a bare ENOENT instead. This guard freezes the set of files allowed to
+// name the artifact to the reviewed loaders/anchored-guarded readers/writers;
+// any NEW caller must go through getUseCases() (or justify an allowlist entry),
+// so "someone raw-reads the git-ignored catalog" can't return silently.
+const CATALOG_ARTIFACT = "use-cases.generated.json";
+const CATALOG_READ_ALLOWED_FILES = new Set([
+  "apps/factory/src/use-cases.js",                                          // the loader (autosync + guided error)
+  "apps/factory/scripts/sync-use-cases-from-slides.mjs",                    // writes the artifact
+  "apps/factory/scripts/migrate-catalog-to-okf.mjs",                        // one-off migration
+  "apps/factory/.gemini/skills/ge-contextual-agent-interviewer/scripts/use-case-brief.mjs", // gemini skill helper script
+  "tools/docs-shots/seed.mjs",                                             // anchored reader
+  "tools/lib/factory-catalog-search.mjs",                                  // REPO_ROOT-anchored + existsSync-guarded reader
+  "tools/lib/okf-lifecycle.mjs",                                           // REPO_ROOT-anchored registry reader
+  "tools/lib/planes/tool-plane-checks.mjs",                                // REPO_ROOT-anchored + guarded reader
+  "tools/lib/spec-review.mjs",                                             // emits the path as a provenance string only
+]);
+
+export function catalogReadFindings(paths, { cwd = REPO_ROOT } = {}) {
+  const findings = [];
+  for (const path of paths.filter(isActiveSourcePath)) {
+    if (CATALOG_READ_ALLOWED_FILES.has(path)) continue;
+    if (!/\.(mjs|js|ts)$/.test(path)) continue; // JS surfaces only (python/yaml read it via their own guards)
+    const fullPath = `${cwd}/${path}`;
+    if (!existsSync(fullPath)) continue;
+    const lines = readFileSync(fullPath, "utf8").split(/\r?\n/);
+    lines.forEach((line, index) => {
+      if (line.includes(CATALOG_ARTIFACT)) {
+        findings.push({
+          path,
+          line: index + 1,
+          id: "catalog-direct-read",
+          detail: `Load the use-case catalog through getUseCases() (apps/factory/src/use-cases.js), which autosyncs the git-ignored artifact and throws a guided error — never JSON.parse it directly (bare ENOENT on a fresh checkout).`,
+          text: line.trim(),
+        });
+      }
+    });
   }
   return findings;
 }
@@ -228,6 +334,18 @@ export function formatSourceStatePathReport(findings) {
   return lines.join("\n");
 }
 
+export function formatLineFindingReport(findings, { pass, fail, hint }) {
+  if (!findings.length) return pass;
+  const lines = [`${fail}: ${findings.length} finding${findings.length === 1 ? "" : "s"} in active source.`, ""];
+  for (const finding of findings) {
+    lines.push(`- ${finding.path}:${finding.line}`);
+    lines.push(`  ${finding.id}: ${finding.detail}`);
+    lines.push(`  ${finding.text}`);
+  }
+  if (hint) { lines.push(""); lines.push(hint); }
+  return lines.join("\n");
+}
+
 export function formatHygieneReport(findings) {
   if (!findings.length) return "Source hygiene check passed: no forbidden tracked artifacts found.";
   const lines = [
@@ -248,15 +366,30 @@ export function runSourceHygiene({ cwd = REPO_ROOT, allowedLegacy = DEFAULT_ALLO
   const active = activeSourceFiles(cwd);
   const sourceStateFindings = sourceStatePathFindings(active, { cwd });
   const antipatternFindings = sourceAntipatternFindings(active, { cwd });
+  const cwdFindings = cwdCouplingFindings(active, { cwd });
+  const catalogFindings = catalogReadFindings(active, { cwd });
   return {
-    ok: findings.length === 0 && sourceStateFindings.length === 0 && antipatternFindings.length === 0,
+    ok: findings.length === 0 && sourceStateFindings.length === 0 && antipatternFindings.length === 0
+      && cwdFindings.length === 0 && catalogFindings.length === 0,
     findings,
     sourceStateFindings,
     antipatternFindings,
+    cwdFindings,
+    catalogFindings,
     report: [
       formatHygieneReport(findings),
       formatSourceStatePathReport(sourceStateFindings),
       formatAntipatternReport(antipatternFindings),
+      formatLineFindingReport(cwdFindings, {
+        pass: "cwd-coupling check passed: library code anchors paths to REPO_ROOT / import.meta.url.",
+        fail: "cwd-coupling check failed",
+        hint: "Anchor to REPO_ROOT (tools/lib/state-paths.mjs) or dirname(fileURLToPath(import.meta.url)), or add a reviewed `cwd-coupling-ok: <why>` comment when cwd is genuinely deterministic (e.g. a Dockerfile-pinned worker).",
+      }),
+      formatLineFindingReport(catalogFindings, {
+        pass: "catalog-read check passed: the git-ignored use-case catalog is read only through getUseCases().",
+        fail: "catalog-read check failed",
+        hint: "Import getUseCases() from apps/factory/src/use-cases.js (autosync + guided error), or add a reviewed entry to CATALOG_READ_ALLOWED_FILES with a comment on why the raw path is safe there.",
+      }),
     ].join("\n\n"),
   };
 }
