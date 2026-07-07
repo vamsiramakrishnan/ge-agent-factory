@@ -101,14 +101,18 @@ a known-failing test starts passing, the tool reports it separately
 confirmed why. The list is currently empty; keep it that way by preferring a
 hermetic-test or code fix over parking a new entry.
 
-One test file (`packages/runtime/src/index.test.mjs`) crashes outright on
-a Bun limitation (nested `describe()`/`test()` — [bun#5090](https://github.com/oven-sh/bun/issues/5090))
-rather than failing individual tests, so it's invisible to
-`check-test-results.mjs`'s name-based comparison; the tool warns about this
-count mismatch but can't fully close the gap. Check the raw `bun test`
-console output if that warning fires and that file name isn't already why.
-The gate also retries newly-failing test *files* exactly once (logged) to
-absorb the known subprocess-load flakes — a real regression fails twice.
+A test file that uses `node:test`'s `describe()`/`test()` can crash outright
+under Bun — instead of failing individual tests — when the run also loads the
+`bun:test` symbols the root `[test].preload` pulls in ([bun#5090](https://github.com/oven-sh/bun/issues/5090)).
+A file in that state is invisible to `check-test-results.mjs`'s name-based
+comparison; the tool warns about the resulting count mismatch but can't fully
+close the gap. Prefer `bun:test` for new test files to stay clear of this
+(`packages/runtime/src/index.test.mjs` was the known offender and has been
+moved onto `bun:test` for exactly this reason). If the count-mismatch warning
+fires, check the raw `bun test` console output for a file that crashed rather
+than failed. The gate also retries newly-failing test *files* exactly once
+(logged) to absorb the known subprocess-load flakes — a real regression fails
+twice.
 
 ## Layering rule
 
