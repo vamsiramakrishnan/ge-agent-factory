@@ -76,6 +76,10 @@ export function planMutants(expected) {
   for (const tool of expected.mustNotCall) {
     plan.push({ id: `inject_forbidden_tool:${tool}`, metric: "tool_trajectory", guard: "mustNotCall", apply: (records) => injectForbiddenTool(records, tool) });
   }
+  // Grounding is presence-only at the proof layer (mustCite ids are symbolic,
+  // not matchable to the stream's citation sources), so the faithful probe is
+  // to strip every citation: a case that declares mustCite must fail when the
+  // answer carries no evidence at all.
   if (expected.mustCite.length) {
     plan.push({ id: "strip_citations", metric: "grounding_citations", guard: "mustCite", apply: stripCitations });
   }

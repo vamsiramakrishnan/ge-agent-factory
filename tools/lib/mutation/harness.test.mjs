@@ -18,6 +18,7 @@ import {
   cassetteInvocationTools,
   cassetteHasCitations,
   toNdjson,
+  toolNameOf,
 } from "./cassette-mutations.mjs";
 
 const EVALSET = "tools/lib/mutation/fixtures/benefits.evalset.json";
@@ -48,6 +49,22 @@ describe("cassette mutation operators", () => {
   test("stripCitations removes all grounding references", () => {
     expect(cassetteHasCitations(records())).toBe(true);
     expect(cassetteHasCitations(stripCitations(records()))).toBe(false);
+  });
+
+  test("toolNameOf normalizes string and object tool forms", () => {
+    expect(toolNameOf("t")).toBe("t");
+    expect(toolNameOf({ tool: "t" })).toBe("t");
+    expect(toolNameOf({ name: "t" })).toBe("t");
+  });
+
+  test("dropRequiredTool handles object-form invocationTools", () => {
+    const objForm = records().map((r) =>
+      r.type === "chunk" && Array.isArray(r.json?.invocationTools)
+        ? { ...r, json: { ...r.json, invocationTools: r.json.invocationTools.map((t) => ({ tool: t })) } }
+        : r,
+    );
+    expect(cassetteInvocationTools(objForm)).toContain("lookup_life_events");
+    expect(cassetteInvocationTools(dropRequiredTool(objForm, "lookup_life_events"))).not.toContain("lookup_life_events");
   });
 
   test("corruptAnswer replaces grounded answer text", () => {
@@ -110,17 +127,16 @@ describe("integration — real offline proof", () => {
     expect(result.gaps.map((g) => g.guard).sort()).toEqual(["mustCite", "mustNotCall"]);
   }, 30000);
 
-  test("finding: mustCall has no teeth when dropping it leaves the transcript with zero tools", async () => {
-    // prove-live degrades tool_trajectory to "unavailable" (a pass) when the
-    // transcript exposes NO tool metadata at all (prove-live.mjs:98). So a
-    // single-required-tool eval cannot distinguish a compliant agent from one
-    // that calls nothing — the harness surfaces this as a surviving mutant.
+  test("regression: a single required tool now has teeth under replay (dropping it fails)", async () => {
+    // Before the prove-live fix, dropping the sole required tool left a
+    // zero-tool transcript that degraded to "unavailable" (a pass). Under
+    // cassette replay that is now authoritative → the drop FAILS, so the
+    // single-tool case is no longer ornamental.
     const result = await runEvalMutants({ evalset: TOOLGAP, cassette: CASSETTE });
     expect(result.baseline.passed).toBe(true);
-    expect(result.ornamental).toBe(true);
-    const survivor = result.survived.find((m) => m.id === "drop_required_tool:lookup_life_events");
-    expect(survivor).toBeDefined();
-    // the citation and answer guards on the same case still bite
+    expect(result.ornamental).toBe(false);
+    expect(result.mutants.find((m) => m.id === "drop_required_tool:lookup_life_events").killed).toBe(true);
+    // the citation guard on the same case also bites
     expect(result.mutants.find((m) => m.id === "strip_citations").killed).toBe(true);
   }, 30000);
 });

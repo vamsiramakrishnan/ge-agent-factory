@@ -13,6 +13,7 @@
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, basename } from "node:path";
+import { writeJson } from "@ge/std/json-io";
 // Relative package path for @ge/okf, matching tools/lib/okf-lifecycle.mjs —
 // the repo-root workspace does not list @ge/okf as a dependency and tools/*
 // is not its own package. @ge/evalkit resolves as an alias (see prove-live).
@@ -40,6 +41,11 @@ export async function compileAgentEvalset(bundleDir) {
 // Sweep one bundle. `proveLiveImpl` is injectable for tests.
 export async function sweepAgentBundle(bundleDir, { proveLiveImpl } = {}) {
   const { agentId, evalset, errors } = await compileAgentEvalset(bundleDir);
+  // A partial spec would yield a misleadingly-green sweep. Structured OKF
+  // compile errors are fatal here, as they are on every other OKF surface.
+  if (errors.length) {
+    return { agentId, bundleDir, ok: false, compileErrors: errors, coverage: null, cases: [], ornamentalCases: [], noGuard: [], totals: { generated: 0, killed: 0, survived: 0 }, ornamental: false };
+  }
   const target = syntheticTarget(agentId);
   const work = mkdtempSync(join(tmpdir(), "ge-agent-sweep-"));
   try {
@@ -57,7 +63,7 @@ export async function sweepAgentBundle(bundleDir, { proveLiveImpl } = {}) {
       const records = synthesizeCassetteRecords(turns, expected, { target, agentId: `agent-${agentId}` });
       const evalsetPath = join(work, `${kase.evalId}.evalset.json`);
       const cassettePath = join(work, `${kase.evalId}.ndjson`);
-      writeFileSync(evalsetPath, JSON.stringify({ evalSetId: kase.evalId, evalCases: [kase] }));
+      writeJson(evalsetPath, { evalSetId: kase.evalId, evalCases: [kase] });
       writeFileSync(cassettePath, toNdjson(records));
       const result = await runEvalMutants({ evalset: evalsetPath, cassette: cassettePath }, { proveLiveImpl });
       cases.push({
@@ -91,6 +97,7 @@ export async function sweepAgentBundle(bundleDir, { proveLiveImpl } = {}) {
     return {
       agentId,
       bundleDir,
+      ok: true,
       compileErrors: errors,
       coverage,
       cases,

@@ -67,6 +67,13 @@ export function formatReport(result) {
 
 export function formatSweepReport(result) {
   const lines = [];
+  if (result.ok === false) {
+    lines.push(`agent mutation sweep — ${result.agentId}  (${result.bundleDir})`);
+    lines.push("");
+    lines.push("OKF COMPILE ERRORS — cannot sweep a partial spec:");
+    for (const error of result.compileErrors) lines.push(`  • ${error.code || "error"}${error.conceptPath ? ` @ ${error.conceptPath}` : ""}: ${error.message}${error.fix ? ` — fix: ${error.fix}` : ""}`);
+    return lines.join("\n");
+  }
   const { coverage: cov, totals } = result;
   lines.push(`agent mutation sweep — ${result.agentId}  (${result.bundleDir})`);
   lines.push(`  cases:    ${cov.totalCases} total — ${cov.guardedCases} with a behavioral guard, ${cov.unguardedCases} with none`);
@@ -94,6 +101,7 @@ const result = args.bundle
   ? await sweepAgentBundle(args.bundle)
   : await runEvalMutants({ evalset: args.evalset, cassette: args.cassette });
 const render = args.bundle ? formatSweepReport : formatReport;
-const writer = result.ornamental ? process.stderr : process.stdout;
+const failed = result.ornamental || result.ok === false;
+const writer = failed ? process.stderr : process.stdout;
 writer.write((args.json ? JSON.stringify(result, null, 2) : render(result)) + "\n");
-process.exit(result.ornamental ? 1 : 0);
+process.exit(failed ? 1 : 0);

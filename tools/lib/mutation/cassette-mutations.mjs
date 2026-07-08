@@ -24,6 +24,15 @@ function clone(records) {
   return records.map((record) => JSON.parse(JSON.stringify(record)));
 }
 
+// Tool invocations ride the cassette as bare strings, but the live transcript
+// folder also accepts the object forms {tool} / {name} / {toolName}. Normalize
+// so a mutation compares like-for-like — otherwise dropping a required tool
+// that happens to be in object form would silently no-op (a false survivor).
+export function toolNameOf(entry) {
+  if (typeof entry === "string") return entry;
+  return entry?.tool || entry?.name || entry?.toolName || null;
+}
+
 // Walk every reply object across every chunk record, applying `fn(reply)`.
 // The Discovery Engine stream shape is chunk.json.answer.replies[].
 function forEachReply(records, fn) {
@@ -41,7 +50,10 @@ export function cassetteInvocationTools(records) {
   const tools = new Set();
   for (const record of records) {
     if (record.type !== "chunk") continue;
-    for (const tool of record.json?.invocationTools || []) tools.add(tool);
+    for (const tool of record.json?.invocationTools || []) {
+      const name = toolNameOf(tool);
+      if (name) tools.add(name);
+    }
   }
   return [...tools];
 }
@@ -64,7 +76,7 @@ export function dropRequiredTool(records, toolName) {
   const next = clone(records);
   for (const record of next) {
     if (record.type !== "chunk" || !Array.isArray(record.json?.invocationTools)) continue;
-    record.json.invocationTools = record.json.invocationTools.filter((tool) => tool !== toolName);
+    record.json.invocationTools = record.json.invocationTools.filter((tool) => toolNameOf(tool) !== toolName);
   }
   return next;
 }
@@ -84,8 +96,12 @@ export function injectForbiddenTool(records, toolName) {
   return next;
 }
 
-// Strip all grounding references. The agent answered without evidence →
-// grounding_citations: stream carried none.
+// Strip all grounding references — the agent answered without evidence →
+// grounding_citations sees none. This is a strip-ALL (not per-document) probe
+// on purpose: mustCite ids are symbolic and don't correspond to the document
+// paths the stream surfaces as citation.source, so a per-id removal couldn't
+// reliably find the citation to remove and would false-survive. Removing every
+// citation is the faithful test of "does this eval require grounding at all."
 export function stripCitations(records) {
   const next = clone(records);
   forEachReply(next, (reply) => {

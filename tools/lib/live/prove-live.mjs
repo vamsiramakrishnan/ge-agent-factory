@@ -46,10 +46,17 @@ export function tokenF1(reference, candidate) {
 
 // Evaluate the GE-owned metrics for one case. `expected` comes from the
 // compiled case metadata (geMetadata.expected) when present.
-export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 } = {}) {
+export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35, replay } = {}) {
   const metrics = [];
   const expected = kase.raw?.geMetadata?.expected || kase.raw?.expected || {};
   const blockCodes = (transcript.verdict?.blockers || []).map((blocker) => blocker.code);
+  // A cassette replay is deterministic and authoritative — absent tool
+  // metadata or an absent expected citation is a real observation, not a
+  // gap in what the transport surfaced. A live stream is genuinely ambiguous
+  // (it may omit tool metadata even when tools ran), so it keeps the softer
+  // verdicts. Falls back to the transcript's own source flag when the caller
+  // does not pass one.
+  const isReplay = replay ?? transcript.source?.replay ?? false;
 
   metrics.push({
     metric: "transport",
@@ -95,7 +102,7 @@ export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 
   }
 
   if (expected.mustCall?.length || expected.mustNotCall?.length) {
-    if (!transcript.invocationTools.length && expected.mustCall?.length) {
+    if (!transcript.invocationTools.length && expected.mustCall?.length && !isReplay) {
       metrics.push({ metric: "tool_trajectory", runner: "ge", status: "unavailable", detail: "live stream exposed no tool metadata — trajectory is checkable locally only" });
     } else {
       const missing = (expected.mustCall || []).filter((tool) => !transcript.invocationTools.includes(tool));
@@ -112,6 +119,12 @@ export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 
   }
 
   if (expected.mustCite?.length) {
+    // Presence-only by design: mustCite ids are symbolic (e.g. "auth-qle-policy")
+    // and do not correspond to the document paths the live stream surfaces as
+    // citation.source, so the proof can only assert that the answer was grounded
+    // in *some* evidence, not that a specific document was cited. Tightening this
+    // to specific-document matching would false-fail every evalset whose mustCite
+    // is a logical id (which is the compiler's convention).
     const cited = transcript.turns.flatMap((turn) => turn.citations || []);
     metrics.push({
       metric: "grounding_citations",
@@ -206,7 +219,7 @@ export async function proveLive(cfg, {
       const transcriptPath = saveTranscript(transcript, transcriptsDir ? { dir: transcriptsDir } : {});
       transcriptPaths.push(transcriptPath);
 
-      const metrics = evaluateCaseMetrics(kase, transcript, { minResponseMatch });
+      const metrics = evaluateCaseMetrics(kase, transcript, { minResponseMatch, replay: !!cassette });
       const failedMetrics = metrics.filter((metric) => metric.status === "fail");
       const blockers = transcript.verdict.blockers;
 

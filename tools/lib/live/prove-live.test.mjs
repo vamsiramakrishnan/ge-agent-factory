@@ -151,6 +151,20 @@ test("evaluateCaseMetrics: tool trajectory unavailable without live tool metadat
   expect(metrics.find((metric) => metric.metric === "tool_trajectory").status).toBe("unavailable");
 });
 
+test("evaluateCaseMetrics: under replay a zero-tool transcript FAILS a mustCall (authoritative)", () => {
+  const kase = { id: "c", turns: [{ user: "q", reference: null }], raw: { geMetadata: { expected: { mustCall: ["some_tool"] } } } };
+  const transcript = {
+    invocationTools: [],
+    session: { continued: false },
+    responder: { assertion: "not_applicable", observedAgentId: null },
+    turns: [{ assistant: { text: "hi" }, citations: [] }],
+    verdict: { blockers: [] },
+  };
+  const trajectory = evaluateCaseMetrics(kase, transcript, { replay: true }).find((metric) => metric.metric === "tool_trajectory");
+  expect(trajectory.status).toBe("fail");
+  expect(trajectory.detail).toContain("some_tool");
+});
+
 test("gate policy: pass-rate floor, strict responder, and missing-result handling", () => {
   const base = {
     status: "passed",

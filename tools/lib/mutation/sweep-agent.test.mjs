@@ -54,13 +54,16 @@ describe("OKF → evalset compile", () => {
 });
 
 describe.skipIf(!process.env.GE_MUTATION_E2E)("real agent sweep (GE_MUTATION_E2E)", () => {
-  test("shrink-anomaly-analyzer has ornamental guards on its write-tool cases", async () => {
+  test("shrink-anomaly-analyzer: write-tool guards now have teeth under replay", async () => {
     const result = await sweepAgentBundle(BUNDLE);
-    expect(result.ornamental).toBe(true);
-    const ornamentalIds = result.ornamentalCases.map((entry) => entry.caseId);
-    // The POS write-tool confirmation/duplicate cases cannot tell a compliant
-    // agent from one that never calls the write tool (the "unavailable" hole).
-    expect(ornamentalIds).toContain("case-tool-action-oracle-xstore-pos-file-confirmation");
-    expect(ornamentalIds).toContain("case-tool-action-oracle-xstore-pos-file-duplicate");
+    expect(result.ok).toBe(true);
+    // Post-fix, the POS write-tool confirmation/duplicate cases fail when the
+    // write tool isn't called (the "unavailable" hole is closed) → no
+    // surviving mutants.
+    expect(result.ornamental).toBe(false);
+    expect(result.totals.survived).toBe(0);
+    // The citation coverage gap is a real, separate finding that remains: the
+    // suite declares no mustCite on any case.
+    expect(result.coverage.mustCite).toBe(0);
   }, 120000);
 });
