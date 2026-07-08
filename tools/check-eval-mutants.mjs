@@ -14,16 +14,19 @@
 //
 //   node tools/check-eval-mutants.mjs
 //   node tools/check-eval-mutants.mjs --evalset <path> --cassette <path>
+//   node tools/check-eval-mutants.mjs --bundle okf/<agent>   # sweep a shipped agent
 import { runEvalMutants } from "./lib/mutation/harness.mjs";
+import { sweepAgentBundle } from "./lib/mutation/sweep-agent.mjs";
 
 const DEFAULT_EVALSET = "tools/lib/mutation/fixtures/benefits.evalset.json";
 const DEFAULT_CASSETTE = "tools/lib/live/fixtures/success.ndjson";
 
 function parseArgs(argv) {
-  const args = { evalset: DEFAULT_EVALSET, cassette: DEFAULT_CASSETTE, json: false };
+  const args = { evalset: DEFAULT_EVALSET, cassette: DEFAULT_CASSETTE, bundle: null, json: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--evalset") args.evalset = argv[++i];
     else if (argv[i] === "--cassette") args.cassette = argv[++i];
+    else if (argv[i] === "--bundle") args.bundle = argv[++i];
     else if (argv[i] === "--json") args.json = true;
   }
   return args;
@@ -62,8 +65,35 @@ export function formatReport(result) {
   return lines.join("\n");
 }
 
+export function formatSweepReport(result) {
+  const lines = [];
+  const { coverage: cov, totals } = result;
+  lines.push(`agent mutation sweep — ${result.agentId}  (${result.bundleDir})`);
+  lines.push(`  cases:    ${cov.totalCases} total — ${cov.guardedCases} with a behavioral guard, ${cov.unguardedCases} with none`);
+  lines.push(`  guards:   mustCall in ${cov.mustCall}, mustNotCall in ${cov.mustNotCall}, mustCite in ${cov.mustCite} of ${cov.totalCases} cases`);
+  lines.push(`  mutants:  ${totals.killed}/${totals.generated} killed, ${totals.survived} survived`);
+  if (result.ornamentalCases.length) {
+    lines.push("");
+    lines.push("ORNAMENTAL CASES (a mutant survived the proof — the guard does not bite):");
+    for (const entry of result.ornamentalCases) {
+      lines.push(`  • ${entry.caseId}`);
+      for (const survivor of entry.survived) lines.push(`      survived: ${survivor.id} (${survivor.guard})`);
+    }
+  }
+  if (cov.mustCite === 0) {
+    lines.push("");
+    lines.push(`COVERAGE GAP: no case declares a citation guard — an ungrounded answer passes the proof for every case.`);
+  }
+  lines.push("");
+  lines.push(result.ornamental ? "RESULT: ornamental evals found — the proof does not enforce every expectation it declares." : "RESULT: all declared expectations have teeth.");
+  return lines.join("\n");
+}
+
 const args = parseArgs(process.argv.slice(2));
-const result = await runEvalMutants({ evalset: args.evalset, cassette: args.cassette });
+const result = args.bundle
+  ? await sweepAgentBundle(args.bundle)
+  : await runEvalMutants({ evalset: args.evalset, cassette: args.cassette });
+const render = args.bundle ? formatSweepReport : formatReport;
 const writer = result.ornamental ? process.stderr : process.stdout;
-writer.write((args.json ? JSON.stringify(result, null, 2) : formatReport(result)) + "\n");
+writer.write((args.json ? JSON.stringify(result, null, 2) : render(result)) + "\n");
 process.exit(result.ornamental ? 1 : 0);
