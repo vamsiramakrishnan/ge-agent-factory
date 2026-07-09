@@ -11,7 +11,7 @@
 // IS_PROD is captured at module load, so env is set before the dynamic import
 // and fs/child_process are module-mocked (scoped to this file's run) so the
 // generator never actually executes and no temp dirs are created.
-import { describe, expect, it, mock, beforeAll } from "bun:test";
+import { describe, expect, it, mock, beforeAll, afterEach } from "bun:test";
 import * as realFs from "node:fs";
 import * as realFsPromises from "node:fs/promises";
 import * as realCp from "node:child_process";
@@ -23,42 +23,45 @@ process.env.GE_AGENT_FACTORY_WORKER_URL = "https://worker.example.run.app";
 delete process.env.K_SERVICE;
 
 const FAKE_TAR = Buffer.from("FAKE_TAR_BYTES");
+const realReadFileSync = realFs.readFileSync;
+const realReadFile = realFsPromises.readFile;
+const realSpawn = realCp.spawn;
 
 // Smart read: only intercept the workspace tarball read; delegate everything
 // else (dotenv, json-io, etc.) to the real fs so imports don't break.
 const smartReadSync = (path, ...rest) =>
-  String(path).endsWith(".tar.gz") ? FAKE_TAR : realFs.readFileSync(path, ...rest);
+  String(path).endsWith(".tar.gz") ? FAKE_TAR : realReadFileSync(path, ...rest);
 const smartReadAsync = async (path, ...rest) =>
-  String(path).endsWith(".tar.gz") ? FAKE_TAR : realFsPromises.readFile(path, ...rest);
+  String(path).endsWith(".tar.gz") ? FAKE_TAR : realReadFile(path, ...rest);
 
 let calls;
 let submitFactoryRun;
+const originalFetch = global.fetch;
 
 beforeAll(async () => {
   mock.module("node:fs", () => ({
     ...realFs,
-    mkdirSync: () => undefined,
     readFileSync: smartReadSync,
   }));
   mock.module("node:fs/promises", () => ({
     ...realFsPromises,
-    mkdir: async () => undefined,
     readFile: smartReadAsync,
   }));
   mock.module("node:child_process", () => ({
     ...realCp,
-    // Current (sync) path stubs; kept so the net was green BEFORE the conversion.
-    execFileSync: () => Buffer.from(""),
-    // Post-conversion path: the scaffold + tar steps run via spawn(); emit a
-    // clean close(0) so runToCompletion resolves without executing anything.
-    spawn: () => ({ on: (event, cb) => { if (event === "close") cb(0); } }),
+    spawn: (command, args, options) => {
+      const isGenerator = command === "bun" && Array.isArray(args) && args.some((arg) => String(arg).endsWith("scripts/factory.mjs"));
+      const isTar = command === "tar";
+      if (!isGenerator && !isTar) return realSpawn(command, args, options);
+      return { on: (event, cb) => { if (event === "close") cb(0); } };
+    },
   }));
 
   // Cache-busting query forces a FRESH module instance so IS_PROD is captured
   // from THIS file's env (NODE_ENV=production), independent of whether another
-  // test file already imported factory-bridge.js (with IS_PROD unset) into the
+  // test file already imported factory-gateway.js (with IS_PROD unset) into the
   // shared bun module registry earlier in the run.
-  ({ submitFactoryRun } = await import(`./factory-bridge.js?prod=${Date.now()}`));
+  ({ submitFactoryRun } = await import(`./factory-gateway.js?prod=${Date.now()}`));
 });
 
 function installFetch() {
@@ -73,6 +76,11 @@ function installFetch() {
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   });
 }
+
+afterEach(() => {
+  global.fetch = originalFetch;
+  calls = [];
+});
 
 function urls(substr) {
   return calls.filter((c) => c.url.includes(substr));

@@ -1,6 +1,17 @@
 import { UseCaseGenerationSpec } from "../types/architecture";
 import { authEnabled, getToken } from "../auth/firebase";
 
+declare global {
+  interface Window {
+    __GE_FACTORY_API_BASE__?: string;
+  }
+}
+
+const RUNTIME_FACTORY_API_BASE =
+  typeof window !== "undefined" ? window.__GE_FACTORY_API_BASE__ || "" : "";
+const FACTORY_API_BASE = (RUNTIME_FACTORY_API_BASE || import.meta.env.VITE_FACTORY_API_BASE || "").replace(/\/$/, "");
+export const factoryApiUrl = (path: string) => `${FACTORY_API_BASE}${path}`;
+
 export type FactoryStage =
   | "validate"
   | "preview"
@@ -109,18 +120,18 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export function startFactoryRun(request: FactoryRunRequest) {
-  return jsonFetch<FactoryRun>("/api/factory/usecase", {
+  return jsonFetch<FactoryRun>(factoryApiUrl("/api/factory/usecase"), {
     method: "POST",
     body: JSON.stringify(request),
   });
 }
 
 export function getFactoryRunStatus(runId: string) {
-  return jsonFetch<FactoryRunStatus>(`/api/factory/runs/${encodeURIComponent(runId)}`);
+  return jsonFetch<FactoryRunStatus>(factoryApiUrl(`/api/factory/runs/${encodeURIComponent(runId)}`));
 }
 
 export function startPreflight(target: Partial<TargetProfile>) {
-  return jsonFetch<PreflightResult>("/api/factory/preflight", {
+  return jsonFetch<PreflightResult>(factoryApiUrl("/api/factory/preflight"), {
     method: "POST",
     body: JSON.stringify(target),
   });
@@ -128,6 +139,6 @@ export function startPreflight(target: Partial<TargetProfile>) {
 
 export function getGeminiAgents(projectId: string, location: string) {
   return jsonFetch<{ ok: boolean; agents: Array<{ id: string; displayName: string }>; error?: string }>(
-    `/api/factory/agents?projectId=${encodeURIComponent(projectId)}&location=${encodeURIComponent(location)}`
+    factoryApiUrl(`/api/factory/agents?projectId=${encodeURIComponent(projectId)}&location=${encodeURIComponent(location)}`)
   );
 }

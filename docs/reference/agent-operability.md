@@ -90,7 +90,8 @@ and both paths are discoverable from the run itself — no tribal knowledge.
   `guarding-the-factory` — the safety rail rides along by construction.
 - **In external sessions** the same skills install via the distribution
   surfaces (Claude Code plugin marketplace, Gemini CLI extension,
-  `bunx create-ge-agent-factory --skills …`, `mise run skills-install`).
+  the GitHub-backed `create-ge-agent-factory` installer script,
+  `mise run skills-install`).
 - **Progressive disclosure** keeps them cheap: routing description →
   SKILL.md decision layer → composed references (including a worked
   `example-session.md` per skill) → executable scripts and copyable assets.

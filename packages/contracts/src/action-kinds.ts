@@ -57,6 +57,7 @@ export const GeCommandIdSchema = z.enum([
   "capture",
   "prove",
   "handoff",
+  "init",
   "up",
   "data.up",
   "data.synth",

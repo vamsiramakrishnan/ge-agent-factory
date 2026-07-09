@@ -125,6 +125,8 @@ cat .ge/factory/workspaces/<id>/artifacts/admission-decision.json
 
 ## References
 
+- Worked example: `references/example-session.md` — a proof-to-passport
+  admission loop, including a stale-passport failure.
 - Reference: `docs/reference/admission.md` — the passport and decision file
   formats, the `promotion.gates.admission` policy keys, the full
   `GEADM001`–`GEADM008` blocker table, key management, and break-glass.

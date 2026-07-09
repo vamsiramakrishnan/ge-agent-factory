@@ -1,29 +1,25 @@
 import { spawn } from "node:child_process";
 import { parseList } from "@ge/std/list";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
-import { join, dirname, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { readJson as baseReadJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
-import dotenv from "dotenv";
+import { enqueueFactoryStage, firestoreValue, patchFirestoreDocument } from "./factory-worker.js";
 
-// Resolve presentation root and load local env parameters
-const PRESENTATION_ROOT = resolve(import.meta.dirname, "../..");
-dotenv.config({ path: join(PRESENTATION_ROOT, ".env") });
+export { firestoreValue };
 
 const IS_PROD = process.env.NODE_ENV === "production" || !!process.env.K_SERVICE;
 const CONTROL_PLANE_PROJECT = resolveGcpProject() || "";
 const CONTROL_PLANE_BUCKET = process.env.GE_AGENT_FACTORY_BUCKET || (CONTROL_PLANE_PROJECT ? `${CONTROL_PLANE_PROJECT}-ge-agent-factory` : "");
 
-// Worker URL is required only to DISPATCH a provisioning run — validated in
-// submitFactoryRun at the point of use, NOT at module load. vite.config imports
-// this file at BUILD time (where the runtime env is absent), and per-agent
-// provisioning is disabled by default, so an import-time throw needlessly broke
-// the build.
+// Worker URL is required only to dispatch a provisioning run; validate at submit
+// time so tests and read-only imports can load the module without cloud env.
 const WORKER_URL = process.env.GE_AGENT_FACTORY_WORKER_URL || "";
 
-const HARNESS_ROOT = resolve(import.meta.dirname, "../../../factory");
-const BRIDGE_STATE_PATH = resolve(import.meta.dirname, "../../../../.factory-runs.json");
+const HARNESS_ROOT = resolve(import.meta.dirname, "..");
+const REPO_ROOT = resolve(HARNESS_ROOT, "../..");
+const BRIDGE_STATE_PATH = resolve(REPO_ROOT, ".factory-runs.json");
 
 // Helper: slug name
 function slug(value, max = 48) {
@@ -249,83 +245,6 @@ async function readStageLocal(gsPath, harnessEnv) {
       }
     });
   });
-}
-
-// Helper: format values for Firestore Rest API
-export function firestoreValue(value) {
-  if (value == null) return { nullValue: null };
-  if (typeof value === "boolean") return { booleanValue: value };
-  if (typeof value === "number" && Number.isInteger(value)) return { integerValue: String(value) };
-  if (typeof value === "number") return { doubleValue: value };
-  if (Array.isArray(value)) return { arrayValue: { values: value.map(firestoreValue) } };
-  if (typeof value === "object") {
-    return { mapValue: { fields: Object.fromEntries(Object.entries(value).map(([k, v]) => [k, firestoreValue(v)])) } };
-  }
-  return { stringValue: String(value) };
-}
-
-// Helper: Patch Firestore document natively via REST
-async function patchFirestoreDocument({ projectId, path, data, token }) {
-  if (!projectId || !token) return;
-  const fields = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, firestoreValue(v)]));
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  const masks = Object.keys(fields).map((field) => `updateMask.fieldPaths=${encodeURIComponent(field)}`).join("&");
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${encodedPath}?${masks}`;
-  
-  const res = await fetch(url, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
-    body: JSON.stringify({ fields }),
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to patch Firestore document: ${res.status} - ${await res.text()}`);
-  }
-}
-
-// Helper: Enqueue first stage using native Cloud Tasks REST API
-async function enqueueCloudTask(controlPlaneProject, region, queue, workerUrl, serviceAccount, payload, accessToken) {
-  const parent = `projects/${controlPlaneProject}/locations/${region}/queues/${queue}`;
-  const taskId = `task-${payload.runId}-${payload.itemId}-${payload.stage}-${payload.attempt}`;
-  const taskName = `${parent}/tasks/${taskId}`;
-  const url = `https://cloudtasks.googleapis.com/v2/${parent}/tasks`;
-  
-  const taskPayload = {
-    task: {
-      name: taskName,
-      // Timeout triangle (taste-campaign 09 §C1): match the worker's Cloud Run
-      // timeout (installer/terraform/cloud_run.tf: timeout = "1800s"; also the
-      // Cloud Tasks maximum) so a stage running past the 600s Cloud Tasks default
-      // is never redelivered concurrently while attempt 1 still executes. Keep in
-      // lockstep with TASK_DISPATCH_DEADLINE in apps/factory/src/factory-worker.js —
-      // factory-worker-timeouts.test.mjs asserts this file carries the same value.
-      dispatchDeadline: "1800s",
-      httpRequest: {
-        httpMethod: "POST",
-        url: workerUrl,
-        headers: { "Content-Type": "application/json" },
-        body: Buffer.from(JSON.stringify(payload)).toString("base64"),
-        oidcToken: {
-          serviceAccountEmail: serviceAccount,
-          audience: workerUrl
-        }
-      }
-    }
-  };
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(taskPayload)
-  });
-  
-  const text = res.ok ? "" : await res.text();
-  const duplicate = res.status === 409 || /ALREADY_EXISTS|already exists/i.test(text);
-  if (!res.ok && !duplicate) {
-    throw new Error(`Failed to create Cloud Task: ${res.status} - ${text}`);
-  }
-  return { ok: true, duplicate };
 }
 
 /**
@@ -650,20 +569,17 @@ export async function submitFactoryRun(request) {
     await patchFirestoreDocument({
       projectId: targetProject,
       path: `factoryRuns/${runId}`,
-      data: { status: "queued", createdAt: now, updatedAt: now, targetStage, source: "ge-presentation-bridge", workspaceId },
-      token
+      data: { status: "queued", createdAt: now, updatedAt: now, targetStage, source: "ge-factory-gateway", workspaceId },
     });
     await patchFirestoreDocument({
       projectId: targetProject,
       path: `factoryRuns/${runId}/items/${workspaceId}`,
       data: { status: "queued", currentStage: startStage, createdAt: now, updatedAt: now, workspaceId, workspaceArchive, artifactPrefix, targetStage, agentId },
-      token
     });
     await patchFirestoreDocument({
       projectId: targetProject,
       path: `factoryRuns/${runId}/items/${workspaceId}/stages/${startStage}`,
       data: { status: "queued", createdAt: now, updatedAt: now, attempt: 1, owner: "cloud_tasks", nextStage: null, error: null },
-      token
     });
 
     // Step 4: Enqueue the first stage via Cloud Tasks REST API
@@ -680,13 +596,15 @@ export async function submitFactoryRun(request) {
       workerService: "ge-agent-factory-worker",
       cloud: {
         projectId: targetProject,
+        tasksProjectId: CONTROL_PLANE_PROJECT || targetProject,
         projectNumber: target.projectNumber || "",
         runtimeRegion: targetRegion,
+        workerServiceUrl: WORKER_URL,
         genaiLocation: target.genaiLocation || "global",
         geminiEnterpriseLocation: target.geminiEnterpriseLocation || "global",
         geminiEnterpriseApp: target.geminiEnterpriseAppId || "",
-        pubsubTopic: "ge-agent-factory-events",
-        tasksQueue: "ge-agent-factory-stages",
+        pubsubTopic: process.env.GE_AGENT_FACTORY_TOPIC || "ge-agent-factory-events",
+        tasksQueue: process.env.GE_AGENT_FACTORY_QUEUE || "ge-agent-factory-stages",
         artifactBucket: targetBucket,
         // Shared agent-data bucket — load_data publishes each agent's mcp-tools.json
         // to gs://<dataBucket>/agents/<id>/mcp-tools.json for the dept MCP service.
@@ -730,12 +648,13 @@ export async function submitFactoryRun(request) {
       }
     };
 
-    const taskQueue = "ge-agent-factory-stages";
-    const controlPlaneRegion = "us-central1";
     if (!WORKER_URL) {
       throw new Error("GE_AGENT_FACTORY_WORKER_URL must be set to dispatch a provisioning run.");
     }
-    await enqueueCloudTask(CONTROL_PLANE_PROJECT, controlPlaneRegion, taskQueue, WORKER_URL, payload.cloud.serviceAccount, payload, token);
+    const queued = await enqueueFactoryStage(payload);
+    if (!queued.ok && !queued.duplicate) {
+      throw new Error(`Failed to create Cloud Task: ${queued.status || queued.code || "unknown"} - ${queued.text || queued.stderr || "empty response"}`);
+    }
 
     // Step 5: Update GCS run index status to "submitted"
     runRecord.status = "submitted";

@@ -89,14 +89,15 @@ so a coding agent can set up a bare machine, verify each step, and operate
 the factory end to end:
 
 ```bash
-bunx create-ge-agent-factory        # any machine: clone + guided, verified install
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --skills agents        # GitHub-backed clone + guided, verified install
 ```
 
 | Agent | Install |
 | --- | --- |
 | **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` |
+| **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` |
 | **Any MCP client** | `bun tools/mcp-server.mjs` from a checkout |
 
 Generated workspaces hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise either way; skills automate the setup and operations above that handoff, not the handoff itself.

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Cpu, Database, Loader2, Rocket, ChevronDown, ChevronUp, Settings, ExternalLink, TriangleAlert, Link2, X } from "lucide-react";
-import { startFactoryRun, startPreflight, getGeminiAgents, FactoryRun, FactoryRunStatus, FactoryStage, PreflightCheck } from "../../services/factoryClient";
+import { factoryApiUrl, startFactoryRun, startPreflight, getGeminiAgents, FactoryRun, FactoryRunStatus, FactoryStage, PreflightCheck } from "../../services/factoryClient";
 import { authEnabled, getToken } from "../../auth/firebase";
 import { UseCaseGenerationSpec } from "../../types/architecture";
 import type { PipelineStage, PipelineArtifactRef, FleetBlocker } from "@ge/contracts";
@@ -219,7 +219,7 @@ export function FactoryProvisionPanel({ title, department, systems = [], generat
       // EventSource can't set headers, so when opt-in auth is on the ID token
       // rides in the query string (?access_token=) — the server's bearerFrom
       // reads it. No-op when auth is disabled.
-      let url = `/api/factory/runs/${encodeURIComponent(run.runId)}/events`;
+      let url = factoryApiUrl(`/api/factory/runs/${encodeURIComponent(run.runId)}/events`);
       if (authEnabled) {
         const token = await getToken();
         if (token) url += `?access_token=${encodeURIComponent(token)}`;

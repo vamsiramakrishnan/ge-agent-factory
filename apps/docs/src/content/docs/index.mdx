@@ -72,7 +72,8 @@ admission gate can require it to pass before an agent is allowed to ship.
 The polished path is skills-first: give your assistant the factory playbooks and let it install, verify, operate, and repair the repo with the same instructions used by the harness.
 
 ```bash
-bunx create-ge-agent-factory --skills agents
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --skills agents
 ```
 
 <div class="ge-logo-row" aria-label="Supported assistant surfaces">
@@ -87,7 +88,7 @@ bunx create-ge-agent-factory --skills agents
 | --- | --- |
 | Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
 | Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| Codex · Antigravity · agents-cli-style sessions | `bunx create-ge-agent-factory --skills agents` |
+| Codex · Antigravity · agents-cli-style sessions | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` |
 | Any MCP client | `bun tools/mcp-server.mjs` exposes the `factory_*` tools from a checkout |
 
   </TabItem>

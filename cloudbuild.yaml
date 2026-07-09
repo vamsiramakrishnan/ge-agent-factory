@@ -7,14 +7,11 @@
 # (see docs/OPERATIONS.md "Deploy contract"). Keeping deploy out of Cloud Build
 # stops --set-env-vars from clobbering Terraform-managed env on every push.
 steps:
-  # 1. Build the container image (presentation server). The architecture deck under
-  #    apps/presentation/public/architecture is copied into dist/ by Vite and served
-  #    at /architecture/agent-factory-assembly-line.html. PDF export is client-side
-  #    (HTML -> PDF via bundled html2canvas + jsPDF) — no build-time render needed.
+  # 1. Build the container image (factory gateway).
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
-      '-f', 'apps/presentation/Dockerfile',
+      '-f', 'apps/factory/gateway.Dockerfile',
       '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${SHORT_SHA}',
       '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest',
       '.'

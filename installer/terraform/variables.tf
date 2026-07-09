@@ -62,7 +62,7 @@ variable "console_image" {
 }
 
 variable "presentation_image" {
-  description = "Container image for a standalone presentation/deck UI Cloud Run service. Empty = don't create it (the gateway serves the deck today)."
+  description = "Container image for a standalone presentation/deck UI Cloud Run service. Empty = don't create it."
   type        = string
   default     = ""
 }

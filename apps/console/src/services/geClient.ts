@@ -585,14 +585,16 @@ export const ge = {
   artifact: (runId: string, item: string, name: string) =>
     j<{ found: boolean; source: string; content: string }>(`/api/ge/artifacts/${encodeURIComponent(runId)}/${encodeURIComponent(item)}/${encodeURIComponent(name)}`),
   setMode: (mode: "local" | "remote") => post("/api/ge/mode", { mode }),
+  init: (body: { project?: string; region?: string; geApp?: string; geAppId?: string; agentIdentityOrgId?: string } = {}) =>
+    post("/api/ge/init", body),
   up: (planes?: string[]) => post("/api/ge/up", { planes }),
   dataUp: () => post("/api/ge/data/up", {}),
   mcpDeploy: () => post("/api/ge/mcp/deploy", {}),
   // Idempotent: no-ops (with a friendly "already running" line) if the daemon is
   // already up. Backs the header pill + Doctor's "Start daemon" action.
   daemonStart: () => post("/api/ge/daemon/start", {}),
-  build: (b: { scope?: string; ids?: string; dept?: string; local?: boolean; force?: boolean }) => post("/api/ge/agents/build", b),
-  handoff: (b: { target?: string; ids?: string; startStage?: string; targetStage?: string }) => post("/api/ge/handoff", b),
+  build: (b: { scope?: string; ids?: string; dept?: string; local?: boolean; force?: boolean; concurrency?: string; noProxy?: boolean }) => post("/api/ge/agents/build", b),
+  handoff: (b: { target?: string; ids?: string; startStage?: string; targetStage?: string; concurrency?: string; noProxy?: boolean; force?: boolean }) => post("/api/ge/handoff", b),
   sync: (b: { ids?: string | string[]; push?: boolean; local?: boolean; remoteMode?: boolean; remote?: string; create?: boolean; noCommit?: boolean }) => post("/api/ge/agents/sync", b),
   registerSpec: (body: { input: string; allowDraft?: boolean; syncCatalog?: boolean }) => post("/api/ge/specs/register", body) as Promise<SpecRegisterResult>,
   // Interview BRD/document grounding (sub-project 1). Upload uses base64 JSON so

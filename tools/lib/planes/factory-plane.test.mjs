@@ -105,6 +105,14 @@ test("build returns gateway and worker image tags", () => {
   const builds = calls.filter((call) => call[0] === "run" && call[2][0] === "builds");
   expect(builds).toHaveLength(2);
 
+  const gatewayBuild = builds.find((call) => call[2].includes("apps/factory/cloudbuild.gateway.yaml"));
+  expect(gatewayBuild).toBeDefined();
+  expect(gatewayBuild[2]).toContain("--config");
+  expect(gatewayBuild[2]).toContain("--substitutions");
+  expect(gatewayBuild[2]).toContain("_IMAGE=us-docker.pkg.dev/demo/ge-agent-factory/gateway:abc123");
+  expect(gatewayBuild[2]).toContain("/repo");
+  expect(gatewayBuild[2]).not.toContain("--tag");
+
   // The worker now builds from the repo-root context via its cloudbuild config + the
   // _IMAGE substitution (mirrors mcp-plane), so @ge/run-ledger + @ge/okf (packages/)
   // and tools/lib/* — all outside the app dir — are in the build context.
@@ -183,7 +191,7 @@ test("consoleDoctor reports a healthy console service", () => {
           out: JSON.stringify({
             metadata: { annotations: { "run.googleapis.com/iap-enabled": "false" } },
             status: { conditions: [{ type: "Ready", status: "True" }] },
-            spec: { template: { spec: { containers: [{ env: [{ name: "GE_CONSOLE_READONLY", value: "true" }] }] } } },
+            spec: { template: { spec: { containers: [{ env: [{ name: "GE_GATEWAY_TRANSPORT", value: "direct" }] }] } } },
           }),
         };
       }
@@ -194,7 +202,7 @@ test("consoleDoctor reports a healthy console service", () => {
   const report = plane.consoleDoctor({ project: "demo", region: "us-central1", gatewayUrl: "https://gateway.example" });
   expect(report.ok).toBe(true);
   expect(report.checks.find((check) => check.name === "console ready").status).toBe("pass");
-  expect(report.checks.find((check) => check.name === "console GE_CONSOLE_READONLY").status).toBe("pass");
+  expect(report.checks.find((check) => check.name === "console mutation mode").status).toBe("pass");
   expect(report.checks.find((check) => check.name === "console_image bound").status).toBe("pass");
 });
 
@@ -205,6 +213,18 @@ test("worker cloudbuild.worker.yaml is well-formed and uses repo-root context", 
   expect(yaml).toContain("gcr.io/cloud-builders/docker");
   expect(yaml).toContain('"build", "-f", "apps/factory/Dockerfile", "-t", "${_IMAGE}", "."');
   expect(yaml).toContain('"push", "${_IMAGE}"');
+  expect(yaml).toContain("images:");
+  expect(yaml).toContain("substitutions:");
+  expect(yaml).toContain("_IMAGE:");
+});
+
+test("gateway cloudbuild.gateway.yaml is well-formed and uses the factory gateway image", () => {
+  const yamlPath = join(HERE, "..", "..", "..", "apps", "factory", "cloudbuild.gateway.yaml");
+  const yaml = readFileSync(yamlPath, "utf8");
+  expect(yaml).toContain("steps:");
+  expect(yaml).toContain("gcr.io/cloud-builders/docker");
+  expect(yaml).toContain("apps/factory/gateway.Dockerfile");
+  expect(yaml).toContain("'${_IMAGE}'");
   expect(yaml).toContain("images:");
   expect(yaml).toContain("substitutions:");
   expect(yaml).toContain("_IMAGE:");

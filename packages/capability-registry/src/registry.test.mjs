@@ -74,15 +74,28 @@ describe("GE command registry contracts", () => {
   });
 
   test("remote agent build keeps selectors but does not inherit local observability", () => {
-    expect(GE_COMMANDS["agents.build"].argv({ ids: "account-reconciliation-agent" })).toEqual([
+    expect(GE_COMMANDS["agents.build"].argv({ ids: "account-reconciliation-agent", concurrency: "4" })).toEqual([
       "agents",
       "build",
       "--ids",
       "account-reconciliation-agent",
+      "--concurrency",
+      "4",
     ]);
     expect(commandMeta("agents.build").observability).toMatchObject({
       mode: "remote-stage-logs",
       events: false,
     });
+  });
+
+  test("handoff preserves selected workspaces and parallel release concurrency", () => {
+    expect(GE_COMMANDS.handoff.argv({ ids: "ws-a,ws-b", concurrency: "4" })).toEqual([
+      "handoff",
+      "agents-cli",
+      "--ids",
+      "ws-a,ws-b",
+      "--concurrency",
+      "4",
+    ]);
   });
 });

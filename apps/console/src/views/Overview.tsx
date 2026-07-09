@@ -158,8 +158,13 @@ export default function Overview({ status, refresh }: OverviewProps) {
     if (!next) return;
 
     if (next.startsWith("ge init")) {
-      showToast("This machine has no GCP project configured — run `ge init` in a terminal, then refresh.", 7000);
-      location.hash = "#/doctor";
+      try {
+        await startJob("ge init", ge.init());
+        showToast("Config discovery started. Open Runs for the full log.");
+      } catch (err: any) {
+        showToast(`Failed: ${err.message}`, 6000);
+        location.hash = "#/doctor";
+      }
       return;
     }
     if (next.startsWith("ge data up") || next.startsWith("ge up --data")) {

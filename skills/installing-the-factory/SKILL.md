@@ -38,7 +38,7 @@ phase — the whole workflow is idempotent and safe to re-run after a failure.
 2. **mise** — check: `mise --version` works. If not, install it and add the
    shims to PATH for this shell.
 3. **Toolchain + deps + `ge`** — check: `bun --version` works inside the repo
-   and `.local/bin/ge` exists. If not, `mise trust && mise install`, then
+   and `$BIN/ge` exists (default `~/.local/bin/ge`). If not, `mise trust && mise install`, then
    `mise run setup` (installs JS deps, syncs the use-case catalog and skills,
    installs the `ge` command, and starts the local run daemon — the daemon
    step is best-effort and may be skipped in sandboxes).
@@ -116,7 +116,8 @@ AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # same, for Claude 
 
 ## Done when
 
-- `mise --version`, `bun --version`, and `.local/bin/ge` all resolve inside the repo.
+- `mise --version`, `bun --version`, and `$BIN/ge` (default
+  `~/.local/bin/ge`) all resolve inside the repo.
 - `node skills/installing-the-factory/scripts/verify-install.mjs` exits 0.
 - `bun tools/ge.mjs doctor --local` reports the local toolchain green.
 - `bun tools/ge.mjs prove` passes its first proof.

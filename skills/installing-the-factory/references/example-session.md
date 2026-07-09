@@ -50,7 +50,7 @@ $ node skills/installing-the-factory/scripts/verify-install.mjs
 ✓ repo checkout  /home/user/ge-agent-factory
 ✓ bun (toolchain)  bun 1.3.11
 ✓ workspace deps  node_modules present
-○ ge command installed  .local/bin/ge missing
+○ ge command installed  /home/user/.local/bin/ge missing
     fix: mise run setup   (or: mise run install)
 ✓ ge answers  ge --help renders
 ✓ skills manifest synced  .ge/skills/manifest.json
@@ -120,7 +120,7 @@ $ node skills/installing-the-factory/scripts/verify-install.mjs
 ✗ bun (toolchain)  bun not resolvable — toolchain not provisioned
     fix: mise trust && mise install
 ✓ workspace deps  node_modules present
-○ ge command installed  .local/bin/ge missing
+○ ge command installed  /home/user/.local/bin/ge missing
     fix: mise run setup   (or: mise run install)
 ✗ ge answers  bun unavailable
     fix: mise run setup

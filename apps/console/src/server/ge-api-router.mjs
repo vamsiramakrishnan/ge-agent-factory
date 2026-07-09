@@ -360,6 +360,7 @@ async function dispatchGeApiResult(result, responder) {
     return responder.json(202, {
       jobId: await startGeJob(result.job, result.command, { cfg: result.cfg, selection: result.selection }),
       command: result.command,
+      dispatch: result.dispatch,
     });
   }
 

@@ -133,7 +133,7 @@ Operator tools — the same machinery under its operator names:
 | `factory_mcp_deploy` | — | **Mutates** — deploys the per-department MCP services (tool plane). |
 | `factory_mcp_doctor` | — | Tool-plane health. Read-only. |
 | `factory_models_doctor` | — | Read-only, no network/paid calls — structural readiness for model providers: Vertex (project + `gcloud` on PATH), the harness Python driver, the resolved `refinementModel`/`judgeModel` config values against a known family, and ADC presence. |
-| `factory_console_doctor` | — | Read-only — the console's Cloud Run service (readiness, IAP, `GE_CONSOLE_READONLY`) plus its config (image binding, terraform root, gateway URL). Never throws, even against an undeployed console. |
+| `factory_console_doctor` | — | Read-only — the console's Cloud Run service (readiness, IAP, mutation mode) plus its config (image binding, terraform root, gateway URL). Never throws, even against an undeployed console. |
 
 Every tool returns the core's structured result as JSON text. Errors come back
 as `isError` content rather than crashing the server.

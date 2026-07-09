@@ -57,7 +57,7 @@ const HANDLERS = {
   // The golden path — same core functions as `ge capture/prove/handoff`.
   "capture":       (a) => core.capture(cfg(), { from: a.from }),
   "prove":         (a) => core.prove(cfg(), { id: a.id, target: a.target, force: a.force }),
-  "handoff":       (a) => core.handoff(cfg(), { target: a.target || "agents-cli", ids: a.ids, startStage: a.startStage, targetStage: a.targetStage, noProxy: a.noProxy, force: a.force }),
+  "handoff":       (a) => core.handoff(cfg(), { target: a.target || "agents-cli", ids: a.ids, startStage: a.startStage, targetStage: a.targetStage, concurrency: a.concurrency, noProxy: a.noProxy, force: a.force }),
   "usecases.list": (a) => core.listUsecases(a),
   "doctor":        () => core.doctor(cfg()),
   "status":        (a) => core.status(cfg(), { noProxy: a.noProxy }),

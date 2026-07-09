@@ -1,5 +1,5 @@
 import { describe, expect, it, mock, spyOn } from "bun:test";
-import { defaultFactoryStartStage, firestoreValue, parseGsUri, humanize, deriveToolDescription } from "./factory-bridge.js";
+import { defaultFactoryStartStage, firestoreValue, parseGsUri, humanize, deriveToolDescription } from "./factory-gateway.js";
 
 describe("Factory API Bridge Core Helpers", () => {
   it("parses GCS URIs correctly", () => {

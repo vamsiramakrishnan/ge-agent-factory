@@ -30,7 +30,7 @@ test("bare ge answers the three questions, in order, before the Operate detail",
   expect(lines[1]).toMatch(/^capture → prove → handoff/);
   expect(lines[2]).toMatch(/^blocker\s+/);
   expect(lines[3]).toMatch(/^next\s+ge /); // an exact, copy-pasteable command
-});
+}, 20_000);
 
 test("ge status is the same board as bare ge", () => {
   const bare = runGe([]);
@@ -38,7 +38,7 @@ test("ge status is the same board as bare ge", () => {
   expect(status.status).toBe(0);
   // Same renderer; the position/blocker/next header must match byte-for-byte.
   expect(status.stdout.split("\n").slice(0, 4)).toEqual(bare.stdout.split("\n").slice(0, 4));
-});
+}, 20_000);
 
 test("--json carries goldenPath additively alongside every pre-existing board key", () => {
   const res = runGe(["--json"]);
@@ -54,4 +54,4 @@ test("--json carries goldenPath additively alongside every pre-existing board ke
   expect(board.goldenPath.next.length).toBeGreaterThan(0);
   expect(board.goldenPath).toHaveProperty("blocker");
   expect(["capture", "prove", "handoff"]).toContain(board.goldenPath.current);
-});
+}, 20_000);

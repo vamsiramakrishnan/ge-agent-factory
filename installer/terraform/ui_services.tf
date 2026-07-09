@@ -7,7 +7,7 @@
 #
 # Each service is image-gated: it's created only when its image var is set, so the
 # resources + IAP wiring live in Terraform and activate once you supply an image.
-# (The gateway serves the deck today; set presentation_image only if you split it out.)
+# Presentation is UI-only; real factory work goes through the console/API gateway.
 
 resource "google_cloud_run_v2_service" "console" {
   count    = var.console_image != "" ? 1 : 0
@@ -47,13 +47,8 @@ resource "google_cloud_run_v2_service" "console" {
         name  = "API_GATEWAY_URL"
         value = google_cloud_run_v2_service.gateway.uri
       }
-      # Deployed console is observe-first: no local gcloud/daemon in the container,
-      # so block mutating POSTs (read paths still work; cloud actions go via the
-      # gateway). Reach the gateway directly (no gcloud proxy tunnel in-container).
-      env {
-        name  = "GE_CONSOLE_READONLY"
-        value = "true"
-      }
+      # Deployed console delegates mutating work through the gateway/CLI runtime
+      # instead of executing UI-only code paths.
       env {
         name  = "GE_GATEWAY_TRANSPORT"
         value = "direct"

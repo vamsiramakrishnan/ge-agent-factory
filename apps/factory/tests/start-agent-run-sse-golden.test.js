@@ -49,7 +49,14 @@ function runOracle() {
   const ws = mkdtempSync(join(tmpdir(), "ge-start-agent-run-sse-"));
   try {
     const stdout = execFileSync("bun", [RUNNER], {
-      env: { ...process.env, GE_HARNESS_DATA_ROOT: ws },
+      env: {
+        ...process.env,
+        GE_HARNESS_DATA_ROOT: ws,
+        HOME: join(ws, "home"),
+        AGENTS_CLI_SKILLS_DIR: join(ws, "empty-agents-cli-skills"),
+        AGENTS_SKILLS_DIR: join(ws, "empty-agents-skills"),
+        AGENTS_HOME: join(ws, "empty-agents-home"),
+      },
       timeout: 20_000,
     }).toString("utf8");
     return maskNonDeterministic(JSON.parse(stdout), ws);

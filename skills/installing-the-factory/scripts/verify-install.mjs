@@ -54,9 +54,9 @@ if (repo) {
     detail: existsSync(join(repo, "node_modules")) ? "node_modules present" : "node_modules missing",
     fix: "mise run setup   (or: bun install)",
   });
-  const geBin = join(repo, ".local", "bin", "ge");
+  const geBin = join(process.env.BIN || join(homedir(), ".local", "bin"), "ge");
   add("ge command installed", existsSync(geBin), {
-    detail: existsSync(geBin) ? geBin : ".local/bin/ge missing",
+    detail: existsSync(geBin) ? geBin : `${geBin} missing`,
     fix: "mise run setup   (or: mise run install)",
     required: false, // bun tools/ge.mjs always works; the installed command is convenience
   });

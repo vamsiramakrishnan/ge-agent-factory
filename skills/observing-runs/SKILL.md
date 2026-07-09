@@ -60,5 +60,7 @@ The run's actual state (not an assumption) is known — terminal and healthy, te
 
 ## References
 
+- Worked example: `references/example-session.md` — observing a detached run
+  through status, events, and first-failure detail.
 - Reference: `docs/reference/agent-operability.md` — the operability contract this skill implements: position/next, background runs, event streaming and replay, resume.
 - Reference: `docs/reference/cli.md` — full flag tables for `ge agents status/logs/track`, `ge evals coverage`, `ge doctor`, and `ge runs`.

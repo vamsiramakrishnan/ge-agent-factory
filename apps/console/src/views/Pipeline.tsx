@@ -75,6 +75,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
   const [selectedSpecSnapshot, setSelectedSpecSnapshot] = useState<SpecOption | null>(null);
   const [selectedBulkIds, setSelectedBulkIds] = useState<string[]>([]);
   const [targetStage, setTargetStage] = useState("preview");
+  const [concurrency, setConcurrency] = useState(() => window.localStorage.getItem("ge.pipeline.concurrency") || "2");
   const [plan, setPlan] = useState<PipelinePlan | null>(null);
   const [activeInterviewId, setActiveInterviewId] = useState(() => window.localStorage.getItem("ge.interview.activeTaskId") || "");
   const [activeInterviewTask, setActiveInterviewTask] = useState<RuntimeTaskSummary | null>(null);
@@ -106,6 +107,11 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
     () => (specCatalog?.specs || []).find((spec) => spec.id === selectedSpecId) || (selectedSpecSnapshot?.id === selectedSpecId ? selectedSpecSnapshot : null),
     [selectedSpecId, selectedSpecSnapshot, specCatalog],
   );
+  const isRemoteMode = status?.mode === "remote";
+  const updateConcurrency = (value: string) => {
+    setConcurrency(value);
+    window.localStorage.setItem("ge.pipeline.concurrency", value);
+  };
   const selectedBulkSpecs = useMemo(() => {
     const selected = new Set(selectedBulkIds);
     return (specCatalog?.specs || []).filter((spec) => selected.has(spec.id));
@@ -289,7 +295,11 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
         setError("Select at least one spec before building agents.");
         return;
       }
-      await startJob("Build selected agents", ge.build({ ids, local: status?.mode === "remote" ? false : true }));
+      await startJob("Build selected agents", ge.build({
+        ids,
+        local: isRemoteMode ? false : true,
+        ...(isRemoteMode ? { concurrency } : {}),
+      }));
       notify("Started agent build");
       await refresh();
       location.hash = "#/activity";
@@ -301,7 +311,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
         setError("Select at least one spec before handing off agents.");
         return;
       }
-      await startJob("Hand off selected agents", ge.handoff({ ids }));
+      await startJob("Hand off selected agents", ge.handoff({ ids, concurrency }));
       notify("Started agent handoff");
       await refresh();
       location.hash = "#/activity";
@@ -551,12 +561,20 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                   />
                 )}
 
-                <div className="grid gap-5 lg:grid-cols-2">
+                <div className="grid gap-5 lg:grid-cols-3">
                   <Field label="Systems">
                     <SystemsField value={systems} onChange={setSystems} />
                   </Field>
                   <Field label="Target">
                     <TargetSelect value={targetStage} onChange={setTargetStage} />
+                  </Field>
+                  <Field label="Parallelism">
+                    <Select value={concurrency} onChange={(event) => updateConcurrency(event.target.value)}>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="4">4</option>
+                      <option value="8">8</option>
+                    </Select>
                   </Field>
                 </div>
               </div>
@@ -600,6 +618,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                   <ContractRow Icon={Database} label="Systems" value={systemList.length ? systemList.join(", ") : "Not set"} />
                   <ContractRow Icon={Boxes} label="Target" value={`${targetLabel} ready`} />
                   <ContractRow Icon={Users} label="Scope" value={scopeMode === "single" ? "Single agent" : `Fleet · ${selectedCount} spec${selectedCount === 1 ? "" : "s"}`} />
+                  <ContractRow Icon={GitBranch} label="Parallelism" value={`${concurrency} remote submission${concurrency === "1" ? "" : "s"}`} />
                   <ContractRow Icon={GitBranch} label="Runtime" value={`${status?.mode || "local"} · ${plan?.implementation?.pipelineGraph ? "typed run graph" : "pipeline planner"}`} />
                 </div>
               </div>

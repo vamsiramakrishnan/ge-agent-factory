@@ -29,7 +29,7 @@ worker that runs the pipeline, and a shared image both build from.
 
 | Component | Cloud Run service | Role |
 |---|---|---|
-| Gateway | `ge-agent-factory-gateway` | Scaffolds each agent workspace in-process; enqueues the pipeline. Browser/UI entry (IAP-protected). |
+| Gateway | `ge-agent-factory-gateway` | API/runtime entrypoint: scaffolds each agent workspace in-process and enqueues the pipeline. Authenticated by IAM/OIDC, not a UI host. |
 | Worker | `ge-agent-factory-worker` | Runs non-release stages; dispatches release stages to Cloud Build. Invoked by Cloud Tasks (OIDC). |
 | Builder image | `…/ge-agent-factory/ge-agent-factory-builder` | Shared toolchain (uv, gcloud, agents-cli) + warm uv cache, so per-agent builds skip installs. |
 
@@ -255,7 +255,9 @@ Two tiers, both **external ingress, never `allUsers`**:
   Set `console_image` / `presentation_image` to create the services
   (`installer/terraform/ui_services.tf`); IAP enables `iap_enabled` on the service,
   grants the IAP service agent `run.invoker`, and grants each member
-  `roles/iap.httpsResourceAccessor`. No load balancer, OAuth client, cert, or DNS.
+  `roles/iap.httpsResourceAccessor`. Presentation is UI-only; runtime tasks go
+  through the console/API gateway/CLI/MCP surfaces. No load balancer, OAuth
+  client, cert, or DNS.
 
   ```hcl
   # values.tfvars
@@ -275,9 +277,9 @@ The console's views are documented in [Console](./console/); operationally:
 
 - Run locally with `mise run console` (dev, port 18260) or `bun --cwd
   apps/console run start` (production server).
-- In production, deploy it **read-only** via `GE_CONSOLE_READONLY=1` — agent
-  actions (build/ship/sync) delegate to the cloud gateway instead of running
-  in-process.
+- In production, mutating actions (build/ship/sync) delegate to the runtime
+  gateway instead of presentation code. Set `GE_CONSOLE_READONLY=1` only for a
+  deliberately locked-down observe-only console.
 - Live logs come from the NDJSON event bus (`tools/lib/events.mjs`): remote
   workers tee stage events to GCS, local runs write
   `.ge/factory/factory-events.jsonl`, and daemon tasks write streams under
@@ -286,7 +288,7 @@ The console's views are documented in [Console](./console/); operationally:
   Cloud Run via `terraform apply` (Terraform owns the Cloud Run config,
   `installer/terraform/ui_services.tf`); `--no-apply` builds and pushes only.
   `ge console doctor` checks the deployed service (readiness, IAP,
-  `GE_CONSOLE_READONLY`) read-only, and `ge images build console` builds the
+  optional `GE_CONSOLE_READONLY` lock, and `ge images build console` builds the
   image alone. Whether a given project has actually cut over its production
   console to this path is still an operator decision, not a gap in the
   tooling.

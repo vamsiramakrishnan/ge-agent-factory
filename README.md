@@ -99,14 +99,15 @@ coding agent can set up a bare machine, verify each step, and operate the
 factory end to end:
 
 ```bash
-bunx create-ge-agent-factory        # any machine: clone + guided, verified install
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --skills agents        # GitHub-backed clone + guided, verified install
 ```
 
 | Agent | Install |
 | --- | --- |
 | **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` (in a checkout: `mise run skills-install`) |
+| **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` (in a checkout: `mise run skills-install`) |
 | **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |
 
 Generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills automate the setup and operations layer above that handoff.
@@ -370,4 +371,3 @@ mise run ci                # the CI gate: hygiene + lint + typecheck + docs gate
 See [`CONTRIBUTING.md`](CONTRIBUTING.md), the
 [Contributor Docs](https://vamsiramakrishnan.github.io/ge-agent-factory/contributing/),
 and [`docs/OPERATIONS.md`](docs/OPERATIONS.md) for the operator runbook.
-

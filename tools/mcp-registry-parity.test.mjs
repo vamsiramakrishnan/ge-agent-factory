@@ -17,7 +17,9 @@ const EXPECTED_TOOLS = {
   factory_prove: ["id?", "target?", "force?"],
   // Admission-gate widening (Agent Passport + handoff admission gate,
   // 2026-07-04): factory_handoff gains the recorded break-glass `force`.
-  factory_handoff: ["target?", "ids?", "startStage?", "targetStage?", "noProxy?", "force?"],
+  // Console/CLI parity widening (2026-07-09): `concurrency` is the same
+  // parallel remote submission knob `ge handoff` already exposes.
+  factory_handoff: ["target?", "ids?", "startStage?", "targetStage?", "concurrency?", "noProxy?", "force?"],
   // Renamed from factory_list_usecases (2026-07-04) to match the
   // noun_verb convention every other tool name follows (its own registry
   // id was already "usecases.list"; only this field lagged).

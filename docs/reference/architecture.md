@@ -153,7 +153,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 <!-- BEGIN GENERATED: skill-matrix — do not edit; run `bun run docs:skill-matrix` -->
 | Station skill | Capability | `ge` commands | Engine packages | Reference docs |
 |---|---|---|---|---|
-| [`installing-the-factory`](../../skills/installing-the-factory/) | `factory_install` | `ge doctor`, `ge prove` | — | [`getting-started.md`](../start/getting-started.md) |
+| [`installing-the-factory`](../../skills/installing-the-factory/) | `factory_install` | `ge init`, `ge doctor`, `ge prove` | — | [`getting-started.md`](../start/getting-started.md) |
 | [`navigating-factory-line`](../../skills/navigating-factory-line/) | `factory_line` | — | — | [`architecture.md`](architecture.md), [`atomic-capabilities.md`](atomic-capabilities.md) |
 | [`interviewing-specs`](../../skills/interviewing-specs/) | `spec_interview` | `ge capture`, `ge agents register` | [`@ge/agent-spec`](../../packages/agent-spec/) | [`spec-schema.md`](spec-schema.md) |
 | [`planning-missions`](../../skills/planning-missions/) | `mission_planning` | — | — | — |
@@ -165,7 +165,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`driving-live-proof`](../../skills/driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../../packages/evalkit/) | [`evaluation-generation.md`](evaluation-generation.md), [`metric-applicability.md`](metric-applicability.md), [`live-transcript.md`](live-transcript.md), [`live-budgets.md`](live-budgets.md) |
 | [`operating-console`](../../skills/operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](console-and-apis.md) |
 | [`recording-evidence`](../../skills/recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../../packages/run-ledger/) | — |
-| [`operating-the-factory`](../../skills/operating-the-factory/) | `factory_operation` | `ge agents status`, `ge doctor`, `factory list-usecases` | — | [`agent-operability.md`](agent-operability.md), [`cli.md`](cli.md) |
+| [`operating-the-factory`](../../skills/operating-the-factory/) | `factory_operation` | `ge agents status`, `ge init`, `ge doctor`, `factory list-usecases` | — | [`agent-operability.md`](agent-operability.md), [`cli.md`](cli.md) |
 | [`standing-up-the-platform`](../../skills/standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge mcp doctor` | — | [`config.md`](config.md), [`architecture.md`](architecture.md) |
 | [`deploying-the-control-plane`](../../skills/deploying-the-control-plane/) | `control_plane_deploy` | — | — | [`architecture.md`](architecture.md) |
 | [`grounding-interviews-with-documents`](../../skills/grounding-interviews-with-documents/) | `document_grounding` | `ge capture` | — | [`spec-schema.md`](spec-schema.md) |

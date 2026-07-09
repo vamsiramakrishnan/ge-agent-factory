@@ -18,7 +18,7 @@ import { TASK_DISPATCH_DEADLINE, enqueueFactoryStage, parseWorkerPayload } from 
 const REPO_ROOT = join(import.meta.dirname, "../../..");
 const CLOUD_RUN_TF = join(REPO_ROOT, "installer/terraform/cloud_run.tf");
 const TASKS_TF = join(REPO_ROOT, "installer/terraform/tasks.tf");
-const FACTORY_BRIDGE = join(REPO_ROOT, "apps/presentation/src/server/factory-bridge.js");
+const FACTORY_GATEWAY = join(REPO_ROOT, "apps/factory/src/factory-gateway.js");
 
 // Cloud Tasks hard ceiling for httpTarget dispatchDeadline.
 const CLOUD_TASKS_MAX_DISPATCH_DEADLINE_SECONDS = 1800;
@@ -64,11 +64,10 @@ test("tasks.tf: retry_config is bounded by max_attempts only (no max_retry_durat
   expect(tf).toMatch(/max_attempts\s*=\s*5/);
 });
 
-test("gateway enqueue (factory-bridge.js) carries the same dispatchDeadline", async () => {
-  // The presentation gateway builds its task payload independently (it cannot
-  // import across apps), so pin its literal to the shared constant by text.
-  const bridge = await readFile(FACTORY_BRIDGE, "utf8");
-  expect(bridge).toContain(`dispatchDeadline: "${TASK_DISPATCH_DEADLINE}"`);
+test("gateway enqueue uses the worker's shared Cloud Tasks helper", async () => {
+  const gateway = await readFile(FACTORY_GATEWAY, "utf8");
+  expect(gateway).toContain("enqueueFactoryStage");
+  expect(gateway).not.toContain("dispatchDeadline:");
 });
 
 test("worker enqueue REST body sets task.dispatchDeadline on every created task", async () => {

@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 // create-ge-agent-factory — the npx/bunx bootstrap for the GE Agent Factory.
 //
-//   bunx create-ge-agent-factory                 # clone + print the guided phases
-//   bunx create-ge-agent-factory --yes           # clone + run the phases (mise → setup → verify)
-//   bunx create-ge-agent-factory --skills claude # also expose the skills to Claude Code
-//   bunx create-ge-agent-factory --skills agents # …or to ~/.agents/skills (Antigravity/agents-cli/Codex)
+//   curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+//     | bun - --skills agents                    # clone + expose skills from GitHub
+//   bunx create-ge-agent-factory                 # same UX after the npm package is published
 //
 // Design: this file is the *entry ramp*, not the installer of record. The
 // authority for install phases is the repo's own bootstrap skill
@@ -30,7 +29,10 @@ if (flag("help") || flag("h")) {
   process.stdout.write(`create-ge-agent-factory — bootstrap the GE Agent Factory
 
 usage:
-  bunx create-ge-agent-factory [dir] [--yes] [--skills claude|agents|gemini] [--skills-dir <path>]
+  curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \\
+    | bun - -- [dir] [--yes] [--skills claude|agents|gemini] [--skills-dir <path>]
+
+  create-ge-agent-factory [dir] [--yes] [--skills claude|agents|gemini] [--skills-dir <path>]
 
   [dir]                 where to clone (default ./ge-agent-factory; reused if already a checkout)
   --yes                 actually run the install phases (mise, mise run setup); default prints them
@@ -41,6 +43,10 @@ usage:
 
 The installer of record is the repo's own bootstrap skill
 (skills/installing-the-factory/SKILL.md) — this command gets you to it.
+
+Note: bare "bunx create-ge-agent-factory" resolves through npm and works only
+after the package is published. The raw GitHub command above is the supported
+Git-backed path for this monorepo.
 `);
   process.exit(0);
 }

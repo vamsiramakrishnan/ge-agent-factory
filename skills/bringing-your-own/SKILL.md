@@ -60,6 +60,8 @@ The manifest applies clean (or its remaining actions are correctly classified pl
 
 ## References
 
+- Worked example: `references/example-session.md` — a read-only BYO manifest
+  review followed by a dry-run apply and targeted binding.
 - Cookbook: `docs/cookbooks/bring-your-own-systems.md` — the BYO insertion points end to end, with the local-only/read-only-by-default scope spelled out.
 - Reference: `docs/reference/cli.md` — full flag tables for `ge byo`, `ge systems`, `ge evals import`, and `ge models doctor`.
 - Engine: `@ge/byo-systems` (`packages/byo-systems/README.md`) — the manifest schema, binding validation, and synthesis core behind these commands.

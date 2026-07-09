@@ -74,7 +74,7 @@
     "generator:tools-from-openapi": "node apps/factory/scripts/generate-tools-from-openapi.mjs",
     "generator:validate-simulators": "node apps/factory/scripts/validate-simulator-pack.mjs",
     "generator:test-simulators": "python3 -m pytest apps/factory/mcp-service/tests/test_simulator_conformance.py",
-    "source:hygiene": "node tools/source-hygiene.mjs && node tools/check-no-app-imports.mjs && node apps/factory/scripts/gen-harness-schemas.mjs --check && node tools/check-app-import-surface.mjs && node tools/check-silent-catches.mjs && node tools/gen-config-schema.mjs --check && node tools/gen-manifest-schema.mjs --check && node tools/check-generated-drift.mjs && node tools/check-skill-command-parity.mjs",
+    "source:hygiene": "node tools/source-hygiene.mjs && node tools/check-no-app-imports.mjs && node apps/factory/scripts/gen-harness-schemas.mjs --check && node tools/check-app-import-surface.mjs && node tools/check-silent-catches.mjs && node tools/gen-config-schema.mjs --check && node tools/gen-manifest-schema.mjs --check && node tools/check-generated-drift.mjs && node tools/check-skill-command-parity.mjs && node tools/check-bootstrap-docs.mjs",
     "layering:check": "node tools/check-no-app-imports.mjs",
     "gen:harness-schemas": "node apps/factory/scripts/gen-harness-schemas.mjs",
     "generator:scaffold-simulator": "node apps/factory/scripts/scaffold-simulator-pack.mjs"

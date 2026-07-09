@@ -164,7 +164,9 @@ export function createFactoryPlane({
     const gatewayImage = `${repo}/${cfg.gatewayService}:${tag}`;
     const workerImage = `${repo}/${cfg.workerService}:${tag}`;
     log(`building gateway → ${gatewayImage}`);
-    run("gcloud", ["builds", "submit", ".", "--project", cfg.project, "--tag", gatewayImage], { capture: false });
+    run("gcloud", ["builds", "submit", repoRoot, "--project", cfg.project,
+      "--config", "apps/factory/cloudbuild.gateway.yaml",
+      "--substitutions", `_IMAGE=${gatewayImage}`], { capture: false });
     log(`building worker → ${workerImage}`);
     // Build the worker from the repo-root context via its cloudbuild config (mirrors
     // mcp-plane / the gateway): the worker imports @ge/run-ledger + @ge/okf (packages/)
@@ -233,7 +235,7 @@ export function createFactoryPlane({
     return collector.report({ project: cfg.project, region: cfg.region });
   }
 
-  // Read-only console checks (image-gated Cloud Run service — installer/terraform/
+  // Console checks (image-gated Cloud Run service — installer/terraform/
   // ui_services.tf only creates it once console_image is non-empty). Deliberately
   // never throws: unlike doctor() above (which asserts cfg.project up front for the
   // mutating gateway/worker plane), a missing project/undeployed console is just
@@ -267,9 +269,10 @@ export function createFactoryPlane({
       add("console ready", ready?.status === "True" ? "pass" : "fail", `${CONSOLE_SERVICE}: ${ready?.status || "?"} ${ready?.message || ""}`, `ge logs --service ${CONSOLE_SERVICE}`);
       if (serviceIapEnabled(service)) add("console IAP", "warn", "platform IAP enabled — blocks programmatic calls", `gcloud run services update ${CONSOLE_SERVICE} --project ${cfg.project} --region ${cfg.region} --no-iap`);
       const readonly = serviceEnv(service, "GE_CONSOLE_READONLY");
-      add("console GE_CONSOLE_READONLY", /^(1|true|yes|on)$/i.test(String(readonly || "")) ? "pass" : "warn",
-        readonly || "unset — a deployed console should be read-only (mutating POSTs go through the gateway, not a local daemon)",
-        "terraform apply (ui_services.tf hardcodes GE_CONSOLE_READONLY=true)");
+      const locked = /^(1|true|yes|on)$/i.test(String(readonly || ""));
+      add("console mutation mode", locked ? "warn" : "pass",
+        locked ? "GE_CONSOLE_READONLY is set — Console mutations are blocked" : "enabled — mutating actions delegate to the runtime gateway",
+        "unset GE_CONSOLE_READONLY unless intentionally running a read-only console");
     }
 
     const report = collector.report({ project: cfg.project, region: cfg.region, service: CONSOLE_SERVICE });
