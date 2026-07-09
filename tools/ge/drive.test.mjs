@@ -115,7 +115,7 @@ test("missing live target renders the position screen with the next command", as
   // No script, no cassette, stdin not a TTY → the scripted path with zero
   // turns hits target resolution first; with no engine configured that is
   // the GELIVE001 position screen.
-  const { stdout, exitCode } = await runGe(["drive"], {
+  const { stdout, exitCode } = await runGe(["drive", "--project", "ge-drive-empty-test"], {
     env: { GCP_PROJECT_ID: "", GEMINI_ENTERPRISE_APP_ID: "", GE_STATE_ROOT: dir },
   });
   expect(exitCode).toBe(1);

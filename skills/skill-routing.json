@@ -229,6 +229,7 @@
         "operating-the-factory"
       ],
       "commands": [
+        "init",
         "doctor",
         "prove"
       ],
@@ -341,6 +342,7 @@
       ],
       "commands": [
         "status",
+        "init",
         "doctor",
         "usecases.list"
       ],

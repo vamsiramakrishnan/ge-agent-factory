@@ -1,6 +1,6 @@
 ---
 name: deploying-the-control-plane
-description: Builds and deploys the factory's OWN apps — gateway (presentation deck), console, worker, MCP services — and runs the self-service installer into a target project. Use when deploying or updating the control-plane Cloud Run services, building app images, running ge infra apply / installer/build-and-deploy.sh, or wiring the Cloud Shell install. NOT for deploying generated agents (use running-release).
+description: Builds and deploys the factory's OWN apps — factory gateway, console, presentation UI, worker, MCP services — and runs the self-service installer into a target project. Use when deploying or updating the control-plane Cloud Run services, building app images, running ge infra apply / installer/build-and-deploy.sh, or wiring the Cloud Shell install. NOT for deploying generated agents (use running-release).
 ---
 
 # Deploying The Control Plane
@@ -31,8 +31,8 @@ In plain language: each app has an app-local Dockerfile + sibling `cloudbuild.ya
 ```bash
 TAG=$(git rev-parse --short HEAD)
 # build (per app cloudbuild.yaml, repo-root context):
-gcloud builds submit . --config apps/presentation/cloudbuild.yaml \
-  --substitutions=_REGION=us-central1,_AR_REPO=cloud-run-source,_SERVICE_NAME=ge-agent-factory-gateway,_TAG=$TAG
+gcloud builds submit . --config apps/factory/cloudbuild.gateway.yaml \
+  --substitutions=_IMAGE=<AR>/ge-agent-factory-gateway:$TAG
 gcloud builds submit . --config apps/console/cloudbuild.yaml \
   --substitutions=_REGION=us-central1,_AR_REPO=cloud-run-source,_SERVICE_NAME=ge-agent-factory-console,_TAG=$TAG
 # bind (preferred): terraform owns Cloud Run config

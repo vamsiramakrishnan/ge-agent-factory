@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Button, PageHeader, Section } from "@ge/ui";
+import { Button, Field, PageHeader, Section, Select } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet as FleetData } from "../services/geClient";
 import { FleetTable } from "../components/FleetTable";
@@ -33,6 +33,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
   const notify = useToast();
   const [syncRemote, setSyncRemote] = useState(() => window.localStorage.getItem("ge.sync.remote") || "");
   const [syncPush, setSyncPush] = useState(() => window.localStorage.getItem("ge.sync.push") !== "false");
+  const [concurrency, setConcurrency] = useState(() => window.localStorage.getItem("ge.fleet.concurrency") || "2");
 
   const departments = useMemo(() => {
     if (!fleet) return [];
@@ -102,13 +103,24 @@ export default function Fleet({ status, refresh }: FleetProps) {
 
   // A duration arg historically meant the error/failure variant; map it to tone.
   const showToast = (message: string, duration?: number) => notify(message, duration ? "error" : "success");
+  const selectedCsv = () => Array.from(selected).join(",");
+  const isRemoteMode = status?.mode === "remote";
+  const buildArgs = (ids: string, extra: { force?: boolean } = {}) => ({
+    ids,
+    local: isRemoteMode ? false : true,
+    ...(isRemoteMode ? { concurrency } : {}),
+    ...extra,
+  });
+  const updateConcurrency = (value: string) => {
+    setConcurrency(value);
+    window.localStorage.setItem("ge.fleet.concurrency", value);
+  };
 
   const handleBuild = async () => {
     if (selected.size === 0) return;
     setBusyAction("build");
     try {
-      const ids = Array.from(selected).join(",");
-      await startJob(`ge agents build (${selected.size})`, ge.build({ ids, local: status?.mode === "remote" ? false : true }));
+      await startJob(`ge agents build (${selected.size})`, ge.build(buildArgs(selectedCsv())));
       showToast(`Build started for ${selected.size} agent(s)`);
       setSelected(new Set());
       await fetchFleet();
@@ -128,8 +140,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
     if (!ok) return;
     setBusyAction("regenerate");
     try {
-      const ids = Array.from(selected).join(",");
-      await startJob(`ge agents build --force (${selected.size})`, ge.build({ ids, local: status?.mode === "remote" ? false : true, force: true }));
+      await startJob(`ge agents build --force (${selected.size})`, ge.build(buildArgs(selectedCsv(), { force: true })));
       showToast(`Regenerate started for ${selected.size} agent(s)`);
       setSelected(new Set());
       await fetchFleet();
@@ -148,7 +159,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
       const ids = selectedAgents
         .map((agent) => agent.actionPlan?.workspaceIds?.[0] || agent.workspaceId || agent.id)
         .join(",");
-      await startJob(`ge handoff (${selected.size})`, ge.handoff({ ids }));
+      await startJob(`ge handoff (${selected.size})`, ge.handoff({ ids, concurrency }));
       showToast(`Handoff started for ${selected.size} agent(s)`);
       setSelected(new Set());
       await fetchFleet();
@@ -212,7 +223,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
       const actions: string[] = [];
       let focusTaskId = "";
       if (buildIds.length) {
-        await startJob(`ge agents build (${buildIds.length})`, ge.build({ ids: buildIds.join(","), local: status?.mode === "remote" ? false : true }));
+        await startJob(`ge agents build (${buildIds.length})`, ge.build(buildArgs(buildIds.join(","))));
         actions.push(`build ${buildIds.length}`);
       }
       for (const taskId of resumeTaskIds) {
@@ -417,57 +428,65 @@ export default function Fleet({ status, refresh }: FleetProps) {
 
       {selected.size > 0 && (
         <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <span className="text-sm font-medium text-on-surface">
               {selected.size} selected
             </span>
-            <div className="flex flex-wrap gap-2">
-            <Button
-              variant="primary"
-              size="md"
-              loading={busyAction === "repair"}
-              disabled={busyAction !== null}
-              onClick={handleFixBlockers}
-            >
-              {busyAction === "repair" ? "Repairing..." : "Fix Blockers"}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={busyAction === "build"}
-              disabled={busyAction !== null}
-              onClick={handleBuild}
-            >
-              {busyAction === "build" ? "Building..." : "Build"}
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              loading={busyAction === "regenerate"}
-              disabled={busyAction !== null}
-              onClick={handleRegenerate}
-              title="Wipe the workspace and rebuild from scratch (overwrites artifacts)"
-            >
-              {busyAction === "regenerate" ? "Regenerating..." : "Regenerate"}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={busyAction === "handoff"}
-              disabled={busyAction !== null}
-              onClick={handleHandoff}
-            >
-              {busyAction === "handoff" ? "Handing off..." : "Hand off"}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={busyAction === "sync"}
-              disabled={busyAction !== null}
-              onClick={handleSync}
-            >
-              {busyAction === "sync" ? "Syncing..." : "Sync code"}
-            </Button>
+            <div className="flex flex-wrap items-end gap-2">
+              <Field label="Parallelism" className="w-28">
+                <Select value={concurrency} onChange={(event) => updateConcurrency(event.target.value)}>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="4">4</option>
+                  <option value="8">8</option>
+                </Select>
+              </Field>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busyAction === "repair"}
+                disabled={busyAction !== null}
+                onClick={handleFixBlockers}
+              >
+                {busyAction === "repair" ? "Repairing..." : "Fix Blockers"}
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busyAction === "build"}
+                disabled={busyAction !== null}
+                onClick={handleBuild}
+              >
+                {busyAction === "build" ? "Building..." : "Build"}
+              </Button>
+              <Button
+                variant="outline"
+                size="md"
+                loading={busyAction === "regenerate"}
+                disabled={busyAction !== null}
+                onClick={handleRegenerate}
+                title="Wipe the workspace and rebuild from scratch (overwrites artifacts)"
+              >
+                {busyAction === "regenerate" ? "Regenerating..." : "Regenerate"}
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busyAction === "handoff"}
+                disabled={busyAction !== null}
+                onClick={handleHandoff}
+              >
+                {busyAction === "handoff" ? "Handing off..." : "Hand off"}
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busyAction === "sync"}
+                disabled={busyAction !== null}
+                onClick={handleSync}
+              >
+                {busyAction === "sync" ? "Syncing..." : "Sync code"}
+              </Button>
             </div>
           </div>
           {/* The console teaches the CLI: what Build / Hand off / Sync run,

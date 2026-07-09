@@ -39,8 +39,9 @@ mise run skills-install                                      # → ~/.agents/ski
 AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # → Claude Code's skill directory
 ```
 
-Distribution surfaces (no checkout needed): `bunx create-ge-agent-factory`
-(npm bootstrap — clones, installs, verifies, links skills); Claude Code
+Distribution surfaces (no checkout needed): the GitHub-backed
+`create-ge-agent-factory` installer script (clones, installs, verifies,
+links skills); Claude Code
 plugin marketplace (`/plugin marketplace add vamsiramakrishnan/ge-agent-factory`,
 then `factory-bootstrap` or `factory-operator` — manifest in
 `.claude-plugin/marketplace.json`); Gemini CLI extension

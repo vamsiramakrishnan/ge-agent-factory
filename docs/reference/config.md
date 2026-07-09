@@ -46,7 +46,7 @@ core fields:
 | `agentIdentityOrgId` | `--agentIdentityOrgId` (every command) | `GE_AGENT_IDENTITY_ORG_ID` | — |
 | `agentsRepo` | `--remote <git-url>` (on `ge agents sync`) | `GE_AGENTS_REPO` | `""` (falls back to `generated-agents/` in-repo) |
 | `dataBackend` | *(env / file only)* | `GE_DATA_BACKEND` | `fixtures` — `fixtures` (local) vs `mcp` (cloud) tool backend in generated agents; the generated Python tool backend reads the env var directly and never `.ge.json` |
-| `consoleReadonly` | *(env / file only)* | `GE_CONSOLE_READONLY` | `false` — read-only production console; read per-request straight off the env var by the console server, not through `.ge.json` |
+| `consoleReadonly` | *(env / file only)* | `GE_CONSOLE_READONLY` | `false` — optional observe-only console lock; read per-request straight off the env var by the console server, not through `.ge.json` |
 | `harnessPythonPath` | *(env / file only)* | `GE_HARNESS_PYTHON` | — (falls back to a discovered venv, then `python3`) — override the harness interpreter; resolved from the env var only |
 | `allowUnpromoted` | `--force` (on `ge handoff`) | `GE_ALLOW_UNPROMOTED` | `false` — override the promotion gate (visible, deliberate); resolved from the env var only |
 | `simulatorOverlayBackend` | *(env / file only)* | `GE_SIMULATOR_OVERLAY_BACKEND` | `memory` — durable backend (`firestore`/`alloydb`) for BYO-twin overlays shared across Cloud Run instances; a configured value flows to deployed MCP services via `ge mcp deploy`, but the simulator's own Python reader honors only the env var |

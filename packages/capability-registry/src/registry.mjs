@@ -139,6 +139,7 @@ export const GE_COMMANDS = {
         ids: { type: "string", optional: true, description: "Comma-separated local workspace ids" },
         startStage: { type: "string", optional: true },
         targetStage: { type: "string", optional: true },
+        concurrency: { type: "string", optional: true, description: "Parallel remote submissions (default 2)" },
         noProxy: { type: "boolean", optional: true },
         force: { type: "boolean", optional: true, description: "Break-glass: release despite a denied admission decision (the override is recorded in the decision log)" },
       },
@@ -148,6 +149,7 @@ export const GE_COMMANDS = {
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.startStage) argv.push("--start-stage", String(body.startStage));
       if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
+      if (body.concurrency) argv.push("--concurrency", String(body.concurrency));
       if (body.noProxy) argv.push("--no-proxy");
       if (body.force) argv.push("--force");
       return argv;
@@ -507,6 +509,34 @@ export const GE_COMMANDS = {
     argv: (body = {}) => {
       const argv = ["evals", "coverage", "--json"];
       if (body.id) argv.push("--id", String(body.id));
+      return argv;
+    },
+  },
+  "init": {
+    id: "init",
+    method: "POST",
+    path: "/api/ge/init",
+    cli: "ge init",
+    label: "Initialize config",
+    summary: "Discover project/config values from Terraform outputs and gcloud, then write .ge.json",
+    guide: {
+      when: "the checkout has no .ge.json yet, or project-scoped values should be refreshed from Terraform/gcloud discovery",
+      next: ["ge doctor --local", "ge up", "ge prove"],
+    },
+    risk: "writes-repo",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: {
+      bins: ["gcloud"],
+      config: [],
+      configWritable: true,
+    },
+    argv: (body = {}) => {
+      const argv = ["init"];
+      if (body.project) argv.push("--project", String(body.project));
+      if (body.region) argv.push("--region", String(body.region));
+      if (body.geApp || body.geAppId) argv.push("--ge-app", String(body.geApp || body.geAppId));
+      if (body.agentIdentityOrgId) argv.push("--agentIdentityOrgId", String(body.agentIdentityOrgId));
       return argv;
     },
   },

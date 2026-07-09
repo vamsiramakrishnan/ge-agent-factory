@@ -4,9 +4,11 @@ Bootstrap the [GE Agent Factory](https://github.com/vamsiramakrishnan/ge-agent-f
 from a bare machine with one command:
 
 ```bash
-bunx create-ge-agent-factory            # or: npx create-ge-agent-factory
-bunx create-ge-agent-factory --yes      # execute the phases instead of printing them
-bunx create-ge-agent-factory --skills claude   # also expose the skills to Claude Code
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --skills agents
+
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --yes --skills agents   # execute the phases instead of printing them
 ```
 
 What it does, in order:
@@ -30,7 +32,7 @@ Zero dependencies; needs Node ≥ 18 and `git`.
 | --- | --- |
 | Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` → `/plugin install factory-bootstrap@ge-agent-factory` |
 | Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| Antigravity / agents-cli / Codex | `bunx create-ge-agent-factory --skills agents` (or in-repo: `mise run skills-install`) |
+| Antigravity / agents-cli / Codex | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` (or in-repo: `mise run skills-install`) |
 | Any MCP client | `bun tools/mcp-server.mjs` from the repo root |
 
 ## Publishing (maintainers)
@@ -42,5 +44,11 @@ cd packages/create-ge-agent-factory
 npm publish            # requires npm owner rights; publishConfig.access is public
 ```
 
-Keep `bin/create-ge-agent-factory.mjs` dependency-free — it must run under
-bare `npx`/`bunx` on machines that have nothing else installed yet.
+Keep `bin/create-ge-agent-factory.mjs` dependency-free — it must run from
+stdin, a packed tarball, or bare `npx`/`bunx` once published.
+
+After publishing, the npm form is:
+
+```bash
+bunx create-ge-agent-factory --skills agents
+```

@@ -363,6 +363,13 @@ test("POST agents/build uses shared command argv builder", async () => {
   const r = await handleGeApi({ method: "POST", path: "/api/ge/agents/build", query: {}, body: { scope: "canary", local: true, force: true } }, core);
   expect(r.job).toEqual(["agents", "build", "--canary", "--local", "--force"]);
   expect(r.command.id).toBe("agents.build.local");
+  expect(r.dispatch).toEqual({ mode: "local", runtime: "local-daemon" });
+});
+test("POST agents/build forwards remote parallelism", async () => {
+  const r = await handleGeApi({ method: "POST", path: "/api/ge/agents/build", query: {}, body: { ids: "agent-a,agent-b", local: false, concurrency: "4" } }, core);
+  expect(r.job).toEqual(["agents", "build", "--ids", "agent-a,agent-b", "--concurrency", "4"]);
+  expect(r.command.id).toBe("agents.build");
+  expect(r.dispatch).toEqual({ mode: "remote", runtime: "cloud-gateway" });
 });
 test("POST agents/build uses local readiness metadata in local mode", async () => {
   const localCore = {
@@ -372,6 +379,7 @@ test("POST agents/build uses local readiness metadata in local mode", async () =
   const r = await handleGeApi({ method: "POST", path: "/api/ge/agents/build", query: {}, body: { ids: "ad-hoc-query-agent" } }, localCore);
   expect(r.job).toEqual(["agents", "build", "--ids", "ad-hoc-query-agent", "--local"]);
   expect(r.command.id).toBe("agents.build.local");
+  expect(r.dispatch).toEqual({ mode: "local", runtime: "local-daemon" });
   expect(r.command.requirements.localToolchain).toBe(true);
   expect(r.command.requirements.config.includes("gatewayUrl")).toBe(false);
   expect(r.command.observability).toMatchObject({
@@ -407,6 +415,11 @@ test("POST agents/sync passes selected ids and target repo to CLI job", async ()
     "--no-commit",
   ]);
   expect(r.command.id).toBe("agents.sync");
+});
+test("POST handoff forwards selected workspaces and parallelism", async () => {
+  const r = await handleGeApi({ method: "POST", path: "/api/ge/handoff", query: {}, body: { ids: "ws-a,ws-b", concurrency: "4" } }, core);
+  expect(r.job).toEqual(["handoff", "agents-cli", "--ids", "ws-a,ws-b", "--concurrency", "4"]);
+  expect(r.command.id).toBe("handoff");
 });
 // --- audit-fix-wave WS2: five registry-only routes now wired through the
 // generic POST job-sentinel / GET direct-return catch-alls -----------------

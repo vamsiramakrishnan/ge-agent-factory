@@ -1,11 +1,10 @@
-# Build-only: builds + pushes the presentation/gateway image to Artifact Registry.
-# Does NOT deploy — Terraform owns Cloud Run config (installer/terraform/cloud_run.tf).
-# Bind a freshly built image to the gateway service with:
+# Build-only: builds + pushes the standalone presentation UI image to Artifact Registry.
+# Does NOT deploy — Terraform owns Cloud Run config (installer/terraform/ui_services.tf).
+# Bind a freshly built image to the presentation service with:
 #
-#   terraform apply -var gateway_image=<region>-docker.pkg.dev/<proj>/<repo>/ge-agent-factory-gateway:<tag>
+#   terraform apply -var presentation_image=<region>-docker.pkg.dev/<proj>/<repo>/ge-agent-factory-presentation:<tag>
 #
-# (installer/build-and-deploy.sh does this automatically). Build context is the repo
-# root so the image can include the generator the server imports. Mirrors
+# Build context is the repo root. Mirrors
 # apps/console/cloudbuild.yaml; the root cloudbuild.yaml is the push-trigger variant.
 steps:
   - name: 'gcr.io/cloud-builders/docker'
@@ -25,7 +24,7 @@ images:
 
 substitutions:
   _REGION: 'us-central1'
-  _SERVICE_NAME: 'ge-agent-factory-gateway'
+  _SERVICE_NAME: 'ge-agent-factory-presentation'
   _AR_REPO: 'cloud-run-source'
   _TAG: 'latest'
 

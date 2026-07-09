@@ -64,17 +64,14 @@ describe("remoteLedgerCheck", () => {
   });
 
   test("falls back to env-resolved project when cfg.project is unset", async () => {
-    const saved = process.env.GE_PROJECT;
-    process.env.GE_PROJECT = "env-project";
-    try {
+    await withoutGcpEnv(async () => {
+      process.env.GE_PROJECT = "env-project";
       const createReader = async ({ projectId }) => {
         expect(projectId).toBe("env-project");
         return { listRuns: async () => [] };
       };
       const check = await remoteLedgerCheck({}, { createReader });
       expect(check.status).toBe("pass");
-    } finally {
-      if (saved === undefined) delete process.env.GE_PROJECT; else process.env.GE_PROJECT = saved;
-    }
+    });
   });
 });

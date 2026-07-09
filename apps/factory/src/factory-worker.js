@@ -91,6 +91,7 @@ export function parseWorkerPayload(raw = null, env = process.env) {
     workerService: payload.workerService || env.GE_AGENT_FACTORY_WORKER_SERVICE || "ge-agent-factory-worker",
     cloud: {
       projectId: resolveGcpProject({ explicit: payload.cloud?.projectId, env, fallbackEnvVars: ["GE_AGENT_FACTORY_PROJECT"] }) || "",
+      tasksProjectId: payload.cloud?.tasksProjectId || env.GE_AGENT_FACTORY_TASKS_PROJECT || "",
       projectNumber: payload.cloud?.projectNumber || env.GOOGLE_CLOUD_PROJECT_NUMBER || "",
       runtimeRegion: payload.cloud?.runtimeRegion || env.GE_AGENT_FACTORY_RUNTIME_REGION || env.GE_AGENT_FACTORY_REGION || "us-central1",
       workerServiceUrl: payload.cloud?.workerServiceUrl || env.GE_AGENT_FACTORY_WORKER_SERVICE_URL || "",
@@ -101,6 +102,11 @@ export function parseWorkerPayload(raw = null, env = process.env) {
       tasksQueue: payload.cloud?.tasksQueue || env.GE_AGENT_FACTORY_QUEUE || "ge-agent-factory-stages",
       artifactBucket: payload.cloud?.artifactBucket || env.GE_AGENT_FACTORY_BUCKET || "",
       serviceAccount: payload.cloud?.serviceAccount || env.GE_AGENT_FACTORY_SERVICE_ACCOUNT || "",
+      dataBucket: payload.cloud?.dataBucket || env.GE_AGENT_DATA_BUCKET || "",
+      mcpServiceUrl: payload.cloud?.mcpServiceUrl || env.GE_AGENT_FACTORY_MCP_SERVICE_URL || "",
+      agentIdentityPrincipalSet: payload.cloud?.agentIdentityPrincipalSet || env.GE_AGENT_IDENTITY_PRINCIPAL_SET || "",
+      vertexLocation: payload.cloud?.vertexLocation || env.GOOGLE_GENAI_LOCATION || "",
+      builderImage: payload.cloud?.builderImage || env.GE_AGENT_FACTORY_BUILDER_IMAGE || "",
     },
     options: payload.options || {},
   };
@@ -296,7 +302,7 @@ export async function runCommand(command, args, { cwd = process.cwd(), env = pro
   });
 }
 
-function firestoreValue(value) {
+export function firestoreValue(value) {
   if (value == null) return { nullValue: null };
   if (typeof value === "boolean") return { booleanValue: value };
   if (typeof value === "number" && Number.isInteger(value)) return { integerValue: String(value) };
@@ -478,7 +484,7 @@ function resolveScheduleTime(value) {
 }
 
 export async function buildCloudTaskCommand(payload, { taskId = null, scheduleTime = null } = {}) {
-  const project = payload.cloud?.projectId;
+  const project = payload.cloud?.tasksProjectId || payload.cloud?.projectId;
   const region = payload.cloud?.runtimeRegion || "us-central1";
   const queue = payload.cloud?.tasksQueue || "ge-agent-factory-stages";
   const serviceAccount = payload.cloud?.serviceAccount || `ge-agent-factory-runner@${project}.iam.gserviceaccount.com`;

@@ -353,7 +353,7 @@ export const ROUTES = [
       // Carry the selection so the transport's preflight gates the right departments
       // (e.g. remote build is blocked until the selected agents' tool plane is deployed).
       const selection = { ids: body.ids ?? null, dept: body.dept ?? null, scope: body.scope ?? null };
-      return { job: effectiveCommand.argv(body), command: meta, cfg, selection };
+      return { job: effectiveCommand.argv(body), command: meta, cfg, selection, dispatch: dispatchForCommand(cfg, effectiveCommand, body) };
     },
   },
   // Read-only, fast (expectedDuration "under 10s") commands with no bespoke
@@ -428,6 +428,18 @@ export function isKnownRoute(method, parts) {
 function splitCsv(value) {
   if (Array.isArray(value)) return value;
   return parseList(String(value || ""));
+}
+
+function dispatchForCommand(cfg, command, body = {}) {
+  const explicitLocal = body.local === true || body.mode === "local";
+  const explicitRemote = body.local === false || body.mode === "remote";
+  const mode = command.id.endsWith(".local") || explicitLocal
+    ? "local"
+    : (explicitRemote || cfg.mode === "remote" ? "remote" : "local");
+  return {
+    mode,
+    runtime: mode === "remote" ? "cloud-gateway" : "local-daemon",
+  };
 }
 
 /**

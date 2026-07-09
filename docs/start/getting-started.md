@@ -27,8 +27,8 @@ about, and leaves the `ge` CLI plus the factory's agent skills ready for the
 next operator step.
 
 ```bash
-bunx create-ge-agent-factory        # any machine: clone + guided, verified install
-bunx create-ge-agent-factory --skills agents  # also install skills for agent sessions
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --skills agents        # clone, verify, and install skills for agent sessions
 ```
 
 Other surfaces use the same skill bundle:

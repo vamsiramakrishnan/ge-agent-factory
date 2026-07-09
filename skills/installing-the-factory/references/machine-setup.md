@@ -7,7 +7,7 @@
 | Repo | `git clone …/ge-agent-factory.git` | the source tree, `mise.toml` at root | `test -f mise.toml` |
 | mise | `curl https://mise.run \| sh` | the toolchain manager + task runner in `~/.local/bin/mise` | `mise --version` |
 | Toolchain | `mise trust && mise install` | pinned Bun, Python, uv, Terraform (versions in `mise.toml`) | `bun --version` (inside the repo) |
-| Setup | `mise run setup` | `bun install` (workspace deps), use-case catalog sync, Python venv deps (uv), the `ge` command into `.local/bin/`, skills manifest (`.ge/skills/`), local run daemon (best-effort) | `verify-install.mjs` |
+| Setup | `mise run setup` | `bun install` (workspace deps), use-case catalog sync, Python venv deps (uv), the `ge` command into `$BIN` (default `~/.local/bin`), skills manifest (`.ge/skills/`), local run daemon (best-effort) | `verify-install.mjs` |
 | Config | `bun tools/ge.mjs init` | `.ge.json` (+ `$schema` for editor validation) | `bun tools/ge.mjs config` |
 | Proof | `bun tools/ge.mjs prove` | first validated agent workspace under `.ge/factory/workspaces/` | exit 0 |
 
@@ -26,8 +26,10 @@
   In non-interactive shells (CI, assistant sandboxes), prefer absolute
   invocations: `~/.local/bin/mise …` and `bun tools/ge.mjs …` from the repo
   root — they work without shell activation.
-- The repo's `mise.toml` also prepends `<repo>/.local/bin` to PATH for tasks,
-  which is where `mise run setup` installs `ge`.
+- The repo's `mise.toml` also prepends `<repo>/.local/bin` to PATH for tasks.
+  `mise run setup` installs `ge` into `$BIN` (default `~/.local/bin`);
+  override `BIN=<repo>/.local/bin` only when a repo-local command shim is
+  required.
 
 ## Sandboxes, proxies, offline
 

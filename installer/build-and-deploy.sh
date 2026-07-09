@@ -73,14 +73,13 @@ echo
 gcloud config set project "${PROJECT_ID}" >/dev/null
 
 echo "==> Building gateway image (Cloud Build)..."
-# Gateway uses an app-local Dockerfile (apps/presentation/Dockerfile) built from
-# the repo-root context, so build via its cloudbuild config — symmetric with the
-# console build below (--tag can't target a non-root Dockerfile).
+# Gateway owns the runtime /api/factory surface and builds from apps/factory,
+# with the repo-root context for packages/ and tools/lib/*.
 gcloud builds submit "${REPO_ROOT}" \
   --project="${PROJECT_ID}" \
   --region="${REGION}" \
-  --config="${REPO_ROOT}/apps/presentation/cloudbuild.yaml" \
-  --substitutions="_REGION=${REGION},_AR_REPO=${AR_REPO_ID},_SERVICE_NAME=${GATEWAY_SERVICE},_TAG=${TAG}" \
+  --config="${REPO_ROOT}/apps/factory/cloudbuild.gateway.yaml" \
+  --substitutions="_IMAGE=${GATEWAY_IMAGE}" \
   --gcs-source-staging-dir="gs://${PROJECT_ID}-ge-agent-factory/cloudbuild/source"
 
 echo "==> Building worker image (Cloud Build)..."

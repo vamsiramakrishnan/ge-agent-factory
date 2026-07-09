@@ -1,0 +1,21 @@
+# Build-only: builds + pushes the factory gateway image to Artifact Registry.
+# Terraform owns Cloud Run config and binds this image through gateway_image.
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/factory/gateway.Dockerfile'
+      - '-t'
+      - '${_IMAGE}'
+      - '.'
+
+images:
+  - '${_IMAGE}'
+
+substitutions:
+  _IMAGE: 'us-central1-docker.pkg.dev/$PROJECT_ID/ge-agent-factory/ge-agent-factory-gateway:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
