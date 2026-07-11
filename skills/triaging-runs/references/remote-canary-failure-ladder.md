@@ -141,6 +141,19 @@ Classify the error:
    next stage and keep following until the configured target succeeds or a real
    stage failure occurs.
 
+10. Resume without regenerating. For a failed remote item, run `ge agents
+    resume --remote --run --ids <use-case-id>`. The gateway must select the
+    run-prefix `workspace.tar.gz` checkpoint when it exists, fall back to the
+    original prebuilt archive only when no checkpoint exists, record `resumeOf`,
+    and retry the failed stage. A completed partial run continues from the next
+    stage. Running or queued runs reject duplicate resume unless break-glass is
+    explicit.
+
+11. Inspect deployed-smoke evidence. `artifacts/deployed-smoke.json` records
+    attempt count, timeout, and retryability; each attempt has its own log.
+    Agent Runtime read timeouts and 429/5xx transport failures may retry.
+    Permission, malformed request, and configuration failures must fail fast.
+
 ## Remote Speed Invariants
 
 - Prebuild and push the builder image before large remote batches.
@@ -152,6 +165,9 @@ Classify the error:
 - Use checksum-aware recursive artifact sync and exclude canonical artifacts,
   tests, and eval trees from diagnostic sweeps. Uploading every unchanged file
   at every stage can dominate release time.
+- Never persist `artifacts/eval_case_workspaces` or `.google-agents-cli` into
+  the next stage archive. They are execution sandboxes, not evidence; preserve
+  traces, grade results, case logs, verdicts, and stage result JSON instead.
 - Keep local and remote stage names, result JSON, event schema, and workspace
   archive format identical. Only transport should differ.
 - Cache-heavy work belongs in the builder image or artifact cache, not repeated

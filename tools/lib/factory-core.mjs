@@ -407,7 +407,7 @@ const provisionOps = createProvisionOps({
   factoryDataRoot: FACTORY_DATA_ROOT,
   genDir: GEN_DIR,
 });
-export const { provision, provisionLocal, setMode, firstProof, devexCheck, syncLocal } = provisionOps;
+export const { provision, resumeRemote, provisionLocal, setMode, firstProof, devexCheck, syncLocal } = provisionOps;
 
 // The golden-path verbs (capture/prove/handoff + the board's position report)
 // live in golden-path.mjs; wired here — after the provisionOps composition they

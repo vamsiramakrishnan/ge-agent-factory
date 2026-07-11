@@ -1,5 +1,5 @@
-import { describe, expect, it, mock, spyOn } from "bun:test";
-import { buildStatelessScaffoldArgs, buildWorkspaceCacheKey, defaultFactoryStartStage, FACTORY_GATEWAY_STAGES, firestoreValue, parseGsUri, humanize, deriveToolDescription, summarizeFactoryRunSnapshot } from "./factory-gateway.js";
+import { describe, expect, it, mock, spyOn, test } from "bun:test";
+import { buildStatelessScaffoldArgs, buildWorkspaceCacheKey, defaultFactoryStartStage, FACTORY_GATEWAY_STAGES, firestoreValue, parseGsUri, humanize, deriveToolDescription, resolveFactoryResumeArchive, resumeFactoryRun, summarizeFactoryRunSnapshot } from "./factory-gateway.js";
 import { FACTORY_STAGE_IDS } from "./factory-orchestration.js";
 
 describe("Factory API Bridge Core Helpers", () => {
@@ -102,6 +102,79 @@ describe("Factory API Bridge Core Helpers", () => {
     expect(buildWorkspaceCacheKey(input, env)).toBe(buildWorkspaceCacheKey({ ...input, generationSpec: { a: 1, b: 2 } }, env));
     expect(buildWorkspaceCacheKey(input, env)).not.toBe(buildWorkspaceCacheKey(input, { K_REVISION: "rev-2" }));
     expect(buildWorkspaceCacheKey(input, env)).not.toBe(buildWorkspaceCacheKey({ ...input, evalJudgeSamples: "1" }, env));
+  });
+});
+
+describe("Factory run resume", () => {
+  const failedSnapshot = {
+    status: "failed",
+    currentStage: "poll_runtime",
+    run: {
+      runId: "run-old",
+      title: "Account Follow-Up",
+      useCaseId: "account-follow-up",
+      workspaceId: "ws-account-follow-up",
+      targetStage: "publish_enterprise",
+      project: "project-1",
+      region: "us-central1",
+      bucket: "factory-bucket",
+      artifactPrefix: "gs://factory-bucket/runs/run-old/items/ws-account-follow-up",
+      workspaceArchive: "gs://factory-bucket/prebuilt/ws-account-follow-up/workspace.tar.gz",
+      generationSpec: { domain: "banking" },
+    },
+  };
+
+  test("prefers the last successful stage archive and preserves resume lineage", async () => {
+    let submitted;
+    const result = await resumeFactoryRun("run-old", {
+      target: { geminiEnterpriseAppId: "eng-1" },
+    }, {
+      getSnapshot: async () => failedSnapshot,
+      archiveExists: async () => true,
+      submit: async (request) => {
+        submitted = request;
+        return { ok: true, runId: "run-new" };
+      },
+    });
+
+    expect(result).toEqual({ ok: true, runId: "run-new" });
+    expect(submitted).toMatchObject({
+      useCaseId: "account-follow-up",
+      workspace: "ws-account-follow-up",
+      startStage: "poll_runtime",
+      targetStage: "publish_enterprise",
+      resumeOf: "run-old",
+      prebuiltArchive: "gs://factory-bucket/runs/run-old/items/ws-account-follow-up/workspace.tar.gz",
+      target: { projectId: "project-1", runtimeRegion: "us-central1", artifactBucket: "factory-bucket", geminiEnterpriseAppId: "eng-1" },
+    });
+  });
+
+  test("falls back to the original archive when no successful stage checkpoint exists", async () => {
+    expect(await resolveFactoryResumeArchive(failedSnapshot.run, { exists: async () => false })).toBe(
+      "gs://factory-bucket/prebuilt/ws-account-follow-up/workspace.tar.gz",
+    );
+  });
+
+  test("refuses to duplicate a nonfailed run without force", async () => {
+    await expect(resumeFactoryRun("run-running", { startStage: "poll_runtime" }, {
+      getSnapshot: async () => ({ ...failedSnapshot, status: "running" }),
+      archiveExists: async () => true,
+      submit: async () => ({ ok: true }),
+    })).rejects.toThrow(/refusing duplicate resume/);
+  });
+
+  test("advances a successful partial run from the next stage", async () => {
+    let submitted;
+    await resumeFactoryRun("run-preview", { targetStage: "publish_enterprise" }, {
+      getSnapshot: async () => ({ ...failedSnapshot, status: "done", currentStage: "preview" }),
+      archiveExists: async () => true,
+      submit: async (request) => {
+        submitted = request;
+        return { ok: true, runId: "run-next" };
+      },
+    });
+    expect(submitted.startStage).toBe("plan_deploy");
+    expect(submitted.targetStage).toBe("publish_enterprise");
   });
 });
 

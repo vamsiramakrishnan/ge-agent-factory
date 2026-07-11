@@ -289,7 +289,7 @@ const agentsResume = defineCommand({
       } else if (group.action === "handoff") {
         executed.push({ action: group.action, result: await core.handoff(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", log: elog }) });
       } else if (group.action === "advance_remote") {
-        executed.push({ action: group.action, result: await core.provision(cfg, { ids: group.useCaseIds.join(","), log: elog }) });
+        executed.push({ action: group.action, result: await core.resumeRemote(cfg, { ids: group.useCaseIds.join(","), targetStage: target, log: elog }) });
       }
     }
     emit(args, { ...result, executed: true, results: executed }, (r) => {

@@ -154,7 +154,7 @@ describe("submitFactoryRun — IS_PROD generate path (regression net)", () => {
       title: "Prebuilt Agent",
       useCaseId: "prebuilt_agent",
       workspace: "prebuilt-agent",
-      targetStage: "preview",
+      targetStage: "load_data",
       prebuiltArchive: "gs://test-proj-ge-agent-factory/runs/r-ext/items/prebuilt-agent/workspace.tar.gz",
     });
     expect(record.status).toBe("submitted");

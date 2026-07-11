@@ -10,7 +10,7 @@
 // forwarding retrofitted one at a time; this test makes a dropped field on the
 // remote path fail by construction so the whole class can't recur.
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_REMOTE_SUBMIT_CONCURRENCY, createProvisionOps, defaultRemoteSubmitConcurrency } from "./provision.mjs";
+import { DEFAULT_REMOTE_SUBMIT_CONCURRENCY, createProvisionOps, defaultRemoteSubmitConcurrency, normalizeRemoteFactoryStage } from "./provision.mjs";
 
 // Minimal injected deps: capture the payload the remote path POSTs to the
 // gateway, stub everything with side effects to no-ops.
@@ -79,5 +79,68 @@ describe("remote provision payload consumes build-affecting config", () => {
     expect(result.results[0].fanoutKey.startsWith("remote-build-")).toBe(true);
     expect(result.results[0].fanoutKey.endsWith(":asc-1:submit:1")).toBe(true);
     expect(result.results[0].taskId).toMatch(/asc-1-submit-1-[a-f0-9]{10}$/);
+  });
+});
+
+describe("exact remote resume", () => {
+  test("posts the tracked run to the gateway resume endpoint and advances local tracking", async () => {
+    const posts = [];
+    const writes = [];
+    const ledgerCalls = [];
+    const ops = createProvisionOps({
+      run: () => ({ ok: true, out: "", err: "" }),
+      gcloud: () => ({ ok: true, out: "", err: "" }),
+      ensureGcloud: () => {},
+      ensureBin: () => {},
+      withGateway: async (_cfg, fn) => fn("https://gateway.example", { headers: { authorization: "Bearer token" } }),
+      postJson: async (url, path, payload, headers) => {
+        posts.push({ url, path, payload, headers });
+        return { ok: true, json: { ok: true, runId: "run-new", workspaceId: "ws-asc-1", resumeOf: "run-old" } };
+      },
+      loadCatalog: async () => [{ id: "asc-1", department: "finance" }],
+      runLedger: async () => ({}),
+      ledgerWrite: async (fn) => fn({ recordRemoteSubmission: (input) => ledgerCalls.push(input) }),
+      readJson: () => ({ completed: { "asc-1": { runId: "run-old", workspaceId: "ws-asc-1" } }, failed: {} }),
+      writeJson: (_path, value) => writes.push(structuredClone(value)),
+      localPreflight: () => {},
+      ensureLocalUv: () => {},
+      repoRoot: "/nonexistent",
+      configPath: "/nonexistent/.ge.json",
+      factoryHarnessDir: "/nonexistent/.harness",
+      factoryDataRoot: "/nonexistent/.data",
+      genDir: "/nonexistent/generated",
+    });
+
+    const result = await ops.resumeRemote({
+      ...BASE_CFG,
+      mcpServices: { finance: "https://finance-mcp.example" },
+      agentIdentityPrincipalSet: "principalSet://agent-identity",
+    }, { ids: "asc-1", targetStage: "published" });
+
+    expect(result).toMatchObject({ submitted: 1, failed: 0, targetStage: "publish_enterprise" });
+    expect(posts).toHaveLength(1);
+    expect(posts[0]).toMatchObject({
+      url: "https://gateway.example",
+      path: "/api/factory/runs/run-old/resume",
+      headers: { authorization: "Bearer token" },
+      payload: {
+        targetStage: "publish_enterprise",
+        target: {
+          projectId: "p",
+          mcpServiceUrl: "https://finance-mcp.example",
+          agentIdentityPrincipalSet: "principalSet://agent-identity",
+        },
+      },
+    });
+    expect(writes.at(-1).completed["asc-1"]).toMatchObject({ runId: "run-new", resumeOf: "run-old" });
+    expect(ledgerCalls[0]).toMatchObject({ mode: "remote", kind: "resume", targetStage: "publish_enterprise" });
+  });
+
+  test("normalizes ledger stage aliases to executable cloud stages", () => {
+    expect(normalizeRemoteFactoryStage("previewed")).toBe("preview");
+    expect(normalizeRemoteFactoryStage("deployed")).toBe("poll_runtime");
+    expect(normalizeRemoteFactoryStage("registered")).toBe("register_tools");
+    expect(normalizeRemoteFactoryStage("published")).toBe("publish_enterprise");
+    expect(normalizeRemoteFactoryStage("verify_live")).toBe("verify_live");
   });
 });

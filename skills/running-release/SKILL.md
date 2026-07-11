@@ -34,7 +34,15 @@ In plain language: this skill owns the part of the line where mistakes are expen
    performs the real agents-cli runtime handoff.
 6. If a runtime deploy partially creates an exact, verifiable resource, follow
    the operation-aware recovery in `triaging-runs` before retrying.
-7. Record release facts through Evidence Ledger.
+7. If `poll_runtime` fails on a transient Agent Runtime stream timeout, inspect
+   `artifacts/deployed-smoke.json` and the per-attempt smoke logs. The shared
+   runner retries transient transport/service failures but fails fast on IAM,
+   configuration, and other deterministic errors.
+8. Treat `artifacts/eval_case_workspaces` and `.google-agents-cli` as transient
+   execution state. Durable release evidence is the traces, grade results,
+   case logs, verdict, and stage result; do not carry eval sandboxes through
+   every later workspace archive.
+9. Record release facts through Evidence Ledger.
 
 ## Commands
 
@@ -42,6 +50,12 @@ Local handoff (defaults are already `--start-stage load_data --target-stage publ
 
 ```bash
 bun tools/ge.mjs handoff agents-cli --ids <workspace-id>
+```
+
+Resume an interrupted cloud release from its exact failed stage:
+
+```bash
+bun tools/ge.mjs agents resume --remote --run --ids <use-case-id>
 ```
 
 Deploy plan:

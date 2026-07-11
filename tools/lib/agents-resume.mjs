@@ -18,8 +18,8 @@ const GROUP_META = {
     describe: (n) => `${n} item(s) are past the build boundary — hand off for deploy/register/publish`,
   },
   advance_remote: {
-    label: "Resubmit to the cloud factory",
-    describe: (n) => `${n} item(s) advance or retry on the cloud factory`,
+    label: "Resume on the cloud factory",
+    describe: (n) => `${n} item(s) continue from their exact failed cloud stage`,
   },
 };
 
@@ -39,7 +39,7 @@ function groupKeyFor(row) {
 export function resumeCommandFor(action, { useCaseIds = [], workspaceIds = [] } = {}) {
   if (action === "build_local") return `ge agents build --local --ids ${useCaseIds.join(",")}`;
   if (action === "handoff") return `ge handoff agents-cli --ids ${workspaceIds.join(",")}`;
-  if (action === "advance_remote") return `ge agents build --ids ${useCaseIds.join(",")}`;
+  if (action === "advance_remote") return `ge agents resume --remote --run --ids ${useCaseIds.join(",")}`;
   return null;
 }
 

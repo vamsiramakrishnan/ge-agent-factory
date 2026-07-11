@@ -41,6 +41,10 @@ In plain language: this skill does NOT reimplement any station. It reads the cur
   and workspace archive contract.
 - A generated remote run starts at `package_data`. A prebuilt local workspace
   uses explicit `ge handoff` and normally starts at `load_data`.
+- Recover a failed remote run with `ge agents resume --remote --run --ids
+  <id>`. It creates a lineage-linked continuation from the last stable
+  `workspace.tar.gz` and retries the exact failed stage; it does not regenerate
+  the agent. A successful partial run advances from the next stage.
 - `validate`, eval, or preview can exercise agents-cli, but the actual runtime
   handoff is complete only when `deploy_runtime` records a non-null remote
   runtime id and later release stages verify it.
@@ -52,7 +56,12 @@ bun tools/ge.mjs daemon status --json
 bun tools/ge.mjs daemon cloud --json
 bun tools/ge.mjs agents status --watch --json
 bun tools/ge.mjs agents logs <run-id> --stage <stage>
+bun tools/ge.mjs runs events <run-id> --remote --follow --json
 ```
+
+Treat a nonzero exit from a watched build/status command as a failed terminal
+run even when the final JSON frame was emitted successfully. "Terminal" means
+the watcher finished; it does not mean the run passed.
 
 For console/API observers, status reads must use the shared asynchronous status
 board. Never put synchronous `gcloud` probes on a server request path: they
