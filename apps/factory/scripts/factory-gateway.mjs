@@ -4,6 +4,7 @@ import {
   getFactoryRunSnapshot,
   listAgents,
   preflightTarget,
+  resumeFactoryRun,
   submitFactoryRun,
   watchRunEvents,
 } from "../src/factory-gateway.js";
@@ -66,7 +67,7 @@ serve({
     }
 
     if (!PROVISION_ENABLED && req.method === "POST" &&
-        (pathname === "/api/factory/usecase" || pathname === "/api/factory/preflight")) {
+        (pathname === "/api/factory/usecase" || pathname === "/api/factory/preflight" || pathname.endsWith("/resume"))) {
       return sendJson(req, 403, {
         ok: false,
         error: "Agent provisioning is disabled. Deploy into your own project via the installer (set GE_ENABLE_AGENT_PROVISION=true to re-enable).",
@@ -87,6 +88,13 @@ serve({
 
       if (req.method === "POST" && pathname === "/api/factory/usecase") {
         return sendJson(req, 200, await submitFactoryRun(await readBody(req)));
+      }
+
+      if (req.method === "POST" && pathname.startsWith("/api/factory/runs/") && pathname.endsWith("/resume")) {
+        const parts = pathname.split("/");
+        const runId = parts[4];
+        if (!runId) return sendJson(req, 400, { ok: false, error: "Missing runId parameter" });
+        return sendJson(req, 200, await resumeFactoryRun(runId, await readBody(req)));
       }
 
       if (req.method === "GET" && pathname.startsWith("/api/factory/runs/")) {

@@ -8,6 +8,11 @@ mkdir -p artifacts
 PROJECT_ID="${PROJECT_ID:-${GOOGLE_CLOUD_PROJECT:-${GCLOUD_PROJECT:-${GE_AGENT_FACTORY_PROJECT:-}}}}"
 export PROJECT_ID
 
+cleanup_transient_stage_state() {
+  rm -rf artifacts/eval_case_workspaces .google-agents-cli
+}
+trap cleanup_transient_stage_state EXIT
+
 write_failure_result() {
   local stage="$1"
   local exit_code="$2"

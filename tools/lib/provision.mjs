@@ -41,6 +41,18 @@ export function defaultRemoteSubmitConcurrency(env = process.env) {
   return parseConcurrency(env.GE_REMOTE_SUBMIT_CONCURRENCY, { fallback: DEFAULT_REMOTE_SUBMIT_CONCURRENCY });
 }
 
+const REMOTE_STAGE_ALIASES = Object.freeze({
+  previewed: "preview",
+  deployed: "poll_runtime",
+  registered: "register_tools",
+  published: "publish_enterprise",
+});
+
+export function normalizeRemoteFactoryStage(stage, fallback = "publish_enterprise") {
+  const value = String(stage || fallback);
+  return REMOTE_STAGE_ALIASES[value] || value;
+}
+
 // Mirrors factory-core's parseIdList (accepts a CSV string or an array, always
 // returns a trimmed, empty-free list) — kept local so this module has no
 // dependency back on factory-core.mjs.
@@ -56,6 +68,20 @@ function toAgent(u) {
     id: u.id, name: u.title, title: u.title, useCaseId: u.id, workspaceId: `ws-${u.id}`,
     domain: u.department, goal: u.subtitle || `${u.title} — ${u.department} specialist agent`,
     systems: u.systems || [], targetStage: "publish_enterprise", rows: "48",
+  };
+}
+
+function remoteTarget(cfg, domain = "") {
+  return {
+    projectId: cfg.project,
+    runtimeRegion: cfg.region,
+    artifactBucket: cfg.bucket,
+    dataBucket: cfg.dataBucket,
+    projectNumber: cfg.projectNumber,
+    geminiEnterpriseAppId: cfg.geAppId,
+    serviceAccount: cfg.serviceAccount,
+    mcpServiceUrl: (cfg.mcpServices && cfg.mcpServices[domain]) || "",
+    agentIdentityPrincipalSet: cfg.agentIdentityPrincipalSet || "",
   };
 }
 
@@ -162,10 +188,9 @@ export function createProvisionOps({
           ...(maxOutputTokens != null && String(maxOutputTokens).trim() !== ""
             ? { maxOutputTokens: Number(maxOutputTokens) }
             : {}),
-          target: { projectId: cfg.project, runtimeRegion: cfg.region, artifactBucket: cfg.bucket, dataBucket: cfg.dataBucket, projectNumber: cfg.projectNumber, geminiEnterpriseAppId: cfg.geAppId, serviceAccount: cfg.serviceAccount,
-            // Per-dept custom MCP service URL + agent-identity principalSet → triggers the
-            // register_tools MCP registration + iap.egressor grant in the worker.
-            mcpServiceUrl: (cfg.mcpServices && cfg.mcpServices[a.domain]) || "", agentIdentityPrincipalSet: cfg.agentIdentityPrincipalSet || "" },
+          // Per-dept custom MCP service URL + agent-identity principalSet trigger
+          // register_tools MCP registration + iap.egressor grant in the worker.
+          target: remoteTarget(cfg, a.domain),
         };
         const res = await postJson(url, "/api/factory/usecase", payload, ctx.headers).catch((e) => ({ ok: false, text: e.message }));
         if (res.ok && res.json?.ok) {
@@ -200,6 +225,86 @@ export function createProvisionOps({
       })),
     }));
     return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: pending.length, fanout: submissionFanout, results };
+  }
+
+  async function resumeRemote(cfg, { ids, targetStage = "publish_enterprise", concurrency = defaultRemoteSubmitConcurrency(), noProxy = false, force = false, log = noop } = {}) {
+    ensureGcloud();
+    if (!cfg.project) throw new Error("No project. Run `ge init`.");
+    if (!cfg.geAppId) throw new Error("geAppId unset. Add it to .ge.json or set GEMINI_ENTERPRISE_APP_ID.");
+    const state = readJson(STATE_PATH, { completed: {}, failed: {} });
+    state.completed ||= {};
+    state.failed ||= {};
+    const requested = new Set(parseIdList(ids));
+    const entries = Object.entries(state.completed).filter(([id, entry]) => (
+      !requested.size || requested.has(id) || requested.has(entry?.workspaceId)
+    ));
+    if (!entries.length) {
+      throw new DxError("no tracked remote runs match this resume request.", {
+        where: "state: .ge-state.json (completed remote submissions)",
+        why: "an exact cloud resume needs the prior gateway run id and workspace id",
+        fix: "ge agents status",
+      });
+    }
+
+    const catalogById = new Map((await loadCatalog()).map((item) => [item.id, item]));
+    const effectiveTargetStage = normalizeRemoteFactoryStage(targetStage);
+    const results = [];
+    await withGateway(cfg, async (url, ctx = {}) => {
+      await pool(entries, parseConcurrency(concurrency), async ([id, entry]) => {
+        const domain = catalogById.get(id)?.department || "";
+        const payload = {
+          targetStage: effectiveTargetStage,
+          force,
+          ...(cfg.agentModel ? { model: cfg.agentModel } : {}),
+          ...(cfg.judgeModel ? { judgeModel: cfg.judgeModel } : {}),
+          ...(cfg.evalJudgeSamples ? { evalJudgeSamples: cfg.evalJudgeSamples } : {}),
+          ...(cfg.refinementModel ? { refinementModel: cfg.refinementModel } : {}),
+          ...(cfg.harnessAgent ? { harnessProvider: cfg.harnessAgent } : {}),
+          target: remoteTarget(cfg, domain),
+        };
+        const path = `/api/factory/runs/${encodeURIComponent(entry.runId)}/resume`;
+        const response = await postJson(url, path, payload, ctx.headers).catch((error) => ({ ok: false, text: error.message }));
+        if (response.ok && response.json?.ok) {
+          state.completed[id] = {
+            runId: response.json.runId,
+            workspaceId: response.json.workspaceId || entry.workspaceId,
+            at: new Date().toISOString(),
+            resumeOf: entry.runId,
+          };
+          delete state.failed[id];
+          results.push({ id, ok: true, runId: response.json.runId, resumeOf: entry.runId });
+          log(`✓ ${id} → ${response.json.runId} (resumed ${entry.runId})`);
+        } else {
+          const error = response.json?.error || response.json?.message || `HTTP ${response.status}: ${(response.text || "").slice(0, 160)}`;
+          state.failed[id] = { error, runId: entry.runId };
+          results.push({ id, ok: false, resumeOf: entry.runId, error });
+          log(`✗ ${id} ${error}`);
+        }
+      });
+    }, { noProxy, log });
+    writeJson(STATE_PATH, state);
+
+    const ledgerRunId = `remote-resume-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+    await ledgerWrite((ledger) => ledger.recordRemoteSubmission({
+      runId: ledgerRunId,
+      mode: "remote",
+      kind: "resume",
+      targetStage: effectiveTargetStage,
+      items: results.map((result) => ({
+        id: result.id,
+        useCaseId: result.id,
+        workspaceId: state.completed[result.id]?.workspaceId || null,
+        error: result.ok ? null : result.error,
+        at: state.completed[result.id]?.at,
+      })),
+    }));
+    return {
+      submitted: results.filter((result) => result.ok).length,
+      failed: results.filter((result) => !result.ok).length,
+      total: entries.length,
+      targetStage: effectiveTargetStage,
+      results,
+    };
   }
 
   // Local mode: run the whole pipeline on this machine via the Antigravity SDK
@@ -590,8 +695,7 @@ export function createProvisionOps({
           const payload = {
             title, useCaseId, workspace: id, targetStage, startStage, prebuiltArchive,
             generationSpec: { domain },
-            target: { projectId: cfg.project, runtimeRegion: cfg.region, artifactBucket: cfg.bucket, dataBucket: cfg.dataBucket, projectNumber: cfg.projectNumber, geminiEnterpriseAppId: cfg.geAppId, serviceAccount: cfg.serviceAccount,
-              mcpServiceUrl: (cfg.mcpServices && cfg.mcpServices[domain]) || "", agentIdentityPrincipalSet: cfg.agentIdentityPrincipalSet || "" },
+            target: remoteTarget(cfg, domain),
           };
           const res = await postJson(url, "/api/factory/usecase", payload, ctx.headers).catch((e) => ({ ok: false, text: e.message }));
           if (res.ok && res.json?.ok) { results.push({ id, ok: true, runId: res.json.runId }); log(`✓ ${id} → ${res.json.runId} (from ${startStage})`); }
@@ -610,5 +714,5 @@ export function createProvisionOps({
     return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: admitted.length + denied.length, startStage, targetStage, results };
   }
 
-  return { provision, provisionLocal, setMode, firstProof, devexCheck, syncLocal, handoff };
+  return { provision, resumeRemote, provisionLocal, setMode, firstProof, devexCheck, syncLocal, handoff };
 }

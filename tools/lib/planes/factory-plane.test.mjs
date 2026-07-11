@@ -441,6 +441,10 @@ test("factory release stage Cloud Build delegates to the shared builder script",
   expect(script).toContain("write_failure_result");
   expect(script).toContain("bun /opt/ge/run-deployed-smoke.mjs");
   expect(script).toContain('write_failure_result "poll_runtime" "$SMOKE_EXIT"');
+  expect(script).toContain("trap cleanup_transient_stage_state EXIT");
+  expect(script).toContain("rm -rf artifacts/eval_case_workspaces .google-agents-cli");
+  expect(yaml).toContain("--exclude artifacts/eval_case_workspaces");
+  expect(yaml).toContain("--exclude='^eval_case_workspaces(/|$)'");
   expect(script).not.toContain("set -ceu");
   expect(existsSync(join(repoRoot, "apps/factory/cloudbuild/run-factory-stage.sh"))).toBe(true);
   const builderCopySources = [...dockerfile.matchAll(/^COPY\s+(\S+)\s+/gm)].map((match) => match[1]);

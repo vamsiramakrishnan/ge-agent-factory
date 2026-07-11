@@ -39,7 +39,7 @@ describe("groupResumeActions", () => {
     const { groups } = groupResumeActions([row({ action: "retry", owner: "cloud", useCaseId: "uc-9" })]);
     expect(groups).toHaveLength(1);
     expect(groups[0].action).toBe("advance_remote");
-    expect(groups[0].command).toBe("ge agents build --ids uc-9");
+    expect(groups[0].command).toBe("ge agents resume --remote --run --ids uc-9");
   });
 
   test("groups render in pipeline order: local, ship, remote", () => {

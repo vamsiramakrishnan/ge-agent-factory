@@ -539,6 +539,9 @@ export async function submitFactoryRun(request) {
   const useCaseId = String(request.useCaseId || pascal(title));
   const workspaceId = slug(request.workspace || title);
   const targetStage = String(request.targetStage || "publish_enterprise");
+  if (!FACTORY_GATEWAY_STAGES.includes(targetStage)) {
+    throw new Error(`Unknown target stage: ${targetStage}`);
+  }
   const rows = String(request.rows || "48");
   const systems = Array.isArray(request.systems) ? request.systems.join(",") : String(request.systems || "");
   const generationSpec = request.generationSpec && typeof request.generationSpec === "object" ? request.generationSpec : null;
@@ -602,6 +605,12 @@ export async function submitFactoryRun(request) {
     : null;
   const defaultStartStage = defaultFactoryStartStage({ prebuiltArchive, refine: request.refine });
   const startStage = String(request.startStage || defaultStartStage);
+  if (!FACTORY_GATEWAY_STAGES.includes(startStage)) {
+    throw new Error(`Unknown start stage: ${startStage}`);
+  }
+  if (FACTORY_GATEWAY_STAGES.indexOf(startStage) > FACTORY_GATEWAY_STAGES.indexOf(targetStage)) {
+    throw new Error(`Start stage ${startStage} is after target stage ${targetStage}.`);
+  }
   if (prebuiltArchive) workspaceArchive = prebuiltArchive;
 
   const agentId = request.agentId || request.useCaseId || request.usecaseId || null;
@@ -624,6 +633,7 @@ export async function submitFactoryRun(request) {
     status: "queued",
     agentId,
     workspaceCache,
+    ...(request.resumeOf ? { resumeOf: String(request.resumeOf) } : {}),
   };
 
   if (IS_PROD) {
@@ -704,7 +714,7 @@ export async function submitFactoryRun(request) {
     await patchFirestoreDocument({
       projectId: targetProject,
       path: `factoryRuns/${runId}`,
-      data: { status: "queued", createdAt: now, updatedAt: now, targetStage, source: "ge-factory-gateway", workspaceId },
+      data: { status: "queued", createdAt: now, updatedAt: now, targetStage, source: "ge-factory-gateway", workspaceId, ...(request.resumeOf ? { resumeOf: String(request.resumeOf) } : {}) },
     });
     await patchFirestoreDocument({
       projectId: targetProject,
@@ -886,6 +896,73 @@ export async function getFactoryRunSnapshot(runId) {
     }));
     return { ok: true, run, artifacts, ...summarizeFactoryRunSnapshot(run, artifacts) };
   }
+}
+
+export async function resolveFactoryResumeArchive(run = {}, { exists } = {}) {
+  const priorArchive = String(run.workspaceArchive || "");
+  const stableArchive = run.artifactPrefix ? `${String(run.artifactPrefix).replace(/\/$/, "")}/workspace.tar.gz` : "";
+  if (!stableArchive) return priorArchive;
+
+  const objectExists = exists || (async (uri) => {
+    if (!IS_PROD) return false;
+    const token = await getAccessToken();
+    if (!token) throw new Error("GCP authorization token is missing.");
+    const { bucket, object } = parseGsUri(uri);
+    return gcsObjectExists(bucket, object, token);
+  });
+  return await objectExists(stableArchive) ? stableArchive : priorArchive;
+}
+
+export async function resumeFactoryRun(runId, request = {}, {
+  getSnapshot = getFactoryRunSnapshot,
+  submit = submitFactoryRun,
+  archiveExists,
+} = {}) {
+  if (!runId) throw new Error("runId is required to resume a factory run.");
+  const snapshot = await getSnapshot(runId);
+  const run = snapshot?.run;
+  if (!run) throw new Error(`Factory run not found: ${runId}`);
+  const status = String(snapshot.status || snapshot.state || run.status || "").toLowerCase();
+  const currentStage = String(snapshot.currentStage || snapshot.stage || "");
+  const targetStage = String(request.targetStage || run.targetStage || "publish_enterprise");
+  const failed = ["failed", "error"].includes(status);
+  const completed = ["done", "succeeded", "published", "complete"].includes(status);
+  const currentIndex = FACTORY_GATEWAY_STAGES.indexOf(currentStage);
+  const targetIndex = FACTORY_GATEWAY_STAGES.indexOf(targetStage);
+  let startStage = request.startStage && (failed || request.force) ? String(request.startStage) : "";
+  if (!startStage && failed) startStage = currentStage;
+  if (!startStage && completed && currentIndex >= 0 && targetIndex > currentIndex) {
+    startStage = FACTORY_GATEWAY_STAGES[currentIndex + 1];
+  }
+  if (!startStage && request.force) startStage = currentStage;
+  if (!startStage) {
+    throw new Error(`Factory run ${runId} is ${status || "not resumable"}; refusing duplicate resume without force.`);
+  }
+  if (!FACTORY_GATEWAY_STAGES.includes(startStage)) {
+    throw new Error(`Cannot resume ${runId}: unknown failed stage ${startStage || "<missing>"}.`);
+  }
+  const prebuiltArchive = await resolveFactoryResumeArchive(run, { exists: archiveExists });
+  if (!prebuiltArchive) {
+    throw new Error(`Cannot resume ${runId}: no stable workspace archive was recorded.`);
+  }
+
+  return submit({
+    ...request,
+    title: run.title,
+    useCaseId: run.useCaseId,
+    workspace: run.workspaceId,
+    generationSpec: run.generationSpec,
+    startStage,
+    targetStage,
+    prebuiltArchive,
+    resumeOf: runId,
+    target: {
+      ...(request.target || {}),
+      projectId: request.target?.projectId || run.project,
+      runtimeRegion: request.target?.runtimeRegion || run.region,
+      artifactBucket: request.target?.artifactBucket || run.bucket,
+    },
+  });
 }
 
 /**
