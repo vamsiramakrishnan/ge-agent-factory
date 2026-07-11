@@ -413,6 +413,7 @@ test("factory release stage Cloud Build delegates to the shared builder script",
   const repoRoot = join(HERE, "..", "..", "..");
   const yaml = readFileSync(join(repoRoot, "apps/factory/cloudbuild.factory-stage.yaml"), "utf8");
   const dockerfile = readFileSync(join(repoRoot, "apps/factory/builder.Dockerfile"), "utf8");
+  const gcloudignore = readFileSync(join(repoRoot, "apps/factory/.gcloudignore"), "utf8");
   const script = readFileSync(join(repoRoot, "apps/factory/cloudbuild/run-factory-stage.sh"), "utf8");
 
   expect(() => parseYaml(yaml)).not.toThrow();
@@ -431,6 +432,8 @@ test("factory release stage Cloud Build delegates to the shared builder script",
   expect(yaml).not.toContain("agents-cli eval generate");
   expect(dockerfile).toContain("COPY cloudbuild/run-factory-stage.sh /usr/local/bin/ge-factory-run-stage");
   expect(dockerfile).toContain("COPY cloudbuild/run-deployed-smoke.mjs /opt/ge/run-deployed-smoke.mjs");
+  expect(gcloudignore).toContain("!cloudbuild/run-factory-stage.sh");
+  expect(gcloudignore).toContain("!cloudbuild/run-deployed-smoke.mjs");
   expect(dockerfile).toContain("nodejs npm unzip");
   expect(dockerfile).toContain("https://bun.sh/install");
   expect(dockerfile).toContain("uv sync --extra eval --extra lint --no-install-project");
@@ -440,6 +443,10 @@ test("factory release stage Cloud Build delegates to the shared builder script",
   expect(script).toContain('write_failure_result "poll_runtime" "$SMOKE_EXIT"');
   expect(script).not.toContain("set -ceu");
   expect(existsSync(join(repoRoot, "apps/factory/cloudbuild/run-factory-stage.sh"))).toBe(true);
+  const builderCopySources = [...dockerfile.matchAll(/^COPY\s+(\S+)\s+/gm)].map((match) => match[1]);
+  for (const source of builderCopySources) {
+    expect(gcloudignore).toContain(`!${source}`);
+  }
 });
 
 test("factory Terraform exposes warm worker pool and queue fanout knobs", () => {
