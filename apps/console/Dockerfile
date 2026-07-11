@@ -51,6 +51,7 @@ COPY apps/console/server.js ./apps/console/
 COPY apps/console/src/server ./apps/console/src/server
 COPY apps/console/src/shared ./apps/console/src/shared
 COPY tools ./tools
+COPY apps/factory/agents-cli-version.txt ./apps/factory/
 COPY apps/factory/src ./apps/factory/src
 COPY apps/factory/scripts ./apps/factory/scripts
 COPY --from=builder /app/apps/factory/generated ./apps/factory/generated

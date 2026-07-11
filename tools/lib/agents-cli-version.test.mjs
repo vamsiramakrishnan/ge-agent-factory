@@ -10,9 +10,11 @@ test("all runtime installers consume the canonical agents-cli version file", () 
 
   const builder = readFileSync(join(REPO_ROOT, "apps/factory/builder.Dockerfile"), "utf8");
   const worker = readFileSync(join(REPO_ROOT, "apps/factory/Dockerfile"), "utf8");
+  const console = readFileSync(join(REPO_ROOT, "apps/console/Dockerfile"), "utf8");
   const mise = readFileSync(join(REPO_ROOT, "mise.toml"), "utf8");
   expect(builder).toContain("agents-cli-version.txt");
   expect(worker).toContain("agents-cli-version.txt");
+  expect(console).toContain("agents-cli-version.txt");
   expect(mise).toContain("apps/factory/agents-cli-version.txt");
-  expect(`${builder}\n${worker}\n${mise}`).not.toContain("google-agents-cli>=0.2,<0.3");
+  expect(`${builder}\n${worker}\n${console}\n${mise}`).not.toContain("google-agents-cli>=0.2,<0.3");
 });
