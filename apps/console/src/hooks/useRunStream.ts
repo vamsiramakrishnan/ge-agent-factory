@@ -43,7 +43,7 @@ export interface RunStreamState {
 // rendering. For the ACTIVE stage we also attempt a live log tail via streamLogs
 // and merge it; this degrades gracefully — remote runs that have no live log
 // endpoint simply keep showing the ledger event lines.
-export function useRunStream(runId: string | null): RunStreamState {
+export function useRunStream(runId: string | null, options: { ledgerSource?: "local" | "firestore" } = {}): RunStreamState {
   const [state, setState] = useState<RunStreamState>(() => emptyState(runId));
 
   // Mutable accumulators live in refs so reconnect replays don't reset progress.
@@ -144,7 +144,7 @@ export function useRunStream(runId: string | null): RunStreamState {
       }
       ensureLogStream(acc.signals.active);
       publish();
-    });
+    }, { source: options.ledgerSource });
 
     const ticker = window.setInterval(() => {
       if (!accRef.current.signals.complete) setTick((t) => t + 1);
@@ -155,7 +155,7 @@ export function useRunStream(runId: string | null): RunStreamState {
       if (unsubLogs) unsubLogs();
       window.clearInterval(ticker);
     };
-  }, [runId]);
+  }, [runId, options.ledgerSource]);
 
   // Recompute elapsed on tick without new events (cheap; refs are stable).
   return {

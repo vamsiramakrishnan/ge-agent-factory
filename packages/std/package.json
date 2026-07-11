@@ -15,6 +15,8 @@
     "./list": "./src/list.mjs",
     "./gcp-config": "./src/gcp-config.mjs",
     "./merge": "./src/merge.mjs",
+    "./subprocess": "./src/subprocess.mjs",
+    "./test-network": "./src/test-network.mjs",
     "./spec-gaps": "./src/spec-gaps.mjs"
   },
   "scripts": {

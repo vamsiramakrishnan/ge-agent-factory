@@ -144,11 +144,11 @@ export function createGatewayClient({ run } = {}) {
 
   async function withGateway(cfg, fn, { noProxy = false, port = null, log = noop } = {}) {
     // Direct transport (ADR 0001 phase 3): call the gateway over HTTPS with a minted
-    // ID token — no `gcloud run services proxy` child process. The legacy `noProxy`
-    // flag still hits gatewayUrl but without auth (unchanged); gatewayTransport=direct
-    // is the authenticated, tunnel-free path.
-    const direct = cfg.gatewayTransport === "direct";
-    if (noProxy || direct) {
+    // ID token — no `gcloud run services proxy` child process. `--no-proxy` uses
+    // the same authenticated direct path, so removing the tunnel does not weaken
+    // gateway auth.
+    const direct = noProxy || cfg.gatewayTransport === "direct";
+    if (direct) {
       if (!cfg.gatewayUrl) {
         throw new DxError("No gateway URL. Run `ge init` or pass --gatewayUrl.", {
           where: "config: gatewayUrl (.ge.json)",
@@ -156,8 +156,8 @@ export function createGatewayClient({ run } = {}) {
           fix: "ge init",
         });
       }
-      const headers = direct ? gatewayAuthHeader(run, cfg, { log }) : {};
-      if (direct) log(`direct gateway ${cfg.gatewayUrl} (no proxy)`);
+      const headers = gatewayAuthHeader(run, cfg, { log });
+      log(`direct gateway ${cfg.gatewayUrl} (no proxy)`);
       return fn(cfg.gatewayUrl, { headers });
     }
     // Dynamic port by default so concurrent `ge` invocations don't collide.

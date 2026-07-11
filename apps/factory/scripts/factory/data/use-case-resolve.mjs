@@ -73,7 +73,13 @@ export function useCaseNotFoundMessage(usecase, suggestions = [], ambiguous = fa
 
 export function useCaseFromSpec(spec = {}, sourcePath = null) {
   const generationSpec = spec.generationSpec || spec.spec || spec.agentSpec || {};
-  const sourceSystems = Array.isArray(generationSpec.sourceSystems) ? generationSpec.sourceSystems : [];
+  const sourceSystems = Array.isArray(generationSpec.sourceSystems)
+    ? generationSpec.sourceSystems
+    : Array.isArray(spec.sourceSystems)
+      ? spec.sourceSystems
+      : Array.isArray(spec.systems)
+        ? spec.systems
+        : [];
   return {
     ...spec,
     id: spec.id,
@@ -82,8 +88,8 @@ export function useCaseFromSpec(spec = {}, sourcePath = null) {
     generationSpec,
     sourcePath,
     sources: sourceSystems.map((system) => ({
-      system: system.name || system.id,
-      description: system.description || `${system.name || system.id} owns ${(system.owns || []).join(", ")}`,
+      system: system.name || system.id || system.system,
+      description: system.description || `${system.name || system.id || system.system} owns ${(system.owns || []).join(", ")}`,
       direction: "read",
       protocol: system.protocol || "simulator",
       dataKind: sourceKindForSystem(system),

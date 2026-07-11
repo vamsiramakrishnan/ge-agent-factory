@@ -67,6 +67,7 @@ export const GeCommandIdSchema = z.enum([
   "pipeline.run",
   "agents.sync",
   "daemon.start",
+  "daemon.cloud",
   "usecases.list",
   "doctor",
   "status",

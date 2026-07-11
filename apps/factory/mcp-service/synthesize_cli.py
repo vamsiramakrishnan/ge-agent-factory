@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Headless CLI for system synthesis — the entry point the console/worker spawns.
 
-Reads a spec (flags or a JSON blob on stdin) and prints the synthesized result as JSON.
+Reads a spec (flags, a JSON file, or a JSON blob on stdin) and prints the synthesized result as JSON.
 With a durable overlay backend configured (GE_SIMULATOR_OVERLAY_BACKEND=firestore), the
 mounted pack is visible to every running mcp-service instance; otherwise it is registered
 into this process's in-memory overlay (useful for one-shot generation + inspection).
@@ -22,7 +22,9 @@ import synthesis
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Synthesize a live simulator from a description / samples / OpenAPI.")
-    parser.add_argument("--stdin", action="store_true", help="Read the full spec as JSON from stdin")
+    spec_source = parser.add_mutually_exclusive_group()
+    spec_source.add_argument("--stdin", action="store_true", help="Read the full spec as JSON from stdin")
+    spec_source.add_argument("--spec-file", default=None, help="Read the full spec from a UTF-8 JSON file")
     parser.add_argument("--mode", default="nl", choices=["nl", "samples", "openapi"])
     parser.add_argument("--description", default="")
     parser.add_argument("--display-name", default=None)
@@ -38,7 +40,11 @@ def main() -> int:
     parser.add_argument("--repo-root", default=None, help="Repo root for --promote (default: inferred from this file)")
     args = parser.parse_args()
 
-    if args.stdin:
+    if args.spec_file:
+        with open(args.spec_file, encoding="utf-8") as spec_handle:
+            spec = json.load(spec_handle)
+        spec.setdefault("use_llm", args.use_llm)
+    elif args.stdin:
         spec = json.loads(sys.stdin.read() or "{}")
         spec.setdefault("use_llm", args.use_llm)
     else:

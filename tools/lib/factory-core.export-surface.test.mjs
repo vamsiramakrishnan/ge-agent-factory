@@ -11,7 +11,14 @@ import * as core from "./factory-core.mjs";
 const expected = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), "factory-core.export-surface.json"), "utf8"),
 );
+const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "factory-core.mjs"), "utf8");
 
 test("factory-core export surface is stable", () => {
   expect(Object.keys(core).sort()).toEqual(expected);
+});
+
+test("factory-core deploy forwards explicit image tags to the factory plane", () => {
+  const match = source.match(/export function deploy\(cfg, \{[\s\S]*?\n\}/);
+  expect(match?.[0]).toContain("tag");
+  expect(match?.[0]).toContain("factoryPlane.deploy(cfg, { target, tag, log })");
 });

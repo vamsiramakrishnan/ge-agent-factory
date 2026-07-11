@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { parseFlagArgs } from "@ge/std/cli-args";
 import { dirname, join, resolve } from "node:path";
 import { readJson, writeJson } from "@ge/std/json-io";
@@ -703,8 +704,16 @@ async function main() {
     const sourceMap = await readJson(sourceMapPath, null);
     if (!sourceMap) throw new Error(`Source map not found: ${sourceMapPath}. Run scripts/analyze-usecase-sources.mjs first.`);
     const resolved = resolveUseCase(sourceMap, usecase);
-    if (!resolved.match) throw new Error(useCaseNotFoundMessage(usecase, resolved.suggestions, resolved.ambiguous));
-    match = resolved.match;
+    if (resolved.match) {
+      match = resolved.match;
+    } else {
+      const workspaceSpecPath = join(workspace, "mock_systems", "usecase-spec.json");
+      if (existsSync(workspaceSpecPath)) {
+        const spec = await readJson(workspaceSpecPath, null);
+        if (spec) match = useCaseFromSpec(spec, workspaceSpecPath);
+      }
+      if (!match) throw new Error(useCaseNotFoundMessage(usecase, resolved.suggestions, resolved.ambiguous));
+    }
   }
   const packBridges = packBridgesForUseCase(match);
   const enrichedMatch = attachPackBridgesToUseCase(match, packBridges);

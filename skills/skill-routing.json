@@ -467,6 +467,7 @@
         "data.up",
         "mcp.deploy",
         "doctor",
+        "daemon.cloud",
         "mcp.doctor"
       ],
       "engines": [],

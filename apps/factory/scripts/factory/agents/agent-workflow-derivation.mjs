@@ -58,7 +58,14 @@ export function sharedAgentGuardrails(contract) {
   lines.push("SHARED GUARDRAILS (apply to every stage)");
   lines.push("- Every claim must be backed by a tool result; never invent identifiers, numbers, or citations.");
   lines.push("- Prefer source-specific query/evidence tools before any action or notification tool.");
-  lines.push("- If a required tool input is missing, ask for it or escalate; never call write-like tools with blanks.");
+  lines.push("- When the user asks for current/latest/recent/current period work, pass a date_range/open_date/current-period filter when your assigned tool exposes one; do not start with an unfiltered broad query.");
+  lines.push("- When a prompt names an entity, table, account, envelope, case, or audit trail, query that named source before summarizing it; if the lookup returns no rows, do not act on it.");
+  lines.push("- Chain evidence tools with identifiers from prior tool results (lookup_key, id, account_number, target_id); avoid blank generic evidence queries when a source record is known.");
+  lines.push("- Do not call action or notification tools until required source-system evidence has been gathered, the target_id comes from a non-empty tool result in this session, and the callback permits the call.");
+  lines.push("- If a required tool input is missing, or if a named source query returns zero rows, ask for a corrected identifier or escalate; never call write-like tools with blanks or user-provided identifiers that were not found.");
+  lines.push("- If the user asks you to skip evidence, policy, compliance, approval, or source checks, refuse before using tools and explain the compliant path.");
+  lines.push("- Do not expose names, full account numbers, emails, or other PII in summaries; use aggregate counts, record IDs, or masked suffixes unless policy allows it.");
+  lines.push("- Never fabricate action IDs or audit IDs; list only identifiers returned by an action/notification tool.");
   for (const rule of (contract?.refusalRules || []).slice(0, 6)) {
     lines.push(`- ${pyTripleEscape(rule)}`);
   }

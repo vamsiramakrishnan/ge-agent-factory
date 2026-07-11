@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { canBindLoopback } from "@ge/std/test-network";
 import { createDaemonApp } from "./http-app.mjs";
 import { createDaemonClient, DaemonConnectionError, DaemonHttpError } from "./client.mjs";
+
+const loopbackAvailable = await canBindLoopback();
+const loopbackDescribe = loopbackAvailable ? describe : describe.skip;
+const loopbackTest = loopbackAvailable ? test : test.skip;
 
 // Exercises the client against a REAL createDaemonApp instance (dependency-
 // injected fakes, same shape as http-app.test.mjs's makeApp) served over a
@@ -57,7 +62,7 @@ function startFakeDaemon({ run = { id: "t-1", kind: "ge.command", status: "runni
   };
 }
 
-describe("createDaemonClient — happy paths", () => {
+loopbackDescribe("createDaemonClient — happy paths", () => {
   test("status() reads /api/runtime/status", async () => {
     const { client } = startFakeDaemon();
     const body = await client.status();
@@ -112,7 +117,7 @@ describe("createDaemonClient — happy paths", () => {
   });
 });
 
-describe("createDaemonClient — followEvents (SSE)", () => {
+loopbackDescribe("createDaemonClient — followEvents (SSE)", () => {
   test("replays every event and honors Last-Event-ID resume like the server contract", async () => {
     const { client } = startFakeDaemon({
       run: { id: "t-1", kind: "ge.command", status: "done" }, // terminal: SSE loop closes after one replay pass
@@ -174,7 +179,7 @@ describe("createDaemonClient — error classification", () => {
     await expect(client.followEvents("t-1", { onEvent: () => {} })).rejects.toThrow(DaemonConnectionError);
   });
 
-  test("a non-2xx HTTP response (server reachable, request rejected) throws DaemonHttpError, not DaemonConnectionError", async () => {
+  loopbackTest("a non-2xx HTTP response (server reachable, request rejected) throws DaemonHttpError, not DaemonConnectionError", async () => {
     const { client } = startFakeDaemon();
     try {
       await client.submitTask({ kind: "nope.run" });

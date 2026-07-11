@@ -1,4 +1,5 @@
 import { ARTIFACT_PATHS, DATA_PATHS, WORKSPACE_PATHS } from "./workspace-contract.js";
+import { FACTORY_STAGE_IDS as CONTROL_PLANE_FACTORY_STAGE_IDS } from "@ge/run-ledger/control-plane";
 
 // Declarative retry CLASSIFICATIONS for each stage. IMPORTANT: these describe how
 // a stage *may* safely be retried by an operator (or a future supervisor); they
@@ -119,7 +120,11 @@ export const FACTORY_STAGE_GRAPH = [
   },
 ];
 
-export const FACTORY_STAGE_IDS = FACTORY_STAGE_GRAPH.map((stage) => stage.id);
+const graphStageIds = FACTORY_STAGE_GRAPH.map((stage) => stage.id);
+if (graphStageIds.join("\0") !== CONTROL_PLANE_FACTORY_STAGE_IDS.join("\0")) {
+  throw new Error("FACTORY_STAGE_GRAPH ids drifted from @ge/run-ledger/control-plane");
+}
+export const FACTORY_STAGE_IDS = CONTROL_PLANE_FACTORY_STAGE_IDS;
 
 export function nextFactoryStage(stageId) {
   const idx = FACTORY_STAGE_IDS.indexOf(stageId);

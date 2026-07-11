@@ -56,7 +56,14 @@ function generate() {
     command: "node",
     args: (ws) => [FACTORY, "tools", "--dir", ws],
     // Pin the run clock so the timestamped eval artifact (golden.json) is byte-reproducible.
-    env: () => ({ ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" }),
+    env: () => ({
+      ...process.env,
+      GE_SOURCE_DATE: "2026-01-01T00:00:00Z",
+      GOOGLE_GENAI_USE_VERTEXAI: "",
+      GOOGLE_CLOUD_PROJECT: "",
+      GCLOUD_PROJECT: "",
+      GE_AGENT_FACTORY_PROJECT: "",
+    }),
     snapshot: (ws) => ({
       toolsPy: readFileSync(join(ws, "app", "tools.py"), "utf8"),
       agentPy: readFileSync(join(ws, "app", "agent.py"), "utf8"),

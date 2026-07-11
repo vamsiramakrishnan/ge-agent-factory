@@ -67,28 +67,21 @@ concepts.
 2. **Run the eval set.** The factory invokes:
 
    ```bash
-   agents-cli eval run --all
+   agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml
    ```
 
-   When the config exists it adds the config flag (this is what the factory's
-   lifecycle runner does):
-
-   ```bash
-   agents-cli eval run --all --config tests/eval/eval_config.json
-   ```
-
-   A timeout can be passed through (`--timeout <seconds>`). Optimization
-   uses:
+   The cloud runner executes the equivalent `eval generate` / `eval grade`
+   phases separately so cases can fan out and status can stream per phase.
+   Optimization uses:
 
    ```bash
    agents-cli eval optimize --config tests/eval/optimization_config.json
    ```
 
-   > `--all` and the JSON config paths are what the factory invokes today
-   > (verified in `factory.mjs`). `agents-cli` flags can change between
-   > releases — confirm with `agents-cli eval run --help` before relying on
-   > them. The pin is `google-agents-cli>=0.2,<0.3` (see `mise run deps`),
-   > which keeps `eval run --all`.
+   > The exact CLI version is pinned once in
+   > `apps/factory/agents-cli-version.txt` and consumed by local setup and both
+   > cloud runtime images. Run `agents-cli eval --help` against that version
+   > before changing the generated eval contract.
    {: .warning }
 
 3. **Read the harness verdicts.** The harness is the local, LLM-driven
@@ -126,7 +119,7 @@ concepts.
 
 ## Expected output
 
-- `agents-cli eval run --all` reports the eval cases passing — right tools,
+- `agents-cli eval run --dataset ... --config ...` reports the eval cases passing — right tools,
   right order, grounded answers.
 - `artifacts/generator-feedback.json` has an `okToPromote` verdict that is
   not `false`; `artifacts/harness-refine.json` carries a passing
@@ -169,9 +162,8 @@ Proof artifacts, all inside the workspace:
   emits them) and recompile.
 - **`agents-cli: command not found`** — run `mise run deps` (installs
   `google-agents-cli`).
-- **`eval run --all` flag rejected** — your `agents-cli` is outside the
-  `>=0.2,<0.3` pin (newer versions removed `--all`). Reinstall the pinned
-  version or check `agents-cli eval run --help`.
+- **Eval command rejected** — local `agents-cli` differs from the canonical
+  version; run `mise run deps`, then check `agents-cli eval run --help`.
 - **Tool-use mismatch** — only canonical generated tools are kept in the
   trajectory; if a golden eval referenced a tool the agent doesn't expose,
   it's dropped from the case.

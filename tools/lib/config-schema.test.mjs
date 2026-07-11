@@ -246,17 +246,19 @@ test("gatewayTransport resolves proxy by default, direct via env/flag/file", () 
   expect(buildFactoryConfig({ file: { gatewayTransport: "direct" } }).gatewayTransport).toBe("direct");
 });
 
-test("refinementModel/judgeModel default to the harness's hardcoded model ids and are carried onto cfg", () => {
+test("refinementModel/judgeModel/evalJudgeSamples default to the harness's hardcoded model ids and are carried onto cfg", () => {
   // Defaults mirror apps/factory/src/known-models.js's DEFAULT_AGENT_MODEL
   // (the harness review/refine model) and packages/evalkit's hardcoded
-  // judge_model — see the CONFIG_FIELDS comments in config-schema.mjs.
+  // judge_model/sample count — see the CONFIG_FIELDS comments in config-schema.mjs.
   expect(resolveConfigField("refinementModel", {})).toEqual({ value: "gemini-3.5-flash", source: "default" });
-  expect(resolveConfigField("judgeModel", {})).toEqual({ value: "gemini-flash-latest", source: "default" });
+  expect(resolveConfigField("judgeModel", {})).toEqual({ value: "gemini-3.5-flash", source: "default" });
+  expect(resolveConfigField("evalJudgeSamples", {})).toEqual({ value: "5", source: "default" });
   expect(buildFactoryConfig({}).refinementModel).toBe("gemini-3.5-flash");
-  expect(buildFactoryConfig({}).judgeModel).toBe("gemini-flash-latest");
+  expect(buildFactoryConfig({}).judgeModel).toBe("gemini-3.5-flash");
+  expect(buildFactoryConfig({}).evalJudgeSamples).toBe("5");
 });
 
-test("refinementModel/judgeModel resolve env over file over default", () => {
+test("refinementModel/judgeModel/evalJudgeSamples resolve env over file over default", () => {
   expect(resolveConfigField("refinementModel", { file: { refinementModel: "from-file" } }))
     .toEqual({ value: "from-file", source: "file" });
   expect(resolveConfigField("refinementModel", {
@@ -269,8 +271,15 @@ test("refinementModel/judgeModel resolve env over file over default", () => {
     env: { GE_JUDGE_MODEL: "from-env" },
     file: { judgeModel: "from-file" },
   })).toEqual({ value: "from-env", source: "env:GE_JUDGE_MODEL" });
-  expect(buildFactoryConfig({ env: { GE_REFINEMENT_MODEL: "claude-x", GE_JUDGE_MODEL: "gpt-y" } })).toMatchObject({
+  expect(resolveConfigField("evalJudgeSamples", { file: { evalJudgeSamples: "2" } }))
+    .toEqual({ value: "2", source: "file" });
+  expect(resolveConfigField("evalJudgeSamples", {
+    env: { GE_EVAL_JUDGE_SAMPLES: "1" },
+    file: { evalJudgeSamples: "2" },
+  })).toEqual({ value: "1", source: "env:GE_EVAL_JUDGE_SAMPLES" });
+  expect(buildFactoryConfig({ env: { GE_REFINEMENT_MODEL: "claude-x", GE_JUDGE_MODEL: "gpt-y", GE_EVAL_JUDGE_SAMPLES: "1" } })).toMatchObject({
     refinementModel: "claude-x",
     judgeModel: "gpt-y",
+    evalJudgeSamples: "1",
   });
 });

@@ -14,6 +14,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY packages ./packages
 COPY apps/console/package.json ./apps/console/
+COPY apps/docs/package.json ./apps/docs/
 COPY apps/presentation/package.json ./apps/presentation/
 COPY apps/factory/package.json ./apps/factory/
 RUN bun install --frozen-lockfile --ignore-scripts
@@ -37,6 +38,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY packages ./packages
 COPY apps/console/package.json ./apps/console/
+COPY apps/docs/package.json ./apps/docs/
 COPY apps/factory/package.json ./apps/factory/
 # presentation manifest is required for --frozen-lockfile to reconcile the
 # workspace (it's in bun.lock), even though no presentation source runs here.

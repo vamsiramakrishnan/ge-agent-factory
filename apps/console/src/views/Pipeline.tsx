@@ -75,7 +75,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
   const [selectedSpecSnapshot, setSelectedSpecSnapshot] = useState<SpecOption | null>(null);
   const [selectedBulkIds, setSelectedBulkIds] = useState<string[]>([]);
   const [targetStage, setTargetStage] = useState("preview");
-  const [concurrency, setConcurrency] = useState(() => window.localStorage.getItem("ge.pipeline.concurrency") || "2");
+  const [concurrency, setConcurrency] = useState(() => window.localStorage.getItem("ge.pipeline.concurrency") || "8");
   const [plan, setPlan] = useState<PipelinePlan | null>(null);
   const [activeInterviewId, setActiveInterviewId] = useState(() => window.localStorage.getItem("ge.interview.activeTaskId") || "");
   const [activeInterviewTask, setActiveInterviewTask] = useState<RuntimeTaskSummary | null>(null);

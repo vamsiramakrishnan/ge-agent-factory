@@ -1,16 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Two-face pairing: Space Grotesk is the characterful display face, used
-     sparingly for page/section titles and large numerals — not paragraph
-     text. IBM Plex Sans is the UI workhorse (chosen for its technical/
-     documentation heritage — this is a certification-document product).
-     Geist Mono carries every data value: ids, hashes, timestamps, log
-     lines, JSON, CLI output. */
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-headline: "Space Grotesk", "IBM Plex Sans", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  /* Modernist Functionalism uses one objective grotesque for both interface
+     and display type. JetBrains Mono is reserved for ids, commands, hashes,
+     timestamps, logs, and tabular readouts. */
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* Micro type scale — named steps for the console's dense data surfaces
      (table cells, meta rows, badges) so a size is a token, not a bracketed
@@ -20,13 +17,12 @@
   --text-4xs: 0.625rem;
   --text-4xs--line-height: 0.875rem;
 
-  /* Radius scale — tuned slightly more deliberate than Tailwind's default
-     (buttons/inputs get more presence, panels read as considered surfaces
-     rather than a generic 8px-everywhere default). */
-  --radius-sm: 0.3125rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* The supplied system's softened-industrial geometry: 4px is the default;
+     larger radii are reserved for genuinely larger framed tools. */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 
   /* ─── Chrome palette ─────────────────────────── */
   /* BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens` */
@@ -154,15 +150,15 @@
 
 /* ─── Ambient Shadows ─────────────────────────── */
 .shadow-ambient {
-  box-shadow: 0 4px 24px rgba(27, 28, 28, 0.06);
+  box-shadow: none;
 }
 
 .shadow-ambient-lg {
-  box-shadow: 0 12px 48px rgba(27, 28, 28, 0.12);
+  box-shadow: none;
 }
 
 .shadow-glow {
-  box-shadow: 0 0 20px rgba(0, 64, 139, 0.16);
+  box-shadow: none;
 }
 
 /* ─── Ghost Borders ───────────────────────────── */
@@ -185,7 +181,7 @@
   position: relative;
   border: 1px solid rgba(27, 28, 28, 0.1);
   background: var(--color-surface);
-  box-shadow: 0 1px 2px rgba(27, 28, 28, 0.04);
+  box-shadow: none;
 }
 
 .editorial-card > * {
@@ -203,30 +199,76 @@
 
 .editorial-card-interactive {
   transition:
-    transform 120ms ease,
     border-color 120ms ease,
-    box-shadow 120ms ease;
+    background-color 120ms ease;
 }
 
 .editorial-card-interactive:hover,
 .editorial-card-interactive:focus-within {
-  transform: translateY(-1px);
   border-color: rgba(0, 64, 139, 0.35);
-  box-shadow: 0 4px 16px rgba(27, 28, 28, 0.08);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .editorial-card-interactive:hover,
-  .editorial-card-interactive:focus-within {
-    transform: none;
-  }
+  background: var(--color-surface-container-low);
 }
 
 .editorial-active-card {
   border-color: var(--color-primary);
   background: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 16px rgba(0, 64, 139, 0.22);
+  box-shadow: none;
+}
+
+/* ─── Modernist apparatus vocabulary ───────────
+   These classes are used by the console and shared UI primitives. They are
+   intentionally flat: tone and hairlines establish hierarchy; only a real
+   press moves, by one pixel. */
+.fascia {
+  background: var(--color-surface);
+}
+
+.seam-b {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-on-surface) 24%, transparent);
+}
+
+.lamp {
+  display: inline-block;
+  flex: none;
+}
+
+.engraved {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  color: var(--color-on-surface-variant);
+}
+
+.key {
+  border-radius: 0.25rem !important;
+  box-shadow: none !important;
+}
+
+.key:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.well {
+  border: 1px solid var(--color-outline-variant);
+  box-shadow: inset 0 1px 1px rgba(27, 28, 28, 0.05);
+}
+
+.dial-window {
+  border: 1px solid #303030;
+  border-radius: 0.25rem !important;
+  color: #f3f0f0;
+  background: #1b1c1c;
+  box-shadow: none;
+}
+
+.ticks-x {
+  background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--color-on-surface) 30%, transparent) 0 1px, transparent 1px 8px);
+  background-position: left bottom;
+  background-repeat: repeat-x;
 }
 
 /* ─── Use Case Detail Contrast Guardrails (apps/presentation only) ─── */
@@ -357,7 +399,7 @@
 }
 
 .text-data {
-  font-family: "Geist Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
 }

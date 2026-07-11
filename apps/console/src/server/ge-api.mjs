@@ -11,6 +11,12 @@ export function isConsoleReadonly() {
   return /^(1|true|yes|on)$/i.test(String(process.env.GE_CONSOLE_READONLY || "").trim());
 }
 
+function readStatusBoard(core, cfg) {
+  return typeof core.statusBoardAsync === "function"
+    ? core.statusBoardAsync(cfg)
+    : core.statusBoard(cfg);
+}
+
 // The single route table. `match(parts)` returns a params object or null.
 // Adding a route = adding one row; isKnownRoute derives from this table.
 // Handlers receive { req, core, cfg, parts, body } and return the same
@@ -20,7 +26,7 @@ export const ROUTES = [
   {
     method: "GET",
     match: (p) => p[2] === "status" ? {} : null,
-    handle: ({ core, cfg }) => ({ status: 200, json: core.statusBoard(cfg) }),
+    handle: async ({ core, cfg }) => ({ status: 200, json: await readStatusBoard(core, cfg) }),
   },
   // /api/ge/commands
   {
@@ -43,7 +49,7 @@ export const ROUTES = [
       let haveConfig = !!cfg.project;
       let operateNext = null;
       try {
-        const board = core.statusBoard(cfg);
+        const board = await readStatusBoard(core, cfg);
         haveConfig = !!board.project;
         operateNext = board.next || null;
       } catch {
@@ -245,7 +251,12 @@ export const ROUTES = [
   {
     method: "GET",
     match: (p) => p[2] === "runs" && p[3] && p[4] === "events" ? {} : null,
-    handle: ({ parts }) => ({ stream: "events", runId: parts[3] }),
+    handle: ({ req, parts }) => ({
+      stream: "ledger",
+      runId: decodeURIComponent(parts[3]),
+      afterSeq: Number(req.query?.afterSeq || 0),
+      source: req.query?.source || req.query?.ledgerSource || null,
+    }),
   },
   // /api/ge/jobs → list (transport resolves)
   {
@@ -364,12 +375,13 @@ export const ROUTES = [
   {
     method: "GET",
     match: (p) => commandForRoute("GET", p) ? {} : null,
-    handle: async ({ core, req, parts }) => {
+    handle: async ({ core, req, parts, cfg }) => {
       const command = commandForRoute("GET", parts);
       const GET_HANDLERS = {
         "systems.bindings": () => core.systemsBindings(),
         "byo.doctor": (q) => core.byoDoctor(q),
         "evals.coverage": (q) => core.evalsCoverage(q),
+        "daemon.cloud": () => core.cloudDaemonStatus(cfg),
       };
       const fn = GET_HANDLERS[command.id];
       if (!fn) return { status: 501, json: { error: `no GET handler wired for ${command.id}` } };

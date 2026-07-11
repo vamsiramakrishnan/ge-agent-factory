@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { spawnCapture } from "@ge/std/subprocess";
 
 const DEFAULT_IDENTITY_ARG_LIMIT = 8;
 const REDACTED_VALUE = "<redacted>";
@@ -103,4 +104,26 @@ export function runCommand(command, args = [], { cwd, env, capture = true, allow
     wrapped.result = result;
     throw wrapped;
   }
+}
+
+export async function runCommandAsync(command, args = [], { cwd, env, allowFail = false, timeoutMs } = {}) {
+  const captured = await spawnCapture(command, args, {
+    cwd,
+    env,
+    timeout: timeoutMs,
+  });
+  const result = normalizeCommandResult({
+    command,
+    args,
+    code: captured.status,
+    signal: captured.signal,
+    stdout: captured.stdout,
+    stderr: captured.stderr,
+    error: captured.error,
+  });
+  if (result.ok || allowFail) return result;
+  const wrapped = new Error(result.message);
+  wrapped.cause = captured.error || undefined;
+  wrapped.result = result;
+  throw wrapped;
 }

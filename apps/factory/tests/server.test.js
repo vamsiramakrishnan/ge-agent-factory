@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import test from "node:test";
+import { canBindLoopback } from "@ge/std/test-network";
 import { getAgentDef } from "../src/agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "../src/harness-runtime.js";
 import { runPreflight } from "../src/preflight.js";
@@ -40,6 +41,8 @@ import { digitalAssetPack } from "../scripts/factory/packs/digital-assets.mjs";
 import { seoMonitoringPack } from "../scripts/factory/packs/seo-monitoring.mjs";
 import { thirdPartyRiskPack } from "../scripts/factory/packs/third-party-risk.mjs";
 import { enrichScenarioSpec } from "../scripts/factory/packs/index.mjs";
+
+const loopbackTest = await canBindLoopback() ? test : test.skip;
 
 const REPO_ROOT = resolve(new URL("..", import.meta.url).pathname);
 const CANONICAL_REPO_ROOT = resolve(REPO_ROOT, "..", "..");
@@ -191,7 +194,7 @@ async function readSse(response) {
     .filter(Boolean);
 }
 
-test("server imports and web mode do not initialize daemon persistence", async () => {
+loopbackTest("server imports and web mode do not initialize daemon persistence", async () => {
   const parsed = parseJsonStreamEvent(JSON.stringify({ type: "message", delta: "hello" }));
   assert.equal(parsed.type, "json_event");
   const existedBefore = existsSync(DATA_ROOT);
@@ -793,6 +796,7 @@ test("factory worker parses payloads and dispatches release stages to Cloud Buil
   assert.ok(plan.commands[0][1].includes("--format=json"));
   assert.ok(plan.commands[0][1].join(" ").includes("_STAGE=deploy_runtime"));
   assert.ok(plan.commands[0][1].join(" ").includes("_GOOGLE_GENAI_LOCATION=global"));
+  assert.ok(plan.commands[0][1].join(" ").includes("_BUILDER_IMAGE=us-central1-docker.pkg.dev/vital-octagon-19612/ge-agent-factory/ge-agent-factory-builder:latest"));
   assert.ok(plan.commands[0][1].join(" ").includes("_RUN_AGENT_EVALS=true"));
   assert.ok(plan.commands[0][1].join(" ").includes("_RUN_AGENT_LINT=true"));
   assert.ok(plan.commands[0][1].join(" ").includes("_RUN_DEPLOYED_SMOKE=true"));
@@ -931,7 +935,7 @@ test("gemini stream parser normalizes message and wrapped tool events", async ()
   assert.equal(events[2].content, "done");
 });
 
-test("daemon exposes health, systems, agents, and workspaces", async () => {
+loopbackTest("daemon exposes health, systems, agents, and workspaces", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const health = await fetch(`${url}/api/health`).then((res) => res.json());
@@ -981,7 +985,7 @@ test("daemon exposes health, systems, agents, and workspaces", async () => {
   }
 });
 
-test("mock agent run persists SSE events to workspace jsonl", async () => {
+loopbackTest("mock agent run persists SSE events to workspace jsonl", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1020,7 +1024,7 @@ test("mock agent run persists SSE events to workspace jsonl", async () => {
   }
 });
 
-test("chat sessions are scoped per workspace agent", async () => {
+loopbackTest("chat sessions are scoped per workspace agent", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1092,7 +1096,7 @@ test("json stream parser preserves raw event data", () => {
   assert.equal(parsed.delta, "writing");
 });
 
-test("project wakeups start runs and coalesce duplicates", async () => {
+loopbackTest("project wakeups start runs and coalesce duplicates", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1126,7 +1130,7 @@ test("project wakeups start runs and coalesce duplicates", async () => {
   }
 });
 
-test("tasks, activity, heartbeat policies, adapters, and secrets are durable daemon primitives", async () => {
+loopbackTest("tasks, activity, heartbeat policies, adapters, and secrets are durable daemon primitives", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1199,7 +1203,7 @@ test("tasks, activity, heartbeat policies, adapters, and secrets are durable dae
   }
 });
 
-test("mock harness runs include capability plan events and runtime status", async () => {
+loopbackTest("mock harness runs include capability plan events and runtime status", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1248,7 +1252,7 @@ test("mock harness runs include capability plan events and runtime status", asyn
   }
 });
 
-test("workspace validation catches generated fixture and agent contracts", async () => {
+loopbackTest("workspace validation catches generated fixture and agent contracts", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1273,7 +1277,7 @@ test("workspace validation catches generated fixture and agent contracts", async
   }
 });
 
-test("workspace pipeline writes canonical validation artifacts", async () => {
+loopbackTest("workspace pipeline writes canonical validation artifacts", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1306,7 +1310,7 @@ test("workspace pipeline writes canonical validation artifacts", async () => {
   }
 });
 
-test("workspace doctor blocks preview before validation evidence exists", async () => {
+loopbackTest("workspace doctor blocks preview before validation evidence exists", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1340,7 +1344,7 @@ test("workspace doctor blocks preview before validation evidence exists", async 
   }
 });
 
-test("workspace repair loop executes doctor repair tasks until preview gate passes", async () => {
+loopbackTest("workspace repair loop executes doctor repair tasks until preview gate passes", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1401,7 +1405,7 @@ test("workspace repair loop executes doctor repair tasks until preview gate pass
   }
 });
 
-test("generated root workspace is exposed as an agent when no agent row exists", async () => {
+loopbackTest("generated root workspace is exposed as an agent when no agent row exists", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1437,7 +1441,7 @@ test("generated root workspace is exposed as an agent when no agent row exists",
   }
 });
 
-test("root workspace agent stage persists after validation", async () => {
+loopbackTest("root workspace agent stage persists after validation", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1497,7 +1501,7 @@ test("root workspace agent stage persists after validation", async () => {
   }
 });
 
-test("workspace versions are restorable git snapshots", async () => {
+loopbackTest("workspace versions are restorable git snapshots", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1531,7 +1535,7 @@ test("workspace versions are restorable git snapshots", async () => {
   }
 });
 
-test("promotion packet packages validation preview and plan artifacts", async () => {
+loopbackTest("promotion packet packages validation preview and plan artifacts", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {
@@ -1643,7 +1647,7 @@ test("promotion packet packages validation preview and plan artifacts", async ()
   }
 });
 
-test("agent directories are rejected when they escape the workspace", async () => {
+loopbackTest("agent directories are rejected when they escape the workspace", async () => {
   const { server, url } = await startServer({ port: 0, returnServer: true });
   try {
     const created = await fetch(`${url}/api/workspaces`, {

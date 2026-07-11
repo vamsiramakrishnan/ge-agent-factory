@@ -1,8 +1,9 @@
 import { expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { CONSOLE_SERVICE, createFactoryPlane, serviceEnv, serviceIapEnabled, serviceMemory, serviceUrl, terraformVarArgs } from "./factory-plane.mjs";
+import { parse as parseYaml } from "yaml";
+import { CONSOLE_IMAGE_BIND_TARGETS, CONSOLE_SERVICE, FACTORY_IMAGE_BIND_TARGETS, createFactoryPlane, serviceEnv, serviceIapEnabled, serviceMemory, serviceUrl, terraformTargetArgs, terraformVarArgs } from "./factory-plane.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -14,7 +15,11 @@ const readyService = {
       spec: {
         containers: [{
           resources: { limits: { memory: "1Gi" } },
-          env: [{ name: "GE_AGENT_FACTORY_WORKER_URL", value: "https://worker.example" }],
+          env: [
+            { name: "GE_AGENT_FACTORY_WORKER_URL", value: "https://worker.example" },
+            { name: "GE_AGENT_FACTORY_BUILDER_IMAGE", value: "us-docker.pkg.dev/demo/ge-agent-factory/ge-agent-factory-builder:latest" },
+            { name: "GOOGLE_GENAI_LOCATION", value: "global" },
+          ],
         }],
       },
     },
@@ -35,7 +40,7 @@ function makePlane(overrides = {}) {
     writeTextFile: (path, content) => calls.push(["writeTextFile", path, content]),
     run: (bin, args, opts) => {
       calls.push(["run", bin, args, opts]);
-      return { ok: true, out: "ok", err: "" };
+      return overrides.run?.(bin, args, opts) ?? { ok: true, out: "ok", err: "" };
     },
     gcloud: (args) => {
       calls.push(["gcloud", args]);
@@ -71,6 +76,13 @@ test("terraformVarArgs includes non-empty core vars and image vars", () => {
   ]);
 });
 
+test("terraformTargetArgs renders stable targeted apply flags", () => {
+  expect(terraformTargetArgs(["google_cloud_run_v2_service.gateway", "google_cloud_tasks_queue.factory_stages"])).toEqual([
+    "-target", "google_cloud_run_v2_service.gateway",
+    "-target", "google_cloud_tasks_queue.factory_stages",
+  ]);
+});
+
 test("infra writes tfvars and runs terraform apply with image vars", () => {
   const { calls, plane } = makePlane();
 
@@ -86,6 +98,9 @@ test("infra writes tfvars and runs terraform apply with image vars", () => {
   expect(calls.find((call) => call[0] === "writeTextFile")[2]).toContain('project_id                 = "demo"');
   expect(calls.filter((call) => call[0] === "run").map((call) => call[2][1])).toEqual(["init", "apply"]);
   expect(calls.at(-1)[2]).toContain("gateway_image=gateway:tag");
+  expect(calls.at(-1)[2]).toContain("-target");
+  expect(calls.at(-1)[2]).toContain("google_cloud_run_v2_service.gateway");
+  expect(calls.at(-1)[2]).toContain("google_cloud_tasks_queue.factory_stages");
 });
 
 test("build returns gateway and worker image tags", () => {
@@ -167,6 +182,50 @@ test("infra plumbs console_image through terraform apply the same way as gateway
   }, { sub: "apply", consoleImage: "console:tag" });
 
   expect(calls.at(-1)[2]).toContain("console_image=console:tag");
+  expect(calls.at(-1)[2]).toContain("google_cloud_run_v2_service.console");
+  expect(calls.at(-1)[2]).not.toContain("google_cloud_tasks_queue.factory_stages");
+});
+
+test("console image bind preserves current gateway and worker images while targeting only console", () => {
+  const { calls, plane } = makePlane({
+    gcloud: (args) => {
+      const service = args[3];
+      if (args.includes("describe")) {
+        return {
+          ok: true,
+          out: JSON.stringify({
+            spec: {
+              template: {
+                spec: {
+                  containers: [{ image: service === "gateway" ? "gateway:current" : "worker:current" }],
+                },
+              },
+            },
+          }),
+          err: "",
+        };
+      }
+      return { ok: true, out: "", err: "" };
+    },
+  });
+
+  plane.infra({
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    region: "us-central1",
+    geLocation: "global",
+    gatewayService: "gateway",
+    workerService: "worker",
+  }, { sub: "apply", consoleImage: "console:tag" });
+
+  const apply = calls.find((call) => call[0] === "run" && call[2][1] === "apply");
+  expect(apply[2]).toContain("console_image=console:tag");
+  expect(apply[2]).toContain("gateway_image=gateway:current");
+  expect(apply[2]).toContain("worker_image=worker:current");
+  expect(apply[2]).toContain("google_cloud_run_v2_service.console");
+  expect(apply[2]).not.toContain("google_cloud_run_v2_service.gateway");
+  expect(apply[2]).not.toContain("google_cloud_run_v2_service.worker");
 });
 
 test("consoleDoctor never throws and reports fail/warn/pass checks without a project", () => {
@@ -230,6 +289,127 @@ test("gateway cloudbuild.gateway.yaml is well-formed and uses the factory gatewa
   expect(yaml).toContain("_IMAGE:");
 });
 
+test("workspace Dockerfiles copy every app package manifest before frozen bun install", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  const appManifests = readdirSync(join(repoRoot, "apps"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => `apps/${entry.name}/package.json`)
+    .sort();
+  const dockerfiles = [
+    "apps/console/Dockerfile",
+    "apps/factory/Dockerfile",
+    "apps/factory/gateway.Dockerfile",
+    "apps/presentation/Dockerfile",
+  ];
+
+  for (const dockerfile of dockerfiles) {
+    const text = readFileSync(join(repoRoot, dockerfile), "utf8");
+    expect(text).toContain("COPY package.json bun.lock");
+    expect(text).toContain("bun install --frozen-lockfile");
+    for (const manifest of appManifests) {
+      expect(text).toContain(manifest);
+    }
+  }
+});
+
+test("factory runtime Dockerfiles generate the use-case catalog artifact in-image", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  for (const dockerfile of ["apps/factory/Dockerfile", "apps/factory/gateway.Dockerfile"]) {
+    const text = readFileSync(join(repoRoot, dockerfile), "utf8");
+    expect(text).not.toContain("COPY apps/factory/generated");
+    expect(text).toContain("COPY apps/presentation/src/components/slides/use-cases");
+    expect(text).toContain("bun scripts/sync-use-cases-from-slides.mjs");
+  }
+});
+
+test("worker Dockerfile avoids native SQLite compilation during image builds", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  const text = readFileSync(join(repoRoot, "apps/factory/Dockerfile"), "utf8");
+  expect(text).toContain("bun install --frozen-lockfile --production --ignore-scripts");
+  expect(text).toContain("openRunLedger falls back when no native driver is present");
+});
+
+test("gateway Dockerfile copies only existing Cloud Build stage configs", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  const text = readFileSync(join(repoRoot, "apps/factory/gateway.Dockerfile"), "utf8");
+  expect(text).toContain("cloudbuild.factory-stage.yaml");
+  expect(text).not.toContain("cloudbuild.factory-stage.full.yaml");
+});
+
+test("factory release stage Cloud Build delegates to the shared builder script", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  const yaml = readFileSync(join(repoRoot, "apps/factory/cloudbuild.factory-stage.yaml"), "utf8");
+  const dockerfile = readFileSync(join(repoRoot, "apps/factory/builder.Dockerfile"), "utf8");
+  const script = readFileSync(join(repoRoot, "apps/factory/cloudbuild/run-factory-stage.sh"), "utf8");
+
+  expect(() => parseYaml(yaml)).not.toThrow();
+  expect(yaml.length).toBeLessThan(10000);
+  expect(yaml).toContain('rm -f "artifacts/factory-${_STAGE}-result.json"');
+  expect(yaml).toContain("ge-factory-run-stage > >(tee artifacts/run-stage.log) 2> >(tee -a artifacts/run-stage.log >&2) || STAGE_EXIT=$$?");
+  expect(yaml).toContain('gcloud storage rsync "$dir" "${_ARTIFACT_PREFIX}/files/./$dir" --recursive --checksums-only');
+  expect(yaml).toContain("PROJECT_ID=${PROJECT_ID}");
+  expect(yaml).toContain("GOOGLE_CLOUD_PROJECT=${PROJECT_ID}");
+  expect(yaml).toContain("$$STAGE_EXIT");
+  expect(yaml).not.toMatch(/(?<!\$)\$STAGE_EXIT/);
+  expect(yaml).not.toMatch(/(?<!\$)\$\{code\}/);
+  expect(yaml).toContain(".ge-stage-exit");
+  expect(yaml).toContain("fail-stage-if-needed");
+  expect(yaml).toContain("_BUILDER_IMAGE");
+  expect(yaml).not.toContain("agents-cli eval generate");
+  expect(dockerfile).toContain("COPY cloudbuild/run-factory-stage.sh /usr/local/bin/ge-factory-run-stage");
+  expect(dockerfile).toContain("nodejs npm unzip");
+  expect(dockerfile).toContain("https://bun.sh/install");
+  expect(dockerfile).toContain("uv sync --extra eval --extra lint --no-install-project");
+  expect(script).toContain("set -euo pipefail");
+  expect(script).toContain("write_failure_result");
+  expect(script).not.toContain("set -ceu");
+  expect(existsSync(join(repoRoot, "apps/factory/cloudbuild/run-factory-stage.sh"))).toBe(true);
+});
+
+test("factory Terraform exposes warm worker pool and queue fanout knobs", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  const variables = readFileSync(join(repoRoot, "installer/terraform/variables.tf"), "utf8");
+  const cloudRun = readFileSync(join(repoRoot, "installer/terraform/cloud_run.tf"), "utf8");
+  const tasks = readFileSync(join(repoRoot, "installer/terraform/tasks.tf"), "utf8");
+
+  expect(variables).toContain('variable "factory_worker_min_instances"');
+  expect(variables).toContain("default     = 1");
+  expect(variables).toContain('variable "factory_worker_max_instances"');
+  expect(variables).toContain("default     = 50");
+  expect(variables).toContain('variable "factory_tasks_max_concurrent_dispatches"');
+  expect(cloudRun).toContain("min_instance_count = var.factory_worker_min_instances");
+  expect(cloudRun).toContain("max_instance_count = var.factory_worker_max_instances");
+  expect(cloudRun).toContain("min_instance_count = var.factory_gateway_min_instances");
+  expect(cloudRun).toContain('name  = "GEMINI_ENTERPRISE_APP_ID"');
+  expect(cloudRun).toContain('name  = "GEMINI_ENTERPRISE_LOCATION"');
+  expect(cloudRun).toContain('name  = "GE_ENABLE_AGENT_PROVISION"');
+  expect(tasks).toContain("max_dispatches_per_second = var.factory_tasks_max_dispatches_per_second");
+  expect(tasks).toContain("max_concurrent_dispatches = var.factory_tasks_max_concurrent_dispatches");
+});
+
+test("workspace Dockerfile COPY sources exist in the repository", () => {
+  const repoRoot = join(HERE, "..", "..", "..");
+  const dockerfiles = [
+    "apps/console/Dockerfile",
+    "apps/factory/Dockerfile",
+    "apps/factory/gateway.Dockerfile",
+    "apps/presentation/Dockerfile",
+  ];
+
+  for (const dockerfile of dockerfiles) {
+    const text = readFileSync(join(repoRoot, dockerfile), "utf8");
+    for (const line of text.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("COPY ") || trimmed.includes("--from=")) continue;
+      const parts = trimmed.split(/\s+/).slice(1);
+      const sources = parts.slice(0, -1);
+      for (const source of sources) {
+        expect(existsSync(join(repoRoot, source))).toBe(true);
+      }
+    }
+  }
+});
+
 test("deploy builds images then applies terraform image binding", () => {
   const { calls, plane } = makePlane();
 
@@ -244,7 +424,93 @@ test("deploy builds images then applies terraform image binding", () => {
   }, { target: "gateway" });
 
   expect(result.deployed).toEqual(["gateway"]);
-  expect(calls.filter((call) => call[0] === "run" && call[2][1] === "apply")).toHaveLength(1);
+  const apply = calls.find((call) => call[0] === "run" && call[2][1] === "apply");
+  expect(apply).toBeDefined();
+  for (const target of FACTORY_IMAGE_BIND_TARGETS) expect(apply[2]).toContain(target);
+  expect(apply[2]).not.toContain("google_cloud_run_v2_service.console");
+});
+
+test("deploy refuses Terraform image binding when Cloud Run exists outside Terraform state", () => {
+  const { calls, plane } = makePlane({
+    run: (bin, args) => {
+      if (bin === "terraform" && args.includes("state")) {
+        return { ok: true, out: "google_project_service.enabled[\"run.googleapis.com\"]", err: "" };
+      }
+      return { ok: true, out: "ok", err: "" };
+    },
+    gcloud: (args) => {
+      if (args.includes("describe")) return { ok: true, out: JSON.stringify(readyService), err: "" };
+      return { ok: true, out: "ok", err: "" };
+    },
+  });
+
+  expect(() => plane.deploy({
+    mode: "remote",
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    geLocation: "global",
+    region: "us-central1",
+    gatewayService: "gateway",
+    workerService: "worker",
+  })).toThrow(/refusing Terraform image bind/);
+  expect(calls.some((call) => call[0] === "run" && call[2]?.[0] === "builds")).toBe(false);
+});
+
+test("deploy allows Terraform image binding when Cloud Run resources are in state", () => {
+  const { calls, plane } = makePlane({
+    run: (bin, args) => {
+      if (bin === "terraform" && args.includes("state")) {
+        return {
+          ok: true,
+          out: [
+            "google_cloud_run_v2_service.gateway",
+            "google_cloud_run_v2_service.worker",
+          ].join("\n"),
+          err: "",
+        };
+      }
+      return { ok: true, out: "ok", err: "" };
+    },
+    gcloud: (args) => {
+      if (args.includes("describe")) return { ok: true, out: JSON.stringify(readyService), err: "" };
+      return { ok: true, out: "ok", err: "" };
+    },
+  });
+
+  const result = plane.deploy({
+    mode: "remote",
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    geLocation: "global",
+    region: "us-central1",
+    gatewayService: "gateway",
+    workerService: "worker",
+  });
+
+  expect(result.deployed).toEqual(["gateway", "worker"]);
+  expect(calls.some((call) => call[0] === "run" && call[2]?.includes("apps/factory/cloudbuild.gateway.yaml"))).toBe(true);
+});
+
+test("deploy accepts an explicit image tag for gateway and worker", () => {
+  const { calls, plane } = makePlane();
+
+  const result = plane.deploy({
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    geLocation: "global",
+    region: "us-central1",
+    gatewayService: "gateway",
+    workerService: "worker",
+  }, { tag: "canary-fix" });
+
+  expect(result.gatewayImage).toContain(":canary-fix");
+  expect(result.workerImage).toContain(":canary-fix");
+  const apply = calls.find((call) => call[0] === "run" && call[2][1] === "apply");
+  expect(apply[2]).toContain("gateway_image=us-docker.pkg.dev/demo/ge-agent-factory/gateway:canary-fix");
+  expect(apply[2]).toContain("worker_image=us-docker.pkg.dev/demo/ge-agent-factory/worker:canary-fix");
 });
 
 test("doctor reports service readiness, worker URL, invoker, and queue", () => {
@@ -254,6 +520,18 @@ test("doctor reports service readiness, worker URL, invoker, and queue", () => {
       if (joined.includes("run services describe")) return { ok: true, out: JSON.stringify(readyService) };
       if (joined.includes("run services get-iam-policy")) {
         return { ok: true, out: JSON.stringify({ bindings: [{ role: "roles/run.invoker", members: ["serviceAccount:runner@demo.iam.gserviceaccount.com"] }] }) };
+      }
+      if (joined.includes("projects get-iam-policy")) {
+        return {
+          ok: true,
+          out: JSON.stringify({
+            bindings: [
+              { role: "roles/aiplatform.user", members: ["serviceAccount:ge-agent-factory-builder@demo.iam.gserviceaccount.com"] },
+              { role: "roles/discoveryengine.editor", members: ["serviceAccount:ge-agent-factory-builder@demo.iam.gserviceaccount.com"] },
+              { role: "roles/serviceusage.serviceUsageConsumer", members: ["serviceAccount:ge-agent-factory-builder@demo.iam.gserviceaccount.com"] },
+            ],
+          }),
+        };
       }
       if (joined.includes("tasks queues describe")) return { ok: true, out: "RUNNING" };
       return { ok: true, out: "account@example.com" };
@@ -267,8 +545,11 @@ test("doctor reports service readiness, worker URL, invoker, and queue", () => {
     workerService: "worker",
     serviceAccount: "runner@demo.iam.gserviceaccount.com",
     tasksQueue: "queue",
+    geLocation: "global",
   });
 
   expect(report.fails).toBe(0);
-  expect(report.checks.map((check) => check.status)).toEqual(["pass", "pass", "pass", "pass", "pass", "pass"]);
+  expect(report.checks.find((check) => check.name === "worker GE_AGENT_FACTORY_BUILDER_IMAGE").status).toBe("pass");
+  expect(report.checks.find((check) => check.name === "worker GOOGLE_GENAI_LOCATION").status).toBe("pass");
+  expect(report.checks.find((check) => check.name === "builder SA release-stage roles").status).toBe("pass");
 });

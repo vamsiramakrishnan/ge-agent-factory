@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-  replayDelays, runsEventsCmd,
+  replayDelays, remoteEventLine, runsEventsCmd,
   connectRemoteLedgerReader, fetchRemoteRunEvents, followRemoteRunEvents,
 } from "./runs.mjs";
 
@@ -159,5 +159,22 @@ describe("ge runs events --remote", () => {
     const result = await followRemoteRunEvents(cfg, { runId: "remote-build-x", createReader, sleepMs: 0, maxTicks: 3 });
     expect(result.terminal).toBe(false);
     expect(result.run).toBeNull();
+  });
+
+  test("remote event formatter surfaces stage_log lines and progress messages", () => {
+    expect(remoteEventLine({
+      seq: 10,
+      ts: "2026-07-09T00:00:00.000Z",
+      type: "stage_log",
+      stage: "validate",
+      data: { lines: ["agents-cli eval grade", "29 passed"] },
+    })).toContain("agents-cli eval grade");
+    expect(remoteEventLine({
+      seq: 11,
+      ts: "2026-07-09T00:00:01.000Z",
+      type: "stage_progress",
+      stage: "validate",
+      data: { phase: "validate.eval_grade", message: "agents-cli eval grade" },
+    })).toContain("validate.eval_grade");
   });
 });

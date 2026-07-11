@@ -11,5 +11,8 @@
   },
   "scripts": {
     "test": "bun test src"
+  },
+  "dependencies": {
+    "@ge/std": "workspace:*"
   }
 }

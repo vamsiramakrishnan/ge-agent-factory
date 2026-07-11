@@ -187,7 +187,17 @@ export const CONFIG_FIELDS = {
     flag: "judgeModel",
     env: ["GE_JUDGE_MODEL"],
     file: "judgeModel",
-    default: "gemini-flash-latest",
+    default: "gemini-3.5-flash",
+  },
+  // Number of Vertex judge samples for the generated eval_config.yaml custom
+  // ge_behavior_contract_judge metric. Default stays at 5 for full-gate parity;
+  // fast canaries can lower this via --eval-judge-samples / GE_EVAL_JUDGE_SAMPLES
+  // / .ge.json without forking the eval contract.
+  evalJudgeSamples: {
+    flag: "evalJudgeSamples",
+    env: ["GE_EVAL_JUDGE_SAMPLES"],
+    file: "evalJudgeSamples",
+    default: "5",
   },
 };
 
@@ -286,6 +296,7 @@ export function buildFactoryConfig({ flags = {}, env = {}, file: rawFile = {} } 
     synthesisModel: scalars.synthesisModel,
     refinementModel: scalars.refinementModel,
     judgeModel: scalars.judgeModel,
+    evalJudgeSamples: scalars.evalJudgeSamples,
     mcpServices: file.mcpServices || {},
     agentIdentityOrgId: scalars.agentIdentityOrgId,
     agentIdentityPrincipalSet: env.GE_AGENT_IDENTITY_PRINCIPALSET || file.agentIdentityPrincipalSet ||

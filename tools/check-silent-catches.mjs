@@ -60,6 +60,9 @@ const files = globSync("{apps,tools,packages}/**/*.{mjs,js,ts}", {
   cwd: ROOT,
   ignore: [
     "**/node_modules/**",
+    // Generated app bundles are build output, not authored source. They may
+    // also contain minified third-party code even when the chunk suffix is .js.
+    "**/dist/**",
     "**/*.test.*",
     // Vendored third-party bundles are not ours to sweep.
     "**/vendor/**",

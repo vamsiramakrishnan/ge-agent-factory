@@ -72,6 +72,9 @@ function installFetch() {
     if (u.includes("metadata.google.internal")) {
       return new Response(JSON.stringify({ access_token: "test-token" }), { status: 200 });
     }
+    if (u.includes("/cache%2Fworkspaces%2F") && !u.includes("upload/storage/v1")) {
+      return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
+    }
     // GCS media upload, Firestore PATCH, Cloud Tasks create all return 200 OK JSON.
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   });
@@ -105,6 +108,7 @@ describe("submitFactoryRun — IS_PROD generate path (regression net)", () => {
     expect(record.title).toBe("GL Anomaly Detector");
     expect(record.useCaseId).toBe("gl_anomaly_detector");
     expect(record.workspaceId).toBe("gl-anomaly-detector");
+    expect(record.agentId).toBe("gl_anomaly_detector");
     expect(record.targetStage).toBe("preview");
     expect(record.project).toBe("test-proj");
     expect(record.bucket).toBe("test-proj-ge-agent-factory");
@@ -113,14 +117,17 @@ describe("submitFactoryRun — IS_PROD generate path (regression net)", () => {
       `gs://test-proj-ge-agent-factory/runs/${record.runId}/items/gl-anomaly-detector`,
     );
 
-    // Boundary calls: two GCS index writes (queued then submitted), one archive
-    // upload, three Firestore patches, one Cloud Task enqueue.
+    // Boundary calls: two GCS index writes (queued then submitted), one
+    // canonical archive upload, one cache fill, three Firestore patches, and
+    // one Cloud Task enqueue.
     const gcsUploads = urls("upload/storage/v1");
     // control-plane index object name = runs/<runId>.json ; archive object under items/
     const indexWrites = gcsUploads.filter((c) => c.url.includes(`runs%2F${record.runId}.json`));
-    const archiveWrites = gcsUploads.filter((c) => c.url.includes("workspace.tar.gz"));
+    const archiveWrites = gcsUploads.filter((c) => c.url.includes("workspace.tar.gz") && c.url.includes(`runs%2F${record.runId}`));
+    const cacheWrites = gcsUploads.filter((c) => c.url.includes("workspace.tar.gz") && c.url.includes("cache%2Fworkspaces%2F"));
     expect(indexWrites.length).toBe(2);
     expect(archiveWrites.length).toBe(1);
+    expect(cacheWrites.length).toBe(1);
     // The archive upload carries the (mocked) tar bytes read from disk.
     expect(archiveWrites[0].body).toBeInstanceOf(Buffer);
     expect(archiveWrites[0].body.toString()).toBe("FAKE_TAR_BYTES");
@@ -131,7 +138,7 @@ describe("submitFactoryRun — IS_PROD generate path (regression net)", () => {
     // Ordering: first index write (queued) precedes archive upload precedes the
     // Cloud Task enqueue precedes the final index write (submitted).
     const idxFirst = calls.findIndex((c) => c.url.includes(`runs%2F${record.runId}.json`));
-    const idxArchive = calls.findIndex((c) => c.url.includes("workspace.tar.gz"));
+    const idxArchive = calls.findIndex((c) => c.url.includes("workspace.tar.gz") && c.url.includes(`runs%2F${record.runId}`));
     const idxTask = calls.findIndex((c) => c.url.includes("cloudtasks.googleapis.com"));
     const idxLast = calls.map((c) => c.url).lastIndexOf(
       calls.filter((c) => c.url.includes(`runs%2F${record.runId}.json`)).at(-1).url,

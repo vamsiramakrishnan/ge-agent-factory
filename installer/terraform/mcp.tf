@@ -4,18 +4,21 @@
 # data_plane.tf. See docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md.
 
 locals {
-  mcp_sas = [google_service_account.runner.email, google_service_account.gateway.email]
+  mcp_sas = {
+    runner  = google_service_account.runner.email
+    gateway = google_service_account.gateway.email
+  }
 }
 
 resource "google_project_iam_member" "mcp_tool_user" {
-  for_each = var.enable_mcp ? toset(local.mcp_sas) : []
+  for_each = var.enable_mcp ? local.mcp_sas : {}
   project  = var.project_id
   role     = "roles/mcp.toolUser"
   member   = "serviceAccount:${each.value}"
 }
 
 resource "google_project_iam_member" "agentregistry_editor" {
-  for_each = var.enable_mcp ? toset(local.mcp_sas) : []
+  for_each = var.enable_mcp ? local.mcp_sas : {}
   project  = var.project_id
   role     = "roles/agentregistry.editor"
   member   = "serviceAccount:${each.value}"
@@ -23,7 +26,7 @@ resource "google_project_iam_member" "agentregistry_editor" {
 
 # Resolve/consume registered MCP toolsets at runtime (AgentRegistry.get_mcp_toolset).
 resource "google_project_iam_member" "agentregistry_viewer" {
-  for_each = var.enable_mcp ? toset(local.mcp_sas) : []
+  for_each = var.enable_mcp ? local.mcp_sas : {}
   project  = var.project_id
   role     = "roles/agentregistry.viewer"
   member   = "serviceAccount:${each.value}"

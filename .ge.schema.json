@@ -167,8 +167,16 @@
         "string",
         "null"
       ],
-      "description": "Flag: --judgeModel. Env: GE_JUDGE_MODEL. Default: \"gemini-flash-latest\".",
-      "default": "gemini-flash-latest"
+      "description": "Flag: --judgeModel. Env: GE_JUDGE_MODEL. Default: \"gemini-3.5-flash\".",
+      "default": "gemini-3.5-flash"
+    },
+    "evalJudgeSamples": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --evalJudgeSamples. Env: GE_EVAL_JUDGE_SAMPLES. Default: \"5\".",
+      "default": "5"
     }
   }
 }

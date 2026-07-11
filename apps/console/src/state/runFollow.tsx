@@ -5,6 +5,8 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 export interface RunFollowMeta {
   kind?: string;
   source?: string;
+  ledgerSource?: "local" | "firestore";
+  mode?: "local" | "remote";
 }
 
 export interface RunFollowState {

@@ -4,7 +4,7 @@ import { modelsDoctor } from "./models-doctor.mjs";
 // Offline unit coverage: every probe is injected, so this proves the check's
 // structural behavior (pass/warn/fail per condition) without shelling out to
 // gcloud, touching the real filesystem, or making any network/paid call.
-const ALL_GREEN_CFG = { project: "demo-project", refinementModel: "gemini-3.5-flash", judgeModel: "gemini-flash-latest" };
+const ALL_GREEN_CFG = { project: "demo-project", refinementModel: "gemini-3.5-flash", judgeModel: "gemini-3.5-flash" };
 const ALL_GREEN_PROBES = {
   gcloudOnPath: () => true,
   pathExists: () => true,

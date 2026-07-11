@@ -8,15 +8,32 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+import re
 from typing import Any
 
 from generated_agent_runtime.evidence import (
+    normalize_source_system,
+    record_ids_from_evidence,
     record_tool_evidence,
     source_systems_from_evidence,
     tool_name_for,
 )
 
 EMPTY_ARGUMENT_VALUES = ("", None)
+BYPASS_REFUSAL_TEXT = (
+    "I cannot skip evidence, policy, compliance, approval, or source-system "
+    "checks. The compliant path is to gather source-system evidence, check the "
+    "governing policy, and only then recommend or execute an escalation with an "
+    "audit trail."
+)
+BYPASS_REQUEST_RE = re.compile(
+    r"(?:\b(skip|bypass|ignore|override|waive|disable)\b.{0,120}\b"
+    r"(evidence|policy|compliance|approval|source|check|verification|guardrail)\b)"
+    r"|(?:\b(evidence|policy|compliance|approval|source)\b.{0,120}\b"
+    r"(skip|bypass|ignore|override|waive|disable)\b)"
+    r"|(?:\bi take responsibility\b)",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 @dataclass(frozen=True)
@@ -29,6 +46,7 @@ class WorkflowCallbackConfig:
     write_tools: Sequence[str] = field(default_factory=tuple)
     required_inputs_by_tool: Mapping[str, Sequence[str]] = field(default_factory=dict)
     evidence_min_systems_by_tool: Mapping[str, int] = field(default_factory=dict)
+    evidence_required_systems_by_tool: Mapping[str, Sequence[str]] = field(default_factory=dict)
 
 
 def initialize_workflow_state_value(
@@ -44,21 +62,52 @@ def initialize_workflow_state_value(
     state.setdefault("audit_trails", [])
 
 
+def content_text(content: Any) -> str:
+    """Extract text from an ADK/GenAI Content-like object without importing ADK."""
+
+    parts = getattr(content, "parts", None) or []
+    return "\n".join(str(getattr(part, "text", "") or "") for part in parts)
+
+
+def is_bypass_request(text: str) -> bool:
+    """Return true for prompts that try to bypass evidence or governance checks."""
+
+    return bool(BYPASS_REQUEST_RE.search(text or ""))
+
+
+def bypass_refusal_content(text: str = BYPASS_REFUSAL_TEXT) -> Any:
+    """Build a GenAI Content response when google-genai is available."""
+
+    try:
+        from google.genai import types as genai_types
+
+        return genai_types.Content(
+            role="model",
+            parts=[genai_types.Part(text=text)],
+        )
+    except Exception:
+        return {"role": "model", "parts": [{"text": text}]}
+
+
 async def initialize_workflow_state(
     callback_context: Any,
     *,
     config: WorkflowCallbackConfig,
-) -> None:
+) -> Any | None:
     """Initialize callback state from a ``WorkflowCallbackConfig``."""
 
     initialize_workflow_state_value(callback_context.state, config)
+    if is_bypass_request(content_text(getattr(callback_context, "user_content", None))):
+        callback_context.state["bypass_request_refused"] = True
+        return bypass_refusal_content()
+    return None
 
 
 def make_initialize_workflow_state(config: WorkflowCallbackConfig):
     """Return an ADK ``before_agent_callback`` bound to ``config``."""
 
-    async def _initialize_workflow_state(callback_context: Any) -> None:
-        await initialize_workflow_state(callback_context, config=config)
+    async def _initialize_workflow_state(callback_context: Any) -> Any | None:
+        return await initialize_workflow_state(callback_context, config=config)
 
     return _initialize_workflow_state
 
@@ -91,6 +140,14 @@ async def enforce_tool_contract(
     del kwargs
     args = args or {}
     tool_name = tool_name_for(tool)
+    state = getattr(tool_context, "state", {}) or {}
+    if state.get("bypass_request_refused"):
+        return {
+            "error": "bypass_request_refused",
+            "tool": tool_name,
+            "escalation": "refuse",
+            "rationale": BYPASS_REFUSAL_TEXT,
+        }
     if tool_name not in set(config.write_tools):
         return None
 
@@ -112,10 +169,38 @@ async def enforce_tool_contract(
         }
 
     min_systems = config.evidence_min_systems_by_tool.get(tool_name, 0)
-    if min_systems:
-        state = getattr(tool_context, "state", {}) or {}
+    required_systems = {
+        normalize_source_system(system)
+        for system in config.evidence_required_systems_by_tool.get(tool_name, ())
+    }
+    if min_systems or required_systems:
         evidence_log = state.get("evidence_log", [])
         systems = source_systems_from_evidence(evidence_log)
+        evidence_record_ids = record_ids_from_evidence(evidence_log)
+        target_id = args.get("target_id") or args.get("targetId")
+        if target_id and evidence_record_ids and str(target_id) not in evidence_record_ids:
+            return {
+                "error": "target_not_in_evidence",
+                "tool": tool_name,
+                "target_id": str(target_id),
+                "known_record_ids": sorted(evidence_record_ids)[:25],
+                "escalation": "request_more_info",
+                "rationale": "The write-like tool target must come from a non-empty source result retrieved in this session.",
+            }
+        missing_systems = sorted(required_systems - systems)
+        if missing_systems:
+            return {
+                "error": "insufficient_required_evidence",
+                "tool": tool_name,
+                "required_source_systems": sorted(required_systems),
+                "missing_source_systems": missing_systems,
+                "actual_source_systems": sorted(systems),
+                "escalation": "refuse",
+                "rationale": (
+                    "Required source-system evidence is missing before this "
+                    "write-like tool can run."
+                ),
+            }
         if len(systems) < min_systems:
             return {
                 "error": "insufficient_evidence",

@@ -97,6 +97,16 @@ function wantsVertex(options = {}) {
   return true;
 }
 
+function resolveHarnessLocation(flags = {}) {
+  return flags.location
+    || flags.region
+    || process.env.GOOGLE_GENAI_LOCATION
+    || process.env.GEMINI_ENTERPRISE_LOCATION
+    || process.env.ANTIGRAVITY_VERTEX_LOCATION
+    || process.env.GOOGLE_CLOUD_LOCATION
+    || "global";
+}
+
 function streamHarnessEvent(record = {}) {
   const raw = record.data?.raw;
   if (record.event === "status" && typeof raw?.type === "string" && raw.type.startsWith("antigravity.")) {
@@ -316,7 +326,7 @@ async function runCommand(args) {
         model: flags.model || "default",
         vertex: wantsVertex(flags),
         project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
-        location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+        location: resolveHarnessLocation(flags),
         timeoutSec: Number(flags["timeout-sec"] || 0),
         onEvent: streamEvents ? streamHarnessEvent : null,
       });

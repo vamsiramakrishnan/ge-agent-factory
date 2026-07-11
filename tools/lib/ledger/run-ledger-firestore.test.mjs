@@ -140,4 +140,84 @@ describe("Firestore ledger reader", () => {
     expect(run.results[0]).toMatchObject({ id: "uc-a", department: "hr", workspaceId: "ws-a", status: "done" });
     expect(run.recentEvents[0]).toMatchObject({ type: "stage_done", stage: "created", line: "created done" });
   });
+
+  test("getRun derives terminal failure from item state when the root run doc is stale", async () => {
+    const reader = await createFirestoreLedgerReader({
+      db: fakeDb({
+        factoryRuns: {
+          "run-stale": {
+            data: {
+              mode: "remote",
+              targetStage: "publish_enterprise",
+              status: "queued",
+              updatedAt: "2026-07-09T07:30:00.000Z",
+            },
+            collections: {
+              items: {
+                "ws-a": { data: { status: "failed", currentStage: "validate", workspaceId: "ws-a", error: "bad substitution" } },
+              },
+              events: {
+                "ws-a_validate_failed": { data: { seq: 1, ts: "2026-07-09T07:32:00.000Z", type: "stage_error", stage: "validate", status: "failed", workItemId: "ws-a", error: "bad substitution" } },
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    const run = await reader.getRun("run-stale");
+    expect(run).toMatchObject({ status: "failed", ok: false, failed: 1 });
+    expect(run.results[0]).toMatchObject({ status: "failed", workspaceId: "ws-a", error: "bad substitution" });
+  });
+
+  test("getRun does not make an intermediate completed stage terminal", async () => {
+    const db = fakeDb({
+      factoryRuns: {
+        "run-advance": {
+          data: { status: "submitted", targetStage: "publish_enterprise" },
+          collections: {
+            items: {
+              "item-1": {
+                data: {
+                  status: "done",
+                  currentStage: "deploy_runtime",
+                  nextStage: "poll_runtime",
+                  workspaceId: "ws-1",
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    const reader = await createFirestoreLedgerReader({ db, projectId: "p1" });
+    const run = await reader.getRun("run-advance");
+    expect(run.status).toBe("running");
+    expect(run.results[0]).toMatchObject({ status: "running", targetStage: "publish_enterprise" });
+  });
+
+  test("listRuns uses the same item-derived status projection as getRun", async () => {
+    const reader = await createFirestoreLedgerReader({
+      db: fakeDb({
+        factoryRuns: {
+          "run-stale": {
+            data: {
+              mode: "remote",
+              targetStage: "publish_enterprise",
+              status: "queued",
+              updatedAt: "2026-07-09T07:30:00.000Z",
+            },
+            collections: {
+              items: {
+                "ws-a": { data: { status: "failed", currentStage: "validate", workspaceId: "ws-a", error: "bad substitution" } },
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    const runs = await reader.listRuns({ limit: 1 });
+    expect(runs[0]).toMatchObject({ id: "run-stale", status: "failed", ok: false, failed: 1 });
+  });
 });

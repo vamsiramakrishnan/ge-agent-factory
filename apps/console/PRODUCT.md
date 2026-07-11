@@ -30,13 +30,13 @@ trusting a status color enough to act on it without opening a log.
 ## Brand Personality
 
 Precise, calm, engineered — "less, but better." The design identity is
-"Punktraster" (`packages/design/src/palette.mjs`): a Dieter Rams / Braun
-instrument chassis. Warm achromatic greys and off-white panels form the
-housing; one vermilion signal — the lit power dot — means "interactive /
-live / running"; one green means "passed"; the dot-matrix grille texture
-marks apparatus zones. All other color budget is semantic status, never
-decoration. Hierarchy comes from one grotesque family (Archivo) in weights,
-not from a second voice.
+Modernist Functionalism (`Modernist Functionalism Design System.zip` and
+`packages/design/src/palette.mjs`): a Dieter Rams / Braun instrument chassis.
+Warm achromatic greys and off-white panels form the housing; Braun blue means
+interactive, active, or running; signal red is reserved for stop/error states.
+Dot-matrix grille texture marks apparatus or purposeful empty zones. Hierarchy
+comes from Hanken Grotesk in weight and scale; JetBrains Mono is reserved for
+commands, ids, timestamps, logs, and numeric readouts.
 
 ## Anti-references
 

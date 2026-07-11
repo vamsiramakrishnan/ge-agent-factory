@@ -10,6 +10,10 @@ import { safePyName, snakeCase } from "@ge/std/naming";
 import { pyEscape, pyTripleEscape } from "../tools/py-emit.mjs";
 import { canonicalIntentToolName } from "../tools/tool-naming.mjs";
 
+function normalizeSourceSystemId(value) {
+  return String(value || "").toLowerCase().replace(/[\s_/]+/g, "");
+}
+
 // Build the agent.py source string.
 //   manifest, behaviorContract — generation inputs
 //   instruction                — rendered _INSTRUCTION text (renderAgentInstruction)
@@ -17,9 +21,20 @@ import { canonicalIntentToolName } from "../tools/tool-naming.mjs";
 //   workflow                   — deriveAgentWorkflow() result ({ topology, steps })
 //   agentModel                 — model id every emitted Agent is pinned to
 export function renderAgentPy({ manifest, behaviorContract, instruction, qualityPlan, workflow, agentModel }) {
+  const toolIntents = behaviorContract?.toolIntents || [];
   const writeToolNames = (behaviorContract?.toolIntents || [])
     .filter((intent) => ["action", "notification"].includes(intent?.kind))
     .map((intent) => safePyName(intent.name));
+  const evidenceSourceSystems = new Set([
+    ...toolIntents
+      .filter((intent) => !["action", "notification"].includes(intent?.kind))
+      .map((intent) => normalizeSourceSystemId(intent?.sourceSystemId))
+      .filter(Boolean),
+    ...(behaviorContract?.evidenceRequirements || [])
+      .flatMap((req) => req?.sourceSystemIds || [])
+      .map(normalizeSourceSystemId)
+      .filter(Boolean),
+  ]);
   const evidenceMinSystemsByTool = Object.fromEntries((behaviorContract?.toolIntents || [])
     .filter((intent) => ["action", "notification"].includes(intent?.kind))
     .map((intent) => {
@@ -33,6 +48,10 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
       return [toolName, minSystems];
     })
     .filter(([, minSystems]) => minSystems > 0));
+  const evidenceRequiredSystemsByTool = Object.fromEntries(toolIntents
+    .filter((intent) => ["action", "notification"].includes(intent?.kind))
+    .map((intent) => [safePyName(intent.name), Array.from(evidenceSourceSystems).sort()])
+    .filter(([, systems]) => systems.length > 0));
   const requiredInputsByTool = Object.fromEntries((behaviorContract?.toolIntents || [])
     .filter((intent) => intent?.name)
     .map((intent) => [safePyName(intent.name), (intent.requiredInputs || []).map((input) => snakeCase(input))]));
@@ -55,6 +74,8 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
     : `# Sub-agents : ${String(qualityPlan.adkCapabilities.useSubAgentsWhen || "single agent").replace(/\s+/g, " ").slice(0, 200)}`;
 
   const headerLines = [
+    `import re`,
+    ``,
     importLine,
     `from google.adk.apps import App`,
     `from google.adk.agents.callback_context import CallbackContext`,
@@ -75,8 +96,25 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
     `_WRITE_TOOLS = ${JSON.stringify(writeToolNames)}`,
     `_REQUIRED_INPUTS_BY_TOOL = ${JSON.stringify(requiredInputsByTool)}`,
     `_EVIDENCE_MIN_SYSTEMS_BY_TOOL = ${JSON.stringify(evidenceMinSystemsByTool)}`,
+    `_EVIDENCE_REQUIRED_SYSTEMS_BY_TOOL = ${JSON.stringify(evidenceRequiredSystemsByTool)}`,
     ``,
-    `async def initialize_workflow_state(callback_context: CallbackContext) -> None:`,
+    `_BYPASS_REQUEST_RE = re.compile(r"(?:\\b(skip|bypass|ignore|override|waive|disable)\\b.{0,120}\\b(evidence|policy|compliance|approval|source|check|verification|guardrail)\\b)|(?:\\b(evidence|policy|compliance|approval|source)\\b.{0,120}\\b(skip|bypass|ignore|override|waive|disable)\\b)|(?:\\bi take responsibility\\b)", re.IGNORECASE | re.DOTALL)`,
+    `_BYPASS_REFUSAL_TEXT = "I cannot skip evidence, policy, compliance, approval, or source-system checks. The compliant path is to gather source-system evidence, check the governing policy, and only then recommend or execute an escalation with an audit trail."`,
+    ``,
+    `def _normalize_source_system(value) -> str:`,
+    `    return str(value or "").lower().replace(" ", "").replace("_", "").replace("/", "")`,
+    ``,
+    `def _content_text(content) -> str:`,
+    `    parts = getattr(content, "parts", None) or []`,
+    `    return "\\n".join(str(getattr(part, "text", "") or "") for part in parts)`,
+    ``,
+    `def _is_bypass_request(text: str) -> bool:`,
+    `    return bool(_BYPASS_REQUEST_RE.search(text or ""))`,
+    ``,
+    `def _bypass_refusal_content() -> genai_types.Content:`,
+    `    return genai_types.Content(role="model", parts=[genai_types.Part(text=_BYPASS_REFUSAL_TEXT)])`,
+    ``,
+    `async def initialize_workflow_state(callback_context: CallbackContext) -> genai_types.Content | None:`,
     `    """Initialize session-scoped state used by evals, callbacks, and audit review."""`,
     `    state = callback_context.state`,
     `    state.setdefault("scenario_id", _SCENARIO_ID)`,
@@ -84,6 +122,43 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
     `    state.setdefault("expected_tools", _EXPECTED_TOOLS)`,
     `    state.setdefault("evidence_log", [])`,
     `    state.setdefault("audit_trails", [])`,
+    `    if _is_bypass_request(_content_text(getattr(callback_context, "user_content", None))):`,
+    `        state["bypass_request_refused"] = True`,
+    `        return _bypass_refusal_content()`,
+    `    return None`,
+    ``,
+    `_RECORD_ID_FIELDS = ("id", "source_record_id", "target_id", "account_number", "account_id", "case_id", "case_number", "application_number", "transaction_id", "envelope_id")`,
+    ``,
+    `def _evidence_has_rows(entry: dict) -> bool:`,
+    `    if entry.get("error"):`,
+    `        return False`,
+    `    if "total" not in entry or entry.get("total") in (None, ""):`,
+    `        return True`,
+    `    try:`,
+    `        return int(entry.get("total")) > 0`,
+    `    except (TypeError, ValueError):`,
+    `        return True`,
+    ``,
+    `def _result_record_ids(result: dict) -> list[str]:`,
+    `    rows = result.get("rows")`,
+    `    if not isinstance(rows, list):`,
+    `        return []`,
+    `    values = []`,
+    `    for row in rows[:50]:`,
+    `        if not isinstance(row, dict):`,
+    `            continue`,
+    `        for field in _RECORD_ID_FIELDS:`,
+    `            value = row.get(field)`,
+    `            if value not in ("", None):`,
+    `                values.append(str(value))`,
+    `    unique = []`,
+    `    seen = set()`,
+    `    for value in values:`,
+    `        if value in seen:`,
+    `            continue`,
+    `        seen.add(value)`,
+    `        unique.append(value)`,
+    `    return unique`,
     ``,
     `# ADK injects tool-callback args by keyword. before_tool_callback signature is`,
     `# (tool, args, tool_context); after_tool_callback adds tool_response. We accept`,
@@ -92,6 +167,9 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
     `    """Block unsafe write-like tool calls before they can mutate external state."""`,
     `    args = args or {}`,
     `    tool_name = getattr(tool, "name", tool)`,
+    `    state = getattr(tool_context, "state", {}) or {}`,
+    `    if state.get("bypass_request_refused"):`,
+    `        return {"error": "bypass_request_refused", "tool": tool_name, "escalation": "refuse", "rationale": _BYPASS_REFUSAL_TEXT}`,
     `    if tool_name in _WRITE_TOOLS:`,
     `        required = _REQUIRED_INPUTS_BY_TOOL.get(tool_name, [])`,
     `        missing = [key for key in required if args.get(key) in ("", None)]`,
@@ -102,16 +180,27 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
     `        if ("idempotency_key" in args or "idempotencyKey" in args) and not idempotency:`,
     `            return {"error": "missing_idempotency_key", "tool": tool_name, "escalation": "request_confirmation"}`,
     `        min_systems = _EVIDENCE_MIN_SYSTEMS_BY_TOOL.get(tool_name, 0)`,
-    `        if min_systems:`,
-    `            state = getattr(tool_context, "state", {}) or {}`,
+    `        required_systems = set(_EVIDENCE_REQUIRED_SYSTEMS_BY_TOOL.get(tool_name, []))`,
+    `        if min_systems or required_systems:`,
     `            evidence_log = state.get("evidence_log", [])`,
     `            systems = set()`,
+    `            evidence_record_ids = set()`,
     `            for entry in evidence_log:`,
     `                if not isinstance(entry, dict):`,
     `                    continue`,
+    `                if not _evidence_has_rows(entry):`,
+    `                    continue`,
     `                source = entry.get("source_system_id") or entry.get("source_system")`,
     `                if source:`,
-    `                    systems.add(str(source).lower().replace(" ", "").replace("_", "").replace("/", ""))`,
+    `                    systems.add(_normalize_source_system(source))`,
+    `                for value in entry.get("record_ids") or []:`,
+    `                    evidence_record_ids.add(str(value))`,
+    `            target_id = args.get("target_id") or args.get("targetId")`,
+    `            if target_id and evidence_record_ids and str(target_id) not in evidence_record_ids:`,
+    `                return {"error": "target_not_in_evidence", "tool": tool_name, "target_id": str(target_id), "known_record_ids": sorted(evidence_record_ids)[:25], "escalation": "request_more_info", "rationale": "The write-like tool target must come from a non-empty source result retrieved in this session."}`,
+    `            missing_systems = sorted(required_systems - systems)`,
+    `            if missing_systems:`,
+    `                return {"error": "insufficient_required_evidence", "tool": tool_name, "required_source_systems": sorted(required_systems), "missing_source_systems": missing_systems, "actual_source_systems": sorted(systems), "escalation": "refuse", "rationale": "Required source-system evidence is missing before this write-like tool can run."}`,
     `            if len(systems) < min_systems:`,
     `                return {"error": "insufficient_evidence", "tool": tool_name, "required_source_systems": min_systems, "actual_source_systems": sorted(systems), "escalation": "refuse", "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."}`,
     `    return None`,
@@ -128,9 +217,12 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
     `        evidence_log.append({`,
     `            "tool": tool_name,`,
     `            "source_system": result.get("source_system") or result.get("source_system_id"),`,
+    `            "source_system_id": result.get("source_system_id"),`,
     `            "evidence": result.get("evidence"),`,
     `            "table": result.get("table"),`,
     `            "total": result.get("total"),`,
+    `            "error": result.get("error"),`,
+    `            "record_ids": _result_record_ids(result),`,
     `        })`,
     `        if result.get("audit_trail"):`,
     `            state.setdefault("audit_trails", []).append(result["audit_trail"])`,
@@ -223,6 +315,7 @@ export function renderAgentPy({ manifest, behaviorContract, instruction, quality
       `root_agent = ${workflowAgentClass}(`,
       `    name="${qualityPlan.naming.agentName}",`,
       `    description="${pyEscape(qualityPlan.naming.displayName)}: ${pyEscape((behaviorContract?.primaryObjective || "Fixture-backed generated agent.").slice(0, 180))}",`,
+      `    before_agent_callback=initialize_workflow_state,`,
       `    sub_agents=[${subAgentVars.join(", ")}],`,
       `)`,
       ``,

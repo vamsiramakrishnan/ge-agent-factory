@@ -35,12 +35,12 @@ RUN apt-get update \
 # Remote harness runtime. The Cloud Run worker owns the harness_refine stage, so
 # google-antigravity must be importable from python3 inside this image. agents-cli
 # is installed here as well because generated workspace quality gates use it.
-# google-agents-cli pinned <0.3: the generated-workspace eval flow runs
-# `agents-cli eval run --all`, which 0.3+ removed (0.5 reworked eval into
-# generate/grade eval-cases). TODO: migrate the eval flow to the 0.5 model.
+# The generated-workspace eval flow uses the current generate/grade contract.
+# Read one checked-in version so local, worker, and builder surfaces cannot drift.
 # --break-system-packages: newer uv enforces PEP 668 on the externally-managed
 # Debian system interpreter; the worker installs into --system deliberately.
-RUN uv tool install 'google-agents-cli>=0.2,<0.3' \
+COPY apps/factory/agents-cli-version.txt /opt/ge/agents-cli-version.txt
+RUN uv tool install "google-agents-cli==$(cat /opt/ge/agents-cli-version.txt)" \
   && uv pip install --system --break-system-packages google-antigravity google-adk "google-adk[eval]" "pydantic>=2" "pytest>=8"
 
 # Workspace manifests first for layer caching. The worker's @ge/* deps are
@@ -49,16 +49,23 @@ RUN uv tool install 'google-agents-cli>=0.2,<0.3' \
 COPY package.json bun.lock ./
 COPY packages ./packages
 COPY apps/console/package.json apps/console/
+COPY apps/docs/package.json apps/docs/
 COPY apps/presentation/package.json apps/presentation/
 COPY apps/factory/package.json apps/factory/
-# Full workspace install (NOT --ignore-scripts: the worker uses better-sqlite3, whose
-# native binding must be compiled — build-essential + python3 above provide the toolchain).
-RUN bun install --frozen-lockfile
+# Cloud worker state is Firestore/GCS/Cloud Tasks; the SQLite ledger adapter is
+# local/test-only and openRunLedger falls back when no native driver is present.
+# Keep image builds deterministic by avoiding native install scripts such as
+# better-sqlite3's node-gyp compile.
+RUN bun install --frozen-lockfile --production --ignore-scripts
 
 # tools/lib/* shared libs the worker imports at runtime (../../../tools/lib/...).
 COPY tools ./tools
 # App sources (scripts/factory-worker.mjs entrypoint + src/*).
 COPY apps/factory ./apps/factory
+# Keep remote harness parity with local: the worker image carries the generated
+# use-case catalog artifact that Antigravity/tools can read during review/refine.
+COPY apps/presentation/src/components/slides/use-cases ./apps/presentation/src/components/slides/use-cases
+RUN cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs
 
 WORKDIR /app/apps/factory
 

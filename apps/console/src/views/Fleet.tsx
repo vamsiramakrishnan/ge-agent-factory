@@ -33,7 +33,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
   const notify = useToast();
   const [syncRemote, setSyncRemote] = useState(() => window.localStorage.getItem("ge.sync.remote") || "");
   const [syncPush, setSyncPush] = useState(() => window.localStorage.getItem("ge.sync.push") !== "false");
-  const [concurrency, setConcurrency] = useState(() => window.localStorage.getItem("ge.fleet.concurrency") || "2");
+  const [concurrency, setConcurrency] = useState(() => window.localStorage.getItem("ge.fleet.concurrency") || "8");
 
   const departments = useMemo(() => {
     if (!fleet) return [];

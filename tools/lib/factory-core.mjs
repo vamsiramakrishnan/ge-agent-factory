@@ -14,7 +14,7 @@ import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { commandMeta, commandRequirements } from "@ge/capability-registry";
 import { runDoctorSection } from "./doctor/report.mjs";
-import { runCommand } from "./factory-exec.mjs";
+import { runCommand, runCommandAsync } from "./factory-exec.mjs";
 import { createDataPlane } from "./planes/data-plane.mjs";
 import { createMcpPlane } from "./planes/mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./planes/factory-plane.mjs";
@@ -48,6 +48,7 @@ import { DxError } from "./errors/dx-error.mjs";
 import { createGoldenPathOps } from "./golden-path.mjs";
 import { evalsCoverage as coverageReport } from "./evals/coverage-command.mjs";
 import { loadByoManifest, planByoApply } from "./byo-manifest.mjs";
+import { readCloudDaemonStatus } from "./cloud-daemon.mjs";
 import { readBindings, defaultBindingsDir } from "@ge/byo-systems";
 
 export {
@@ -103,6 +104,10 @@ const noop = () => {};
 // callers stay valid.
 export { readJson, writeJson, updateJson };
 
+export function cloudDaemonStatus(cfg) {
+  return readCloudDaemonStatus(cfg);
+}
+
 // Run listing/summarization (mergeLedgerAndFileRuns, listFactoryRuns) now live in
 // factory-runs.mjs; imported below and re-exported for the public API contract
 // (see factory-core.export-surface.json / factory-core.export-surface.test.mjs).
@@ -116,6 +121,16 @@ export function run(bin, args, { capture = true, allowFail = false, cwd = REPO_R
   };
 }
 const gcloud = (args, opts) => run("gcloud", args, opts);
+
+async function runAsync(bin, args, { allowFail = false, cwd = REPO_ROOT, timeoutMs } = {}) {
+  const result = await runCommandAsync(bin, args, { allowFail, cwd, timeoutMs });
+  return {
+    ok: result.ok,
+    out: (result.stdout || "").trim(),
+    err: result.stderr || result.failureLine || "",
+  };
+}
+const gcloudAsync = (args, opts) => runAsync("gcloud", args, opts);
 
 export function ensureBin(bin, hint) {
   try { execFileSync(bin, ["--version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to -version then the not-found error */ }
@@ -245,8 +260,8 @@ export function doctor(cfg) {
 // bind them via `terraform apply` — never a direct `gcloud run deploy` (which would
 // clobber Terraform-managed config). Memory/CPU/IAP live in Terraform variables.
 // Note: terraform apply reconciles the whole module, so target is advisory.
-export function deploy(cfg, { target = "all", log = noop } = {}) {
-  return factoryPlane.deploy(cfg, { target, log });
+export function deploy(cfg, { target = "all", tag, log = noop } = {}) {
+  return factoryPlane.deploy(cfg, { target, tag, log });
 }
 
 // Remote run observation + artifact sync (status/logs/sync) now lives in
@@ -551,15 +566,33 @@ export function mcpDoctor(cfg) {
   return mcpPlane.mcpDoctor(cfg);
 }
 
-// `ge` (bare): where am I, what's stood up, and the next command to run.
-export function statusBoard(cfg) {
+function renderStatusBoard(cfg, { factoryUp = false, dataUp = false } = {}) {
   const haveConfig = existsSync(CONFIG_PATH) && !!cfg.project;
   const mode = cfg.mode || "local";
   const clientDoes = mode === "local"
     ? "this machine runs generate → validate (to the build boundary); deploy/register/publish need the cloud"
     : "this machine submits + observes; the cloud factory builds, deploys, and publishes";
-  const planes = [];
+  const bucket = cfg.dataBucket || (cfg.project ? `${cfg.project}-ge-agent-data` : "");
+  const svcCount = cfg.mcpServices ? Object.keys(cfg.mcpServices).length : 0;
+  const planes = [
+    { name: "factory", up: factoryUp, detail: factoryUp ? `${cfg.gatewayService} + ${cfg.workerService}` : "gateway/worker not deployed" },
+    { name: "data plane", up: dataUp, detail: dataUp ? bucket : "stores not provisioned" },
+    { name: "tool plane", up: svcCount > 0, detail: svcCount > 0 ? `${svcCount} dept MCP service(s)` : "MCP services not deployed" },
+  ];
 
+  let next;
+  if (!haveConfig) next = "ge init";
+  else if (mode === "local") next = "ge agents build --canary"; // local doesn't need cloud planes stood up
+  else if (!factoryUp) next = "ge up";
+  else if (!dataUp) next = "ge up --data";
+  else if (svcCount === 0) next = "ge up --mcp";
+  else next = "ge agents build --canary";
+
+  return { mode, clientDoes, project: cfg.project || null, app: cfg.geAppId || null, region: cfg.region, planes, next };
+}
+
+// `ge` (bare): where am I, what's stood up, and the next command to run.
+export function statusBoard(cfg) {
   let factoryUp = false;
   if (cfg.project) {
     try { factoryUp = !!(factoryPlane.describeRun(cfg, cfg.gatewayService) && factoryPlane.describeRun(cfg, cfg.workerService)); } catch (error) {
@@ -570,26 +603,67 @@ export function statusBoard(cfg) {
       console.warn(`[factory-core] statusBoard: factory-plane probe failed; reporting "not deployed" but the check itself errored — ${error?.message || String(error)}`);
     }
   }
-  planes.push({ name: "factory", up: factoryUp, detail: factoryUp ? `${cfg.gatewayService} + ${cfg.workerService}` : "gateway/worker not deployed" });
 
-  let dataUpd = false;
+  let dataUp = false;
   const bucket = cfg.dataBucket || (cfg.project ? `${cfg.project}-ge-agent-data` : "");
   if (bucket && cfg.project) {
-    const b = gcloud(["storage", "buckets", "describe", `gs://${bucket}`, "--project", cfg.project, "--format=value(name)"], { allowFail: true });
-    dataUpd = b.ok;
+    const result = gcloud(["storage", "buckets", "describe", `gs://${bucket}`, "--project", cfg.project, "--format=value(name)"], { allowFail: true });
+    dataUp = result.ok;
   }
-  planes.push({ name: "data plane", up: dataUpd, detail: dataUpd ? bucket : "stores not provisioned" });
+  return renderStatusBoard(cfg, { factoryUp, dataUp });
+}
 
-  const svcCount = cfg.mcpServices ? Object.keys(cfg.mcpServices).length : 0;
-  planes.push({ name: "tool plane", up: svcCount > 0, detail: svcCount > 0 ? `${svcCount} dept MCP service(s)` : "MCP services not deployed" });
+const statusBoardInflight = new Map();
 
-  let next;
-  if (!haveConfig) next = "ge init";
-  else if (mode === "local") next = "ge agents build --canary"; // local doesn't need cloud planes stood up
-  else if (!factoryUp) next = "ge up";
-  else if (!dataUpd) next = "ge up --data";
-  else if (svcCount === 0) next = "ge up --mcp";
-  else next = "ge agents build --canary";
+function parsesJson(result) {
+  if (!result?.ok) return false;
+  try {
+    JSON.parse(result.out);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  return { mode, clientDoes, project: cfg.project || null, app: cfg.geAppId || null, region: cfg.region, planes, next };
+async function probeStatusBoard(cfg) {
+  if (!cfg.project) return renderStatusBoard(cfg);
+  const bucket = cfg.dataBucket || `${cfg.project}-ge-agent-data`;
+  const serviceProbe = (service) => service
+    ? gcloudAsync(["run", "services", "describe", service, "--project", cfg.project, "--region", cfg.region, "--format=json"], { allowFail: true, timeoutMs: 15_000 })
+    : Promise.resolve({ ok: false, out: "", err: "service not configured" });
+  const dataProbe = bucket
+    ? gcloudAsync(["storage", "buckets", "describe", `gs://${bucket}`, "--project", cfg.project, "--format=value(name)"], { allowFail: true, timeoutMs: 15_000 })
+    : Promise.resolve({ ok: false, out: "", err: "bucket not configured" });
+  const [gateway, worker, data] = await Promise.all([
+    serviceProbe(cfg.gatewayService),
+    serviceProbe(cfg.workerService),
+    dataProbe,
+  ]);
+  return renderStatusBoard(cfg, {
+    factoryUp: parsesJson(gateway) && parsesJson(worker),
+    dataUp: data.ok,
+  });
+}
+
+// Server surfaces use the same board contract as the CLI, but their cloud
+// probes must not block asset delivery or concurrent API requests. Coalesce
+// identical in-flight reads so /status and /position share one control-plane
+// snapshot without introducing a stale cache.
+export function statusBoardAsync(cfg) {
+  const key = JSON.stringify({
+    project: cfg.project || null,
+    mode: cfg.mode || "local",
+    region: cfg.region || null,
+    gatewayService: cfg.gatewayService || null,
+    workerService: cfg.workerService || null,
+    dataBucket: cfg.dataBucket || null,
+    mcpServices: Object.keys(cfg.mcpServices || {}).sort(),
+  });
+  const existing = statusBoardInflight.get(key);
+  if (existing) return existing;
+  const pending = probeStatusBoard(cfg).finally(() => {
+    if (statusBoardInflight.get(key) === pending) statusBoardInflight.delete(key);
+  });
+  statusBoardInflight.set(key, pending);
+  return pending;
 }

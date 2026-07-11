@@ -16,6 +16,28 @@ passport before the agent ships to
 Gemini Enterprise. The factory does not replace those tools — it produces
 the contract and proof they need.
 
+## Start with one local proof
+
+Install directly from this GitHub repository — no npm package or registry
+lookup is involved:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
+  | bun - -- --yes --skills agents
+```
+
+The installer clones or reuses the repository, sets up the toolchain, exposes
+the agent skills, and runs the first local proof. From an existing checkout,
+use the shorter path:
+
+```bash
+mise run setup
+ge prove
+mise run console
+```
+
+Cloud credentials are only needed when you run `ge handoff agents-cli`.
+
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
 <p align="center">
@@ -100,14 +122,14 @@ factory end to end:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
-  | bun - -- --skills agents        # GitHub-backed clone + guided, verified install
+  | bun - -- --yes --skills agents  # GitHub-backed clone + guided, verified install
 ```
 
 | Agent | Install |
 | --- | --- |
 | **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` (in a checkout: `mise run skills-install`) |
+| **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --yes --skills agents` (in a checkout: `mise run skills-install`) |
 | **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |
 
 Generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills automate the setup and operations layer above that handoff.

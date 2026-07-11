@@ -338,16 +338,16 @@ describe("multi-agent emitter", () => {
     }
   }, 120000);
 
-  // BUG 2 — before_agent_callback=initialize_workflow_state must be wired on EVERY
-  // sub-agent (ParallelAgent branches don't share state; setdefault is idempotent
-  // so it is safe on sequential too).
-  test("BUG2: before_agent_callback is on every sub-agent", () => {
+  // BUG 2 — before_agent_callback=initialize_workflow_state must be wired on the
+  // root orchestrator and EVERY sub-agent. The root can short-circuit governance
+  // bypass requests before the workflow runs; branches still seed their own state.
+  test("BUG2: before_agent_callback is on root and every sub-agent", () => {
     const { dir, agentPy } = generateAgent("account-reconciliation-agent");
     try {
       const subAgentDefs = (agentPy.match(/^account_reconciliation_agent_\w+ = Agent\(/gm) || []).length;
       expect(subAgentDefs).toBeGreaterThanOrEqual(2);
       const initCallbacks = (agentPy.match(/before_agent_callback=initialize_workflow_state/g) || []).length;
-      expect(initCallbacks).toBe(subAgentDefs);
+      expect(initCallbacks).toBe(subAgentDefs + 1);
       expect(astParse(agentPy)).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });

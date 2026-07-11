@@ -34,6 +34,7 @@ locals {
     "roles/iam.serviceAccountUser",
     "roles/iam.serviceAccountTokenCreator",
     "roles/logging.logWriter",
+    "roles/logging.viewer",
     # NOTE: roles/cloudbuild.builds.editor intentionally absent — replaced by the
     # build_submitter custom role granted via google_project_iam_member.runner_build_submitter.
   ]
@@ -59,10 +60,13 @@ locals {
   # bucket), artifactregistry.writer (push images). Matches Stage B of the runbook.
   builder_roles = [
     "roles/cloudbuild.builds.builder",
+    "roles/aiplatform.user",
+    "roles/discoveryengine.editor",
     "roles/artifactregistry.writer",
     "roles/storage.admin",
     "roles/logging.logWriter",
     "roles/iam.serviceAccountUser",
+    "roles/serviceusage.serviceUsageConsumer",
   ]
 }
 
@@ -108,6 +112,28 @@ resource "google_project_iam_member" "runner_build_submitter" {
   project = var.project_id
   role    = google_project_iam_custom_role.build_submitter.id
   member  = "serviceAccount:${google_service_account.runner.email}"
+}
+
+# agents-cli --agent-identity creates the Agent Engine identity and then binds
+# its runtime roles through the project IAM policy. Keep that capability on the
+# dedicated build executor and limit it to the three project-policy operations
+# the CLI uses instead of granting the broader Project IAM Admin role.
+resource "google_project_iam_custom_role" "agent_identity_iam_binder" {
+  role_id     = "geAgentFactoryIdentityIamBinder"
+  project     = var.project_id
+  title       = "GE Agent Factory Identity IAM Binder"
+  description = "Read and update project IAM policy for agents-cli Agent Engine identity binding"
+  permissions = [
+    "resourcemanager.projects.get",
+    "resourcemanager.projects.getIamPolicy",
+    "resourcemanager.projects.setIamPolicy",
+  ]
+}
+
+resource "google_project_iam_member" "builder_agent_identity_iam_binder" {
+  project = var.project_id
+  role    = google_project_iam_custom_role.agent_identity_iam_binder.id
+  member  = "serviceAccount:${google_service_account.builder.email}"
 }
 
 # Bucket-scoped storage admin (least privilege over the factory bucket only).

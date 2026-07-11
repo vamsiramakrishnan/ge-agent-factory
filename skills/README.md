@@ -44,7 +44,7 @@ registry, so the table cannot drift from those sources:
 | [`operating-console`](operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](../docs/reference/console-and-apis.md) |
 | [`recording-evidence`](recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../packages/run-ledger/) | — |
 | [`operating-the-factory`](operating-the-factory/) | `factory_operation` | `ge agents status`, `ge init`, `ge doctor`, `factory list-usecases` | — | [`agent-operability.md`](../docs/reference/agent-operability.md), [`cli.md`](../docs/reference/cli.md) |
-| [`standing-up-the-platform`](standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge mcp doctor` | — | [`config.md`](../docs/reference/config.md), [`architecture.md`](../docs/reference/architecture.md) |
+| [`standing-up-the-platform`](standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge daemon cloud`, `ge mcp doctor` | — | [`config.md`](../docs/reference/config.md), [`architecture.md`](../docs/reference/architecture.md) |
 | [`deploying-the-control-plane`](deploying-the-control-plane/) | `control_plane_deploy` | — | — | [`architecture.md`](../docs/reference/architecture.md) |
 | [`grounding-interviews-with-documents`](grounding-interviews-with-documents/) | `document_grounding` | `ge capture` | — | [`spec-schema.md`](../docs/reference/spec-schema.md) |
 | [`managing-access`](managing-access/) | `access_control` | — | — | — |

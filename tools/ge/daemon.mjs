@@ -8,12 +8,11 @@
 // binds, so "make the daemon come up" has exactly one implementation instead
 // of two that could drift.
 import { defineCommand } from "citty";
-import { parseList } from "@ge/std/list";
 import { rmSync } from "node:fs";
 import { daemonPaths, getDaemonStatus, startDaemonServer } from "../lib/runtime-daemon.mjs";
 import { ensureDaemonRunning } from "../lib/daemon/ensure-running.mjs";
 import {
-  guarded, emit, out, pc, ui, core,
+  guarded, emit, out, pc, ui, common, cfgFrom, core,
   readPidFile, processAlive, processLooksLikeDaemon, daemonStatusSnapshot,
   renderResumePlan, daemonPort, daemonRequest, statusText, followTaskEvents,
 } from "./shared.mjs";
@@ -230,7 +229,47 @@ const daemonStop = defineCommand({
   }),
 });
 
+const daemonCloud = defineCommand({
+  meta: { name: "cloud", description: "Show cloud factory daemon readiness: worker, queue, and cache contracts" },
+  args: { ...common },
+  run: guarded(async ({ args }) => {
+    const status = await core.cloudDaemonStatus(cfgFrom(args));
+    emit(args, status, (s) => {
+      const healthy = s.snapshot.status === "healthy";
+      out(ui.title("GE Cloud Daemon"));
+      out(ui.kv([
+        ["status", healthy ? pc.green("healthy") : pc.yellow(s.snapshot.status)],
+        ["project", s.project ? ui.cmd(s.project) : pc.dim("<gcloud default>")],
+        ["region", ui.cmd(s.region)],
+      ]));
+      out("");
+      out(ui.section("Worker"));
+      out(ui.kv(s.workers.map((worker) => ({
+        glyph: worker.status === "serving" ? "passed" : "failed",
+        key: worker.name,
+        value: worker.status === "serving" ? pc.green(worker.status) : pc.red(worker.status),
+        note: worker.latestReadyRevision || worker.error || worker.url || "",
+      }))));
+      out(ui.section("Queue"));
+      out(ui.kv(s.queues.map((queue) => ({
+        glyph: queue.status === "healthy" ? "passed" : "failed",
+        key: queue.name,
+        value: queue.status === "healthy" ? pc.green(queue.state || queue.status) : pc.red(queue.state || queue.status),
+        note: queue.error || "",
+      }))));
+      out(ui.section("Caches"));
+      out(ui.kv(s.caches.map((cache) => ({
+        glyph: cache.enabled === false ? "warning" : "passed",
+        key: cache.kind,
+        value: cache.enabled === false ? pc.yellow("disabled") : pc.green("enabled"),
+        note: cache.uri || "",
+      }))));
+      out(ui.next("ge agents build --remote --watch", "submit work to this control plane"));
+    });
+  }),
+});
+
 export const daemon = defineCommand({
   meta: { name: "daemon", description: "Keep long factory work running after your terminal closes" },
-  subCommands: { start: daemonStart, status: daemonStatus, tasks: daemonTasks, task: daemonTask, events: daemonEvents, stop: daemonStop },
+  subCommands: { start: daemonStart, status: daemonStatus, cloud: daemonCloud, tasks: daemonTasks, task: daemonTask, events: daemonEvents, stop: daemonStop },
 });

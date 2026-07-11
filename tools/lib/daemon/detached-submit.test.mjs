@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { canBindLoopback } from "@ge/std/test-network";
 import { createDaemonApp } from "./http-app.mjs";
 import { createDaemonClient } from "./client.mjs";
 import { submitDetached } from "./detached-submit.mjs";
 import { isDxError, dxErrorShape } from "../errors/dx-error.mjs";
+
+const loopbackAvailable = await canBindLoopback();
+const loopbackDescribe = loopbackAvailable ? describe : describe.skip;
+const loopbackTest = loopbackAvailable ? test : test.skip;
 
 // Same fake-daemon shape as client.test.mjs's startFakeDaemon: createDaemonApp
 // with injected fakes, served over a real Bun.serve HTTP server so the wire
@@ -60,7 +65,7 @@ function reserveClosedPort() {
 
 const BUILD_ARGV = ["agents", "build", "--local", "--canary"];
 
-describe("submitDetached — happy path", () => {
+loopbackDescribe("submitDetached — happy path", () => {
   test("submits a ge.command task and returns the daemon's run id + hints", async () => {
     const { client, calls } = startFakeDaemon({ run: { id: "job-42", kind: "ge.command", status: "running" } });
     const result = await submitDetached({ argv: BUILD_ARGV, client });
@@ -94,7 +99,7 @@ describe("submitDetached — happy path", () => {
 });
 
 describe("submitDetached — daemon down", () => {
-  test("daemon initially down + ensureDaemon brings it up → succeeds after one retry", async () => {
+  loopbackTest("daemon initially down + ensureDaemon brings it up → succeeds after one retry", async () => {
     const port = reserveClosedPort();
     const client = createDaemonClient({ baseUrl: `http://127.0.0.1:${port}`, timeoutMs: 2000 });
     const ensureCalls = [];
@@ -129,7 +134,7 @@ describe("submitDetached — daemon down", () => {
     expect(ensureCalls.length).toBe(1); // ensureDaemon is tried exactly once, then it's a hard failure
   });
 
-  test("a daemon-side HTTP rejection (not a connection failure) propagates as-is — no retry, no DxError reframing", async () => {
+  loopbackTest("a daemon-side HTTP rejection (not a connection failure) propagates as-is — no retry, no DxError reframing", async () => {
     const { client } = startFakeDaemon();
     // command: 123 fails task-schemas.mjs's commandTask zod shape (expects a
     // nullish string) — a real HTTP 400 from a reachable daemon, distinct from

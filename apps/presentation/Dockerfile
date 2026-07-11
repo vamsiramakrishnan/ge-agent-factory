@@ -15,6 +15,7 @@ COPY package.json bun.lock ./
 # resolve the workspace.
 COPY packages ./packages
 COPY apps/console/package.json apps/console/
+COPY apps/docs/package.json apps/docs/
 COPY apps/presentation/package.json apps/presentation/
 COPY apps/factory/package.json apps/factory/
 RUN bun install --frozen-lockfile --ignore-scripts
@@ -38,6 +39,7 @@ COPY package.json bun.lock ./
 # resolve the workspace.
 COPY packages ./packages
 COPY apps/console/package.json apps/console/
+COPY apps/docs/package.json apps/docs/
 COPY apps/presentation/package.json apps/presentation/
 COPY apps/factory/package.json apps/factory/
 RUN bun install --frozen-lockfile --production --ignore-scripts

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import type { User } from "firebase/auth";
-import { CircleHelp, ExternalLink } from "lucide-react";
+import { CircleHelp, ExternalLink, Menu } from "lucide-react";
 import { Button } from "@ge/ui";
 import { ModeToggle } from "../ModeToggle";
 import { RuntimeStatusBadge } from "../RuntimeStatusBadge";
@@ -110,46 +110,56 @@ interface TopBarProps {
   mode: "local" | "remote";
   onModeChange: (mode: "local" | "remote") => void;
   onOpenPalette: () => void;
+  onOpenNavigation: () => void;
 }
 
-export function TopBar({ status, mode, onModeChange, onOpenPalette }: TopBarProps) {
+export function TopBar({ status, mode, onModeChange, onOpenPalette, onOpenNavigation }: TopBarProps) {
   return (
     // The control fascia: matte lacquer face, a visible seam where it meets
     // the work area, and the power lamp lit beside the wordmark.
-    <header className="fascia seam-b h-14 flex items-center justify-between px-6">
-      <div className="flex items-center gap-2.5">
-        <span className="lamp h-2.5 w-2.5 rounded-full bg-primary" aria-hidden />
-        <h1 className="font-headline text-sm font-bold tracking-tight text-on-surface">
-          GE Agent Factory
+    <header className="fascia seam-b flex min-h-14 items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="flex shrink-0 items-center gap-2.5">
+        <button
+          type="button"
+          onClick={onOpenNavigation}
+          className="key -ml-1 grid h-9 w-9 place-items-center border border-outline-variant bg-surface text-on-surface md:hidden"
+          aria-label="Open navigation"
+          title="Open navigation"
+        >
+          <Menu className="h-4 w-4" aria-hidden />
+        </button>
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-on-surface font-mono text-[8px] font-bold text-surface" aria-hidden>af</span>
+        <h1 className="font-headline text-sm font-bold text-on-surface">
+          ge agent factory
         </h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-4">
         {status && (
-          <div className="text-xs text-secondary">
-            {status.project && <span className="font-medium">{status.project}</span>}
-            {status.project && status.app && <span className="mx-1.5">·</span>}
-            {status.app && <span>{status.app}</span>}
+          <div className="hidden min-w-0 max-w-[44vw] items-center text-xs text-secondary xl:flex">
+            {status.project && <span className="shrink-0 font-medium">{status.project}</span>}
+            {status.project && status.app && <span className="mx-1.5 shrink-0">·</span>}
+            {status.app && <span className="truncate" title={status.app}>{status.app}</span>}
           </div>
         )}
 
-        <NowPulse />
+        <div className="hidden lg:block"><NowPulse /></div>
 
-        <RuntimeStatusBadge />
+        <div className="hidden md:block"><RuntimeStatusBadge /></div>
 
         <ModeToggle mode={mode} onChange={onModeChange} />
 
         <button
           onClick={onOpenPalette}
-          className="key rounded-full border border-outline/70 bg-surface-container-low px-3 py-1 font-mono text-xs text-secondary transition-colors hover:bg-surface-container hover:text-on-surface"
+          className="key hidden border border-outline/70 bg-surface-container-low px-3 py-1 font-mono text-xs text-secondary transition-colors hover:bg-surface-container hover:text-on-surface lg:inline-flex"
           title="Command Palette (⌘K)"
         >
           ⌘K
         </button>
 
-        <HelpMenu />
+        <div className="hidden sm:block"><HelpMenu /></div>
 
-        <AuthChip />
+        <div className="hidden xl:block"><AuthChip /></div>
       </div>
     </header>
   );

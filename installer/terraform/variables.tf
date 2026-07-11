@@ -91,6 +91,42 @@ variable "worker_image" {
   default     = "us-docker.pkg.dev/cloudrun/container/hello"
 }
 
+variable "factory_worker_min_instances" {
+  description = "Warm worker instances to keep ready for remote factory stages. Set to 0 for lowest cost; 1+ removes the Cloud Run cold-start path."
+  type        = number
+  default     = 1
+}
+
+variable "factory_worker_max_instances" {
+  description = "Maximum parallel worker instances for Cloud Tasks stage fanout. Keep aligned with factory_tasks_max_concurrent_dispatches."
+  type        = number
+  default     = 50
+}
+
+variable "factory_gateway_min_instances" {
+  description = "Warm gateway instances to keep ready for console/API submissions. Set to 0 for lowest cost."
+  type        = number
+  default     = 1
+}
+
+variable "factory_gateway_max_instances" {
+  description = "Maximum gateway instances for submission/status/API traffic."
+  type        = number
+  default     = 10
+}
+
+variable "factory_tasks_max_dispatches_per_second" {
+  description = "Cloud Tasks dispatch rate for remote factory stages. Raise with worker max instances; lower for quota/cost control."
+  type        = number
+  default     = 50
+}
+
+variable "factory_tasks_max_concurrent_dispatches" {
+  description = "Cloud Tasks concurrent HTTP dispatches for remote factory stages. Keep aligned with factory_worker_max_instances × worker concurrency."
+  type        = number
+  default     = 50
+}
+
 variable "oidc_allowed_audiences" {
   description = "Comma-separated audiences the gateway's IAP middleware will accept on an OIDC bearer token. After first apply, set this to the gateway URL so service-account callers can call an IAP-protected gateway. Leave empty to deny all service-account callers."
   type        = string

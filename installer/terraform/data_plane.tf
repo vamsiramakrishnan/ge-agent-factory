@@ -5,7 +5,10 @@
 
 locals {
   data_bucket = var.data_bucket_name != "" ? var.data_bucket_name : "${var.project_id}-ge-agent-data"
-  data_sas    = [google_service_account.runner.email, google_service_account.gateway.email]
+  data_sas = {
+    runner  = google_service_account.runner.email
+    gateway = google_service_account.gateway.email
+  }
 }
 
 # ── GCS: shared agent-data bucket (per-agent prefix agents/<id>/) ─────────────
@@ -19,7 +22,7 @@ resource "google_storage_bucket" "data" {
 }
 
 resource "google_storage_bucket_iam_member" "data_admin" {
-  for_each = var.enable_gcs_data ? toset(local.data_sas) : []
+  for_each = var.enable_gcs_data ? local.data_sas : {}
   bucket   = google_storage_bucket.data[0].name
   role     = "roles/storage.objectAdmin"
   member   = "serviceAccount:${each.value}"
@@ -27,14 +30,14 @@ resource "google_storage_bucket_iam_member" "data_admin" {
 
 # ── BigQuery: no instance; datasets are per-agent (agent_<id>) at load_data ───
 resource "google_project_iam_member" "bq_data_editor" {
-  for_each = var.enable_bigquery ? toset(local.data_sas) : []
+  for_each = var.enable_bigquery ? local.data_sas : {}
   project  = var.project_id
   role     = "roles/bigquery.dataEditor"
   member   = "serviceAccount:${each.value}"
 }
 
 resource "google_project_iam_member" "bq_job_user" {
-  for_each = var.enable_bigquery ? toset(local.data_sas) : []
+  for_each = var.enable_bigquery ? local.data_sas : {}
   project  = var.project_id
   role     = "roles/bigquery.jobUser"
   member   = "serviceAccount:${each.value}"
@@ -121,7 +124,7 @@ resource "google_secret_manager_secret_version" "alloydb_dsn" {
 }
 
 resource "google_project_iam_member" "alloydb_client" {
-  for_each = var.enable_alloydb ? toset(local.data_sas) : []
+  for_each = var.enable_alloydb ? local.data_sas : {}
   project  = var.project_id
   role     = "roles/alloydb.client"
   member   = "serviceAccount:${each.value}"
@@ -143,7 +146,7 @@ resource "google_bigtable_instance" "data" {
 }
 
 resource "google_project_iam_member" "bigtable_user" {
-  for_each = var.enable_bigtable ? toset(local.data_sas) : []
+  for_each = var.enable_bigtable ? local.data_sas : {}
   project  = var.project_id
   role     = "roles/bigtable.user"
   member   = "serviceAccount:${each.value}"
@@ -151,7 +154,7 @@ resource "google_project_iam_member" "bigtable_user" {
 
 # ── Firestore: default DB exists; per-agent named DBs at load_data ────────────
 resource "google_project_iam_member" "datastore_user" {
-  for_each = var.enable_firestore ? toset(local.data_sas) : []
+  for_each = var.enable_firestore ? local.data_sas : {}
   project  = var.project_id
   role     = "roles/datastore.user"
   member   = "serviceAccount:${each.value}"
@@ -159,7 +162,7 @@ resource "google_project_iam_member" "datastore_user" {
 
 # AlloyDB DSN read access for the runtime/runner SAs.
 resource "google_project_iam_member" "data_secret_accessor" {
-  for_each = var.enable_alloydb ? toset(local.data_sas) : []
+  for_each = var.enable_alloydb ? local.data_sas : {}
   project  = var.project_id
   role     = "roles/secretmanager.secretAccessor"
   member   = "serviceAccount:${each.value}"

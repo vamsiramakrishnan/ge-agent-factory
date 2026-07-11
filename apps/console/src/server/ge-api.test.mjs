@@ -30,6 +30,7 @@ const core = {
   systemsBindings: async () => ({ bindings: [{ system: "workday", boundTo: "https://example.com/mcp", kind: "mcp", mode: "twin_first" }] }),
   byoDoctor: async ({ manifest } = {}) => ({ ok: true, schemaVersion: "ge.byo.v1", problems: [], actions: [], manifest }),
   evalsCoverage: ({ id } = {}) => ({ dimensions: {}, id: id || null }),
+  cloudDaemonStatus: async () => ({ snapshot: { kind: "cloud_daemon_snapshot", status: "healthy" } }),
   // Same contract as tools/lib/golden-path.mjs's goldenPathPosition (re-exported
   // by factory-core): three fixed stages + current/blocker/next.
   goldenPathPosition: async (_cfg, { haveConfig = true, operateNext = null } = {}) => ({
@@ -61,6 +62,10 @@ test("GET ledger run by id (404 for unknown)", async () => {
 test("GET ledger run events → SSE stream descriptor", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/ledger/runs/local-1/events", query: { afterSeq: "3", source: "firestore" }, body: null }, core);
   expect(r.stream).toBe("ledger"); expect(r.runId).toBe("local-1"); expect(r.afterSeq).toBe(3); expect(r.source).toBe("firestore");
+});
+test("GET run events aliases to the durable ledger stream", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/runs/local-1/events", query: { afterSeq: "4", source: "firestore" }, body: null }, core);
+  expect(r.stream).toBe("ledger"); expect(r.runId).toBe("local-1"); expect(r.afterSeq).toBe(4); expect(r.source).toBe("firestore");
 });
 test("runtime node middleware does not fall through after responding", async () => {
   process.env.GE_DAEMON_PORT = "9";
@@ -251,6 +256,12 @@ test("GET commands returns mutating command registry metadata", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/commands", query: {}, body: null }, core);
   expect(r.status).toBe(200);
   expect(r.json.commands.some((c) => c.id === "data.up" && c.path === "/api/ge/data/up")).toBe(true);
+  expect(r.json.commands.some((c) => c.id === "daemon.cloud" && c.path === "/api/ge/daemon/cloud")).toBe(true);
+});
+test("GET daemon/cloud returns cloud daemon status", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/daemon/cloud", query: {}, body: null }, core);
+  expect(r.status).toBe(200);
+  expect(r.json.kind || r.json.snapshot?.kind).toBeTruthy();
 });
 test("GET specs returns searchable spec catalog", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/specs", query: { q: "reconcile", department: "finance", limit: "20" }, body: null }, core);
@@ -516,6 +527,7 @@ const ROUTE_MATRIX = [
   { method: "POST", path: "/api/ge/agents/build", known: true },
   { method: "POST", path: "/api/ge/agents/sync", known: true },
   { method: "POST", path: "/api/ge/daemon/start", known: true },
+  { method: "GET", path: "/api/ge/daemon/cloud", known: true },
   // Golden-path verbs (registry-driven POST routes via commandForRoute).
   { method: "POST", path: "/api/ge/prove", known: true },
   { method: "POST", path: "/api/ge/handoff", known: true },

@@ -68,7 +68,7 @@ The factory deliberately does **not** reimplement the layer below:
 ```bash
 ge prove                             # factory: compile + prove one starter workspace
 cd .ge/factory/workspaces/<id>       # the output is an agents-cli project
-agents-cli eval run --all            # the layer below, used directly
+agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml
 ```
 
 <details>

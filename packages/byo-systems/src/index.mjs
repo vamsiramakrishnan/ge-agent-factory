@@ -16,7 +16,7 @@
  *                        -> synthesize a brand-new LIVE simulator from a
  *                           natural-language description (or samples /
  *                           OpenAPI), by spawning the generator's
- *                           synthesize_cli.py with the spec on stdin.
+ *                           synthesize_cli.py with a JSON spec file.
  *   - checkToolchain     -> read-only doctor checks (python, synthesize_cli.py,
  *                           registry.json, live-system bindings, overlay-backend
  *                           durability), shared by `ge systems doctor` and the
@@ -29,9 +29,11 @@
  *                           precise subpath.
  */
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { delimiter, join, dirname } from "node:path";
+import { tmpdir } from "node:os";
+import { delimiter, dirname, join } from "node:path";
+import { writeJson } from "@ge/std/json-io";
 import { defaultBindingsDir, readBindings, validateBinding } from "./bindings.mjs";
 
 export * from "./bindings.mjs";
@@ -170,8 +172,8 @@ export function buildSynthesisSpec(body = {}) {
  * additionally passes --repo-root so the CLI's default (inferred from its own
  * __file__) never has to agree with our injected repoRoot.
  */
-export function synthesisArgv({ script, promote = false, repoRoot } = {}) {
-  const argv = [script, "--stdin", "--include-contract", "--no-register"];
+export function synthesisArgv({ script, specFile, promote = false, repoRoot } = {}) {
+  const argv = [script, ...(specFile ? ["--spec-file", specFile] : ["--stdin"]), "--include-contract", "--no-register"];
   if (promote) {
     argv.push("--promote");
     if (repoRoot) argv.push("--repo-root", repoRoot);
@@ -215,8 +217,10 @@ export function resolveOverlayScope({ mode, overlayBackend, env = process.env } 
 }
 
 /**
- * Spawn the synthesis CLI with the given spec on stdin and resolve its parsed
- * JSON result. Passes through GOOGLE_CLOUD_* env (for the LLM tier) when present.
+ * Spawn the synthesis CLI with the given JSON spec and resolve its parsed
+ * result. A temporary file is used instead of child stdin because Bun's
+ * node:child_process compatibility layer can close a Python pipe before queued
+ * writes flush. Passes through GOOGLE_CLOUD_* env when the LLM tier is enabled.
  * Rejects with a statusCode-tagged error on spawn failure, non-zero exit, or
  * unparseable output.
  *
@@ -235,6 +239,16 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
     return Promise.reject(new Error("runSynthesis requires repoRoot or synthesizeScript"));
   }
   const scriptDir = dirname(script);
+  let tempDir;
+  let specFile;
+  try {
+    tempDir = mkdtempSync(join(tmpdir(), "ge-system-synthesis-"));
+    specFile = join(tempDir, "spec.json");
+    writeJson(specFile, spec, { mode: 0o600 });
+  } catch (error) {
+    if (tempDir) rmSync(tempDir, { recursive: true, force: true });
+    return Promise.reject(new Error(`failed to materialize synthesis spec: ${error.message}`));
+  }
   return new Promise((resolve, reject) => {
     const resolvedPython = python || resolveSynthesisPython({ repoRoot });
     const overlayScope = resolveOverlayScope({ mode, overlayBackend, env: process.env });
@@ -251,22 +265,30 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
         env.PYTHONPATH = [runtimePath, env.PYTHONPATH].filter(Boolean).join(delimiter);
       }
     }
-    const child = spawn(
-      resolvedPython,
-      synthesisArgv({ script, promote, repoRoot }),
-      { cwd: scriptDir, env, stdio: ["pipe", "pipe", "pipe"] },
-    );
-
     let stdout = "";
     let stderr = "";
     let settled = false;
+    const cleanup = () => rmSync(tempDir, { recursive: true, force: true });
     const finishReject = (message, statusCode) => {
       if (settled) return;
       settled = true;
+      cleanup();
       const err = new Error(message);
       err.statusCode = statusCode;
       reject(err);
     };
+
+    let child;
+    try {
+      child = spawn(
+        resolvedPython,
+        synthesisArgv({ script, specFile, promote, repoRoot }),
+        { cwd: scriptDir, env, stdio: ["ignore", "pipe", "pipe"] },
+      );
+    } catch (error) {
+      finishReject(`failed to spawn synthesis CLI (${resolvedPython}): ${error.message}`, 502);
+      return;
+    }
 
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
@@ -286,6 +308,7 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
     child.on("close", (code) => {
       clearTimeout(timer);
       if (settled) return;
+      cleanup();
       if (code !== 0) {
         const detail = (stderr || stdout).trim().slice(0, 800);
         finishReject(`synthesis CLI exited ${code}: ${detail || "no output"}`, 502);
@@ -302,14 +325,6 @@ export function runSynthesis(spec, { repoRoot, synthesizeScript, python, timeout
         reject(err);
       }
     });
-
-    try {
-      child.stdin.write(JSON.stringify(spec));
-      child.stdin.end();
-    } catch (error) {
-      clearTimeout(timer);
-      finishReject(`failed to write synthesis spec: ${error.message}`, 502);
-    }
   });
 }
 

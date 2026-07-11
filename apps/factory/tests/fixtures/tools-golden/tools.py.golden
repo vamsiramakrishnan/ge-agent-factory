@@ -18,6 +18,18 @@ def _append_action_event(tool_name: str, result: dict[str, Any]) -> None:
     ACTION_EVENTS.parent.mkdir(parents=True, exist_ok=True)
     with ACTION_EVENTS.open("a", encoding="utf-8") as f:
         f.write(json.dumps({"tool": tool_name, **result}, sort_keys=True) + "\n")
+def _dateish_values(row: dict[str, Any]) -> list[str]:
+    return [str(value) for key, value in row.items() if "date" in key.lower() or key.lower().endswith("_at") or key.lower() == "period"]
+def _filter_date_range(rows: list[dict[str, Any]], date_range: str) -> list[dict[str, Any]]:
+    needle = str(date_range or "").strip().lower()
+    if needle in {"current", "current period", "current_period", "latest", "recent", "this period", "this_period"}:
+        years = sorted({value[:4] for row in rows for value in _dateish_values(row) if len(value) >= 4 and value[:4].isdigit()})
+        if years:
+            latest_year = years[-1]
+            filtered = [row for row in rows if any(value.startswith(latest_year) for value in _dateish_values(row))]
+            if filtered:
+                return filtered
+    return [row for row in rows if any(needle in str(value).lower() for value in _dateish_values(row))]
 
 _CONTRACT_DOCUMENTS = [{"id":"asc-606-contract-analyzer-controls-playbook","title":"ASC 606 Contract Analyzer Controls Playbook","type":"policy","path":"documents/asc-606-contract-analyzer-controls-playbook.md","source_system_id":"bigquery"}]
 
@@ -42,13 +54,13 @@ def list_systems() -> dict[str, Any]:
     return {"scenario": "asc_606_contract_analyzer", "systems": [{"id":"sap_s_4hana_sd","name":"SAP S/4HANA SD","owns":["sales_orders","contracts","billing_documents"],"protocol":"RFC/BAPI","localBacking":["alloydb"],"toolNames":["query_sap_s_4hana_sd_sales_orders","query_sap_s_4hana_sd_contracts","query_sap_s_4hana_sd_billing_documents"],"evidence":["source_system_record","generated_audit_trail"]},{"id":"contract_repository","name":"Contract Repository","owns":["contract_repository_records","contract_repository_events","contract_repository_audit_trail"],"protocol":"REST API","localBacking":["alloydb"],"toolNames":["query_contract_repository_contract_repository_records","query_contract_repository_contract_repository_events","query_contract_repository_contract_repository_audit_trail"],"evidence":["source_system_record","generated_audit_trail"]},{"id":"bigquery","name":"BigQuery","owns":["analytics_events","historical_metrics","cached_aggregates"],"protocol":"BigQuery SQL","localBacking":["bigquery"],"toolNames":["query_bigquery_analytics_events","query_bigquery_historical_metrics","query_bigquery_cached_aggregates"],"evidence":["source_system_record","generated_audit_trail"]}], "tables": [{"name":"sales_orders","sourceSystem":"SAP S/4HANA SD","sourceSystemId":"sap_s_4hana_sd"},{"name":"contracts","sourceSystem":"SAP S/4HANA SD","sourceSystemId":"sap_s_4hana_sd"},{"name":"billing_documents","sourceSystem":"SAP S/4HANA SD","sourceSystemId":"sap_s_4hana_sd"},{"name":"contract_repository_records","sourceSystem":"Contract Repository","sourceSystemId":"contract_repository"},{"name":"contract_repository_events","sourceSystem":"Contract Repository","sourceSystemId":"contract_repository"},{"name":"contract_repository_audit_trail","sourceSystem":"Contract Repository","sourceSystemId":"contract_repository"},{"name":"analytics_events","sourceSystem":"BigQuery","sourceSystemId":"bigquery"},{"name":"historical_metrics","sourceSystem":"BigQuery","sourceSystemId":"bigquery"},{"name":"cached_aggregates","sourceSystem":"BigQuery","sourceSystemId":"bigquery"}]}
 
 def query_sap_s_4hana_sd_sales_orders(lookup_key: str = "", date_range: str = "", id: str = "", source_record_id: str = "", vendor: str = "", currency: str = "", status: str = "", created_at: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query SAP S/4HANA SD sales_orders. Columns: id, source_record_id, vendor, amount, currency, status, created_at, due_date."""
+    """Query SAP S/4HANA SD sales_orders. Columns: id, source_record_id, vendor, amount, currency, status, created_at, due_date. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/sales_orders.json")
     if lookup_key:
         needle = lookup_key.lower()
         rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
     if date_range:
-        rows = [r for r in rows if any(date_range.lower() in str(value).lower() for key, value in r.items() if "date" in key.lower() or key.lower().endswith("_at") or key.lower() == "period")]
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if source_record_id: rows = [r for r in rows if str(r.get("source_record_id","")).lower() == source_record_id.lower()]
     if vendor: rows = [r for r in rows if str(r.get("vendor","")).lower() == vendor.lower()]
@@ -57,9 +69,14 @@ def query_sap_s_4hana_sd_sales_orders(lookup_key: str = "", date_range: str = ""
     if created_at: rows = [r for r in rows if str(r.get("created_at","")).lower() == created_at.lower()]
     return {"source_system": "SAP S/4HANA SD", "source_system_id": "sap_s_4hana_sd", "table": "sales_orders", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["sales_orders_records","sales_orders_summary"], "evidence": ["source_system_record"]}
 
-def query_sap_s_4hana_sd_contracts(id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query SAP S/4HANA SD contracts. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew."""
+def query_sap_s_4hana_sd_contracts(lookup_key: str = "", date_range: str = "", id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
+    """Query SAP S/4HANA SD contracts. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/contracts.json")
+    if lookup_key:
+        needle = lookup_key.lower()
+        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
+    if date_range:
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if counterparty: rows = [r for r in rows if str(r.get("counterparty","")).lower() == counterparty.lower()]
     if currency: rows = [r for r in rows if str(r.get("currency","")).lower() == currency.lower()]
@@ -68,9 +85,14 @@ def query_sap_s_4hana_sd_contracts(id: str = "", counterparty: str = "", currenc
     if status: rows = [r for r in rows if str(r.get("status","")).lower() == status.lower()]
     return {"source_system": "SAP S/4HANA SD", "source_system_id": "sap_s_4hana_sd", "table": "contracts", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["contracts_records","contracts_summary"], "evidence": ["source_system_record"]}
 
-def query_sap_s_4hana_sd_billing_documents(id: str = "", source_record_id: str = "", vendor: str = "", currency: str = "", status: str = "", created_at: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query SAP S/4HANA SD billing_documents. Columns: id, source_record_id, vendor, amount, currency, status, created_at, due_date."""
+def query_sap_s_4hana_sd_billing_documents(lookup_key: str = "", date_range: str = "", id: str = "", source_record_id: str = "", vendor: str = "", currency: str = "", status: str = "", created_at: str = "", limit: int = 20) -> dict[str, Any]:
+    """Query SAP S/4HANA SD billing_documents. Columns: id, source_record_id, vendor, amount, currency, status, created_at, due_date. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/billing_documents.json")
+    if lookup_key:
+        needle = lookup_key.lower()
+        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
+    if date_range:
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if source_record_id: rows = [r for r in rows if str(r.get("source_record_id","")).lower() == source_record_id.lower()]
     if vendor: rows = [r for r in rows if str(r.get("vendor","")).lower() == vendor.lower()]
@@ -80,13 +102,13 @@ def query_sap_s_4hana_sd_billing_documents(id: str = "", source_record_id: str =
     return {"source_system": "SAP S/4HANA SD", "source_system_id": "sap_s_4hana_sd", "table": "billing_documents", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["billing_documents_records","billing_documents_summary"], "evidence": ["source_system_record"]}
 
 def query_contract_repository_records(lookup_key: str = "", date_range: str = "", id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query Contract Repository contract_repository_records. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew."""
+    """Query Contract Repository contract_repository_records. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/contract_repository_records.json")
     if lookup_key:
         needle = lookup_key.lower()
         rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
     if date_range:
-        rows = [r for r in rows if any(date_range.lower() in str(value).lower() for key, value in r.items() if "date" in key.lower() or key.lower().endswith("_at") or key.lower() == "period")]
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if counterparty: rows = [r for r in rows if str(r.get("counterparty","")).lower() == counterparty.lower()]
     if currency: rows = [r for r in rows if str(r.get("currency","")).lower() == currency.lower()]
@@ -95,9 +117,14 @@ def query_contract_repository_records(lookup_key: str = "", date_range: str = ""
     if status: rows = [r for r in rows if str(r.get("status","")).lower() == status.lower()]
     return {"source_system": "Contract Repository", "source_system_id": "contract_repository", "table": "contract_repository_records", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["contract_repository_records_records","contract_repository_records_summary"], "evidence": ["source_system_record"]}
 
-def query_contract_repository_events(id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query Contract Repository contract_repository_events. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew, contract_repository_record_id."""
+def query_contract_repository_events(lookup_key: str = "", date_range: str = "", id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
+    """Query Contract Repository contract_repository_events. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew, contract_repository_record_id. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/contract_repository_events.json")
+    if lookup_key:
+        needle = lookup_key.lower()
+        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
+    if date_range:
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if counterparty: rows = [r for r in rows if str(r.get("counterparty","")).lower() == counterparty.lower()]
     if currency: rows = [r for r in rows if str(r.get("currency","")).lower() == currency.lower()]
@@ -106,9 +133,14 @@ def query_contract_repository_events(id: str = "", counterparty: str = "", curre
     if status: rows = [r for r in rows if str(r.get("status","")).lower() == status.lower()]
     return {"source_system": "Contract Repository", "source_system_id": "contract_repository", "table": "contract_repository_events", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["contract_repository_events_records","contract_repository_events_summary"], "evidence": ["source_system_record"]}
 
-def query_contract_repository_audit_trail(id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query Contract Repository contract_repository_audit_trail. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew."""
+def query_contract_repository_audit_trail(lookup_key: str = "", date_range: str = "", id: str = "", counterparty: str = "", currency: str = "", start_date: str = "", end_date: str = "", status: str = "", limit: int = 20) -> dict[str, Any]:
+    """Query Contract Repository contract_repository_audit_trail. Columns: id, counterparty, value, currency, start_date, end_date, status, auto_renew. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/contract_repository_audit_trail.json")
+    if lookup_key:
+        needle = lookup_key.lower()
+        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
+    if date_range:
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if counterparty: rows = [r for r in rows if str(r.get("counterparty","")).lower() == counterparty.lower()]
     if currency: rows = [r for r in rows if str(r.get("currency","")).lower() == currency.lower()]
@@ -118,13 +150,13 @@ def query_contract_repository_audit_trail(id: str = "", counterparty: str = "", 
     return {"source_system": "Contract Repository", "source_system_id": "contract_repository", "table": "contract_repository_audit_trail", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["contract_repository_audit_trail_records","contract_repository_audit_trail_summary"], "evidence": ["source_system_record"]}
 
 def query_bigquery_analytics_events(lookup_key: str = "", date_range: str = "", id: str = "", period: str = "", metric_name: str = "", computed_at: str = "", historical_metric_id: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query BigQuery analytics_events. Columns: id, period, metric_name, value, variance_pct, computed_at, historical_metric_id."""
+    """Query BigQuery analytics_events. Columns: id, period, metric_name, value, variance_pct, computed_at, historical_metric_id. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/analytics_events.json")
     if lookup_key:
         needle = lookup_key.lower()
         rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
     if date_range:
-        rows = [r for r in rows if any(date_range.lower() in str(value).lower() for key, value in r.items() if "date" in key.lower() or key.lower().endswith("_at") or key.lower() == "period")]
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if period: rows = [r for r in rows if str(r.get("period","")).lower() == period.lower()]
     if metric_name: rows = [r for r in rows if str(r.get("metric_name","")).lower() == metric_name.lower()]
@@ -132,18 +164,28 @@ def query_bigquery_analytics_events(lookup_key: str = "", date_range: str = "", 
     if historical_metric_id: rows = [r for r in rows if str(r.get("historical_metric_id","")).lower() == historical_metric_id.lower()]
     return {"source_system": "BigQuery", "source_system_id": "bigquery", "table": "analytics_events", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["analytics_events_records","analytics_events_summary"], "evidence": ["sql_result"]}
 
-def query_bigquery_historical_metrics(id: str = "", period: str = "", metric_name: str = "", computed_at: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query BigQuery historical_metrics. Columns: id, period, metric_name, value, variance_pct, computed_at."""
+def query_bigquery_historical_metrics(lookup_key: str = "", date_range: str = "", id: str = "", period: str = "", metric_name: str = "", computed_at: str = "", limit: int = 20) -> dict[str, Any]:
+    """Query BigQuery historical_metrics. Columns: id, period, metric_name, value, variance_pct, computed_at. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/historical_metrics.json")
+    if lookup_key:
+        needle = lookup_key.lower()
+        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
+    if date_range:
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if period: rows = [r for r in rows if str(r.get("period","")).lower() == period.lower()]
     if metric_name: rows = [r for r in rows if str(r.get("metric_name","")).lower() == metric_name.lower()]
     if computed_at: rows = [r for r in rows if str(r.get("computed_at","")).lower() == computed_at.lower()]
     return {"source_system": "BigQuery", "source_system_id": "bigquery", "table": "historical_metrics", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ["historical_metrics_records","historical_metrics_summary"], "evidence": ["source_system_record"]}
 
-def query_bigquery_cached_aggregates(id: str = "", period: str = "", metric_name: str = "", computed_at: str = "", limit: int = 20) -> dict[str, Any]:
-    """Query BigQuery cached_aggregates. Columns: id, period, metric_name, value, variance_pct, computed_at."""
+def query_bigquery_cached_aggregates(lookup_key: str = "", date_range: str = "", id: str = "", period: str = "", metric_name: str = "", computed_at: str = "", limit: int = 20) -> dict[str, Any]:
+    """Query BigQuery cached_aggregates. Columns: id, period, metric_name, value, variance_pct, computed_at. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""
     rows = _json("tables/cached_aggregates.json")
+    if lookup_key:
+        needle = lookup_key.lower()
+        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]
+    if date_range:
+        rows = _filter_date_range(rows, date_range)
     if id: rows = [r for r in rows if str(r.get("id","")).lower() == id.lower()]
     if period: rows = [r for r in rows if str(r.get("period","")).lower() == period.lower()]
     if metric_name: rows = [r for r in rows if str(r.get("metric_name","")).lower() == metric_name.lower()]
@@ -212,7 +254,7 @@ def lookup_asc_606_contract_analyzer_controls_playbook(section_anchor: str = "",
     }
 
 def action_sap_s_4hana_sd_match(target_id: str = "", rationale: str = "") -> dict[str, Any]:
-    """Execute the match step in SAP S/4HANA SD after the agent has gathered evidence and validated escalation gates."""
+    """Execute the match step in SAP S/4HANA SD after the agent has gathered evidence and validated escalation gates. Requires prior non-empty source-system evidence in this session; target_id must come from a retrieved source record, not only from user text."""
     missing = [name for name, value in [("target_id", target_id), ("rationale", rationale)] if not value]
     if missing:
         return {"error": "missing_required_inputs", "missing": missing, "tool_kind": "action", "escalation": "request_more_info"}
@@ -223,6 +265,7 @@ def action_sap_s_4hana_sd_match(target_id: str = "", rationale: str = "") -> dic
         "source_system_id": "sap_s_4hana_sd",
         "tool_kind": "action",
         "status": "submitted",
+        "requires_prior_evidence": True,
         "action_id": action_id,
         "audit_record_id": audit_record_id,
         "audit_trail": audit_trail,

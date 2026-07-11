@@ -27,8 +27,9 @@
 // okf.mjs for the same nested-subcommand shape without this wrinkle (their
 // commands don't mix a default target with sibling verbs).
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, argFlag, argValue } from "./shared.mjs";
 import { packageHandoff, planHandoff, verifyHandoffPackage } from "../lib/handoff-package.mjs";
+import { DEFAULT_REMOTE_SUBMIT_CONCURRENCY } from "../lib/provision.mjs";
 
 // Superset of every string-typed flag any handoff subcommand accepts, kept
 // on the PARENT purely for citty's findSubCommandIndex()/_isValueFlag() scan
@@ -54,12 +55,12 @@ const agentsCli = defineCommand({
     ids: { type: "string", description: "Comma-separated local workspace ids (default: all built locally)" },
     "start-stage": { type: "string", description: "Stage to start at remotely (default load_data)" },
     "target-stage": { type: "string", description: "Stage to stop at (default publish_enterprise)" },
-    concurrency: { type: "string", description: "Parallel remote submissions (default 2)" },
+    concurrency: { type: "string", description: `Parallel remote submissions (default ${DEFAULT_REMOTE_SUBMIT_CONCURRENCY}; env GE_REMOTE_SUBMIT_CONCURRENCY)` },
     "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" },
     force: { type: "boolean", description: "Break-glass: release despite a denied admission decision (the override is recorded in the decision log)" },
   },
   run: guarded(async ({ args }) => {
-    const res = await core.handoff(cfgFrom(args), { target: "agents-cli", ids: args.ids, startStage: args["start-stage"], targetStage: args["target-stage"], concurrency: args.concurrency, noProxy: args["no-proxy"], force: args.force, log: elog });
+    const res = await core.handoff(cfgFrom(args), { target: "agents-cli", ids: args.ids, startStage: argValue(args, "start-stage"), targetStage: argValue(args, "target-stage"), concurrency: args.concurrency, noProxy: argFlag(args, "no-proxy"), force: args.force, log: elog });
     emit(args, res, (r) => {
       out(ui.title("Handoff"));
       out(ui.kv([

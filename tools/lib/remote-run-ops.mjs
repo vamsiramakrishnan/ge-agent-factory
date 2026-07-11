@@ -21,6 +21,7 @@ import { pool } from "./gcp.mjs";
 import { getJson } from "./gateway-client.mjs";
 import { STATE_PATHS } from "./state-paths.mjs";
 import { DxError } from "./errors/dx-error.mjs";
+import { FACTORY_STAGE_IDS } from "@ge/run-ledger/control-plane";
 
 const noop = () => {};
 
@@ -30,7 +31,6 @@ const noop = () => {};
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const STATE_PATH = STATE_PATHS.envState;
 const SYNC_STATE_PATH = STATE_PATHS.syncState;
-
 // Mirrors factory-core's parseIdList (accepts a CSV string or an array, always
 // returns a trimmed, empty-free list) — kept local so this module has no
 // dependency back on factory-core.mjs (same as provision.mjs).
@@ -39,6 +39,38 @@ function parseIdList(ids) {
     .split(",")
     .map((id) => id.trim())
     .filter(Boolean);
+}
+
+export function normalizeGatewaySnapshot(snapshot = {}) {
+  const artifacts = snapshot.artifacts && typeof snapshot.artifacts === "object" ? snapshot.artifacts : {};
+  const stageRows = FACTORY_STAGE_IDS
+    .map((stage) => ({ stage, result: artifacts[stage] }))
+    .filter((row) => row.result && typeof row.result === "object");
+  const failed = stageRows.find((row) => ["failed", "error"].includes(String(row.result.status || "").toLowerCase()));
+  if (failed) {
+    return {
+      status: "failed",
+      state: "failed",
+      currentStage: failed.stage,
+      stage: failed.stage,
+      error: failed.result.error || null,
+      classification: failed.result.classification || snapshot.classification || null,
+      firstError: failed.result.firstError || snapshot.firstError || null,
+      fixHint: failed.result.fixHint || snapshot.fixHint || null,
+      logUrl: failed.result.logUrl || snapshot.logUrl || null,
+      stageResultUri: failed.result.stageResultUri || snapshot.stageResultUri || null,
+    };
+  }
+  const run = snapshot.run && typeof snapshot.run === "object" ? snapshot.run : {};
+  const explicitStatus = String(snapshot.status || snapshot.state || run.status || run.state || "").toLowerCase();
+  const latest = stageRows.at(-1);
+  const currentStage = snapshot.currentStage || snapshot.stage || run.currentStage || run.stage || latest?.result?.nextStage || latest?.stage || "?";
+  const status = explicitStatus && explicitStatus !== "submitted"
+    ? explicitStatus
+    : latest
+      ? "running"
+      : (explicitStatus || "unknown");
+  return { ...run, ...snapshot, status, state: status, currentStage, stage: currentStage };
 }
 
 export function createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway }) {
@@ -59,7 +91,7 @@ export function createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway }) {
       const perRun = [];
       await pool(runs, 10, async (r) => {
         const res = await getJson(url, `/api/factory/runs/${r.runId}`, ctx.headers).catch(() => ({ ok: false })); // best-effort: per-run fetch failure surfaces in the "unknown" bucket of the tally
-        const s = res.json || {};
+        const s = normalizeGatewaySnapshot(res.json || {});
         const st = (s.status || s.state || "unknown").toLowerCase();
         const stage = s.currentStage || s.stage || "?";
         stages[stage] = (stages[stage] || 0) + 1;
@@ -69,7 +101,19 @@ export function createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway }) {
         else if (["run", "active", "submit", "build", "deploy"].some((k) => st.includes(k))) bucket = "running";
         else if (st.includes("queue") || st.includes("wait")) bucket = "queued";
         tally[bucket]++;
-        perRun.push({ id: r.id, runId: r.runId, stage, status: st, bucket });
+        perRun.push({
+          id: r.id,
+          runId: r.runId,
+          stage,
+          status: st,
+          bucket,
+          ...(s.error ? { error: s.error } : {}),
+          ...(s.classification ? { classification: s.classification } : {}),
+          ...(s.firstError ? { firstError: s.firstError } : {}),
+          ...(s.fixHint ? { fixHint: s.fixHint } : {}),
+          ...(s.logUrl ? { logUrl: s.logUrl } : {}),
+          ...(s.stageResultUri ? { stageResultUri: s.stageResultUri } : {}),
+        });
       });
       return { total: runs.length, tally, stages, perRun, terminal: tally.done + tally.failed === runs.length };
     }, { noProxy });

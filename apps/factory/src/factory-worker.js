@@ -1,17 +1,20 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import { FACTORY_STAGE_GRAPH, FACTORY_STAGE_IDS, nextFactoryStage } from "./factory-orchestration.js";
 import { shortAgentName } from "@ge/std/naming";
 import { resolveGcpProject } from "@ge/std/gcp-config";
 import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 import { execStream } from "../../../tools/lib/exec-stream.mjs";
 import { makeEvent } from "../../../tools/lib/events.mjs";
-import { nextEventSeq, STAGE_ERROR_TYPE, stageErrorFrameData } from "@ge/run-ledger/frames";
+import { nextEventSeq, STAGE_ERROR_TYPE, STAGE_LOG_TYPE, stageErrorFrameData } from "@ge/run-ledger/frames";
+import { deterministicStageTaskId } from "@ge/run-ledger/control-plane";
+import { validateAgentWorkspace } from "./agent-workspace-pipeline.js";
 
 const RELEASE_STAGES = new Set(["validate", "preview", "deploy_runtime", "poll_runtime", "publish_enterprise"]);
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 // Timeout triangle (taste-campaign 09 §C1): every HTTP task carries an explicit
 // dispatchDeadline equal to the worker's Cloud Run request timeout
@@ -25,6 +28,9 @@ const RELEASE_STAGES = new Set(["validate", "preview", "deploy_runtime", "poll_r
 export const TASK_DISPATCH_DEADLINE = "1800s";
 const CLOUD_BUILD_TERMINAL_SUCCESS = new Set(["SUCCESS"]);
 const CLOUD_BUILD_TERMINAL_FAILURE = new Set(["FAILURE", "INTERNAL_ERROR", "TIMEOUT", "CANCELLED", "EXPIRED"]);
+const CLOUD_BUILD_LOG_MAX_LINES_PER_POLL = 500;
+const CLOUD_BUILD_LOG_READ_PAGE_SIZE = 1000;
+const CLOUD_BUILD_LOG_READ_MAX_ENTRIES = 10000;
 const serviceUrlCache = new Map();
 
 // Transient/retryable failure signals. A stage failure whose message/output
@@ -68,6 +74,90 @@ export function extractCommandError(cmd, args, result, { limit = 2000 } = {}) {
 export function isTransientFailure(message, result = null) {
   const haystack = [message, result?.stderr, result?.stdout].filter(Boolean).join("\n");
   return TRANSIENT_FAILURE_RE.test(haystack);
+}
+
+function firstDiagnosticLine(text = "", { limit = 500 } = {}) {
+  const lines = String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const line = lines.find((item) => /PERMISSION_DENIED|Permission ['"][^'"]+['"] denied|403 .*denied/i.test(item))
+    || lines.find((item) => /(error|failed|exception|traceback|permission|denied|invalid|threshold|mean_score|timeout|deadline|quota|not found)/i.test(item))
+    || lines.at(-1)
+    || "";
+  if (!line) return null;
+  return line.length > limit ? `…${line.slice(-limit)}` : line;
+}
+
+export function classifyFailureText(text = "", { stage = "" } = {}) {
+  const detail = String(text || "");
+  const firstError = firstDiagnosticLine(detail);
+  let classification = "stage_command";
+  let fixHint = "Open the stage result and run logs; the command failed before the factory could classify it more specifically.";
+  let retryable = false;
+
+  if (/Request contains an invalid argument|arguments? length|--substitutions.*too long|too large|unmatched.*substitution|invalid build config|cloudbuild\.factory-stage\.yaml/i.test(detail)) {
+    classification = "cloud_build_config";
+    fixHint = "Fix the shared Cloud Build stage config/substitutions contract, then rebuild and redeploy the worker image.";
+  } else if (/(restore-workspace|workspace archive restore|workspace archive|agent-result\.tar\.gz|workspace\.tar\.gz)/i.test(detail) && /(gs:\/\/|gcs|storage|not found|404|archive|restore)/i.test(detail)) {
+    classification = "artifact_storage";
+    fixHint = "Check the workspace/archive GCS URI and runner or builder service-account storage permissions.";
+  } else if (/ge-factory-run-stage not found|_BUILDER_IMAGE=.*not found|set GE_AGENT_FACTORY_BUILDER_IMAGE|builder image .*missing|builder image .*not found/i.test(detail)) {
+    classification = "builder_image";
+    fixHint = "Rebuild the shared builder image and bind it through GE_AGENT_FACTORY_BUILDER_IMAGE or Terraform.";
+  } else if (/invalid autorater model resource name|judge_autorater_config\.autorater_model|autorater_model/i.test(detail)) {
+    classification = "eval_config";
+    fixHint = "Use a fully qualified Vertex autorater model resource for the eval judge model: projects/{project}/locations/{location}/publishers/google/models/{model}.";
+  } else if (/aiplatform\.endpoints\.predict|permission.*predict|PERMISSION_DENIED.*(aiplatform|predict)|aiplatform.*PERMISSION_DENIED/i.test(detail)) {
+    classification = "iam_vertex_predict";
+    fixHint = "Grant the builder service account Vertex AI prediction access, then rerun the stage.";
+  } else if (/(discoveryengine|gemini enterprise)/i.test(detail) && /(PERMISSION_DENIED|permission|denied|403)/i.test(detail)) {
+    classification = "iam_discovery_engine";
+    fixHint = "Grant the builder/runtime identity Discovery Engine access for the Gemini Enterprise app.";
+  } else if (/resourcemanager\.projects\.(get|set)IamPolicy|project IAM policy/i.test(detail) && /(PERMISSION_DENIED|permission|denied|403)/i.test(detail)) {
+    classification = "iam_project_policy";
+    fixHint = "Grant the builder service account the factory's Agent Identity IAM Binder role, then retry the operation-aware deploy stage.";
+  } else if (/agents-cli eval generate\/grade|eval generate|eval grade|Inference timed out after .*Vertex AI|eval case\(s\) errored|mean_score .*below threshold|thresholded metrics missing|no mean_score|behavior_contract_judge|tool_use_quality|final_response_quality/i.test(detail)) {
+    classification = "workload_eval";
+    fixHint = "The generated agent reached the behavior-contract eval gate; inspect eval-verdict.json and eval stdout logs, then refine the spec/tools or eval runtime location.";
+  } else if (/workspace archive restore|Invalid GCS URI|Failed to fetch GCS|storage\.googleapis\.com/i.test(detail)) {
+    classification = "artifact_storage";
+    fixHint = "Check the workspace/archive GCS URI and runner or builder service-account storage permissions.";
+  } else if (TRANSIENT_FAILURE_RE.test(detail)) {
+    classification = "transient";
+    fixHint = "Retry the stage after the upstream service or quota condition clears.";
+    retryable = true;
+  } else if (stage && RELEASE_STAGES.has(stage) && /Cloud Build (FAILURE|INTERNAL_ERROR|TIMEOUT|CANCELLED|EXPIRED)/i.test(detail)) {
+    classification = "cloud_build_failure";
+    fixHint = "Open the Cloud Build log and the persisted factory stage result artifact for the failing step.";
+  }
+
+  return { classification, firstError, fixHint, retryable };
+}
+
+export function classifyStageFailure({ stage = "", error = "", message = "", outputs = [], result = null } = {}) {
+  const outputText = Array.isArray(outputs)
+    ? outputs.map((item) => [item?.stderr, item?.stdout].filter(Boolean).join("\n")).join("\n")
+    : "";
+  const detail = [message, error, outputText, result?.stderr, result?.stdout].filter(Boolean).join("\n");
+  return classifyFailureText(detail, { stage });
+}
+
+function applyFailureDiagnosis(failure, context = {}) {
+  const diagnosis = classifyStageFailure({
+    stage: failure?.stage || context.stage,
+    error: failure?.error,
+    message: context.message,
+    outputs: failure?.outputs || context.outputs,
+    result: context.result,
+  });
+  return {
+    ...failure,
+    classification: failure?.classification || diagnosis.classification,
+    firstError: failure?.firstError || diagnosis.firstError,
+    fixHint: failure?.fixHint || diagnosis.fixHint,
+    retryable: failure?.retryable ?? diagnosis.retryable,
+  };
 }
 
 export function parseWorkerPayload(raw = null, env = process.env) {
@@ -128,6 +218,11 @@ export function resolveBuilderServiceAccount(project, env = process.env) {
   return `projects/${project}/serviceAccounts/ge-agent-factory-builder@${project}.iam.gserviceaccount.com`;
 }
 
+export function defaultBuilderImage({ project, region } = {}) {
+  if (!project || !region) return "";
+  return `${region}-docker.pkg.dev/${project}/ge-agent-factory/ge-agent-factory-builder:latest`;
+}
+
 export function buildStageExecutionPlan(payload) {
   const stageDef = FACTORY_STAGE_GRAPH.find((item) => item.id === payload.stage);
   const workspaceDir = payload.workspaceDir || ".";
@@ -155,14 +250,18 @@ export function buildStageExecutionPlan(payload) {
     `_RUN_AGENT_LINT=${payload.options?.runAgentLint === false ? "false" : "true"}`,
     `_RUN_AGENT_OPTIMIZE=${payload.options?.runAgentOptimize === true ? "true" : "false"}`,
     `_RUN_DEPLOYED_SMOKE=${payload.options?.runDeployedSmoke === false ? "false" : "true"}`,
+    `_EVAL_JUDGE_SAMPLES=${payload.options?.evalJudgeSamples || process.env.GE_EVAL_JUDGE_SAMPLES || "5"}`,
     `_DISPLAY_NAME=${payload.options?.displayName || ""}`,
     `_DESCRIPTION=${payload.options?.description || ""}`,
     `_TOOL_DESCRIPTION=${payload.options?.toolDescription || ""}`,
     `_PREVIEW_PROMPT=${payload.options?.previewPrompt || "hello"}`,
   ];
-  // Shared builder image (toolchain + warm uv cache). When set, stages use it
-  // and skip installs; otherwise cloudbuild falls back to the public uv image.
-  const builderImage = payload.cloud?.builderImage || process.env.GE_AGENT_FACTORY_BUILDER_IMAGE || "";
+  // Shared builder image (toolchain + warm uv cache + ge-factory-run-stage).
+  // Terraform sets this env on the worker; the deterministic fallback matches
+  // `ge images build builder` so ad-hoc workers still submit runnable stages.
+  const builderImage = payload.cloud?.builderImage
+    || process.env.GE_AGENT_FACTORY_BUILDER_IMAGE
+    || defaultBuilderImage({ project, region });
   if (builderImage) substitutionPairs.push(`_BUILDER_IMAGE=${builderImage}`);
   const substitutions = `^${SUB_DELIM}^` + substitutionPairs.join(SUB_DELIM);
 
@@ -205,7 +304,10 @@ export function buildStageExecutionPlan(payload) {
     };
   }
 
-  const refineLocation = payload.cloud?.vertexLocation || payload.cloud?.geminiEnterpriseLocation || region;
+  const refineLocation = payload.cloud?.vertexLocation
+    || payload.cloud?.genaiLocation
+    || payload.cloud?.geminiEnterpriseLocation
+    || "global";
   const commandsByStage = {
     generate_data: [["node", ["scripts/factory.mjs", "generate", "--dir", workspaceDir]]],
     package_data: [
@@ -277,14 +379,24 @@ export function parseCloudBuildId(output = "") {
 export function parseCloudBuildDescribe(output = "") {
   try {
     const build = JSON.parse(String(output || "{}"));
+    const failedStep = (build.steps || []).find((step) => ["FAILURE", "INTERNAL_ERROR", "TIMEOUT", "CANCELLED", "EXPIRED"].includes(String(step.status || "").toUpperCase()));
     return {
       id: build.id || build.name?.split("/").pop() || null,
       status: build.status || "UNKNOWN",
       logUrl: build.logUrl || null,
       finishTime: build.finishTime || null,
+      failureInfo: build.failureInfo || null,
+      failedStep: failedStep
+        ? {
+            id: failedStep.id || null,
+            name: failedStep.name || null,
+            status: failedStep.status || null,
+            exitCode: failedStep.exitCode ?? null,
+          }
+        : null,
     };
   } catch {
-    return { id: null, status: "UNKNOWN", logUrl: null, finishTime: null };
+    return { id: null, status: "UNKNOWN", logUrl: null, finishTime: null, failureInfo: null, failedStep: null };
   }
 }
 
@@ -343,6 +455,49 @@ async function authedFetch(url, options = {}) {
       ...(options.headers || {}),
     },
   });
+}
+
+export async function readJsonGsUri(uri) {
+  try {
+    const { bucket, object } = parseGsUri(uri);
+    const url = `https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(object)}?alt=media`;
+    const res = await authedFetch(url);
+    const text = await res.text();
+    if (!res.ok) return { ok: false, status: res.status, error: text };
+    return { ok: true, json: JSON.parse(text) };
+  } catch (error) {
+    return { ok: false, status: 0, error: error?.message || String(error) };
+  }
+}
+
+export function stageResultArtifactCandidates(artifactPrefix, stage) {
+  if (!artifactPrefix || !stage) return [];
+  return [
+    `${artifactPrefix}/factory-${stage}-result.json`,
+    `${artifactPrefix}/files/./artifacts/factory-${stage}-result.json`,
+  ];
+}
+
+export function cloudBuildPollArtifactName(stage) {
+  return `factory-${stage}-poll-result.json`;
+}
+
+export function cloudBuildSubmissionArtifactName(stage) {
+  return `factory-${stage}-cloud-build.json`;
+}
+
+async function readStageResultArtifact(payload, stage = payload.stage) {
+  if (!payload.artifactPrefix) return null;
+  const candidates = stageResultArtifactCandidates(payload.artifactPrefix, stage);
+  let firstReadable = null;
+  for (const uri of candidates) {
+    const result = await readJsonGsUri(uri);
+    if (!result.ok || !result.json || typeof result.json !== "object") continue;
+    const found = { uri, result: result.json };
+    firstReadable ||= found;
+    if (!["waiting", "submitted"].includes(String(result.json.status || ""))) return found;
+  }
+  return firstReadable;
 }
 
 function logSink(payload) {
@@ -414,16 +569,6 @@ async function publishPubSub({ projectId, topic, event }) {
   return { ok: true, response: await res.json() };
 }
 
-function sanitizeTaskId(value) {
-  const base = String(value || "task")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 420);
-  const hash = createHash("sha1").update(String(value || "")).digest("hex").slice(0, 10);
-  return `${base || "task"}-${hash}`;
-}
-
 export function stageIsAtOrBefore(stage, targetStage) {
   const stageIdx = FACTORY_STAGE_IDS.indexOf(stage);
   const targetIdx = FACTORY_STAGE_IDS.indexOf(targetStage || FACTORY_STAGE_IDS.at(-1));
@@ -488,7 +633,7 @@ export async function buildCloudTaskCommand(payload, { taskId = null, scheduleTi
   const region = payload.cloud?.runtimeRegion || "us-central1";
   const queue = payload.cloud?.tasksQueue || "ge-agent-factory-stages";
   const serviceAccount = payload.cloud?.serviceAccount || `ge-agent-factory-runner@${project}.iam.gserviceaccount.com`;
-  const id = taskId || sanitizeTaskId(`${payload.runId}-${payload.itemId}-${payload.stage}-${payload.attempt || 1}`);
+  const id = taskId || deterministicStageTaskId(payload);
   const url = await resolveServiceUrl(payload);
   const args = [
     "tasks", "create-http-task", id,
@@ -576,6 +721,11 @@ export async function enqueueFactoryStage(payload, options = {}) {
 export async function recordStageEvent(payload, event, { localDir = payload.workspaceDir } = {}) {
   const createdAt = new Date().toISOString();
   const record = { ...event, createdAt, runId: payload.runId, itemId: payload.itemId, stage: payload.stage };
+  const classification = event.classification || event.data?.classification || null;
+  const firstError = event.firstError || event.data?.firstError || null;
+  const fixHint = event.fixHint || event.data?.fixHint || null;
+  const retryable = event.retryable ?? event.data?.retryable ?? null;
+  const itemProjection = projectStageEventToItem(payload, event);
   const runDir = join(localDir, "runs", payload.runId);
   await mkdir(runDir, { recursive: true });
   await writeFile(join(runDir, "factory-events.jsonl"), `${JSON.stringify(record)}\n`, { flag: "a" });
@@ -590,6 +740,10 @@ export async function recordStageEvent(payload, event, { localDir = payload.work
       owner: event.owner || null,
       operation: event.operation || null,
       error: event.error || null,
+      classification,
+      firstError,
+      fixHint,
+      retryable,
       nextStage: event.nextStage || null,
     },
   });
@@ -597,11 +751,15 @@ export async function recordStageEvent(payload, event, { localDir = payload.work
     projectId: payload.cloud.projectId,
     path: `factoryRuns/${payload.runId}/items/${payload.itemId}`,
     data: {
-      status: record.status || event.type || "event",
-      currentStage: payload.stage,
+      status: itemProjection.status,
+      currentStage: itemProjection.currentStage,
       updatedAt: createdAt,
       nextStage: event.nextStage || null,
       error: event.error || null,
+      classification,
+      firstError,
+      fixHint,
+      retryable,
     },
   });
   // Mirror into the run-level events ledger so the console can subscribe live
@@ -624,11 +782,26 @@ export async function recordStageEvent(payload, event, { localDir = payload.work
       // Forensic detail (stack, offending cmd, attempt) for stage_error frames.
       // The cloud normalizer preserves `data` but drops unknown top-level fields,
       // so the full stack rides here and surfaces in the console Run Drawer / CLI.
-      ...(event.data != null ? { data: event.data } : {}),
+      data: {
+        ...(event.data && typeof event.data === "object" ? event.data : (event.data != null ? { value: event.data } : {})),
+        ...(classification ? { classification } : {}),
+        ...(firstError ? { firstError } : {}),
+        ...(fixHint ? { fixHint } : {}),
+        ...(retryable != null ? { retryable } : {}),
+      },
     },
   });
   await publishPubSub({ projectId: payload.cloud.projectId, topic: payload.cloud.pubsubTopic, event: record });
   return record;
+}
+
+export function projectStageEventToItem(payload, event) {
+  const status = event.status || event.type || "event";
+  const advances = Boolean(event.nextStage) && (event.type === "stage_done" || event.type === "stage_next_queued");
+  return {
+    status: event.type === "stage_done" && advances ? "running" : status,
+    currentStage: advances ? event.nextStage : payload.stage,
+  };
 }
 
 // Live remote log streaming (Phase 3): mirror a stage's streamed stdout/stderr into
@@ -673,7 +846,7 @@ export function makeLedgerLogTap(payload, baseOnEvent, { write } = {}) {
       data: {
         seq: doc.seq,
         ts: doc.ts,
-        type: "stage_log",
+        type: STAGE_LOG_TYPE,
         stage: payload.stage || null,
         workItemId: payload.itemId || null,
         data: { lines },
@@ -723,13 +896,234 @@ export function makeLedgerLogTap(payload, baseOnEvent, { write } = {}) {
   return { onEvent, stop: flush, enabled };
 }
 
-async function persistArtifacts(payload, result) {
+async function writeRunLedgerFrame(payload, event, { docSuffix = "" } = {}) {
+  const ts = new Date().toISOString();
+  const seq = nextEventSeq();
+  const type = event.type || "event";
+  const status = event.status || null;
+  const data = event.data && typeof event.data === "object"
+    ? event.data
+    : (event.data != null ? { value: event.data } : {});
+  const keyBase = docSuffix || `${payload.itemId}_${payload.stage}_${type}_${seq}`;
+  const docKey = keyBase.replace(/[^A-Za-z0-9_.-]/g, "-");
+  await patchFirestoreDocument({
+    projectId: payload.cloud.projectId,
+    path: `factoryRuns/${payload.runId}/events/${docKey}`,
+    data: {
+      seq,
+      ts,
+      type,
+      stage: event.stage ?? payload.stage ?? null,
+      status,
+      workItemId: event.workItemId ?? payload.itemId ?? null,
+      error: event.error ?? null,
+      data,
+    },
+  });
+  await publishPubSub({
+    projectId: payload.cloud.projectId,
+    topic: payload.cloud.pubsubTopic,
+    event: {
+      ...event,
+      createdAt: ts,
+      runId: payload.runId,
+      itemId: payload.itemId,
+      stage: event.stage ?? payload.stage,
+    },
+  }).catch((error) => {
+    logStage("WARNING", {
+      message: `Pub/Sub event mirror failed: ${error?.message || String(error)}`,
+      runId: payload.runId,
+      itemId: payload.itemId,
+      stage: payload.stage,
+    });
+  });
+}
+
+export function cloudBuildLogDelta(text = "", offset = 0, { maxLines = CLOUD_BUILD_LOG_MAX_LINES_PER_POLL } = {}) {
+  const raw = String(text || "").replace(/\r\n/g, "\n").split("\n");
+  if (raw.at(-1) === "") raw.pop();
+  const currentOffset = Number.isFinite(Number(offset)) ? Math.max(0, Number(offset)) : 0;
+  const start = currentOffset > raw.length ? 0 : currentOffset;
+  let lines = raw.slice(start).filter((line) => line.trim());
+  const droppedLines = maxLines > 0 && lines.length > maxLines ? lines.length - maxLines : 0;
+  if (droppedLines > 0) {
+    lines = [`… skipped ${droppedLines} Cloud Build log line(s) already persisted to Cloud Logging`, ...lines.slice(-maxLines)];
+  }
+  return { lines, nextOffset: raw.length, droppedLines };
+}
+
+export function progressFromCloudBuildLogLine(line = "") {
+  const text = String(line || "");
+  const unprefixed = text.replace(/^Step #\d+(?: - "[^"]+")?:\s*/, "").trim();
+  const marker = unprefixed.match(/^::ge-progress\s+([A-Za-z0-9_.:-]+)(?:\s+(.*))?$/);
+  if (marker) {
+    return {
+      phase: marker[1],
+      message: marker[2]?.trim() || marker[1],
+    };
+  }
+  if (/Starting Step #\d+ - "restore-workspace"/.test(text)) {
+    return { phase: "cloud_build.restore_workspace", message: "restore workspace archive" };
+  }
+  if (/Starting Step #\d+ - "run-stage"/.test(text)) {
+    return { phase: "cloud_build.run_stage", message: "run factory stage" };
+  }
+  if (/Starting Step #\d+ - "persist-workspace"/.test(text)) {
+    return { phase: "cloud_build.persist_workspace", message: "persist workspace archive" };
+  }
+  if (/Starting Step #\d+ - "persist-result"/.test(text)) {
+    return { phase: "cloud_build.persist_result", message: "persist stage result" };
+  }
+  if (/Starting Step #\d+ - "fail-stage-if-needed"/.test(text)) {
+    return { phase: "cloud_build.fail_gate", message: "check stage result" };
+  }
+  return null;
+}
+
+function cloudBuildLogEntryOrdinal(entry = {}, buildId = "") {
+  const raw = String(entry.insertId || "");
+  const prefix = buildId ? `${buildId}-` : "";
+  if (prefix && raw.startsWith(prefix)) {
+    const ordinal = Number(raw.slice(prefix.length));
+    if (Number.isFinite(ordinal)) return ordinal;
+  }
+  return null;
+}
+
+export function cloudBuildLogLinesFromEntries(entries = [], buildId = "") {
+  return [...entries]
+    .filter((entry) => typeof entry?.textPayload === "string")
+    .sort((a, b) => {
+      const aOrdinal = cloudBuildLogEntryOrdinal(a, buildId);
+      const bOrdinal = cloudBuildLogEntryOrdinal(b, buildId);
+      if (aOrdinal != null && bOrdinal != null && aOrdinal !== bOrdinal) return aOrdinal - bOrdinal;
+      if (aOrdinal != null && bOrdinal == null) return -1;
+      if (aOrdinal == null && bOrdinal != null) return 1;
+      const byTimestamp = String(a.timestamp || "").localeCompare(String(b.timestamp || ""));
+      if (byTimestamp) return byTimestamp;
+      return String(a.insertId || "").localeCompare(String(b.insertId || ""));
+    })
+    .map((entry) => entry.textPayload);
+}
+
+export async function readCloudBuildLogsFromLogging(projectId, cloudBuildId, { fetchLogs = authedFetch, pageSize = CLOUD_BUILD_LOG_READ_PAGE_SIZE, maxEntries = CLOUD_BUILD_LOG_READ_MAX_ENTRIES } = {}) {
+  if (!projectId || !cloudBuildId) return { ok: false, lines: [], error: "missing projectId or cloudBuildId" };
+  const url = "https://logging.googleapis.com/v2/entries:list";
+  const filter = [
+    'resource.type="build"',
+    `resource.labels.build_id="${cloudBuildId}"`,
+    `logName="projects/${projectId}/logs/cloudbuild"`,
+  ].join(" AND ");
+  let pageToken = "";
+  const entries = [];
+  do {
+    const res = await fetchLogs(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        resourceNames: [`projects/${projectId}`],
+        filter,
+        orderBy: "timestamp asc",
+        pageSize,
+        ...(pageToken ? { pageToken } : {}),
+      }),
+    });
+    const text = await res.text();
+    if (!res.ok) return { ok: false, lines: [], error: text || `Cloud Logging entries:list failed (${res.status})` };
+    const json = text ? JSON.parse(text) : {};
+    entries.push(...(Array.isArray(json.entries) ? json.entries : []));
+    pageToken = json.nextPageToken || "";
+  } while (pageToken && entries.length < maxEntries);
+  return {
+    ok: true,
+    lines: cloudBuildLogLinesFromEntries(entries.slice(0, maxEntries), cloudBuildId),
+    truncated: Boolean(pageToken),
+  };
+}
+
+export async function mirrorCloudBuildLogs(payload, cloudBuildId, { run = runCommand, readLogs = readCloudBuildLogsFromLogging, makeTap = makeLedgerLogTap, writeProgress = writeRunLedgerFrame } = {}) {
+  const previousOffset = Number(payload.options?.cloudBuildLogOffset || 0);
+  if (!cloudBuildId || !payload.cloud?.projectId) return { ok: false, offset: previousOffset, mirroredLines: 0, progressEvents: 0, skipped: true };
+  const result = await run("gcloud", ["builds", "log", cloudBuildId, "--project", payload.cloud.projectId], { stream: false });
+  let source = "gcloud";
+  let logText = result.stdout || "";
+  let readError = result.code === 0 ? null : (result.stderr || result.stdout || "gcloud builds log failed");
+  if (result.code !== 0 || !String(logText || "").trim()) {
+    const logged = await readLogs(payload.cloud.projectId, cloudBuildId).catch((error) => ({
+      ok: false,
+      lines: [],
+      error: error?.message || String(error),
+    }));
+    if (logged.ok && logged.lines.length) {
+      source = "cloud_logging";
+      logText = `${logged.lines.join("\n")}\n`;
+      readError = null;
+    } else if (result.code === 0) {
+      readError = logged.error || "Cloud Build log command returned no output";
+    } else {
+      readError = [readError, logged.error].filter(Boolean).join("\n");
+    }
+  }
+  if (readError) {
+    return {
+      ok: false,
+      offset: previousOffset,
+      mirroredLines: 0,
+      progressEvents: 0,
+      error: readError,
+    };
+  }
+  const delta = cloudBuildLogDelta(logText, previousOffset);
+  const tap = makeTap(payload, () => {}, {
+    write: (lines, myFrame, doc) => patchFirestoreDocument({
+      projectId: payload.cloud.projectId,
+      path: `factoryRuns/${payload.runId}/events/${`${payload.itemId}_${payload.stage}_cloudbuild_${previousOffset}_${myFrame}`.replace(/[^A-Za-z0-9_.-]/g, "-")}`,
+      data: {
+        seq: doc.seq,
+        ts: doc.ts,
+        type: STAGE_LOG_TYPE,
+        stage: payload.stage || null,
+        workItemId: payload.itemId || null,
+        data: { lines, source: "cloud_build", logSource: source, buildId: cloudBuildId, offset: previousOffset },
+      },
+    }),
+  });
+  for (const line of delta.lines) tap.onEvent({ line });
+  await tap.stop();
+
+  let progressEvents = 0;
+  for (const line of delta.lines) {
+    const progress = progressFromCloudBuildLogLine(line);
+    if (!progress) continue;
+    progressEvents += 1;
+    await writeProgress(payload, {
+      type: "stage_progress",
+      status: "running",
+      data: {
+        ...progress,
+        buildId: cloudBuildId,
+      },
+    }, { docSuffix: `${payload.itemId}_${payload.stage}_progress_${delta.nextOffset}_${progressEvents}` }).catch((error) => {
+      logStage("WARNING", {
+        message: `Stage progress persistence failed: ${error?.message || String(error)}`,
+        runId: payload.runId,
+        itemId: payload.itemId,
+        stage: payload.stage,
+        buildId: cloudBuildId,
+      });
+    });
+  }
+  return { ok: true, offset: delta.nextOffset, mirroredLines: delta.lines.length, progressEvents, droppedLines: delta.droppedLines, source };
+}
+
+async function persistArtifacts(payload, result, { artifactName = `factory-${payload.stage}-result.json` } = {}) {
   if (!payload.artifactPrefix) return { skipped: true };
-  const summaryPath = join(payload.workspaceDir, "artifacts", `factory-${payload.stage}-result.json`);
+  const summaryPath = join(payload.workspaceDir, "artifacts", artifactName);
   await mkdir(dirname(summaryPath), { recursive: true });
   const content = `${JSON.stringify(result, null, 2)}\n`;
   await writeFile(summaryPath, content);
-  const target = parseGsUri(`${payload.artifactPrefix}/factory-${payload.stage}-result.json`);
+  const target = parseGsUri(`${payload.artifactPrefix}/${artifactName}`);
   const url = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(target.bucket)}/o?uploadType=media&name=${encodeURIComponent(target.object)}`;
   const res = await authedFetch(url, {
     method: "POST",
@@ -737,6 +1131,9 @@ async function persistArtifacts(payload, result) {
     body: content,
   });
   if (!res.ok) return { ok: false, status: res.status, stderr: await res.text() };
+  if (!shouldPersistMutableWorkspaceArchive(payload, result)) {
+    return { ok: true, status: res.status, archive: null, skippedArchive: true };
+  }
   const archivePath = join(dirname(payload.workspaceDir), `${payload.runId}-${payload.itemId}-${payload.stage}-result.tar.gz`);
   const archived = await runCommand("tar", [
     "--exclude", ".venv",
@@ -766,6 +1163,193 @@ async function persistArtifacts(payload, result) {
   return { ok: true, status: res.status, archive: `${payload.artifactPrefix}/agent-result.tar.gz` };
 }
 
+function shouldPersistMutableWorkspaceArchive(payload, result) {
+  if (result?.status !== "done") return false;
+  if (RELEASE_STAGES.has(payload.stage) && payload.options?.cloudBuildId) return false;
+  return true;
+}
+
+function stableWorkspaceArchive(payload) {
+  if (payload.artifactPrefix) return `${payload.artifactPrefix}/workspace.tar.gz`;
+  return payload.workspaceArchive || "";
+}
+
+async function persistWorkspaceSnapshot(payload) {
+  const archiveUri = stableWorkspaceArchive(payload);
+  if (!archiveUri) return { skipped: true };
+  const archivePath = join(dirname(payload.workspaceDir), `${payload.runId}-${payload.itemId}-${payload.stage}-workspace.tar.gz`);
+  const archived = await runCommand("tar", [
+    "--exclude", ".venv",
+    "--exclude", "node_modules",
+    "--exclude", ".pytest_cache",
+    "--exclude", "__pycache__",
+    "--exclude", ".ruff_cache",
+    "--exclude", ".mypy_cache",
+    "--exclude", ".ge-harness",
+    "--exclude", "runs",
+    "-czf",
+    archivePath,
+    "-C",
+    payload.workspaceDir,
+    ".",
+  ], { stream: false });
+  if (archived.code !== 0) return { ok: false, status: "archive_failed", stderr: archived.stderr || archived.stdout };
+  const target = parseGsUri(archiveUri);
+  const url = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(target.bucket)}/o?uploadType=media&name=${encodeURIComponent(target.object)}`;
+  const archiveBytes = await readFile(archivePath);
+  const res = await authedFetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/gzip" },
+    body: archiveBytes,
+  });
+  if (!res.ok) return { ok: false, status: res.status, stderr: await res.text() };
+  return { ok: true, status: res.status, archive: archiveUri };
+}
+
+function artifactPersisted(result) {
+  return result?.skipped === true || result?.ok !== false;
+}
+
+function artifactPersistenceFailure(payload, result, persisted) {
+  const detail = String(persisted?.stderr || persisted?.error || persisted?.status || "unknown persistence failure").trim();
+  const message = `artifact persistence failed for ${payload.stage}: ${detail}`;
+  return {
+    ...result,
+    status: "failed",
+    nextStage: null,
+    error: message,
+    classification: "artifact_storage",
+    firstError: message,
+    fixHint: "Check the artifact bucket path and worker service-account storage permissions; rerun after the workspace archive can be written.",
+    retryable: false,
+    persistResult: persisted,
+  };
+}
+
+async function persistArtifactsOrFail(payload, result) {
+  const persisted = await persistArtifacts(payload, result);
+  if (!artifactPersisted(persisted)) {
+    const failed = artifactPersistenceFailure(payload, result, persisted);
+    await persistArtifacts(payload, failed).catch(() => null); // best-effort: this is the fallback after canonical artifact persistence already failed
+    return { ok: false, failed, persisted };
+  }
+  if (result?.status === "done") {
+    const workspace = await persistWorkspaceSnapshot(payload);
+    if (!artifactPersisted(workspace)) {
+      const failed = artifactPersistenceFailure(payload, result, workspace);
+      await persistArtifacts(payload, failed).catch(() => null); // best-effort: this is the fallback after canonical workspace persistence already failed
+      return { ok: false, failed, persisted: workspace };
+    }
+    return { ok: true, persisted, workspace };
+  }
+  return { ok: true, persisted };
+}
+
+async function materializeCanonicalValidateArtifacts(payload) {
+  if (payload.stage !== "validate") return { skipped: true };
+  await rm(payload.workspaceDir, { recursive: true, force: true });
+  const restore = await restoreWorkspaceArchive(payload);
+  if (restore.ok === false) {
+    return {
+      ok: false,
+      status: "restore_failed",
+      error: `post-validate workspace restore failed: ${restore.error}`,
+    };
+  }
+
+  let report = null;
+  try {
+    report = await validateAgentWorkspace({
+      workspaceDir: payload.workspaceDir,
+      manifestPath: join(payload.workspaceDir, "workspace.json"),
+      workspaceId: payload.workspaceId || payload.itemId,
+      repoRoot: REPO_ROOT,
+      testsRequested: true,
+      testExitCode: 0,
+      source: "cloud_build",
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      status: "validation_exception",
+      error: `post-validate canonical validation failed: ${error?.message || String(error)}`,
+    };
+  }
+
+  const workspace = await persistWorkspaceSnapshot(payload);
+  if (!artifactPersisted(workspace)) {
+    return {
+      ok: false,
+      status: "archive_failed",
+      error: `post-validate workspace archive persistence failed: ${workspace?.stderr || workspace?.error || workspace?.status || "unknown persistence failure"}`,
+      report: report ? { ok: report.ok, summary: report.summary, specCodeTrace: report.specCodeTrace } : null,
+      workspace,
+    };
+  }
+
+  if (report?.ok !== true) {
+    const failedChecks = (report?.checks || [])
+      .filter((check) => !check.ok)
+      .slice(0, 8)
+      .map((check) => `${check.group || "check"}:${check.id || "unknown"}`);
+    return {
+      ok: false,
+      status: "validation_failed",
+      error: `post-validate canonical validation report is not passing${failedChecks.length ? ` (${failedChecks.join(", ")})` : ""}`,
+      report: { ok: report.ok, summary: report.summary, specCodeTrace: report.specCodeTrace },
+      workspace,
+    };
+  }
+
+  return {
+    ok: true,
+    status: "done",
+    report: { ok: report.ok, summary: report.summary, specCodeTrace: report.specCodeTrace },
+    workspace,
+  };
+}
+
+function nextStageWorkspaceArchive(payload) {
+  return stableWorkspaceArchive(payload) || payload.workspaceArchive;
+}
+
+function buildNextPayload(payload, nextStage) {
+  const nextWorkspaceArchive = nextStageWorkspaceArchive(payload);
+  return {
+    ...payload,
+    stage: nextStage,
+    attempt: 1,
+    workspaceDir: payload.workspaceDir,
+    workspaceArchive: nextWorkspaceArchive,
+    artifactPrefix: payload.artifactPrefix,
+    cloud: payload.cloud,
+    options: payload.options,
+  };
+}
+
+function buildCloudBuildPollPayload(payload, cloudBuildId, optionPatch = {}) {
+  return {
+    ...payload,
+    attempt: (payload.attempt || 1) + 1,
+    options: {
+      ...(payload.options || {}),
+      cloudBuildId,
+      ...optionPatch,
+    },
+  };
+}
+
+function buildAdvancedPayload(payload, nextStage) {
+  return {
+    ...buildNextPayload(payload, nextStage),
+    workspaceArchive: nextStageWorkspaceArchive(payload),
+    options: {
+      ...(payload.options || {}),
+      cloudBuildId: undefined,
+    },
+  };
+}
+
 async function restoreWorkspaceArchive(payload) {
   if (!payload.workspaceArchive) return { skipped: true };
   await mkdir(payload.workspaceDir, { recursive: true });
@@ -780,66 +1364,36 @@ async function restoreWorkspaceArchive(payload) {
   return { ok: true, archivePath };
 }
 
-function buildNextPayload(payload, nextStage) {
-  const nextWorkspaceArchive = payload.artifactPrefix ? `${payload.artifactPrefix}/agent-result.tar.gz` : payload.workspaceArchive;
-  return {
-    ...payload,
-    stage: nextStage,
-    attempt: 1,
-    workspaceDir: payload.workspaceDir,
-    workspaceArchive: nextWorkspaceArchive,
-    artifactPrefix: payload.artifactPrefix,
-    cloud: payload.cloud,
-    options: payload.options,
-  };
-}
-
-function buildCloudBuildPollPayload(payload, cloudBuildId) {
-  return {
-    ...payload,
-    attempt: (payload.attempt || 1) + 1,
-    options: {
-      ...(payload.options || {}),
-      cloudBuildId,
-    },
-  };
-}
-
-function buildAdvancedPayload(payload, nextStage) {
-  const nextWorkspaceArchive = payload.artifactPrefix ? `${payload.artifactPrefix}/agent-result.tar.gz` : payload.workspaceArchive;
-  return {
-    ...buildNextPayload(payload, nextStage),
-    workspaceArchive: nextWorkspaceArchive,
-    options: {
-      ...(payload.options || {}),
-      cloudBuildId: undefined,
-    },
-  };
-}
-
 export async function runFactoryWorker(payload, { dryRun = false } = {}) {
+  if (dryRun) {
+    const plan = buildStageExecutionPlan(payload);
+    const shouldEnqueue = Boolean(plan.nextStage && stageIsAtOrBefore(plan.nextStage, payload.targetStage));
+    return {
+      status: "planned",
+      stage: payload.stage,
+      owner: plan.owner,
+      commands: plan.commands,
+      nextStage: plan.nextStage,
+      enqueueNext: shouldEnqueue,
+    };
+  }
+
   const sink = logSink(payload);
-  const restore = await restoreWorkspaceArchive(payload);
+  const shouldRestoreWorkspace = !(RELEASE_STAGES.has(payload.stage) && payload.options?.cloudBuildId);
+  const restore = shouldRestoreWorkspace ? await restoreWorkspaceArchive(payload) : { skipped: true };
   if (restore.ok === false) {
     // Workspace archive restore failed — deterministic (bad/missing archive), so
     // ack rather than loop. retryable:false drives the non-retry HTTP ack.
     const message = `workspace archive restore failed: ${restore.error}`;
-    const failed = { status: "failed", stage: payload.stage, owner: "cloud_run_service", outputs: [], nextStage: null, error: message, retryable: false };
+    const failed = applyFailureDiagnosis({ status: "failed", stage: payload.stage, owner: "cloud_run_service", outputs: [], nextStage: null, error: message, retryable: false }, { stage: payload.stage, message });
     logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable: false, message: `stage failed: ${message}` });
-    await recordStageEvent(payload, { type: STAGE_ERROR_TYPE, status: "failed", owner: failed.owner, error: message, data: stageErrorFrameData({ message, attempt: payload.attempt }) });
+    await recordStageEvent(payload, { type: STAGE_ERROR_TYPE, status: "failed", owner: failed.owner, error: message, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint, retryable: failed.retryable, data: stageErrorFrameData({ message, attempt: payload.attempt }) });
+    await persistArtifacts(payload, failed);
     await sink.close();
     return failed;
   }
   const plan = buildStageExecutionPlan(payload);
   await recordStageEvent(payload, { type: "stage_started", status: "running", owner: plan.owner, nextStage: plan.nextStage });
-
-  if (dryRun) {
-    const shouldEnqueue = Boolean(plan.nextStage && stageIsAtOrBefore(plan.nextStage, payload.targetStage));
-    const result = { status: "planned", stage: payload.stage, owner: plan.owner, commands: plan.commands, nextStage: plan.nextStage, enqueueNext: shouldEnqueue };
-    await recordStageEvent(payload, { type: "stage_planned", status: "planned", owner: plan.owner, nextStage: plan.nextStage });
-    await sink.close();
-    return result;
-  }
   sink.log(makeEvent({
     runId: payload.runId,
     agentId: payload.workspaceId || payload.itemId,
@@ -881,16 +1435,21 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
     // inherits process.env.GE_JUDGE_MODEL via the spread above; a per-run
     // payload.options.judgeModel (operator .ge.json → submit) overrides it.
     ...(payload.options?.judgeModel ? { GE_JUDGE_MODEL: String(payload.options.judgeModel) } : {}),
+    ...(payload.options?.evalJudgeSamples ? { GE_EVAL_JUDGE_SAMPLES: String(payload.options.evalJudgeSamples) } : {}),
     ...(payload.options?.maxOutputTokens != null
       ? { GE_AGENT_MAX_OUTPUT_TOKENS: String(payload.options.maxOutputTokens) }
       : {}),
   };
   const meta = { runId: payload.runId, agentId: payload.workspaceId || payload.itemId, stage: payload.stage };
   // Mirror streamed command output into the ledger as live `stage_log` frames (remote).
-  const logTap = makeLedgerLogTap(payload, sink.log);
+  const isCloudBuildPoll = RELEASE_STAGES.has(payload.stage) && Boolean(payload.options?.cloudBuildId);
+  // Cloud Build poll commands return a giant JSON describe payload. Do not stream
+  // that into the live tail; the poll branch below mirrors the actual build log
+  // with a durable cursor instead.
+  const logTap = makeLedgerLogTap(payload, isCloudBuildPoll ? () => {} : sink.log);
   for (const [cmd, args] of plan.commands) {
     const cwd = cmd === "uv" || cmd === "bash" ? payload.workspaceDir : resolve("."); // cwd-coupling-ok: worker WORKDIR is Dockerfile-pinned to the repo root
-    const result = await execStream(cmd, args, { cwd, env: commandEnv, onEvent: logTap.onEvent, meta });
+    const result = await execStream(cmd, args, { cwd, env: commandEnv, onEvent: isCloudBuildPoll ? () => {} : logTap.onEvent, meta });
     outputs.push({
       cmd,
       args,
@@ -905,21 +1464,28 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
       // handler can ack a deterministic failure (stop the Cloud Tasks loop) while
       // still letting genuine transient errors (5xx/timeout/quota) be redelivered.
       const message = extractCommandError(cmd, args, result);
-      const retryable = isTransientFailure(message, result);
-      const errorData = stageErrorFrameData({
+      const diagnosis = classifyStageFailure({ stage: payload.stage, message, outputs, result });
+      const retryable = isTransientFailure(message, result) || diagnosis.retryable === true;
+      const errorData = {
+        ...stageErrorFrameData({
         message,
         stack: String(result.stderr || "").trim() || null,
         cmd: `${cmd} ${Array.isArray(args) ? args.join(" ") : ""}`.trim(),
         attempt: payload.attempt,
-      });
-      const failed = { status: "failed", stage: payload.stage, owner: plan.owner, outputs, nextStage: null, error: message, retryable };
+        }),
+        classification: diagnosis.classification,
+        firstError: diagnosis.firstError,
+        fixHint: diagnosis.fixHint,
+        retryable,
+      };
+      const failed = { status: "failed", stage: payload.stage, owner: plan.owner, outputs, nextStage: null, error: message, retryable, classification: diagnosis.classification, firstError: diagnosis.firstError, fixHint: diagnosis.fixHint };
       await logTap.stop();
       // Single structured line so the failure is NEVER an empty ERROR log again.
-      logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable, message: `stage failed: ${message}` });
+      logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable, classification: failed.classification, firstError: failed.firstError, message: `stage failed: ${message}` });
       sink.log(makeEvent({ ...meta, type: STAGE_ERROR_TYPE, level: "error", data: { owner: plan.owner, error: message, ...errorData } }));
       // stage_error frame carries message + stack + cmd + attempt; mapped to the
       // existing "failed" status so the reducer/StatusChip + Firestore summary render it.
-      await recordStageEvent(payload, { type: STAGE_ERROR_TYPE, status: "failed", owner: plan.owner, error: message, data: errorData });
+      await recordStageEvent(payload, { type: STAGE_ERROR_TYPE, status: "failed", owner: plan.owner, error: message, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint, retryable, data: errorData });
       await persistArtifacts(payload, failed);
       await sink.close();
       return failed;
@@ -929,22 +1495,80 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
   if (RELEASE_STAGES.has(payload.stage)) {
     if (payload.options?.cloudBuildId) {
       const build = parseCloudBuildDescribe(outputs.at(-1)?.stdout || "{}");
+      const mirrored = await mirrorCloudBuildLogs(payload, payload.options.cloudBuildId).catch((error) => ({
+        ok: false,
+        offset: Number(payload.options?.cloudBuildLogOffset || 0),
+        mirroredLines: 0,
+        progressEvents: 0,
+        error: error?.message || String(error),
+      }));
       if (!CLOUD_BUILD_TERMINAL_SUCCESS.has(build.status)) {
         if (CLOUD_BUILD_TERMINAL_FAILURE.has(build.status)) {
+          const stageArtifact = await readStageResultArtifact(payload, payload.stage);
+          const artifactFailure = stageArtifact?.result && typeof stageArtifact.result === "object"
+            ? stageArtifact.result
+            : null;
+          const baseError = artifactFailure?.error
+            || build.failureInfo?.detail
+            || `Cloud Build ${build.status}${build.logUrl ? ` (${build.logUrl})` : ""}`;
+          const diagnosis = classifyStageFailure({
+            stage: payload.stage,
+            error: [
+              baseError,
+              artifactFailure?.firstError,
+              artifactFailure?.classification,
+              artifactFailure?.fixHint,
+              build.failureInfo?.detail,
+              build.failedStep ? `failed step ${build.failedStep.id || "<unknown>"} ${build.failedStep.name || ""} exit ${build.failedStep.exitCode ?? ""}` : "",
+            ].filter(Boolean).join("\n"),
+          });
           const failed = {
+            ...(artifactFailure || {}),
             status: "failed",
             stage: payload.stage,
             owner: plan.owner,
             operation: payload.options.cloudBuildId,
             outputs,
             nextStage: null,
-            error: `Cloud Build ${build.status}${build.logUrl ? ` (${build.logUrl})` : ""}`,
+            error: baseError,
             logUrl: build.logUrl,
+            buildStatus: build.status,
+            failureInfo: build.failureInfo,
+            failedStep: build.failedStep,
+            stageResultUri: stageArtifact?.uri || null,
+            cloudBuildLogOffset: mirrored.offset,
+            cloudBuildLogSource: mirrored.source || null,
+            cloudBuildLogError: mirrored.error || null,
+            classification: artifactFailure?.classification || diagnosis.classification,
+            firstError: artifactFailure?.firstError || diagnosis.firstError,
+            fixHint: artifactFailure?.fixHint || diagnosis.fixHint,
             // Terminal Cloud Build outcome — deterministic, ack to stop the loop.
             retryable: false,
           };
-          sink.log(makeEvent({ ...meta, type: "stage_failed", level: "error", data: { owner: plan.owner, error: failed.error } }));
-          await recordStageEvent(payload, { type: "stage_failed", status: "failed", owner: plan.owner, operation: payload.options.cloudBuildId, error: failed.error });
+          sink.log(makeEvent({ ...meta, type: "stage_failed", level: "error", data: { owner: plan.owner, error: failed.error, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint, logUrl: failed.logUrl, stageResultUri: failed.stageResultUri } }));
+          await recordStageEvent(payload, {
+            type: "stage_failed",
+            status: "failed",
+            owner: plan.owner,
+            operation: payload.options.cloudBuildId,
+            error: failed.error,
+            classification: failed.classification,
+            firstError: failed.firstError,
+            fixHint: failed.fixHint,
+            retryable: false,
+            data: {
+              classification: failed.classification,
+              firstError: failed.firstError,
+              fixHint: failed.fixHint,
+              logUrl: failed.logUrl,
+              stageResultUri: failed.stageResultUri,
+              cloudBuildLogOffset: failed.cloudBuildLogOffset,
+              cloudBuildLogSource: failed.cloudBuildLogSource,
+              cloudBuildLogError: failed.cloudBuildLogError,
+              failureInfo: failed.failureInfo,
+              failedStep: failed.failedStep,
+            },
+          });
           await persistArtifacts(payload, failed);
           await sink.close();
           return failed;
@@ -958,23 +1582,111 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
           outputs,
           nextStage: payload.stage,
           logUrl: build.logUrl,
+          cloudBuildLogOffset: mirrored.offset,
+          mirroredLogLines: mirrored.mirroredLines,
+          mirroredProgressEvents: mirrored.progressEvents,
+          cloudBuildLogSource: mirrored.source || null,
+          cloudBuildLogError: mirrored.error || null,
         };
-        await recordStageEvent(payload, { type: "stage_waiting", status: "waiting", owner: plan.owner, operation: payload.options.cloudBuildId, nextStage: payload.stage });
-        await persistArtifacts(payload, waiting);
-        const queued = await enqueueFactoryStage(buildCloudBuildPollPayload(payload, payload.options.cloudBuildId), { scheduleTime: "+30s" });
+        await recordStageEvent(payload, {
+          type: "stage_waiting",
+          status: "waiting",
+          owner: plan.owner,
+          operation: payload.options.cloudBuildId,
+          nextStage: payload.stage,
+          data: {
+            cloudBuildLogOffset: waiting.cloudBuildLogOffset,
+            mirroredLogLines: waiting.mirroredLogLines,
+            mirroredProgressEvents: waiting.mirroredProgressEvents,
+            cloudBuildLogSource: waiting.cloudBuildLogSource,
+            cloudBuildLogError: waiting.cloudBuildLogError,
+          },
+        });
+        await persistArtifacts(payload, waiting, { artifactName: cloudBuildPollArtifactName(payload.stage) });
+        const queued = await enqueueFactoryStage(buildCloudBuildPollPayload(payload, payload.options.cloudBuildId, { cloudBuildLogOffset: mirrored.offset }), { scheduleTime: "+30s" });
         waiting.queuedNext = queued;
         await sink.close();
         return waiting;
       }
-      const done = { status: "done", stage: payload.stage, owner: plan.owner, operation: payload.options.cloudBuildId, buildStatus: build.status, outputs, nextStage: plan.nextStage, logUrl: build.logUrl };
-      sink.log(makeEvent({ ...meta, type: "stage_done", level: "info", data: { owner: plan.owner, nextStage: plan.nextStage } }));
-      await recordStageEvent(payload, { type: "stage_done", status: "done", owner: plan.owner, operation: payload.options.cloudBuildId, nextStage: plan.nextStage });
+      const canonicalValidation = await materializeCanonicalValidateArtifacts(payload);
+      if (canonicalValidation.ok === false) {
+        const failed = {
+          status: "failed",
+          stage: payload.stage,
+          owner: plan.owner,
+          operation: payload.options.cloudBuildId,
+          outputs,
+          nextStage: null,
+          error: canonicalValidation.error,
+          logUrl: build.logUrl,
+          buildStatus: build.status,
+          cloudBuildLogOffset: mirrored.offset,
+          mirroredLogLines: mirrored.mirroredLines,
+          mirroredProgressEvents: mirrored.progressEvents,
+          cloudBuildLogSource: mirrored.source || null,
+          cloudBuildLogError: mirrored.error || null,
+          classification: "workspace_validation",
+          firstError: canonicalValidation.error,
+          fixHint: "Inspect artifacts/validation-report.json and artifacts/spec-code-trace.json; the canonical workspace validation gate must pass before release stages can continue.",
+          retryable: false,
+          postValidate: canonicalValidation,
+        };
+        sink.log(makeEvent({ ...meta, type: "stage_failed", level: "error", data: { owner: plan.owner, error: failed.error, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint, logUrl: failed.logUrl } }));
+        await recordStageEvent(payload, {
+          type: "stage_failed",
+          status: "failed",
+          owner: plan.owner,
+          operation: payload.options.cloudBuildId,
+          error: failed.error,
+          classification: failed.classification,
+          firstError: failed.firstError,
+          fixHint: failed.fixHint,
+          retryable: false,
+          data: {
+            classification: failed.classification,
+            firstError: failed.firstError,
+            fixHint: failed.fixHint,
+            logUrl: failed.logUrl,
+            cloudBuildLogOffset: failed.cloudBuildLogOffset,
+            cloudBuildLogSource: failed.cloudBuildLogSource,
+            cloudBuildLogError: failed.cloudBuildLogError,
+            postValidate: canonicalValidation,
+          },
+        });
+        await persistArtifacts(payload, failed);
+        await sink.close();
+        return failed;
+      }
+      const nextStage = plan.nextStage && stageIsAtOrBefore(plan.nextStage, payload.targetStage) ? plan.nextStage : null;
+      const done = { status: "done", stage: payload.stage, owner: plan.owner, operation: payload.options.cloudBuildId, buildStatus: build.status, outputs, nextStage, logUrl: build.logUrl, cloudBuildLogOffset: mirrored.offset, mirroredLogLines: mirrored.mirroredLines, mirroredProgressEvents: mirrored.progressEvents, cloudBuildLogSource: mirrored.source || null, cloudBuildLogError: mirrored.error || null, postValidate: canonicalValidation.skipped ? null : canonicalValidation };
+      sink.log(makeEvent({ ...meta, type: "stage_done", level: "info", data: { owner: plan.owner, nextStage } }));
+      await recordStageEvent(payload, {
+        type: "stage_done",
+        status: "done",
+        owner: plan.owner,
+        operation: payload.options.cloudBuildId,
+        nextStage,
+        data: {
+          cloudBuildLogOffset: done.cloudBuildLogOffset,
+          mirroredLogLines: done.mirroredLogLines,
+          mirroredProgressEvents: done.mirroredProgressEvents,
+          cloudBuildLogSource: done.cloudBuildLogSource,
+          cloudBuildLogError: done.cloudBuildLogError,
+        },
+      });
       await persistArtifacts(payload, done);
-      if (plan.nextStage && stageIsAtOrBefore(plan.nextStage, payload.targetStage)) {
-        const queued = await enqueueFactoryStage(buildAdvancedPayload(payload, plan.nextStage), {
+      if (nextStage) {
+        const queued = await enqueueFactoryStage(buildAdvancedPayload(payload, nextStage), {
           scheduleTime: payload.stage === "deploy_runtime" ? "+120s" : null,
         });
         done.queuedNext = queued;
+        await recordStageEvent(payload, {
+          type: queued.ok ? "stage_next_queued" : "stage_next_queue_failed",
+          status: queued.ok ? "queued" : "blocked",
+          owner: "cloud_tasks",
+          nextStage,
+          error: queued.ok ? null : queued.stderr || "failed to enqueue next stage",
+        });
       }
       await sink.close();
       return done;
@@ -982,28 +1694,36 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
 
     const cloudBuildId = parseCloudBuildId(`${outputs.at(-1)?.stdout || ""}\n${outputs.at(-1)?.stderr || ""}`);
     if (!cloudBuildId) {
-      const failed = { status: "failed", stage: payload.stage, owner: plan.owner, outputs, nextStage: null, error: "Cloud Build submitted but build id was not found", retryable: false };
-      sink.log(makeEvent({ ...meta, type: "stage_failed", level: "error", data: { owner: plan.owner, error: failed.error } }));
-      await recordStageEvent(payload, { type: "stage_failed", status: "failed", owner: plan.owner, error: failed.error });
+      const failed = applyFailureDiagnosis({ status: "failed", stage: payload.stage, owner: plan.owner, outputs, nextStage: null, error: "Cloud Build submitted but build id was not found", retryable: false }, { stage: payload.stage, outputs });
+      sink.log(makeEvent({ ...meta, type: "stage_failed", level: "error", data: { owner: plan.owner, error: failed.error, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint } }));
+      await recordStageEvent(payload, { type: "stage_failed", status: "failed", owner: plan.owner, error: failed.error, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint, retryable: false });
       await persistArtifacts(payload, failed);
       await sink.close();
       return failed;
     }
     const submitted = { status: "submitted", stage: payload.stage, owner: plan.owner, operation: cloudBuildId, outputs, nextStage: payload.stage };
     await recordStageEvent(payload, { type: "stage_submitted", status: "submitted", owner: plan.owner, operation: cloudBuildId, nextStage: payload.stage });
-    await persistArtifacts(payload, submitted);
+    await persistArtifacts(payload, submitted, { artifactName: cloudBuildSubmissionArtifactName(payload.stage) });
     const queued = await enqueueFactoryStage(buildCloudBuildPollPayload(payload, cloudBuildId), { scheduleTime: "+30s" });
     submitted.queuedNext = queued;
     await sink.close();
     return submitted;
   }
 
-  const done = { status: "done", stage: payload.stage, owner: plan.owner, outputs, nextStage: plan.nextStage };
-  sink.log(makeEvent({ ...meta, type: "stage_done", level: "info", data: { owner: plan.owner, nextStage: plan.nextStage } }));
-  await recordStageEvent(payload, { type: "stage_done", status: "done", owner: plan.owner, nextStage: plan.nextStage });
-  await persistArtifacts(payload, done);
-  if (plan.nextStage && stageIsAtOrBefore(plan.nextStage, payload.targetStage)) {
-    const nextPayload = buildNextPayload(payload, plan.nextStage);
+  const nextStage = plan.nextStage && stageIsAtOrBefore(plan.nextStage, payload.targetStage) ? plan.nextStage : null;
+  const done = { status: "done", stage: payload.stage, owner: plan.owner, outputs, nextStage };
+  sink.log(makeEvent({ ...meta, type: "stage_done", level: "info", data: { owner: plan.owner, nextStage } }));
+  await recordStageEvent(payload, { type: "stage_done", status: "done", owner: plan.owner, nextStage });
+  const persisted = await persistArtifactsOrFail(payload, done);
+  if (!persisted.ok) {
+    const failed = persisted.failed;
+    sink.log(makeEvent({ ...meta, type: "stage_failed", level: "error", data: { owner: plan.owner, error: failed.error, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint } }));
+    await recordStageEvent(payload, { type: "stage_failed", status: "failed", owner: plan.owner, error: failed.error, classification: failed.classification, firstError: failed.firstError, fixHint: failed.fixHint, retryable: false });
+    await sink.close();
+    return failed;
+  }
+  if (nextStage) {
+    const nextPayload = buildNextPayload(payload, nextStage);
     const queued = await enqueueFactoryStage(nextPayload, {
       scheduleTime: payload.stage === "deploy_runtime" ? "+120s" : null,
     });
@@ -1012,7 +1732,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
       type: queued.ok ? "stage_next_queued" : "stage_next_queue_failed",
       status: queued.ok ? "queued" : "blocked",
       owner: "cloud_tasks",
-      nextStage: plan.nextStage,
+      nextStage,
       error: queued.ok ? null : queued.stderr || "failed to enqueue next stage",
     });
   }

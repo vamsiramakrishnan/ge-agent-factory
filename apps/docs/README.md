@@ -87,8 +87,8 @@ design sources — the "Modernist Functionalism" chrome palette in
 neutrals) and the
 status→color vocabulary in `packages/design/src/status-ramp.mjs`, exposed to
 components as `--ge-status-*` custom properties. Hanken Grotesk carries
-headings/chrome, JetBrains Mono code (self-hosted via Fontsource); dark mode
-is a warm-neutral ramp around the same navy signal. If the palette changes,
+body, headings, and chrome; JetBrains Mono carries code (both self-hosted via
+Fontsource). Dark mode is a warm-neutral ramp around the same navy signal. If the palette changes,
 change `palette.mjs` first (`node tools/check-design-tokens.mjs` guards the
 generated copies) and re-derive here — strategic design context lives in
 `PRODUCT.md`.

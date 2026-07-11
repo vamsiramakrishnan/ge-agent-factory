@@ -49,14 +49,14 @@ export function PositionBand() {
 
   return (
     <div
-      className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-outline-variant/60 bg-surface px-6 py-1.5 text-xs"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-outline-variant/60 bg-surface px-4 py-2 text-xs sm:px-6"
       aria-label="Golden path position"
     >
       <span className="engraved select-none">
         Golden path
       </span>
 
-      <div className="flex items-center gap-1">
+      <div className="scrollbar-none flex min-w-0 max-w-full items-center gap-1 overflow-x-auto">
         {data.stages.map((stage, index) => {
           const tone = statusToneClasses(stageTone(stage, data.current));
           const isCurrent = stage.id === data.current && !stage.done;
@@ -100,7 +100,7 @@ export function PositionBand() {
       )}
 
       {data.next && (
-        <span className="ml-auto flex items-center gap-1.5">
+        <span className="flex w-full min-w-0 items-center gap-1.5 border-t border-outline-variant/40 pt-1.5 sm:ml-auto sm:w-auto sm:border-0 sm:pt-0">
           <span className="engraved select-none">
             Next
           </span>

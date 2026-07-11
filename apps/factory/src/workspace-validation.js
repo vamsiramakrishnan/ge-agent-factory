@@ -23,6 +23,16 @@ function signatureHasParams(signature, params) {
   return params.every((param) => new RegExp(`(?:^|[,\\s])${param}\\s*(?::|=|,|$)`).test(signature));
 }
 
+function isBypassRefusalEval(evalSpec) {
+  const text = [
+    evalSpec?.id,
+    evalSpec?.prompt,
+    ...(evalSpec?.expectedBehaviors || []),
+    ...(evalSpec?.forbiddenBehaviors || []),
+  ].join(" ");
+  return /(skip|bypass).{0,80}(evidence|policy|compliance|approval|source|check)|take responsibility|refus/i.test(text);
+}
+
 export async function validateWorkspaceFiles(workspaceDir) {
   return REQUIRED_WORKSPACE_FILES.map((rel) => check(`file:${rel}`, existsSync(join(workspaceDir, rel)), `${rel} exists`, { path: rel }));
 }
@@ -141,7 +151,7 @@ export async function validateAgentContract(workspaceDir) {
     const refusals = Array.isArray(behavior.refusalRules) ? behavior.refusalRules : [];
     const evals = Array.isArray(behavior.goldenEvals) ? behavior.goldenEvals : [];
     const intentNames = new Set(toolIntents.flatMap((intent) => candidateIntentToolNames(intent, tables)));
-    const evalsMissingTools = evals.filter((ev) => !Array.isArray(ev.expectedToolCalls) || ev.expectedToolCalls.length === 0);
+    const evalsMissingTools = evals.filter((ev) => (!Array.isArray(ev.expectedToolCalls) || ev.expectedToolCalls.length === 0) && !isBypassRefusalEval(ev));
     const evalsWithUnknownTools = evals
       .map((ev) => ({ id: ev.id, unknown: (ev.expectedToolCalls || []).filter((name) => !intentNames.has(name)) }))
       .filter((entry) => entry.unknown.length > 0);
@@ -156,7 +166,7 @@ export async function validateAgentContract(workspaceDir) {
       check("behavior:escalation_rules", escalations.length >= 1, "behavior contract defines at least one escalation/refusal trigger", { count: escalations.length }),
       check("behavior:refusal_rules", refusals.length >= 1, "behavior contract lists hard guardrails", { count: refusals.length }),
       check("behavior:golden_evals", evals.length >= 1, "behavior contract declares golden evals"),
-      check("behavior:evals_have_tool_calls", evalsMissingTools.length === 0, "every golden eval declares expectedToolCalls", { missing: evalsMissingTools.map((ev) => ev.id || "?") }),
+      check("behavior:evals_have_tool_calls", evalsMissingTools.length === 0, "every non-refusal golden eval declares expectedToolCalls", { missing: evalsMissingTools.map((ev) => ev.id || "?") }),
       check("behavior:evals_reference_intents", evalsWithUnknownTools.length === 0, "golden eval expectedToolCalls all reference declared tool intents", { offenders: evalsWithUnknownTools }),
       check("agent:instruction_uses_objective", agentText.includes(String(behavior.primaryObjective || "").slice(0, 40)), "agent instruction includes behavior objective"),
       check("agent:contract_instruction_not_generic", !genericInstructionStub, "agent.py uses the contract-derived instruction, not the generic stub"),
