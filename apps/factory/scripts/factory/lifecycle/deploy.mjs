@@ -583,6 +583,81 @@ function assertSupportedAgentRegistryLocation(location, { fail }) {
   }
 }
 
+export function buildIapEgressGrantArgs({ project, region, serverName, principalSet, readOnly = false }) {
+  const args = [
+    "beta", "iap", "web", "add-iam-policy-binding",
+    `--project=${project}`,
+    `--region=${region}`,
+    `--mcp-server=${serverName}`,
+    `--member=${principalSet}`,
+    "--role=roles/iap.egressor",
+  ];
+  if (readOnly) args.push("--condition=expression=request.auth.type == 'MCP' && mcp.tool.isReadOnly,title=read-only-egress");
+  else args.push("--condition=None");
+  return args;
+}
+
+function commandResultError(action, result) {
+  const detail = String(result?.stderr || result?.stdout || "no command output").trim();
+  const error = new Error(`gcloud ${action} exited ${result?.code ?? "unknown"}: ${detail.slice(0, 500)}`);
+  error.code = result?.code;
+  error.stdout = result?.stdout || "";
+  error.stderr = result?.stderr || "";
+  return error;
+}
+
+function resultMatches(result, pattern) {
+  return pattern.test(`${result?.stderr || ""}\n${result?.stdout || ""}`);
+}
+
+export async function upsertAgentRegistryMcpService({
+  runCommand,
+  project,
+  region,
+  serverName,
+  displayName,
+  specPath,
+  serviceUrl,
+  protocolBinding,
+}) {
+  const describe = await runCommand("gcloud", [
+    "alpha", "agent-registry", "services", "describe", serverName,
+    `--project=${project}`,
+    `--location=${region}`,
+  ], { stream: false, timeout: 60000, allowFail: true });
+
+  const serviceArgs = [
+    serverName,
+    `--project=${project}`,
+    `--location=${region}`,
+    `--display-name=${displayName}`,
+    "--mcp-server-spec-type=tool-spec",
+    `--mcp-server-spec-content=${specPath}`,
+    `--interfaces=url=${serviceUrl},protocolBinding=${protocolBinding}`,
+  ];
+  const update = () => runCommand("gcloud", [
+    "alpha", "agent-registry", "services", "update", ...serviceArgs,
+  ], { stream: true, timeout: 60000 });
+
+  if (describe.code === 0) {
+    await update();
+    return "updated";
+  }
+  if (!resultMatches(describe, /\b(?:NOT_FOUND|not found|does not exist)\b/i)) {
+    throw commandResultError("agent-registry services describe", describe);
+  }
+
+  const create = await runCommand("gcloud", [
+    "alpha", "agent-registry", "services", "create", ...serviceArgs,
+  ], { stream: true, timeout: 60000, allowFail: true });
+  if (create.code === 0) return "created";
+  if (resultMatches(create, /\b(?:ALREADY_EXISTS|already exists)\b/i)) {
+    await update();
+    return "updated";
+  }
+  throw commandResultError("agent-registry services create", create);
+}
+
 export async function cmdRegister(dir, flags, deps) {
   const { loadPipeline, savePipeline, markStep, requireStep, nextCommandFor, fail, ok, runCommand, readJson, manifestPath, AGENT_MODEL } = deps;
   const pipeline = await loadPipeline(dir);
@@ -621,15 +696,17 @@ export async function cmdRegister(dir, flags, deps) {
     console.error(`Project: ${project} | Region: ${region}`);
     console.error(`URL: ${serviceUrl} | ProtocolBinding: ${protocolBinding}`);
     try {
-      await runCommand("gcloud", [
-        "alpha", "agent-registry", "services", "create", serverName,
-        `--project=${project}`,
-        `--location=${region}`,
-        `--display-name=${displayName}`,
-        "--mcp-server-spec-type=tool-spec",
-        `--mcp-server-spec-content=${specPath}`,
-        `--interfaces=url=${serviceUrl},protocolBinding=${protocolBinding}`,
-      ], { stream: true, timeout: 60000 });
+      const registryAction = await upsertAgentRegistryMcpService({
+        runCommand,
+        project,
+        region,
+        serverName,
+        displayName,
+        specPath,
+        serviceUrl,
+        protocolBinding,
+      });
+      console.error(`${registryAction === "created" ? "Created" : "Updated"} service [${serverName}].`);
 
       // Authorize the agent identity to call this MCP server (governed agent→MCP egress).
       // Per gemini-enterprise-agent-platform/govern/policies/assign-identity-iam#agent-to-mcp-server,
@@ -643,17 +720,19 @@ export async function cmdRegister(dir, flags, deps) {
       }
       let egressGranted = false;
       if (principalSet) {
-        const egress = ["beta", "iap", "web", "add-iam-policy-binding",
-          `--project=${project}`, `--region=${region}`, `--mcpServer=${serverName}`,
-          `--member=${principalSet}`, "--role=roles/iap.egressor"];
-        if (flags["read-only"]) egress.push("--condition=expression=request.auth.type == 'MCP' && mcp.tool.isReadOnly,title=read-only-egress");
-        else egress.push("--condition=None");
+        const egress = buildIapEgressGrantArgs({
+          project,
+          region,
+          serverName,
+          principalSet,
+          readOnly: flags["read-only"] === true,
+        });
         console.error(`Granting roles/iap.egressor (agent→MCP) on mcpServer ${serverName}${flags["read-only"] ? " [read-only]" : ""}…`);
         const g = await runCommand("gcloud", egress, { stream: false });
         egressGranted = g.code === 0;
         console.error(egressGranted
           ? `  ✓ iap.egressor → ${principalSet}`
-          : `  ⚠ iap.egressor grant failed (verify 'gcloud beta iap web add-iam-policy-binding --mcpServer' on your authed host): ${(g.stderr || "").split("\n")[0]}`);
+          : `  ⚠ iap.egressor grant failed (verify 'gcloud beta iap web add-iam-policy-binding --mcp-server' on your authed host): ${(g.stderr || "").split("\n")[0]}`);
       } else {
         console.error("  ⚠ skipped iap.egressor grant: no agent principalSet (pass --agent-principalset or set GE_AGENT_IDENTITY_ORG_ID)");
       }

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { parseArgs } from "citty";
 import { common } from "./shared.mjs";
 import { consoleCommand } from "./console.mjs";
 
@@ -9,11 +10,17 @@ describe("ge console command registration", () => {
     }
   });
 
-  test("deploy exposes tag/no-apply args alongside the shared flags (project/region/json)", () => {
+  test("deploy exposes tag/apply args alongside the shared flags (project/region/json)", () => {
     const deploy = consoleCommand.subCommands.deploy;
     expect(deploy.args.tag.type).toBe("string");
-    expect(deploy.args["no-apply"].type).toBe("boolean");
+    expect(deploy.args.apply.type).toBe("boolean");
+    expect(deploy.args.apply.default).toBe(true);
     for (const key of Object.keys(common)) expect(deploy.args[key]).toBeDefined();
+  });
+
+  test("citty parses the documented --no-apply flag as apply=false", () => {
+    const deploy = consoleCommand.subCommands.deploy;
+    expect(parseArgs(["--no-apply"], deploy.args).apply).toBe(false);
   });
 
   test("doctor is read-only: no args beyond the shared flags (project/region/json)", () => {

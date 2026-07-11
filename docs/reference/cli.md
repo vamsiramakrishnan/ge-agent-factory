@@ -1245,7 +1245,7 @@ Build the console image + bind it via terraform apply (Terraform owns Cloud Run 
 | Flag | Type | Description |
 |---|---|---|
 | `--tag` | string | Explicit image tag (default: git short SHA) |
-| `--no-apply` | boolean | Build + push only — skip terraform apply (bind later with a plain `ge console deploy` or `ge infra apply`) |
+| `--apply` | boolean | Bind the built image via terraform apply (default) |
 
 ### `ge console doctor`
 
