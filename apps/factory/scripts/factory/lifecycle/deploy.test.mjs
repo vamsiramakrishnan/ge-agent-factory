@@ -52,6 +52,7 @@ describe("Agent Registry IAP egress grant", () => {
 
     expect(args).toContain("--mcp-server=example-agent");
     expect(args).not.toContain("--mcpServer=example-agent");
+    expect(args).toContain("--resource-type=agent-registry");
     expect(args).toContain("--condition=None");
   });
 
@@ -78,17 +79,23 @@ describe("Agent Registry MCP service upsert", () => {
     serviceUrl: "https://example.run.app/mcp?agent=example-agent",
     protocolBinding: "JSONRPC",
   };
+  const registryResource = "projects/123/locations/global/mcpServers/agentregistry-123";
 
   test("updates an existing service", async () => {
     const calls = [];
     const runCommand = async (command, args, options) => {
       calls.push({ command, args, options });
-      return { code: 0, stdout: "{}", stderr: "" };
+      return { code: 0, stdout: registryResource, stderr: "" };
     };
 
-    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toBe("updated");
+    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toEqual({
+      action: "updated",
+      registryResource,
+      mcpServerId: "agentregistry-123",
+    });
     expect(calls.map((call) => call.args[3])).toEqual(["describe", "update"]);
     expect(calls[1].args).toContain("--interfaces=url=https://example.run.app/mcp?agent=example-agent,protocolBinding=JSONRPC");
+    expect(calls[1].args).toContain("--format=value(registryResource)");
   });
 
   test("creates a missing service", async () => {
@@ -96,10 +103,10 @@ describe("Agent Registry MCP service upsert", () => {
     const runCommand = async (command, args, options) => {
       calls.push({ command, args, options });
       if (args[3] === "describe") return { code: 1, stdout: "", stderr: "NOT_FOUND: service" };
-      return { code: 0, stdout: "created", stderr: "" };
+      return { code: 0, stdout: registryResource, stderr: "" };
     };
 
-    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toBe("created");
+    expect((await upsertAgentRegistryMcpService({ ...input, runCommand })).action).toBe("created");
     expect(calls.map((call) => call.args[3])).toEqual(["describe", "create"]);
   });
 
@@ -109,10 +116,10 @@ describe("Agent Registry MCP service upsert", () => {
       calls.push({ command, args, options });
       if (args[3] === "describe") return { code: 1, stdout: "", stderr: "NOT_FOUND: service" };
       if (args[3] === "create") return { code: 1, stdout: "", stderr: "ALREADY_EXISTS: service" };
-      return { code: 0, stdout: "updated", stderr: "" };
+      return { code: 0, stdout: registryResource, stderr: "" };
     };
 
-    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toBe("updated");
+    expect((await upsertAgentRegistryMcpService({ ...input, runCommand })).action).toBe("updated");
     expect(calls.map((call) => call.args[3])).toEqual(["describe", "create", "update"]);
   });
 });

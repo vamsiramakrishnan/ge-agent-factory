@@ -18,6 +18,11 @@ export const FACTORY_IMAGE_BIND_TARGETS = [
   "google_project_iam_member.runner",
   "google_project_iam_member.gateway",
   "google_project_iam_member.builder",
+  "google_project_iam_member.mcp_tool_user",
+  "google_project_iam_member.agentregistry_editor",
+  "google_project_iam_member.agentregistry_viewer",
+  "google_project_iam_custom_role.mcp_iap_policy_binder",
+  "google_project_iam_member.mcp_iap_policy_binder",
   "google_project_iam_member.runner_build_submitter",
   "google_project_iam_member.builder_agent_identity_iam_binder",
   "google_service_account_iam_member.gateway_can_impersonate_runner",
@@ -148,26 +153,41 @@ export function createFactoryPlane({
   }
 
   function defaultApplyTargets({ gatewayImage, workerImage, consoleImage } = {}) {
-    if ((gatewayImage || workerImage) && !consoleImage) return FACTORY_IMAGE_BIND_TARGETS;
-    if (consoleImage && !gatewayImage && !workerImage) return CONSOLE_IMAGE_BIND_TARGETS;
-    return [];
+    const targets = [];
+    if (gatewayImage || workerImage) targets.push(...FACTORY_IMAGE_BIND_TARGETS);
+    if (consoleImage) targets.push(...CONSOLE_IMAGE_BIND_TARGETS);
+    return targets;
   }
 
   function infra(cfg, { sub, gatewayImage, workerImage, consoleImage, targets = null, yes = false, log = noop } = {}) {
     ensureTerraform();
     const chdir = `-chdir=${terraformDir}`;
     const consoleOnlyBind = Boolean(consoleImage && !gatewayImage && !workerImage);
+    const factoryImageBind = Boolean(gatewayImage || workerImage);
     if (consoleOnlyBind) {
       gatewayImage = currentServiceImage(cfg, cfg.gatewayService) || gatewayImage;
       workerImage = currentServiceImage(cfg, cfg.workerService) || workerImage;
+    }
+    if (factoryImageBind) {
+      gatewayImage ||= currentServiceImage(cfg, cfg.gatewayService);
+      workerImage ||= currentServiceImage(cfg, cfg.workerService);
+      if (!gatewayImage || !workerImage) {
+        const missing = [!gatewayImage && "gateway", !workerImage && "worker"].filter(Boolean).join(" and ");
+        throw new Error(
+          `refusing partial factory image bind: no current ${missing} image was found. ` +
+          "Pass both --gatewayImage and --workerImage for the initial deployment.",
+        );
+      }
     }
     const imageVars = {};
     if (gatewayImage) imageVars.gateway_image = gatewayImage;
     if (workerImage) imageVars.worker_image = workerImage;
     if (consoleImage) imageVars.console_image = consoleImage;
-    const inferredTargets = consoleOnlyBind
-      ? CONSOLE_IMAGE_BIND_TARGETS
-      : defaultApplyTargets({ gatewayImage, workerImage, consoleImage });
+    const inferredTargets = defaultApplyTargets({
+      gatewayImage: factoryImageBind ? gatewayImage : null,
+      workerImage: factoryImageBind ? workerImage : null,
+      consoleImage,
+    });
     if (["apply", "plan"].includes(sub)) {
       if (!cfg.project || !cfg.projectNumber) throw new Error("project & projectNumber required (run `ge init`).");
       if (!cfg.geAppId) throw new Error("geAppId required.");
