@@ -15,14 +15,19 @@ const consoleDeployCmd = defineCommand({
   args: {
     ...common,
     tag: { type: "string", description: "Explicit image tag (default: git short SHA)" },
-    "no-apply": { type: "boolean", description: "Build + push only — skip terraform apply (bind later with a plain `ge console deploy` or `ge infra apply`)" },
+    apply: {
+      type: "boolean",
+      default: true,
+      description: "Bind the built image via terraform apply (default)",
+      negativeDescription: "Build + push only — skip terraform apply (bind later with a plain `ge console deploy` or `ge infra apply`)",
+    },
   },
   run: guarded(({ args }) => {
     const cfg = cfgFrom(args);
     announceExpectedDuration("console.deploy");
     blog("building console image");
     const { consoleImage } = core.build(cfg, { target: "console", tag: args.tag, log: elog });
-    if (args["no-apply"] === true) {
+    if (args.apply === false) {
       emit(args, { consoleImage, applied: false }, (r) => {
         out(`${ui.glyph("passed")} ${pc.green("built: " + r.consoleImage)}`);
         out(pc.dim("  --no-apply: skipped terraform apply — bind it with `ge console deploy` (no flag) or `ge infra apply`"));

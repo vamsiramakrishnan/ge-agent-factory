@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { buildBoundedToolSpec } from "./deploy.mjs";
+import {
+  buildBoundedToolSpec,
+  buildIapEgressGrantArgs,
+  upsertAgentRegistryMcpService,
+} from "./deploy.mjs";
 
 function tool(index, { propertyCount = 6 } = {}) {
   const properties = Object.fromEntries(Array.from({ length: propertyCount }, (_, propertyIndex) => [
@@ -34,5 +38,81 @@ describe("Agent Registry tool-spec projection", () => {
     expect(result.content).toBeNull();
     expect(result.toolCount).toBe(tools.length);
     expect(result.bytes).toBeGreaterThan(1024);
+  });
+});
+
+describe("Agent Registry IAP egress grant", () => {
+  test("uses the current gcloud kebab-case MCP server flag", () => {
+    const args = buildIapEgressGrantArgs({
+      project: "example-project",
+      region: "global",
+      serverName: "example-agent",
+      principalSet: "principalSet://example",
+    });
+
+    expect(args).toContain("--mcp-server=example-agent");
+    expect(args).not.toContain("--mcpServer=example-agent");
+    expect(args).toContain("--condition=None");
+  });
+
+  test("preserves the read-only MCP condition as one argv entry", () => {
+    const args = buildIapEgressGrantArgs({
+      project: "example-project",
+      region: "global",
+      serverName: "example-agent",
+      principalSet: "principalSet://example",
+      readOnly: true,
+    });
+
+    expect(args.at(-1)).toBe("--condition=expression=request.auth.type == 'MCP' && mcp.tool.isReadOnly,title=read-only-egress");
+  });
+});
+
+describe("Agent Registry MCP service upsert", () => {
+  const input = {
+    project: "example-project",
+    region: "global",
+    serverName: "example-agent",
+    displayName: "Example Agent",
+    specPath: "/tmp/toolspec.json",
+    serviceUrl: "https://example.run.app/mcp?agent=example-agent",
+    protocolBinding: "JSONRPC",
+  };
+
+  test("updates an existing service", async () => {
+    const calls = [];
+    const runCommand = async (command, args, options) => {
+      calls.push({ command, args, options });
+      return { code: 0, stdout: "{}", stderr: "" };
+    };
+
+    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toBe("updated");
+    expect(calls.map((call) => call.args[3])).toEqual(["describe", "update"]);
+    expect(calls[1].args).toContain("--interfaces=url=https://example.run.app/mcp?agent=example-agent,protocolBinding=JSONRPC");
+  });
+
+  test("creates a missing service", async () => {
+    const calls = [];
+    const runCommand = async (command, args, options) => {
+      calls.push({ command, args, options });
+      if (args[3] === "describe") return { code: 1, stdout: "", stderr: "NOT_FOUND: service" };
+      return { code: 0, stdout: "created", stderr: "" };
+    };
+
+    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toBe("created");
+    expect(calls.map((call) => call.args[3])).toEqual(["describe", "create"]);
+  });
+
+  test("updates after a concurrent create wins the race", async () => {
+    const calls = [];
+    const runCommand = async (command, args, options) => {
+      calls.push({ command, args, options });
+      if (args[3] === "describe") return { code: 1, stdout: "", stderr: "NOT_FOUND: service" };
+      if (args[3] === "create") return { code: 1, stdout: "", stderr: "ALREADY_EXISTS: service" };
+      return { code: 0, stdout: "updated", stderr: "" };
+    };
+
+    expect(await upsertAgentRegistryMcpService({ ...input, runCommand })).toBe("updated");
+    expect(calls.map((call) => call.args[3])).toEqual(["describe", "create", "update"]);
   });
 });
