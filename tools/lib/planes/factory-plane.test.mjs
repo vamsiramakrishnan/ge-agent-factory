@@ -92,15 +92,80 @@ test("infra writes tfvars and runs terraform apply with image vars", () => {
     geAppId: "app",
     region: "us-central1",
     geLocation: "global",
-  }, { sub: "apply", gatewayImage: "gateway:tag" });
+  }, { sub: "apply", gatewayImage: "gateway:tag", workerImage: "worker:tag" });
 
   expect(result).toEqual({ sub: "apply" });
   expect(calls.find((call) => call[0] === "writeTextFile")[2]).toContain('project_id                 = "demo"');
   expect(calls.filter((call) => call[0] === "run").map((call) => call[2][1])).toEqual(["init", "apply"]);
   expect(calls.at(-1)[2]).toContain("gateway_image=gateway:tag");
+  expect(calls.at(-1)[2]).toContain("worker_image=worker:tag");
   expect(calls.at(-1)[2]).toContain("-target");
   expect(calls.at(-1)[2]).toContain("google_cloud_run_v2_service.gateway");
   expect(calls.at(-1)[2]).toContain("google_cloud_tasks_queue.factory_stages");
+});
+
+test("partial worker image bind preserves the live gateway image", () => {
+  const { calls, plane } = makePlane({
+    gcloud: (args) => args.includes("describe") && args.includes("gateway")
+      ? {
+          ok: true,
+          out: JSON.stringify({ spec: { template: { spec: { containers: [{ image: "gateway:current" }] } } } }),
+          err: "",
+        }
+      : { ok: false, out: "", err: "not found" },
+  });
+
+  plane.infra({
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    region: "us-central1",
+    geLocation: "global",
+    gatewayService: "gateway",
+    workerService: "worker",
+  }, { sub: "apply", workerImage: "worker:new" });
+
+  const apply = calls.find((call) => call[0] === "run" && call[2][1] === "apply");
+  expect(apply[2]).toContain("gateway_image=gateway:current");
+  expect(apply[2]).toContain("worker_image=worker:new");
+});
+
+test("partial factory image bind fails closed when the peer image is not live", () => {
+  const { plane } = makePlane({
+    gcloud: () => ({ ok: false, out: "", err: "not found" }),
+  });
+
+  expect(() => plane.infra({
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    region: "us-central1",
+    geLocation: "global",
+    gatewayService: "gateway",
+    workerService: "worker",
+  }, { sub: "apply", workerImage: "worker:new" })).toThrow("Pass both --gatewayImage and --workerImage");
+});
+
+test("mixed factory and console image bind targets their union instead of a full apply", () => {
+  const { calls, plane } = makePlane();
+
+  plane.infra({
+    project: "demo",
+    projectNumber: "123",
+    geAppId: "app",
+    region: "us-central1",
+    geLocation: "global",
+  }, {
+    sub: "apply",
+    gatewayImage: "gateway:new",
+    workerImage: "worker:new",
+    consoleImage: "console:new",
+  });
+
+  const apply = calls.find((call) => call[0] === "run" && call[2][1] === "apply");
+  expect(apply[2]).toContain("google_cloud_run_v2_service.gateway");
+  expect(apply[2]).toContain("google_cloud_run_v2_service.worker");
+  expect(apply[2]).toContain("google_cloud_run_v2_service.console");
 });
 
 test("build returns gateway and worker image tags", () => {
@@ -393,6 +458,23 @@ test("factory Terraform exposes warm worker pool and queue fanout knobs", () => 
   expect(cloudRun).toContain('name  = "GE_ENABLE_AGENT_PROVISION"');
   expect(tasks).toContain("max_dispatches_per_second = var.factory_tasks_max_dispatches_per_second");
   expect(tasks).toContain("max_concurrent_dispatches = var.factory_tasks_max_concurrent_dispatches");
+});
+
+test("factory image binds include the complete MCP registration IAM plane", () => {
+  const terraform = readFileSync(join(HERE, "..", "..", "..", "installer", "terraform", "mcp.tf"), "utf8");
+  expect(terraform).toContain('role_id     = "geAgentFactoryMcpIapPolicyBinder"');
+  expect(terraform).toContain('"iap.webServices.getIamPolicy"');
+  expect(terraform).toContain('"iap.webServices.setIamPolicy"');
+  expect(terraform).not.toContain('role     = "roles/iap.admin"');
+  for (const target of [
+    "google_project_iam_member.mcp_tool_user",
+    "google_project_iam_member.agentregistry_editor",
+    "google_project_iam_member.agentregistry_viewer",
+    "google_project_iam_custom_role.mcp_iap_policy_binder",
+    "google_project_iam_member.mcp_iap_policy_binder",
+  ]) {
+    expect(FACTORY_IMAGE_BIND_TARGETS).toContain(target);
+  }
 });
 
 test("workspace Dockerfile COPY sources exist in the repository", () => {

@@ -588,6 +588,7 @@ export function buildIapEgressGrantArgs({ project, region, serverName, principal
     "beta", "iap", "web", "add-iam-policy-binding",
     `--project=${project}`,
     `--region=${region}`,
+    "--resource-type=agent-registry",
     `--mcp-server=${serverName}`,
     `--member=${principalSet}`,
     "--role=roles/iap.egressor",
@@ -610,6 +611,11 @@ function resultMatches(result, pattern) {
   return pattern.test(`${result?.stderr || ""}\n${result?.stdout || ""}`);
 }
 
+function registryResourceFrom(result) {
+  return `${result?.stdout || ""}\n${result?.stderr || ""}`
+    .match(/projects\/[^/\s]+\/locations\/[^/\s]+\/mcpServers\/[a-zA-Z0-9_-]+/)?.[0] || null;
+}
+
 export async function upsertAgentRegistryMcpService({
   runCommand,
   project,
@@ -620,11 +626,13 @@ export async function upsertAgentRegistryMcpService({
   serviceUrl,
   protocolBinding,
 }) {
-  const describe = await runCommand("gcloud", [
+  const describeService = () => runCommand("gcloud", [
     "alpha", "agent-registry", "services", "describe", serverName,
     `--project=${project}`,
     `--location=${region}`,
+    "--format=value(registryResource)",
   ], { stream: false, timeout: 60000, allowFail: true });
+  const describe = await describeService();
 
   const serviceArgs = [
     serverName,
@@ -634,28 +642,45 @@ export async function upsertAgentRegistryMcpService({
     "--mcp-server-spec-type=tool-spec",
     `--mcp-server-spec-content=${specPath}`,
     `--interfaces=url=${serviceUrl},protocolBinding=${protocolBinding}`,
+    "--format=value(registryResource)",
   ];
   const update = () => runCommand("gcloud", [
     "alpha", "agent-registry", "services", "update", ...serviceArgs,
   ], { stream: true, timeout: 60000 });
 
+  let action;
+  let result;
   if (describe.code === 0) {
-    await update();
-    return "updated";
-  }
-  if (!resultMatches(describe, /\b(?:NOT_FOUND|not found|does not exist)\b/i)) {
-    throw commandResultError("agent-registry services describe", describe);
+    action = "updated";
+    result = await update();
+  } else {
+    if (!resultMatches(describe, /\b(?:NOT_FOUND|not found|does not exist)\b/i)) {
+      throw commandResultError("agent-registry services describe", describe);
+    }
+    const create = await runCommand("gcloud", [
+      "alpha", "agent-registry", "services", "create", ...serviceArgs,
+    ], { stream: true, timeout: 60000, allowFail: true });
+    if (create.code === 0) {
+      action = "created";
+      result = create;
+    } else if (resultMatches(create, /\b(?:ALREADY_EXISTS|already exists)\b/i)) {
+      action = "updated";
+      result = await update();
+    } else {
+      throw commandResultError("agent-registry services create", create);
+    }
   }
 
-  const create = await runCommand("gcloud", [
-    "alpha", "agent-registry", "services", "create", ...serviceArgs,
-  ], { stream: true, timeout: 60000, allowFail: true });
-  if (create.code === 0) return "created";
-  if (resultMatches(create, /\b(?:ALREADY_EXISTS|already exists)\b/i)) {
-    await update();
-    return "updated";
+  let registryResource = registryResourceFrom(result) || registryResourceFrom(describe);
+  if (!registryResource) {
+    const resolved = await describeService();
+    if (resolved.code !== 0) throw commandResultError("agent-registry services describe after upsert", resolved);
+    registryResource = registryResourceFrom(resolved);
   }
-  throw commandResultError("agent-registry services create", create);
+  if (!registryResource) {
+    throw new Error(`Agent Registry service ${serverName} did not expose registryResource after ${action}`);
+  }
+  return { action, registryResource, mcpServerId: registryResource.split("/").at(-1) };
 }
 
 export async function cmdRegister(dir, flags, deps) {
@@ -696,7 +721,7 @@ export async function cmdRegister(dir, flags, deps) {
     console.error(`Project: ${project} | Region: ${region}`);
     console.error(`URL: ${serviceUrl} | ProtocolBinding: ${protocolBinding}`);
     try {
-      const registryAction = await upsertAgentRegistryMcpService({
+      const registry = await upsertAgentRegistryMcpService({
         runCommand,
         project,
         region,
@@ -706,7 +731,7 @@ export async function cmdRegister(dir, flags, deps) {
         serviceUrl,
         protocolBinding,
       });
-      console.error(`${registryAction === "created" ? "Created" : "Updated"} service [${serverName}].`);
+      console.error(`${registry.action === "created" ? "Created" : "Updated"} service [${serverName}] → ${registry.mcpServerId}.`);
 
       // Authorize the agent identity to call this MCP server (governed agent→MCP egress).
       // Per gemini-enterprise-agent-platform/govern/policies/assign-identity-iam#agent-to-mcp-server,
@@ -723,11 +748,11 @@ export async function cmdRegister(dir, flags, deps) {
         const egress = buildIapEgressGrantArgs({
           project,
           region,
-          serverName,
+          serverName: registry.mcpServerId,
           principalSet,
           readOnly: flags["read-only"] === true,
         });
-        console.error(`Granting roles/iap.egressor (agent→MCP) on mcpServer ${serverName}${flags["read-only"] ? " [read-only]" : ""}…`);
+        console.error(`Granting roles/iap.egressor (agent→MCP) on mcpServer ${registry.mcpServerId}${flags["read-only"] ? " [read-only]" : ""}…`);
         const g = await runCommand("gcloud", egress, { stream: false });
         egressGranted = g.code === 0;
         console.error(egressGranted
@@ -737,12 +762,14 @@ export async function cmdRegister(dir, flags, deps) {
         console.error("  ⚠ skipped iap.egressor grant: no agent principalSet (pass --agent-principalset or set GE_AGENT_IDENTITY_ORG_ID)");
       }
 
-      markStep(pipeline, "register", "done", { mode: "mcp", serverName, serviceUrl, protocol: protocolInput, specPath, reachability, egressGranted });
+      markStep(pipeline, "register", "done", { mode: "mcp", serverName, registryResource: registry.registryResource, mcpServerId: registry.mcpServerId, serviceUrl, protocol: protocolInput, specPath, reachability, egressGranted });
       await savePipeline(dir, pipeline);
       return ok({
         step: "register",
         mode: "mcp",
         serverName,
+        registryResource: registry.registryResource,
+        mcpServerId: registry.mcpServerId,
         serviceUrl,
         protocol: protocolInput,
         toolSpec: specPath,
@@ -766,7 +793,7 @@ export async function cmdRegister(dir, flags, deps) {
           ``,
           `# 3. Retrieve the authenticated MCP toolset (bindings are resolved automatically)`,
           `mcp_tools = registry.get_mcp_toolset(`,
-          `    mcp_server_name="projects/${project}/locations/${region}/mcpServers/${serverName}"`,
+          `    mcp_server_name="${registry.registryResource}"`,
           `)`,
           ``,
           `# 4. Compose your agent with the toolset`,
