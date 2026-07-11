@@ -17,6 +17,7 @@ ENV UV_CACHE_DIR=/root/.cache/uv
 ENV PATH="/root/.bun/bin:/root/.local/bin:${PATH}"
 
 COPY cloudbuild/run-factory-stage.sh /usr/local/bin/ge-factory-run-stage
+COPY cloudbuild/run-deployed-smoke.mjs /opt/ge/run-deployed-smoke.mjs
 COPY agents-cli-version.txt /opt/ge/agents-cli-version.txt
 RUN chmod +x /usr/local/bin/ge-factory-run-stage
 

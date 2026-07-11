@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { agents, jsonWatchFrame, streamStatusSnapshotsUntilTerminal } from "./agents.mjs";
+import { agents, jsonWatchFrame, remoteBuildExitCode, streamStatusSnapshotsUntilTerminal } from "./agents.mjs";
 
 describe("ge agents command registration", () => {
   test("leaf commands expose citty run handlers", () => {
@@ -33,5 +33,11 @@ describe("ge agents JSON watch stream", () => {
     expect(frame.kind).toBe("ge.agents.build.submitted");
     expect(frame.submission.submitted).toBe(1);
     expect(Date.parse(frame.ts)).not.toBeNaN();
+  });
+
+  test("terminal run and submission failures produce a failing CLI exit code", () => {
+    expect(remoteBuildExitCode({ status: { tally: { failed: 1 } } })).toBe(1);
+    expect(remoteBuildExitCode({ submission: { failed: 2 }, status: { tally: { failed: 0 } } })).toBe(1);
+    expect(remoteBuildExitCode({ submission: { failed: 0 }, status: { tally: { done: 1, failed: 0 } } })).toBe(0);
   });
 });

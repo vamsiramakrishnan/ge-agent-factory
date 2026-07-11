@@ -430,11 +430,14 @@ test("factory release stage Cloud Build delegates to the shared builder script",
   expect(yaml).toContain("_BUILDER_IMAGE");
   expect(yaml).not.toContain("agents-cli eval generate");
   expect(dockerfile).toContain("COPY cloudbuild/run-factory-stage.sh /usr/local/bin/ge-factory-run-stage");
+  expect(dockerfile).toContain("COPY cloudbuild/run-deployed-smoke.mjs /opt/ge/run-deployed-smoke.mjs");
   expect(dockerfile).toContain("nodejs npm unzip");
   expect(dockerfile).toContain("https://bun.sh/install");
   expect(dockerfile).toContain("uv sync --extra eval --extra lint --no-install-project");
   expect(script).toContain("set -euo pipefail");
   expect(script).toContain("write_failure_result");
+  expect(script).toContain("bun /opt/ge/run-deployed-smoke.mjs");
+  expect(script).toContain('write_failure_result "poll_runtime" "$SMOKE_EXIT"');
   expect(script).not.toContain("set -ceu");
   expect(existsSync(join(repoRoot, "apps/factory/cloudbuild/run-factory-stage.sh"))).toBe(true);
 });
