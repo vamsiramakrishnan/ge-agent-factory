@@ -1,5 +1,5 @@
-# Root Cloud Build context for the factory gateway and worker images.
-# Keep this aligned with COPY statements in apps/factory/{gateway.Dockerfile,Dockerfile}.
+# Root Cloud Build context for gateway, worker, and console images.
+# Keep this aligned with their Dockerfile COPY statements.
 **
 
 !.gcloudignore
@@ -15,7 +15,7 @@
 !apps/factory/
 !apps/factory/**
 !apps/console/
-!apps/console/package.json
+!apps/console/**
 !apps/docs/
 !apps/docs/package.json
 !apps/presentation/
@@ -38,6 +38,9 @@ apps/factory/.e2e-sample/
 apps/factory/.ge-harness/
 apps/factory/runs/
 apps/factory/simulator-systems/_openapi/
+apps/console/dist/
+apps/console/node_modules/
+apps/console/test-results/
 **/__pycache__/
 **/*.pyc
 **/.pytest_cache/

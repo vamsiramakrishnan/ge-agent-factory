@@ -289,6 +289,14 @@ test("gateway cloudbuild.gateway.yaml is well-formed and uses the factory gatewa
   expect(yaml).toContain("_IMAGE:");
 });
 
+test("root Cloud Build context includes console image inputs without local build output", () => {
+  const ignorePath = join(HERE, "..", "..", "..", ".gcloudignore");
+  const ignore = readFileSync(ignorePath, "utf8");
+  expect(ignore).toContain("!apps/console/**");
+  expect(ignore).toContain("apps/console/node_modules/");
+  expect(ignore).toContain("apps/console/dist/");
+});
+
 test("workspace Dockerfiles copy every app package manifest before frozen bun install", () => {
   const repoRoot = join(HERE, "..", "..", "..");
   const appManifests = readdirSync(join(repoRoot, "apps"), { withFileTypes: true })
