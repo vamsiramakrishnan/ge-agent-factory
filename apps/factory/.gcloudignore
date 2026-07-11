@@ -6,3 +6,4 @@
 !agents-cli-version.txt
 !cloudbuild/
 !cloudbuild/run-factory-stage.sh
+!cloudbuild/run-deployed-smoke.mjs
