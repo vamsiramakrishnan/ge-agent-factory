@@ -471,9 +471,37 @@ EVAL_GATE
       REMOTE_URL="$(python3 -c "import json; from pathlib import Path; m=json.loads(Path('deployment_metadata.json').read_text()); r=(m.get('remote_agent_runtime_id') or m.get('agent_runtime_id') or '').split('/'); print(('https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/reasoningEngines/%s' % (r[r.index('locations')+1], r[r.index('projects')+1], r[r.index('locations')+1], r[r.index('reasoningEngines')+1])) if 'reasoningEngines' in r else '')")"
       if [[ -n "$REMOTE_URL" ]]; then
         emit_progress "poll_runtime.smoke" "agents-cli run deployed smoke"
-        agents-cli run "${_PREVIEW_PROMPT}" --url "$REMOTE_URL" --mode adk > artifacts/deployed-smoke-stdout.log 2>&1
+        set +e
+        bun /opt/ge/run-deployed-smoke.mjs \
+          --url "$REMOTE_URL" \
+          --prompt "${_PREVIEW_PROMPT}" \
+          --output artifacts/deployed-smoke-stdout.log \
+          --metadata artifacts/deployed-smoke.json \
+          --retries "${GE_DEPLOYED_SMOKE_RETRIES:-2}" \
+          --timeout-seconds "${GE_DEPLOYED_SMOKE_TIMEOUT_SEC:-150}"
+        SMOKE_EXIT=$?
+        set -e
+        if [[ "$SMOKE_EXIT" -ne 0 ]]; then
+          write_failure_result "poll_runtime" "$SMOKE_EXIT" "agents-cli deployed smoke failed" \
+            artifacts/deployed-smoke.json artifacts/deployed-smoke-stdout.log
+          exit "$SMOKE_EXIT"
+        fi
         emit_progress "poll_runtime.done" "runtime ready"
-        python3 -c 'import json,sys; print(json.dumps({"status":"done","stage":"poll_runtime","owner":"cloud_build","url":sys.argv[1]}))' "$REMOTE_URL" > artifacts/factory-poll_runtime-result.json
+        python3 - "$REMOTE_URL" <<'PY' > artifacts/factory-poll_runtime-result.json
+import json
+import pathlib
+import sys
+
+smoke = json.loads(pathlib.Path("artifacts/deployed-smoke.json").read_text(encoding="utf-8"))
+print(json.dumps({
+    "status": "done",
+    "stage": "poll_runtime",
+    "owner": "cloud_build",
+    "url": sys.argv[1],
+    "smokeAttempts": smoke["attemptCount"],
+    "smokeTimeoutSeconds": smoke["timeoutSeconds"],
+}))
+PY
       else
         emit_progress "poll_runtime.done" "runtime ready; smoke skipped"
         printf '{"status":"skipped","stage":"poll_runtime","owner":"cloud_build","reason":"no agent runtime url"}\n' > artifacts/factory-poll_runtime-result.json

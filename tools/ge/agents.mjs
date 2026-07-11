@@ -34,6 +34,14 @@ export function jsonWatchFrame(kind, data = {}) {
   };
 }
 
+export function remoteBuildExitCode({ submission, status } = {}) {
+  return Number(submission?.failed || 0) > 0 || Number(status?.tally?.failed || 0) > 0 ? 1 : 0;
+}
+
+function applyRemoteBuildExitCode(result) {
+  if (remoteBuildExitCode(result)) process.exitCode = 1;
+}
+
 export async function streamStatusSnapshotsUntilTerminal(cfg, { noProxy, intervalMs = 15000, write = out, status = core.status, kind = "ge.agents.status.snapshot" } = {}) {
   for (;;) {
     const snapshot = await status(cfg, { noProxy });
@@ -48,8 +56,12 @@ async function watchStatusUntilTerminal(cfg, { noProxy } = {}) {
     const r = await core.status(cfg, { noProxy });
     renderStatusBoard(r, { live: true });
     if (r.terminal) {
-      out(`\n${ui.glyph("passed")} ${pc.green("All runs terminal.")}`);
-      if (r.tally.failed) out(ui.next("ge agents resume", "retry failed stages from the ledger"));
+      if (r.tally.failed) {
+        out(`\n${ui.glyph("failed")} ${pc.red(`${r.tally.failed} run(s) failed.`)}`);
+        out(ui.next("ge agents resume", "retry failed stages from the ledger"));
+      } else {
+        out(`\n${ui.glyph("passed")} ${pc.green("All runs completed.")}`);
+      }
       return r;
     }
     await new Promise((s) => setTimeout(s, 15000));
@@ -139,6 +151,7 @@ const agentsBuild = defineCommand({
         kind: "ge.agents.build.status",
       });
       out(JSON.stringify(jsonWatchFrame("ge.agents.build.result", { ...res, status: finalStatus })));
+      applyRemoteBuildExitCode({ submission: res, status: finalStatus });
       return;
     }
     emit(args, res, (r) => {
@@ -146,7 +159,10 @@ const agentsBuild = defineCommand({
       if (r.submitted && !args.watch) out(ui.next("ge agents status --watch", "track the submitted runs to completion"));
     });
     if (args.watch && !args.json && res.submitted) {
-      await watchStatusUntilTerminal(cfg, { noProxy });
+      const finalStatus = await watchStatusUntilTerminal(cfg, { noProxy });
+      applyRemoteBuildExitCode({ submission: res, status: finalStatus });
+    } else {
+      applyRemoteBuildExitCode({ submission: res });
     }
   }),
 });
@@ -157,14 +173,16 @@ const agentsStatus = defineCommand({
   run: guarded(async ({ args }) => {
     const noProxy = argFlag(args, "no-proxy");
     if (args.watch && args.json) {
-      await streamStatusSnapshotsUntilTerminal(cfgFrom(args), {
+      const finalStatus = await streamStatusSnapshotsUntilTerminal(cfgFrom(args), {
         noProxy,
         kind: "ge.agents.status.snapshot",
       });
+      applyRemoteBuildExitCode({ status: finalStatus });
       return;
     }
     if (args.watch && !args.json) {
-      await watchStatusUntilTerminal(cfgFrom(args), { noProxy });
+      const finalStatus = await watchStatusUntilTerminal(cfgFrom(args), { noProxy });
+      applyRemoteBuildExitCode({ status: finalStatus });
       return;
     }
     const res = await core.status(cfgFrom(args), { noProxy });
