@@ -15,7 +15,7 @@ export function renderQueryToolLines({ tables, contractIntents }) {
   for (const t of tables) {
     const fn = tableToolName(t);
     const matchingQueryIntent = contractIntents.find((intent) => intent.kind === "query" && canonicalIntentToolName(intent, tables) === `query_${fn}`);
-    const requiredFilters = new Set((matchingQueryIntent?.requiredInputs || []).map((input) => snakeCase(input)));
+    const requiredFilters = new Set(["lookup_key", "date_range", ...(matchingQueryIntent?.requiredInputs || []).map((input) => snakeCase(input))]);
     const genericFilters = [...requiredFilters]
       .filter((input) => !["employee_id"].includes(input))
       .filter((input) => !(t.columns || []).some((column) => snakeCase(column.name) === input))
@@ -36,7 +36,7 @@ export function renderQueryToolLines({ tables, contractIntents }) {
     const evidence = matchingQueryIntent?.evidenceEmitted?.length ? matchingQueryIntent.evidenceEmitted : ["source_system_record"];
     lines.push(
       `def query_${fn}(${params}${params ? ", " : ""}limit: int = 20) -> dict[str, Any]:`,
-      `    """Query ${t.sourceSystem || "source system"} ${t.name}. Columns: ${(t.columns || []).map((c) => c.name).join(", ")}."""`,
+      `    """Query ${t.sourceSystem || "source system"} ${t.name}. Columns: ${(t.columns || []).map((c) => c.name).join(", ")}. Use lookup_key for account/case/envelope/audit identifiers and date_range for current/latest/recent requests."""`,
       `    rows = ${hasJson ? `_json("${t.jsonPath}")` : `_csv("${t.path}")`}`,
     );
     if (genericFilters.some((spec) => spec.param === "lookup_key")) {
@@ -49,7 +49,7 @@ export function renderQueryToolLines({ tables, contractIntents }) {
     if (genericFilters.some((spec) => spec.param === "date_range")) {
       lines.push(
         `    if date_range:`,
-        `        rows = [r for r in rows if any(date_range.lower() in str(value).lower() for key, value in r.items() if "date" in key.lower() or key.lower().endswith("_at") or key.lower() == "period")]`,
+        `        rows = _filter_date_range(rows, date_range)`,
       );
     }
     for (const spec of filterSpecs) {

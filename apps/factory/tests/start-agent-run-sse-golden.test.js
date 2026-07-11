@@ -1,5 +1,6 @@
 import { test, expect } from "bun:test";
-import { execFileSync } from "node:child_process";
+import { execFileSyncCapture } from "@ge/std/subprocess";
+import { canBindLoopback } from "@ge/std/test-network";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -44,11 +45,12 @@ import { compareOrUpdateGolden } from "./golden-test-helpers.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RUNNER = join(HERE, "fixtures", "start-agent-run-sse", "run-oracle.mjs");
 const GOLDEN_PATH = join(HERE, "fixtures", "start-agent-run-sse", "events.golden.json");
+const loopbackTest = await canBindLoopback() ? test : test.skip;
 
 function runOracle() {
   const ws = mkdtempSync(join(tmpdir(), "ge-start-agent-run-sse-"));
   try {
-    const stdout = execFileSync("bun", [RUNNER], {
+    const stdout = execFileSyncCapture("bun", [RUNNER], {
       env: {
         ...process.env,
         GE_HARNESS_DATA_ROOT: ws,
@@ -58,7 +60,7 @@ function runOracle() {
         AGENTS_HOME: join(ws, "empty-agents-home"),
       },
       timeout: 20_000,
-    }).toString("utf8");
+    });
     return maskNonDeterministic(JSON.parse(stdout), ws);
   } finally {
     rmSync(ws, { recursive: true, force: true });
@@ -96,7 +98,7 @@ function maskNonDeterministic(raw, workspaceRoot) {
   };
 }
 
-test("startAgentRun SSE sequence and side effects are stable (parity oracle)", () => {
+loopbackTest("startAgentRun SSE sequence and side effects are stable (parity oracle)", () => {
   const snap = JSON.stringify(runOracle(), null, 2);
   const { snap: got, golden, updated } = compareOrUpdateGolden({ snap, goldenPath: GOLDEN_PATH });
   if (updated) return;

@@ -1,0 +1,43 @@
+# Root Cloud Build context for the factory gateway and worker images.
+# Keep this aligned with COPY statements in apps/factory/{gateway.Dockerfile,Dockerfile}.
+**
+
+!.gcloudignore
+!package.json
+!bun.lock
+
+!packages/
+!packages/**
+!tools/
+!tools/**
+
+!apps/
+!apps/factory/
+!apps/factory/**
+!apps/console/
+!apps/console/package.json
+!apps/docs/
+!apps/docs/package.json
+!apps/presentation/
+!apps/presentation/package.json
+!apps/presentation/src/
+!apps/presentation/src/components/
+!apps/presentation/src/components/slides/
+!apps/presentation/src/components/slides/use-cases/
+!apps/presentation/src/components/slides/use-cases/**
+
+# Local/generated factory state is never part of a runtime image.
+apps/factory/generated/
+apps/factory/artifacts/
+apps/factory/node_modules/
+apps/factory/.harness/
+apps/factory/.harness-test/
+apps/factory/.harness-test-service/
+apps/factory/.worktrees/
+apps/factory/.e2e-sample/
+apps/factory/.ge-harness/
+apps/factory/runs/
+apps/factory/simulator-systems/_openapi/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/

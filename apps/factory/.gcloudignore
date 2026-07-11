@@ -1,13 +1,8 @@
-.git
-.gitignore
-.harness
-.harness-test
-.worktrees
-node_modules
-*.log
-.env
-.env.*
-__pycache__
-.pytest_cache
-.venv
-tmp
+# The apps/factory source context is used only by cloudbuild.builder.yaml.
+**
+!.gcloudignore
+!builder.Dockerfile
+!cloudbuild.builder.yaml
+!agents-cli-version.txt
+!cloudbuild/
+!cloudbuild/run-factory-stage.sh

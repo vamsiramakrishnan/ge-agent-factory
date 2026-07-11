@@ -181,6 +181,9 @@
     "packages/byo-systems": {
       "name": "@ge/byo-systems",
       "version": "0.1.0",
+      "dependencies": {
+        "@ge/std": "workspace:*",
+      },
     },
     "packages/capability-registry": {
       "name": "@ge/capability-registry",

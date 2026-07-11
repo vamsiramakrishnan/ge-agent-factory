@@ -204,7 +204,7 @@ export async function runPreflight({
         vertex: {
           enabledBy: "pass --vertex true, or set ANTIGRAVITY_USE_VERTEXAI=true/GOOGLE_GENAI_USE_VERTEXAI=true",
           project: process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
-          location: process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+          location: process.env.GOOGLE_GENAI_LOCATION || process.env.GEMINI_ENTERPRISE_LOCATION || process.env.GOOGLE_CLOUD_LOCATION || null,
           credentials: process.env.GOOGLE_APPLICATION_CREDENTIALS ? "service_account_file" : "adc_or_gcloud_user",
         },
       },

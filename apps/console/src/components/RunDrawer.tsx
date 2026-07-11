@@ -11,7 +11,8 @@ import { StatusChip, statusStyle, type RunStatus } from "../lib/runStatus";
 // runFollow (which run + open/pinned) and useRunStream (live ledger reduction).
 export function RunDrawer() {
   const { runId, meta, open, pinned, unfollow, pin, unpin, onComplete } = useRunFollow();
-  const stream = useRunStream(open ? runId : null);
+  const ledgerSource = meta?.ledgerSource || (meta?.mode === "remote" ? "firestore" : undefined);
+  const stream = useRunStream(open ? runId : null, { ledgerSource });
   const panelRef = useRef<HTMLDivElement>(null);
   const completeFired = useRef(false);
 

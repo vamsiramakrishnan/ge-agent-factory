@@ -20,6 +20,7 @@ import {
   guarded, emit, out, pc, ui, core, statusText, cfgFrom,
   daemonPort, daemonStatusSnapshot, daemonRequest,
 } from "./shared.mjs";
+import { STAGE_LOG_TYPE, stageLogLines } from "@ge/run-ledger/frames";
 import { resolveRunLedger } from "../lib/planes/run-plane.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
 
@@ -73,9 +74,22 @@ export async function fetchRemoteRunEvents(cfg, { runId, afterSeq = 0, createRea
   }
 }
 
-const remoteEventLine = (e) => {
+export const remoteEventLine = (e) => {
+  if (e?.type === STAGE_LOG_TYPE) {
+    const lines = stageLogLines(e);
+    if (lines.length) {
+      const prefix = `  ${String(e.seq).padStart(4)} ${pc.dim(e.ts || "")} ${pc.dim(`[${e.stage || "run"}]`)}`;
+      return lines.map((line) => `${prefix} ${line}`).join("\n");
+    }
+  }
+  if (e?.type === "stage_progress") {
+    const phase = e.data?.phase ? pc.yellow(e.data.phase) : pc.yellow("progress");
+    const message = e.data?.message || "";
+    return `  ${String(e.seq).padStart(4)} ${pc.dim(e.ts || "")} ${phase} ${message}`.trimEnd();
+  }
   const tone = e.status === "failed" ? pc.red(e.type || "") : pc.cyan(e.type || "");
-  return `  ${String(e.seq).padStart(4)} ${pc.dim(e.ts || "")} ${tone} ${e.error || ""}`.trimEnd();
+  const stage = e.stage ? `${pc.dim(`[${e.stage}]`)} ` : "";
+  return `  ${String(e.seq).padStart(4)} ${pc.dim(e.ts || "")} ${stage}${tone} ${e.error || ""}`.trimEnd();
 };
 
 // Poll (never a live subscription — the CLI is one-shot) until the run reaches

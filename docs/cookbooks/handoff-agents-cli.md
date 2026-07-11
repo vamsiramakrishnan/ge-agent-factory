@@ -42,8 +42,8 @@ A compiled, [proven](prove-an-agent.html) workspace. Find its path:
 - the checked-in reference example is
   `generated-agents/account-reconciliation-agent/`.
 
-`agents-cli` must be installed (`mise run deps`; pin
-`google-agents-cli>=0.2,<0.3`).
+`agents-cli` must be installed (`mise run deps`; the canonical version lives in
+`apps/factory/agents-cli-version.txt`).
 
 ## Steps
 
@@ -79,7 +79,7 @@ A compiled, [proven](prove-an-agent.html) workspace. Find its path:
 3. **Run the evals with stock `agents-cli`.**
 
    ```bash
-   agents-cli eval run --all
+   agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml
    ```
 
    This executes `tests/eval/evalsets/ge_behavior_contract.evalset.json`
@@ -115,7 +115,7 @@ A compiled, [proven](prove-an-agent.html) workspace. Find its path:
 
 ## Expected output
 
-- `agents-cli eval run --all` passes in the workspace with no factory
+- `agents-cli eval run --dataset ... --config ...` passes in the workspace with no factory
   tooling involved.
 - The manifest and `pyproject.toml` read as a plain ADK project — the
   receiving team needs the [ADK docs](https://google.github.io/adk-docs/),
@@ -149,8 +149,8 @@ What crosses the handoff line (full layout in
 ## Common failures
 
 - **`agents-cli: command not found`** — run `mise run deps`.
-- **`eval run --all` flag rejected** — `agents-cli` outside the
-  `>=0.2,<0.3` pin; reinstall the pinned version.
+- **Eval command rejected** — local `agents-cli` differs from the canonical
+  version; run `mise run deps` to reconcile it.
 - **`Legacy configuration detected in pyproject.toml`** — the workspace
   predates the manifest; recompile it
   ([Compile a contract](compile-a-contract.html)) to get

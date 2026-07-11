@@ -23,7 +23,8 @@ function makeTree() {
     handlers: {
       status: noop, listUsecases: noop, promotionGate: noop, sources: noop, packCoverage: noop,
       init: noop, schema: noop, generate: noop, tools: noop, eval: noop, serve: noop,
-      dataPlan: noop, sourceIntegrationPlan: noop, snowfakeryRecipe: noop, deployStatus: noop,
+      dataPlan: async (dir, flags) => { calls.push({ dir, flags }); return { ok: true }; },
+      sourceIntegrationPlan: noop, snowfakeryRecipe: noop, deployStatus: noop,
       verifyLive: noop, publish: noop, reset: noop, planData: noop, fromUseCase: noop, test: noop,
       qualityGate: noop, harnessReview: noop, harnessRefine: noop,
       mcp: async (dir, flags) => { calls.push({ dir, flags }); return { ok: true }; },
@@ -113,5 +114,29 @@ describe("mcp citty subcommand conversion — dispatch shape parity", () => {
     }
     expect(threw).toBe(true);
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe("data-plan citty value flags", () => {
+  test("preserves cloud data target flags as strings", async () => {
+    const { tree, calls } = makeTree();
+    await silently(() => runCommand(tree["data-plan"], {
+      rawArgs: [
+        "--dir", "/ws",
+        "--project", "my-proj",
+        "--location", "US",
+        "--dataset", "ge_dataset",
+        "--bucket", "data-bucket",
+        "--prefix", "factory/dev/ws",
+      ],
+    }));
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].dir).toBe("/ws");
+    expect(calls[0].flags.project).toBe("my-proj");
+    expect(calls[0].flags.location).toBe("US");
+    expect(calls[0].flags.dataset).toBe("ge_dataset");
+    expect(calls[0].flags.bucket).toBe("data-bucket");
+    expect(calls[0].flags.prefix).toBe("factory/dev/ws");
   });
 });

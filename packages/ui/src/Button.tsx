@@ -5,8 +5,8 @@ import { cx } from "./cx";
 // THE button. Before this existed the console carried ~40 inline button
 // recipes across five dialects (two class orders for primary, two spinner
 // idioms, three paddings) — this is the one place the recipe lives now.
-// Buttons are machined keys (tokens.css .key/.key-signal): pill-shaped,
-// a light-catching top edge, real travel on press — the ET66 button.
+// Buttons are flat machined keys (tokens.css .key/.key-signal): rectangular,
+// hairline-defined, with one pixel of real travel on press.
 //   primary  — the signal key (filled vermilion → hover primary-container)
 //   outline  — a chassis key (raised off-white, firm outline border)
 //   ghost    — tertiary/link-like action (text-primary, primary/10 hover)
@@ -14,7 +14,7 @@ import { cx } from "./cx";
 export type ButtonVariant = "primary" | "outline" | "ghost";
 export type ButtonSize = "sm" | "md";
 
-const BASE = "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-1 focus-visible:ring-offset-surface";
+const BASE = "inline-flex items-center justify-center gap-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-1 focus-visible:ring-offset-surface";
 
 const VARIANT: Record<ButtonVariant, string> = {
   primary: "key key-signal bg-primary text-white hover:bg-primary-container",

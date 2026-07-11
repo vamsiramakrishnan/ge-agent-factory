@@ -45,4 +45,5 @@ locals {
   runner_sa_email  = "${local.runner_sa_id}@${var.project_id}.iam.gserviceaccount.com"
   gateway_sa_email = "${local.gateway_sa_id}@${var.project_id}.iam.gserviceaccount.com"
   builder_sa_email = "${local.builder_sa_id}@${var.project_id}.iam.gserviceaccount.com"
+  builder_image    = "${var.region}-docker.pkg.dev/${var.project_id}/${local.artifact_repo_id}/ge-agent-factory-builder:latest"
 }

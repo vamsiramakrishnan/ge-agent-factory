@@ -5,6 +5,9 @@ import { mkdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { readJson as baseReadJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
+import { contentHash } from "@ge/run-ledger/control-plane";
+import { createFirestoreLedgerReader } from "@ge/run-ledger/firestore";
+import { FACTORY_STAGE_IDS } from "./factory-orchestration.js";
 import { enqueueFactoryStage, firestoreValue, patchFirestoreDocument } from "./factory-worker.js";
 
 export { firestoreValue };
@@ -20,6 +23,26 @@ const WORKER_URL = process.env.GE_AGENT_FACTORY_WORKER_URL || "";
 const HARNESS_ROOT = resolve(import.meta.dirname, "..");
 const REPO_ROOT = resolve(HARNESS_ROOT, "../..");
 const BRIDGE_STATE_PATH = resolve(REPO_ROOT, ".factory-runs.json");
+
+export function buildWorkspaceCacheKey(input = {}, env = process.env) {
+  const sourceVersion = env.GE_FACTORY_SOURCE_VERSION || env.K_REVISION || env.GOOGLE_CLOUD_RUN_REVISION || "local-dev";
+  const cacheVersion = env.GE_FACTORY_WORKSPACE_CACHE_VERSION || "v1";
+  const material = {
+    cacheVersion,
+    sourceVersion,
+    title: input.title || "",
+    useCaseId: input.useCaseId || "",
+    rows: String(input.rows || ""),
+    systems: input.systems || "",
+    domain: input.domain || "",
+    generationSpec: input.generationSpec || null,
+    model: input.model || "",
+    judgeModel: input.judgeModel || "",
+    evalJudgeSamples: input.evalJudgeSamples || "5",
+    maxOutputTokens: input.maxOutputTokens ?? null,
+  };
+  return contentHash(material, { length: 32 });
+}
 
 // Helper: slug name
 function slug(value, max = 48) {
@@ -84,9 +107,76 @@ export function deriveToolDescription({ generationSpec, title, useCaseId, system
   return `Use this agent for ${label} tasks${across}.`;
 }
 
-export function defaultFactoryStartStage({ prebuiltArchive = null, refine = true } = {}) {
+export function defaultFactoryStartStage({ prebuiltArchive = null } = {}) {
   if (prebuiltArchive) return "load_data";
-  return refine === false ? "validate" : "harness_refine";
+  return "package_data";
+}
+
+// Status must follow the same stage registry the worker executes. Keeping a
+// gateway-only subset hid package_data from run snapshots and let generated
+// runs skip the cloud data package that load_data consumes.
+export const FACTORY_GATEWAY_STAGES = FACTORY_STAGE_IDS;
+
+export function summarizeFactoryRunSnapshot(run = {}, artifacts = {}) {
+  const stageResults = FACTORY_GATEWAY_STAGES
+    .map((stage) => ({ stage, result: artifacts?.[stage] }))
+    .filter((entry) => entry.result && typeof entry.result === "object");
+  const failed = stageResults.find((entry) => ["failed", "error"].includes(String(entry.result.status || "").toLowerCase()));
+  if (failed) {
+    return {
+      status: "failed",
+      state: "failed",
+      currentStage: failed.stage,
+      stage: failed.stage,
+      terminal: true,
+      error: failed.result.error || null,
+      classification: failed.result.classification || null,
+      firstError: failed.result.firstError || null,
+      fixHint: failed.result.fixHint || null,
+      logUrl: failed.result.logUrl || null,
+      stageResultUri: failed.result.stageResultUri || null,
+    };
+  }
+  const targetStage = run.targetStage || "publish_enterprise";
+  const targetStatus = String(artifacts?.[targetStage]?.status || "").toLowerCase();
+  if (["done", "succeeded", "published", "complete"].includes(targetStatus)) {
+    return {
+      status: "done",
+      state: "done",
+      currentStage: targetStage,
+      stage: targetStage,
+      terminal: true,
+      error: null,
+    };
+  }
+  const latest = stageResults.at(-1);
+  const currentStage = latest?.result?.nextStage || latest?.stage || run.startStage || run.currentStage || null;
+  const rawStatus = String(run.status || "queued").toLowerCase();
+  const status = rawStatus === "queued" && !latest ? "queued" : "running";
+  return {
+    status,
+    state: status,
+    currentStage,
+    stage: currentStage || "?",
+    terminal: false,
+    error: null,
+  };
+}
+
+export function buildStatelessScaffoldArgs({ generatorScript, tempDir, request = {}, title, systems, rows, domain } = {}) {
+  const args = [generatorScript, "from-usecase", "--dir", tempDir];
+  if (request.useCaseId) {
+    args.push("--usecase", request.useCaseId);
+  } else {
+    args.push("--freeform", String(title || ""));
+  }
+  if (systems) args.push("--systems", systems);
+  args.push("--rows", String(rows));
+  args.push("--domain", domain || "general");
+  // Remote workers own harness_refine. Gateway scaffolding must stay
+  // deterministic and must not require Antigravity/agent CLIs in the gateway image.
+  args.push("--harness-review", "false", "--harness-refine", "false");
+  return args;
 }
 
 // Helper: Parse GCS URI bucket and path
@@ -215,6 +305,16 @@ async function readGcsFile(bucket, object, token) {
   return res.json();
 }
 
+async function gcsObjectExists(bucket, object, token) {
+  const url = `https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(object)}`;
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(url, { headers });
+  if (res.status === 404) return false;
+  if (!res.ok) throw new Error(`Failed to check GCS object ${object}: ${res.statusText}`);
+  return true;
+}
+
 // Helper: HTTP POST call to GCS media upload API
 async function writeGcsFile(bucket, object, data, token) {
   const url = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(bucket)}/o?uploadType=media&name=${encodeURIComponent(object)}`;
@@ -225,6 +325,15 @@ async function writeGcsFile(bucket, object, data, token) {
     headers,
     body: data
   });
+  if (!res.ok) throw new Error(`Failed to write GCS file ${object}: ${res.statusText}`);
+  return res.json();
+}
+
+async function writeGcsMedia(bucket, object, data, token, contentType = "application/octet-stream") {
+  const url = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(bucket)}/o?uploadType=media&name=${encodeURIComponent(object)}`;
+  const headers = { "Content-Type": contentType };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(url, { method: "POST", headers, body: data });
   if (!res.ok) throw new Error(`Failed to write GCS file ${object}: ${res.statusText}`);
   return res.json();
 }
@@ -459,6 +568,7 @@ export async function submitFactoryRun(request) {
   const targetProject = target.projectId || CONTROL_PLANE_PROJECT;
   const targetRegion = target.runtimeRegion || "us-central1";
   const targetBucket = target.artifactBucket || `${targetProject}-ge-agent-factory`;
+  const evalJudgeSamples = request.evalJudgeSamples ? String(request.evalJudgeSamples) : "5";
 
   // Fail fast: a run whose target reaches publish_enterprise (or beyond) MUST have
   // a resolvable Gemini Enterprise app id. Without this guard the run is admitted,
@@ -483,11 +593,18 @@ export async function submitFactoryRun(request) {
   // Skip regeneration, consume the prebuilt archive, and start past the build
   // boundary (default load_data → deploy → register → publish run remotely).
   const prebuiltArchive = request.prebuiltArchive ? String(request.prebuiltArchive) : null;
+  const workspaceCacheKey = !prebuiltArchive
+    ? buildWorkspaceCacheKey({ title, useCaseId, rows, systems, domain, generationSpec, model: request.model, judgeModel: request.judgeModel, evalJudgeSamples, maxOutputTokens: request.maxOutputTokens })
+    : null;
+  const workspaceCacheArchive = workspaceCacheKey ? `gs://${targetBucket}/cache/workspaces/${workspaceCacheKey}/workspace.tar.gz` : null;
+  let workspaceCache = workspaceCacheKey
+    ? { key: workspaceCacheKey, archive: workspaceCacheArchive, hit: false, enabled: process.env.GE_FACTORY_WORKSPACE_CACHE !== "0" }
+    : null;
   const defaultStartStage = defaultFactoryStartStage({ prebuiltArchive, refine: request.refine });
   const startStage = String(request.startStage || defaultStartStage);
   if (prebuiltArchive) workspaceArchive = prebuiltArchive;
 
-  const agentId = request.usecaseId || null;
+  const agentId = request.agentId || request.useCaseId || request.usecaseId || null;
 
   const runRecord = {
     ok: true,
@@ -502,8 +619,11 @@ export async function submitFactoryRun(request) {
     generationSpec,
     runId,
     artifactPrefix,
+    workspaceArchive,
+    startStage,
     status: "queued",
-    agentId
+    agentId,
+    workspaceCache,
   };
 
   if (IS_PROD) {
@@ -514,26 +634,36 @@ export async function submitFactoryRun(request) {
     const { object: indexObject } = parseGsUri(`gs://${CONTROL_PLANE_BUCKET}/runs/${runId}.json`);
     await writeGcsFile(CONTROL_PLANE_BUCKET, indexObject, JSON.stringify(runRecord, null, 2), token);
 
+    if (!prebuiltArchive && workspaceCache?.enabled && workspaceCacheArchive) {
+      const { bucket: cacheBucket, object: cacheObject } = parseGsUri(workspaceCacheArchive);
+      if (await gcsObjectExists(cacheBucket, cacheObject, token).catch(() => false)) { // best-effort: an unavailable optional cache is a cache miss
+        workspaceArchive = workspaceCacheArchive;
+        workspaceCache = { ...workspaceCache, hit: true };
+        runRecord.workspaceCache = workspaceCache;
+        runRecord.workspaceArchive = workspaceArchive;
+      }
+    }
+
     // Step 2: Perfect Scaffolding Parity inside Container Temporary Workspace.
     // Skipped for ship handoffs — the client already uploaded the prebuilt workspace.
-    if (!prebuiltArchive) {
+    if (!prebuiltArchive && !workspaceCache?.hit) {
       // Run the JS CLI generators to output a fully-baked, standard workspace package
       const tempDir = `/tmp/run-${runId}`;
       await mkdir(tempDir, { recursive: true });
 
       // Execute the local JS generator command to construct a real, fully compiled workspace (pyproject.toml, smoke tests, fixtures)
       const generatorScript = join(HARNESS_ROOT, "scripts/factory.mjs");
-      const cmdArgs = [generatorScript, "from-usecase", "--dir", tempDir];
-      if (request.useCaseId) {
-        cmdArgs.push("--usecase", request.useCaseId);
-      } else {
-        cmdArgs.push("--freeform", `"${title}"`);
-      }
-      if (systems) cmdArgs.push("--systems", systems);
-      cmdArgs.push("--rows", rows);
-      // The generator needs a concrete domain slug; use the resolved domain when
-      // present, otherwise a neutral "general" (never the old "hr" default).
-      cmdArgs.push("--domain", domain || "general");
+      const cmdArgs = buildStatelessScaffoldArgs({
+        generatorScript,
+        tempDir,
+        request,
+        title,
+        systems,
+        rows,
+        // The generator needs a concrete domain slug; use the resolved domain when
+        // present, otherwise a neutral "general" (never the old "hr" default).
+        domain,
+      });
 
       // Pin the generated-agent model (default gemini-3.5-flash via factory's own
       // default) and forward an operator-set output-token budget; factory reads these
@@ -541,6 +671,7 @@ export async function submitFactoryRun(request) {
       const generateEnv = { ...process.env };
       if (request.model) generateEnv.GE_AGENT_MODEL = String(request.model);
       if (request.judgeModel) generateEnv.GE_JUDGE_MODEL = String(request.judgeModel);
+      generateEnv.GE_EVAL_JUDGE_SAMPLES = evalJudgeSamples;
       if (request.maxOutputTokens != null && String(request.maxOutputTokens).trim() !== "") {
         generateEnv.GE_AGENT_MAX_OUTPUT_TOKENS = String(request.maxOutputTokens);
       }
@@ -561,7 +692,11 @@ export async function submitFactoryRun(request) {
       // Upload archive to GCS target bucket
       const { object: archiveObject } = parseGsUri(workspaceArchive);
       const tarBuffer = await readFile(tarPath);
-      await writeGcsFile(targetBucket, archiveObject, tarBuffer, token);
+      await writeGcsMedia(targetBucket, archiveObject, tarBuffer, token, "application/gzip");
+      if (workspaceCache?.enabled && workspaceCacheArchive) {
+        const { bucket: cacheBucket, object: cacheObject } = parseGsUri(workspaceCacheArchive);
+        await writeGcsMedia(cacheBucket, cacheObject, tarBuffer, token, "application/gzip").catch(() => null); // best-effort: the canonical run archive was already persisted
+      }
     }
 
     // Step 3: Record queued states inside Firestore target project
@@ -574,7 +709,7 @@ export async function submitFactoryRun(request) {
     await patchFirestoreDocument({
       projectId: targetProject,
       path: `factoryRuns/${runId}/items/${workspaceId}`,
-      data: { status: "queued", currentStage: startStage, createdAt: now, updatedAt: now, workspaceId, workspaceArchive, artifactPrefix, targetStage, agentId },
+      data: { status: "queued", currentStage: startStage, createdAt: now, updatedAt: now, workspaceId, workspaceArchive, artifactPrefix, targetStage, agentId, workspaceCache },
     });
     await patchFirestoreDocument({
       projectId: targetProject,
@@ -630,6 +765,7 @@ export async function submitFactoryRun(request) {
         // an operator-set output-token budget so the worker stages match local builds.
         ...(request.model ? { model: String(request.model) } : {}),
         ...(request.judgeModel ? { judgeModel: String(request.judgeModel) } : {}),
+        evalJudgeSamples,
         ...(request.refinementModel ? { refinementModel: String(request.refinementModel) } : {}),
         ...(request.maxOutputTokens != null && String(request.maxOutputTokens).trim() !== ""
           ? { maxOutputTokens: Number(request.maxOutputTokens) }
@@ -726,54 +862,51 @@ export async function getFactoryRunSnapshot(runId) {
     const token = await getAccessToken();
     // Use the saved run record first to discover prefix & bucket dynamically (never derive paths client-side)
     const run = await readGcsFile(CONTROL_PLANE_BUCKET, `runs/${runId}.json`, token);
-    const stages = ['validate', 'preview', 'plan_deploy', 'load_data', 'deploy_runtime', 'poll_runtime', 'register_tools', 'publish_enterprise', 'verify_live'];
     const artifacts = {};
     const { object: runPrefixObject } = parseGsUri(run.artifactPrefix);
     
-    await Promise.all(stages.map(async (stage) => {
+    await Promise.all(FACTORY_GATEWAY_STAGES.map(async (stage) => {
       try {
         const gsObject = `${runPrefixObject}/factory-${stage}-result.json`;
         const content = await readGcsFile(run.bucket, gsObject, token);
         artifacts[stage] = content;
       } catch { /* best-effort: a stage that has not run yet has no artifact object in GCS */ }
     }));
-    return { ok: true, run, artifacts };
+    return { ok: true, run, artifacts, ...summarizeFactoryRunSnapshot(run, artifacts) };
   } else {
     const harnessEnv = readHarnessEnv();
     const state = readBridgeState();
     const run = (state.runs || []).find(item => item.runId === runId);
     if (!run) throw new Error("Run not found.");
-    const stages = ['validate', 'preview', 'plan_deploy', 'load_data', 'deploy_runtime', 'poll_runtime', 'register_tools', 'publish_enterprise', 'verify_live'];
     const artifacts = {};
-    await Promise.all(stages.map(async (stage) => {
+    await Promise.all(FACTORY_GATEWAY_STAGES.map(async (stage) => {
       const gsPath = `${run.artifactPrefix}/factory-${stage}-result.json`;
       const content = await readStageLocal(gsPath, harnessEnv);
       if (content) artifacts[stage] = content;
     }));
-    return { ok: true, run, artifacts };
+    return { ok: true, run, artifacts, ...summarizeFactoryRunSnapshot(run, artifacts) };
   }
 }
 
 /**
  * 4. Run Events Watcher (Server-to-GCS state polling browser-facing SSE Bridge)
  */
-export function watchRunEvents(runId, onEvent) {
+export function watchRunEvents(runId, onEvent, { createReader = createFirestoreLedgerReader, pollMs = 4000 } = {}) {
   let active = true;
+  let cleanup = null;
 
-  const poll = async () => {
+  const stop = () => {
+    active = false;
+    try { cleanup?.(); } catch { /* best-effort: stream already closed */ }
+  };
+
+  const pollSnapshot = async () => {
     try {
       const snapshot = await getFactoryRunSnapshot(runId);
       if (!active) return;
       onEvent({ type: "status", data: snapshot });
 
-      const targetStageResult = snapshot.artifacts[snapshot.run.targetStage || "publish_enterprise"];
-      const isDone = targetStageResult?.status === "done";
-      
-      // Fixed stream completion logic: Only abort if overall execution has failed terminally, 
-      // or if target stage fails terminally (allowing retry steps to execute safely without tearing down).
-      const isFailed = snapshot.run.status === "failed" || targetStageResult?.status === "failed";
-
-      if (isDone || isFailed) {
+      if (snapshot.terminal) {
         onEvent({ type: "completed", data: snapshot });
         active = false;
       }
@@ -783,11 +916,51 @@ export function watchRunEvents(runId, onEvent) {
     }
   };
 
-  poll();
-  const interval = setInterval(poll, 4000);
-
-  return () => {
-    active = false;
-    clearInterval(interval);
+  const startSnapshotPolling = () => {
+    pollSnapshot();
+    const interval = setInterval(pollSnapshot, pollMs);
+    cleanup = () => clearInterval(interval);
   };
+
+  const startLedger = async () => {
+    try {
+      const snapshot = await getFactoryRunSnapshot(runId).catch(() => null); // best-effort: ledger discovery can fall back to the control-plane project
+      if (!active) return;
+      if (snapshot) onEvent({ type: "status", data: snapshot });
+      const projectId = snapshot?.run?.project || CONTROL_PLANE_PROJECT;
+      const reader = await createReader({ projectId });
+      let cursor = 0;
+      let statusTimer = null;
+      const emitEvents = (events = []) => {
+        for (const event of events) {
+          if (!active) return;
+          cursor = Math.max(cursor, Number(event.seq) || cursor);
+          onEvent(event);
+        }
+      };
+      const checkTerminal = async () => {
+        if (!active) return;
+        const run = await reader.getRun(runId).catch(() => null); // best-effort: a transient terminal-state read is retried by the interval
+        if (!run || !["done", "failed"].includes(String(run.status))) return;
+        onEvent({ type: "run_complete", status: run.status, ok: run.ok, ts: new Date().toISOString() });
+        onEvent({ type: "completed", data: { ok: run.ok !== false && run.status === "done", run, status: run.status, terminal: true } });
+        stop();
+      };
+      emitEvents(await reader.events(runId, { afterSeq: cursor }).catch(() => [])); // best-effort: the live listener continues from the initial cursor
+      await checkTerminal();
+      if (!active) return;
+      const unsubscribe = reader.listenEvents?.(runId, { afterSeq: cursor }, emitEvents, () => {});
+      statusTimer = setInterval(checkTerminal, 1000);
+      cleanup = () => {
+        try { unsubscribe?.(); } catch { /* best-effort */ }
+        if (statusTimer) clearInterval(statusTimer);
+      };
+    } catch {
+      if (!active) return;
+      startSnapshotPolling();
+    }
+  };
+
+  void startLedger();
+  return stop;
 }

@@ -41,6 +41,7 @@ interface TimelineRow {
   haystack: string;
   followKind: string;
   followSource?: string;
+  ledgerSource?: "local" | "firestore";
   // Source records kept around for the expandable detail panels + actions.
   task?: RuntimeTaskSummary;
   run?: FactoryRunSummary;
@@ -197,6 +198,7 @@ export default function Activity() {
         ].filter(Boolean).join(" ").toLowerCase(),
         followKind: run.kind || "factory.run",
         followSource: run.targetStage || "build",
+        ledgerSource: run.mode === "remote" ? "firestore" : "local",
         run,
       });
     }
@@ -369,7 +371,7 @@ export default function Activity() {
                 row={row}
                 expanded={expanded === rowKey(row)}
                 onToggle={() => setExpanded(expanded === rowKey(row) ? null : rowKey(row))}
-                onFollow={() => followRun(row.id, { kind: row.followKind, source: row.followSource })}
+                onFollow={() => followRun(row.id, { kind: row.followKind, source: row.followSource, ledgerSource: row.ledgerSource })}
                 onResume={handleResumeTask}
                 resuming={resumingTask === row.id}
                 jobLines={jobLines}

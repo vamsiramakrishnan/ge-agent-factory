@@ -14,8 +14,8 @@ resource "google_cloud_run_v2_service" "worker" {
     max_instance_request_concurrency = 1
 
     scaling {
-      min_instance_count = 0
-      max_instance_count = 10
+      min_instance_count = var.factory_worker_min_instances
+      max_instance_count = var.factory_worker_max_instances
     }
 
     containers {
@@ -61,6 +61,14 @@ resource "google_cloud_run_v2_service" "worker" {
         name  = "GEMINI_ENTERPRISE_LOCATION"
         value = var.gemini_enterprise_location
       }
+      env {
+        name  = "GOOGLE_GENAI_LOCATION"
+        value = var.gemini_enterprise_location
+      }
+      env {
+        name  = "GE_AGENT_FACTORY_BUILDER_IMAGE"
+        value = local.builder_image
+      }
     }
   }
 
@@ -88,8 +96,8 @@ resource "google_cloud_run_v2_service" "gateway" {
     timeout         = "300s"
 
     scaling {
-      min_instance_count = 0
-      max_instance_count = 5
+      min_instance_count = var.factory_gateway_min_instances
+      max_instance_count = var.factory_gateway_max_instances
     }
 
     containers {
@@ -112,12 +120,24 @@ resource "google_cloud_run_v2_service" "gateway" {
         value = var.project_id
       }
       env {
+        name  = "GEMINI_ENTERPRISE_APP_ID"
+        value = var.gemini_enterprise_app_id
+      }
+      env {
+        name  = "GEMINI_ENTERPRISE_LOCATION"
+        value = var.gemini_enterprise_location
+      }
+      env {
         name  = "GOOGLE_CLOUD_LOCATION"
         value = var.gemini_enterprise_location
       }
       env {
         name  = "GOOGLE_GENAI_USE_VERTEXAI"
         value = "TRUE"
+      }
+      env {
+        name  = "GOOGLE_GENAI_LOCATION"
+        value = var.gemini_enterprise_location
       }
       env {
         name  = "GE_AGENT_FACTORY_WORKER_URL"
@@ -138,6 +158,10 @@ resource "google_cloud_run_v2_service" "gateway" {
       env {
         name  = "GE_AGENT_FACTORY_SERVICE_ACCOUNT"
         value = google_service_account.runner.email
+      }
+      env {
+        name  = "GE_ENABLE_AGENT_PROVISION"
+        value = "true"
       }
       # The gateway is authenticated via IAM/OIDC, not IAP. REQUIRE_IAP/audience only
       # apply on the legacy LB+IAP path (enable_iap_lb).

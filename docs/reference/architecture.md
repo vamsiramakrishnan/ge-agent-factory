@@ -166,7 +166,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`operating-console`](../../skills/operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](console-and-apis.md) |
 | [`recording-evidence`](../../skills/recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../../packages/run-ledger/) | — |
 | [`operating-the-factory`](../../skills/operating-the-factory/) | `factory_operation` | `ge agents status`, `ge init`, `ge doctor`, `factory list-usecases` | — | [`agent-operability.md`](agent-operability.md), [`cli.md`](cli.md) |
-| [`standing-up-the-platform`](../../skills/standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge mcp doctor` | — | [`config.md`](config.md), [`architecture.md`](architecture.md) |
+| [`standing-up-the-platform`](../../skills/standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge daemon cloud`, `ge mcp doctor` | — | [`config.md`](config.md), [`architecture.md`](architecture.md) |
 | [`deploying-the-control-plane`](../../skills/deploying-the-control-plane/) | `control_plane_deploy` | — | — | [`architecture.md`](architecture.md) |
 | [`grounding-interviews-with-documents`](../../skills/grounding-interviews-with-documents/) | `document_grounding` | `ge capture` | — | [`spec-schema.md`](spec-schema.md) |
 | [`managing-access`](../../skills/managing-access/) | `access_control` | — | — | — |

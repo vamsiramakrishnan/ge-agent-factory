@@ -59,6 +59,7 @@ Every `ge` command accepts these shared flags (omitted from the per-command tabl
 | `--agentIdentityOrgId` | string | Organization ID for Agent Identity principalSet trust domain |
 | `--bucket` | string | Artifact bucket override (default <project>-ge-agent-factory) |
 | `--gatewayUrl` / `--gateway-url` | string | Gateway URL for direct-HTTPS calls (no proxy tunnel) |
+| `--gatewayTransport` / `--gateway-transport` | string | Gateway transport: proxy\|direct |
 | `--geApp` / `--ge-app` | string | Gemini Enterprise app/engine id |
 
 ### `ge`
@@ -134,7 +135,7 @@ Hand off proven agents through agents-cli deploy → Agent Engine → Gemini Ent
 | `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
 | `--start-stage` | string | Stage to start at remotely (default load_data) |
 | `--target-stage` | string | Stage to stop at (default publish_enterprise) |
-| `--concurrency` | string | Parallel remote submissions (default 2) |
+| `--concurrency` | string | Parallel remote submissions (default 8; env GE_REMOTE_SUBMIT_CONCURRENCY) |
 | `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
 | `--force` | boolean | Break-glass: release despite a denied admission decision (the override is recorded in the decision log) |
 
@@ -570,6 +571,7 @@ Stand up or tear down the cloud infrastructure this factory needs
 | `<sub>` | positional (required) | init \| plan \| apply \| output \| destroy |
 | `--gatewayImage` | string | Gateway container image to bind |
 | `--workerImage` | string | Worker container image to bind |
+| `--consoleImage` | string | Console container image to bind |
 | `--yes` | boolean | Required confirmation for destroy |
 
 ### `ge images`
@@ -583,6 +585,7 @@ Build images: no arg = gateway+worker; 'builder' = shared toolchain image
 | Flag | Type | Description |
 |---|---|---|
 | `<target>` | positional | builder = shared toolchain image (default: gateway+worker) |
+| `--tag` | string | Explicit image tag (default: git short SHA) |
 
 ### `ge images deploy`
 
@@ -591,6 +594,7 @@ Build gateway/worker images + bind via terraform (Terraform owns Cloud Run confi
 | Flag | Type | Description |
 |---|---|---|
 | `<target>` | positional | gateway\|worker\|all (advisory; terraform apply reconciles the whole module) |
+| `--tag` | string | Explicit image tag (default: git short SHA) |
 
 ### `ge data`
 
@@ -663,7 +667,7 @@ Build agents. Uses the active mode (ge mode); --local/--remote override
 | `--all` | boolean | Scope: the whole fleet |
 | `--dept` | string | Scope: one department |
 | `--ids` | string | Scope: comma-separated agent/workspace ids |
-| `--concurrency` | string | Parallel remote submissions (default 2) |
+| `--concurrency` | string | Parallel remote submissions (default 8; env GE_REMOTE_SUBMIT_CONCURRENCY) |
 | `--force` | boolean | Rebuild/resubmit even if already completed (local: wipes the selected workspaces first) |
 | `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
 | `--local` | boolean | Override: run on this machine via the harness |
@@ -675,6 +679,7 @@ Build agents. Uses the active mode (ge mode); --local/--remote override
 | `--location` | string | Vertex/GenAI location for local harness stages |
 | `--model` | string | Model for harness review/refine + generated agents (local and remote) |
 | `--max-output-tokens` | string | Override generated-agent max_output_tokens (local and remote); default unset = model default |
+| `--eval-judge-samples` | string | Override behavior-contract judge samples (1-32; default from config) |
 | `--no-refine` | boolean | Skip the cloud Antigravity refine stage (REFINE=0) |
 | `--warm` | boolean | Pre-warm the shared uv cache before running (local) |
 | `--watch` | boolean | Remote: after submitting, watch run status until all runs are terminal |
@@ -747,6 +752,10 @@ Show local GE runtime daemon status
 | Flag | Type | Description |
 |---|---|---|
 | `--port` | string | Daemon port (default 17654) |
+
+### `ge daemon cloud`
+
+Show cloud factory daemon readiness: worker, queue, and cache contracts
 
 ### `ge daemon tasks`
 

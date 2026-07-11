@@ -1123,3 +1123,107 @@ main > .content-panel,
   .ge-footer-nav { grid-template-columns: 1fr; }
   .ge-footer-bottom { flex-direction: column; }
 }
+
+/* ── Modernist Functionalism fidelity corrections ────────────────────────
+ * The supplied system is the authority: one Hanken family, flat full-width
+ * chrome, hairlines instead of floating containers, and texture confined to
+ * apparatus zones. */
+body {
+  background: var(--sl-color-black);
+  font-family: var(--ge-display-font);
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.site-title,
+.ge-wordmark-text {
+  letter-spacing: 0;
+}
+
+.ge-label,
+nav.sidebar .top-level > li > details > summary .group-label > span,
+.right-sidebar-panel h2 {
+  font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+}
+
+.header {
+  border: 0;
+  border-bottom: var(--ge-rule);
+  border-radius: 0;
+  background: var(--sl-color-black);
+  box-shadow: none;
+}
+
+.expressive-code .frame {
+  box-shadow: none;
+}
+
+.hero .actions {
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+.ge-hero-panel img {
+  width: auto;
+  max-width: 100%;
+  max-height: 44rem;
+  margin-inline: auto;
+  object-fit: contain;
+}
+
+.ge-tape-grid img {
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.ge-footer {
+  --sl-color-white: #f3f0f0;
+  --sl-color-gray-2: rgba(243, 240, 240, 0.74);
+  --sl-color-gray-3: rgba(243, 240, 240, 0.58);
+  --sl-color-gray-5: rgba(243, 240, 240, 0.24);
+  margin-top: var(--ge-space-7);
+  padding: var(--ge-space-5);
+  border-top: 0;
+  color: #f3f0f0;
+  background: #1b1c1c;
+}
+
+.ge-footer .ge-monogram {
+  color: #1b1c1c;
+  background: #f3f0f0;
+}
+
+@media (max-width: 50rem) {
+  .hero h1 {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .sl-markdown-content table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .sl-markdown-content table > thead,
+  .sl-markdown-content table > tbody {
+    display: table;
+    width: 38rem;
+    table-layout: fixed;
+  }
+
+  .ge-footer {
+    padding: var(--ge-space-4);
+  }
+}

@@ -30,6 +30,10 @@
       "types": "./src/frames.d.ts",
       "default": "./src/frames.mjs"
     },
+    "./control-plane": {
+      "types": "./src/control-plane.d.ts",
+      "default": "./src/control-plane.mjs"
+    },
     "./reduce": {
       "types": "./src/reduce.d.ts",
       "default": "./src/reduce.mjs"

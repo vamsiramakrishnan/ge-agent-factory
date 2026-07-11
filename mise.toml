@@ -106,7 +106,8 @@ echo "Installed pre-commit hook → tools/hooks/pre-commit (full suite runs in C
 description = "Install the local toolchain extras: agents-cli + repo .venv with google-antigravity SDK (bun/uv/terraform/python come from [tools] above)"
 run = """#!/usr/bin/env bash
 set -uo pipefail
-uv tool install 'google-agents-cli>=0.2,<0.3' || true  # pin <0.3: keeps 'eval run --all' (removed in 0.3+/0.5)
+AGENTS_CLI_VERSION="$(cat apps/factory/agents-cli-version.txt)"
+uv tool install --force "google-agents-cli==${AGENTS_CLI_VERSION}" || true
 echo "Creating repo .venv (uv) + installing google-antigravity SDK (no system Python pollution)…"
 test -x .venv/bin/python || uv venv --python 3.11 .venv
 .venv/bin/python -c "import google.antigravity" 2>/dev/null \

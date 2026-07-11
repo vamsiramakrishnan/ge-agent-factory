@@ -17,6 +17,7 @@
 //      wherever a test doesn't specifically need it).
 import { describe, expect, test } from "bun:test";
 import { execFileSync } from "node:child_process";
+import { execFileSyncCapture } from "@ge/std/subprocess";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -176,10 +177,10 @@ describe("factory quickstart — real subprocess, non-TTY JSON", () => {
     const dir = mkdtempSync(join(tmpdir(), "ge-quickstart-"));
     const env = { ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" };
     try {
-      const stdout = execFileSync(
+      const stdout = execFileSyncCapture(
         "node",
         [GE_MOCK, "quickstart", "--dir", dir, "--name", "quickstart-demo", "--domain", "general", "--run-tests", "false"],
-        { env, encoding: "utf8", cwd: APP_DIR },
+        { env, cwd: APP_DIR },
       );
       const result = JSON.parse(stdout);
 
@@ -238,10 +239,10 @@ describe("factory quickstart — real subprocess, non-TTY JSON", () => {
     const env = { ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" };
     const customTable = JSON.stringify({ name: "widgets", rows: 5, columns: [{ name: "id", type: "seq", pattern: "W-{n:3}" }] });
     try {
-      const stdout = execFileSync(
+      const stdout = execFileSyncCapture(
         "node",
         [GE_MOCK, "quickstart", "--dir", dir, "--add-table", customTable, "--run-tests", "false"],
-        { env, encoding: "utf8", cwd: APP_DIR },
+        { env, cwd: APP_DIR },
       );
       const result = JSON.parse(stdout);
       expect(result.ok).toBe(true);
@@ -327,10 +328,10 @@ proc.wait()
 sys.stdout.write(out.decode(errors="replace"))
 `;
     try {
-      const stdout = execFileSync(
+      const stdout = execFileSyncCapture(
         "python3",
         ["-c", pyScript, "node", GE_MOCK, "quickstart", "--dir", dir, "--name", "tty-demo", "--domain", "general", "--run-tests", "false"],
-        { env, encoding: "utf8", cwd: APP_DIR },
+        { env, cwd: APP_DIR },
       );
       expect(stdout).toContain("quickstart");
       expect(stdout).toContain("tty-demo");

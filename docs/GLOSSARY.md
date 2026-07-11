@@ -150,7 +150,8 @@ workspace; once agents exist it rebuilds their proof (`ge agents build`).
 expected behavior in `agents-cli`'s eval format — that scores whether the
 agent behaves as the spec's behavior contract says. It's generated
 into the [workspace](#workspace) alongside the code and run with
-`agents-cli eval run --all` inside the workspace (or the eval commands
+`agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json
+--config tests/eval/eval_config.yaml` inside the workspace (or the eval command
 `workspace.json` lists).
 
 **Where you'll meet it:** `docs/cookbooks/prove-an-agent.md`; the eval config
@@ -695,4 +696,3 @@ promotion verdict is stale, not just that the verdict itself failed
 **Where you'll meet it:** `packages/admission/src/digest.mjs`;
 `docs/reference/admission.md`'s `GEADM` blocker-code table;
 `requireFreshProofBinding` in the admission policy.
-

@@ -133,6 +133,11 @@ test("synthesisArgv: base case has no promote flags", () => {
   expect(argv).toEqual(["/repo/synthesize_cli.py", "--stdin", "--include-contract", "--no-register"]);
 });
 
+test("synthesisArgv: internal spec files avoid cross-runtime stdin pipes", () => {
+  const argv = synthesisArgv({ script: "/repo/synthesize_cli.py", specFile: "/tmp/spec.json" });
+  expect(argv).toEqual(["/repo/synthesize_cli.py", "--spec-file", "/tmp/spec.json", "--include-contract", "--no-register"]);
+});
+
 test("synthesisArgv: --promote also passes --repo-root", () => {
   const argv = synthesisArgv({ script: "/repo/synthesize_cli.py", promote: true, repoRoot: "/repo" });
   expect(argv).toEqual([

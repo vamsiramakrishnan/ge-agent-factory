@@ -22,7 +22,10 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test, expect } from "bun:test";
+import { canBindLoopback } from "@ge/std/test-network";
 import { STATE_PATHS } from "../../../../tools/lib/state-paths.mjs";
+
+const loopbackTest = await canBindLoopback() ? test : test.skip;
 
 // Isolated job store when this file is the first to load job-store.mjs (module
 // cache is shared across test files in one bun process, so a prior loader wins;
@@ -151,7 +154,7 @@ test("oracle: blocked job replays stored events as framed SSE — retry once, id
 
 // ── 2. daemon job streaming (jobs transport) ──────────────────────────────────
 
-test("oracle: daemon-backed job — submit, preflight events, SSE proxy byte-exact, mirror + terminal record", async () => {
+loopbackTest("oracle: daemon-backed job — submit, preflight events, SSE proxy byte-exact, mirror + terminal record", async () => {
   const daemonEvents = [
     { type: "log", level: "info", line: "building things", ts: "2026-07-02T00:00:00.000Z" },
     { type: "stage_done", stage: "job", level: "info", line: "exit 0", data: { code: 0 }, ts: "2026-07-02T00:00:01.000Z" },
@@ -316,7 +319,7 @@ test("oracle: streamLogs tails the local run NDJSON — one frame per line, 1-ba
   try {
     const { frames, writeSSE } = frameCollector();
     let closed = false;
-    streamLogs({ runId, query: {} }, writeSSE, () => closed);
+    streamLogs({ runId, query: { mode: "local" } }, writeSSE, () => closed);
     closed = true; // first tick is synchronous; stop the poll loop
     expect(frames).toEqual([
       { retry: 3000, id: 1, data: ndjsonLines[0] },
@@ -330,7 +333,7 @@ test("oracle: streamLogs tails the local run NDJSON — one frame per line, 1-ba
 
 // ── 6. doctor daemon proxy (doctor transport) ─────────────────────────────────
 
-test("oracle: streamDoctor proxies the daemon doctor task stream byte-exact", async () => {
+loopbackTest("oracle: streamDoctor proxies the daemon doctor task stream byte-exact", async () => {
   const doctorEvents = [
     { type: "doctor_started", line: "doctor local", data: { scope: "local" } },
     { type: "check_result", section: "toolchain", level: "info", line: "bun installed: pass" },
@@ -402,7 +405,7 @@ test("oracle: streamDoctor falls back to the real doctor subprocess and replays 
 
 // ── 8. repair orchestration via daemon tasks (repair transport) ───────────────
 
-test("oracle: repair daemon path — start records the run, get syncs items, events proxy with afterSeq", async () => {
+loopbackTest("oracle: repair daemon path — start records the run, get syncs items, events proxy with afterSeq", async () => {
   const submits = [];
   const taskEvents = [
     { seq: 1, type: "log", level: "info", line: "planning" },

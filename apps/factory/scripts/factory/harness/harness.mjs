@@ -29,6 +29,16 @@ function validateHarnessOutput(schema, value, label) {
   return result.success;
 }
 
+function resolveHarnessLocation(flags = {}) {
+  return flags.location
+    || flags.region
+    || process.env.GOOGLE_GENAI_LOCATION
+    || process.env.GEMINI_ENTERPRISE_LOCATION
+    || process.env.ANTIGRAVITY_VERTEX_LOCATION
+    || process.env.GOOGLE_CLOUD_LOCATION
+    || "global";
+}
+
 async function readWorkspaceReviewContext(dir) {
   const files = [
     "mock_systems/usecase-spec.json",
@@ -120,7 +130,7 @@ export async function cmdHarnessReview(dir, flags, deps) {
     model: flags.model || "default",
     vertex: wantsVertex(flags),
     project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    location: resolveHarnessLocation(flags),
     responseSchemaFile: harnessResponseSchemaFile("harness-review"),
     ...reviewFanoutOptions(),
     timeoutSec: Number(flags["timeout-sec"] || 300),
@@ -237,8 +247,11 @@ async function applyHarnessReviewFeedback(dir, provider, review, deps) {
   return feedback;
 }
 
-// Resumable refine: a stable session id + save dir so a re-run of refine on the
-// same work item resumes the persisted conversation instead of starting over.
+// Resumable refine: a stable save dir keeps SDK session artifacts grouped per
+// work item. Recent google-antigravity SDKs treat conversation_id as resume-only
+// and fail if the id is not already present, so first-run refine must not invent
+// a conversation id. Operators can still pass GE_HARNESS_CONVERSATION_ID when
+// resuming a known SDK-assigned conversation.
 function refineSessionId(dir, workItem, { basename }) {
   const base = workItem.runId && workItem.itemId
     ? `${workItem.runId}-${workItem.itemId}`
@@ -252,7 +265,7 @@ async function refineResumeOptions(dir, workItem, deps) {
   const id = refineSessionId(dir, workItem, { basename });
   const saveDir = join(HARNESS_DATA_ROOT, "harness-sessions", id);
   await mkdir(saveDir, { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${saveDir} — ${error?.message || String(error)}`));
-  return { conversationId: id, saveDir };
+  return { saveDir };
 }
 
 export async function cmdHarnessRefine(dir, flags, deps) {
@@ -278,7 +291,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     adapter: provider,
     locality: flags.locality || process.env.GE_HARNESS_LOCALITY || (process.env.K_SERVICE ? "remote" : "local"),
     project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    location: resolveHarnessLocation(flags),
     targetGate: flags["target-gate"] || "validate",
     permissionProfile: flags["permission-profile"] || "workspace_write",
     model: flags.model || "default",
@@ -304,7 +317,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     model: workItem.model,
     vertex: wantsVertex(flags),
     project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    location: resolveHarnessLocation(flags),
     responseSchemaFile: harnessResponseSchemaFile("harness-refine"),
     protectFiles: ["tools.py"],
     // Refine fixes generated code in place; it never deletes workspace files or
@@ -517,7 +530,7 @@ export async function cmdHarnessJudge(dir, flags, deps) {
     model: flags.model || "default",
     vertex: wantsVertex(flags),
     project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    location: resolveHarnessLocation(flags),
     responseSchemaFile: harnessResponseSchemaFile("harness-judge"),
     ...reviewFanoutOptions(),
     timeoutSec: Number(flags["timeout-sec"] || 600),
@@ -593,5 +606,6 @@ export const __internal = {
   readWorkspaceReviewContext,
   applyHarnessReviewFeedback,
   refineSessionId,
+  resolveHarnessLocation,
   refineResumeOptions,
 };

@@ -104,6 +104,7 @@ returns `202 { jobId, command }`; stream progress via
 | `POST /api/ge/agents/build` | `ge agents build` | Build selected agents through the cloud factory | `starts-workloads` | `gcloud` on PATH · `.ge.json`: project, geAppId, gatewayUrl · cloud auth · tool plane deployed |
 | `POST /api/ge/agents/sync` | `ge agents sync` | Copy generated agent code into the repository | `writes-repo` | `git` on PATH |
 | `POST /api/ge/daemon/start` | `ge daemon start` | Start the local GE runtime daemon (idempotent — no-op if already running) | `starts-local-workloads` | `node` on PATH |
+| `GET /api/ge/daemon/cloud` | `ge daemon cloud` | Show cloud factory readiness across the worker, Cloud Tasks queue, and cache contract | `read-only` | `gcloud` on PATH · `.ge.json`: project, region · cloud auth |
 <!-- END GENERATED: ge-console-commands -->
 
 ### `/api/ge/*` — read routes and bespoke handlers

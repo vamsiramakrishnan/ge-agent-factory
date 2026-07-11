@@ -461,40 +461,95 @@ export async function cmdVerifyLive(dir, flags, deps) {
 
 // ── Register (Agent Registry via gcloud alpha agent-registry) ─
 
+export function buildBoundedToolSpec(tools, { maxBytes = 10 * 1024 } = {}) {
+  const source = Array.isArray(tools) ? tools : [];
+  const maxDescription = Math.min(512, source.reduce(
+    (max, tool) => Math.max(max, String(tool?.description || tool?.name || "").length),
+    0,
+  ));
+  const propertyLimits = [4, 6, 8, Number.POSITIVE_INFINITY, 3, 2, 1, 0];
+
+  const project = (propertyLimit, descriptionLimit) => ({
+    tools: source.map((tool) => {
+      const description = String(tool?.description || tool?.name || "").slice(0, descriptionLimit);
+      const propertyEntries = Object.entries(tool?.inputSchema?.properties || {}).slice(0, propertyLimit);
+      const properties = Object.fromEntries(propertyEntries.map(([key, value]) => [key, { type: value?.type || "string" }]));
+      const propertyNames = new Set(propertyEntries.map(([key]) => key));
+      const required = (tool?.inputSchema?.required || []).filter((key) => propertyNames.has(key));
+      return {
+        name: tool.name,
+        ...(description ? { description } : {}),
+        inputSchema: {
+          type: "object",
+          properties,
+          ...(required.length ? { required } : {}),
+        },
+      };
+    }),
+  });
+
+  const lossless = project(Number.POSITIVE_INFINITY, maxDescription);
+  const losslessContent = `${JSON.stringify(lossless)}\n`;
+  if (Buffer.byteLength(losslessContent, "utf8") <= maxBytes) {
+    return {
+      spec: lossless,
+      content: losslessContent,
+      bytes: Buffer.byteLength(losslessContent, "utf8"),
+      propertyLimit: null,
+      descriptionLimit: maxDescription,
+      toolCount: lossless.tools.length,
+    };
+  }
+
+  for (const propertyLimit of propertyLimits) {
+    const smallest = project(propertyLimit, 0);
+    const smallestContent = `${JSON.stringify(smallest)}\n`;
+    if (Buffer.byteLength(smallestContent, "utf8") > maxBytes) continue;
+
+    let low = 0;
+    let high = maxDescription;
+    let best = { spec: smallest, content: smallestContent, descriptionLimit: 0 };
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const spec = project(propertyLimit, mid);
+      const content = `${JSON.stringify(spec)}\n`;
+      const bytes = Buffer.byteLength(content, "utf8");
+      if (bytes <= maxBytes) {
+        best = { spec, content, descriptionLimit: mid };
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return {
+      ...best,
+      bytes: Buffer.byteLength(best.content, "utf8"),
+      propertyLimit: Number.isFinite(propertyLimit) ? propertyLimit : null,
+      toolCount: best.spec.tools.length,
+    };
+  }
+
+  const minimal = project(0, 0);
+  return {
+    spec: null,
+    content: null,
+    bytes: Buffer.byteLength(`${JSON.stringify(minimal)}\n`, "utf8"),
+    propertyLimit: 0,
+    descriptionLimit: 0,
+    toolCount: source.length,
+  };
+}
+
 async function buildToolSpec(dir, manifest, { fail, writeText }) {
   const maxBytes = 10 * 1024;
   const tools = mcpToolDescriptors(manifest);
   const specPath = join(dir, "mock_systems", "toolspec.json");
-  let spec = { tools };
-  let content = JSON.stringify(spec, null, 2) + "\n";
-  if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    const compactTools = tools.map((tool) => ({
-      name: tool.name,
-      description: String(tool.description || tool.name).slice(0, 160),
-      ...(tool.simulator ? { simulator: tool.simulator } : {}),
-      inputSchema: tool.inputSchema?.properties ? {
-        type: "object",
-        properties: Object.fromEntries(Object.entries(tool.inputSchema.properties).slice(0, 4).map(([key, value]) => [
-          key,
-          { type: value?.type || "string" },
-        ])),
-        ...(tool.inputSchema.required?.length ? { required: tool.inputSchema.required.slice(0, 4) } : {}),
-      } : { type: "object", properties: {} },
-    }));
-    spec = { tools: compactTools };
-    content = JSON.stringify(spec, null, 2) + "\n";
+  const projection = buildBoundedToolSpec(tools, { maxBytes });
+  if (!projection.content) {
+    fail(`Generated toolspec.json cannot represent all ${tools.length} tools within the 10 KB Agent Registry limit (${projection.bytes} bytes at the minimal complete projection). Split the MCP server by source system.`, "GE0010");
   }
-  if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    const baseTools = spec.tools.slice(0, Math.max(1, spec.tools.findIndex((tool) => String(tool.name || "").startsWith("query_"))));
-    const queryTools = spec.tools.filter((tool) => String(tool.name || "").startsWith("query_")).slice(0, 20);
-    const actionTools = spec.tools.filter((tool) => !String(tool.name || "").startsWith("query_") && tool.name !== "list_systems").slice(0, 20);
-    spec = { tools: [...baseTools, ...queryTools, ...actionTools] };
-    content = JSON.stringify(spec, null, 2) + "\n";
-  }
-  if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    fail(`Generated toolspec.json exceeds 10 KB Agent Registry limit after compaction (${Buffer.byteLength(content, "utf8")} bytes). Reduce exposed tools or split the MCP server by source system.`, "GE0010");
-  }
-  await writeText(specPath, content);
+  console.error(`Tool spec projection: ${projection.toolCount} tools, ${projection.bytes} bytes, description cap ${projection.descriptionLimit}, property cap ${projection.propertyLimit ?? "all"}.`);
+  await writeText(specPath, projection.content);
   return specPath;
 }
 
@@ -818,6 +873,7 @@ export const __internal = {
   parseGeminiEnterpriseApps,
   resolveGeminiEnterpriseAppId,
   buildToolSpec,
+  buildBoundedToolSpec,
   testServiceReachability,
   normalizeAgentRegistryProtocol,
   assertSupportedAgentRegistryLocation,

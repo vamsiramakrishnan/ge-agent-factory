@@ -53,7 +53,7 @@ core fields:
 | `agentModel` | `--model` (on `ge agents build`) | `GE_AGENT_MODEL` | `gemini-3.5-flash` — the runtime model in every generated `app/agent.py`; validated against the known-models allowlist at generation time |
 | `harnessAgent` | `--harness-agent` (on `ge pipeline run`/`graph`); `--provider` on `factory harness-*` | `GE_HARNESS_AGENT` | `antigravity-sdk` — the default harness adapter for review/refine/judge/pipeline harness nodes (`antigravity-sdk`, `claude`, `codex`, `gemini`, `agy`, `mock`) |
 | `refinementModel` | `--model` (on `ge pipeline run`/`graph` and the harness commands) | `GE_REFINEMENT_MODEL` | `gemini-3.5-flash` — the model the harness review/refine steps run against |
-| `judgeModel` | *(env / file only)* | `GE_JUDGE_MODEL` | `gemini-flash-latest` — the LLM-judge model rendered into every generated `eval_config.yaml` |
+| `judgeModel` | *(env / file only)* | `GE_JUDGE_MODEL` | `gemini-3.5-flash` — the LLM-judge model rendered into every generated `eval_config.yaml` |
 | `synthesisModel` | *(env / file only)* | `GE_SYNTHESIS_MODEL` | `gemini-3.5-flash` — the MCP tool-plane's LLM synthesis-sketch model; the Python service reads the env var directly |
 
 > `.ge.json` remains an available spelling for every field above per the flag →

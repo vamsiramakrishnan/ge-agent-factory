@@ -440,6 +440,16 @@ function runGeMock(repoRoot, args, { verbose = false } = {}) {
   return parseJsonObjects(stdout);
 }
 
+function buildPlanDataArgs({ item, workspaceDir, targets, topology }) {
+  return [
+    "plan-data",
+    "--dir", workspaceDir,
+    "--usecase", item.useCaseId,
+    "--project", targets.project,
+    "--location", topology.geminiEnterpriseLocation || topology.cloudLocation || "global",
+  ];
+}
+
 async function runAdkPreview({ webUrl, workspaceId, prompt, timeoutMs = 120000 }) {
   const url = `${webUrl.replace(/\/+$/, "")}/api/workspaces/${encodeURIComponent(workspaceId)}/adk-run`;
   let response;
@@ -620,13 +630,7 @@ export async function runFactoryPlan({ repoRoot, dataRoot, planPath, options = {
         const topology = plan.cloudTopology || resolveCloudTopology(plan.options || {});
         const workspaceDir = result.workspacePath || join(projectsDir, result.workspaceId);
         const targets = workspaceCloudTargets(result, topology);
-        const planData = runGeMock(repoRoot, [
-          "plan-data",
-          "--dir", workspaceDir,
-          "--usecase", item.title || item.useCaseId,
-          "--project", targets.project,
-          "--location", topology.geminiEnterpriseLocation || topology.cloudLocation || "global",
-        ], { verbose });
+        const planData = runGeMock(repoRoot, buildPlanDataArgs({ item, workspaceDir, targets, topology }), { verbose });
         runGeMock(repoRoot, ["snowfakery-recipe", "--dir", workspaceDir], { verbose });
         const cloudData = runGeMock(repoRoot, [
           "data-plan",
@@ -867,4 +871,5 @@ function renderFactoryRunMarkdown(run) {
   return `${lines.join("\n")}\n`;
 }
 
+export const __test = { buildPlanDataArgs };
 export { FACTORY_STAGES };

@@ -345,6 +345,7 @@ export interface GeJob {
 export interface FactoryRunSummary {
   id: string;
   kind: string;
+  mode?: "local" | "remote" | string;
   status: "running" | "done" | "failed" | string;
   ok: boolean | null;
   startedAt: string;
@@ -593,7 +594,7 @@ export const ge = {
   // Idempotent: no-ops (with a friendly "already running" line) if the daemon is
   // already up. Backs the header pill + Doctor's "Start daemon" action.
   daemonStart: () => post("/api/ge/daemon/start", {}),
-  build: (b: { scope?: string; ids?: string; dept?: string; local?: boolean; force?: boolean; concurrency?: string; noProxy?: boolean }) => post("/api/ge/agents/build", b),
+  build: (b: { scope?: string; ids?: string; dept?: string; local?: boolean; force?: boolean; concurrency?: string; noProxy?: boolean; evalJudgeSamples?: string }) => post("/api/ge/agents/build", b),
   handoff: (b: { target?: string; ids?: string; startStage?: string; targetStage?: string; concurrency?: string; noProxy?: boolean; force?: boolean }) => post("/api/ge/handoff", b),
   sync: (b: { ids?: string | string[]; push?: boolean; local?: boolean; remoteMode?: boolean; remote?: string; create?: boolean; noCommit?: boolean }) => post("/api/ge/agents/sync", b),
   registerSpec: (body: { input: string; allowDraft?: boolean; syncCatalog?: boolean }) => post("/api/ge/specs/register", body) as Promise<SpecRegisterResult>,
@@ -716,8 +717,10 @@ function openEventSource(url: string, wire: (es: EventSource) => void): () => vo
 }
 
 // Live run/stage transition events (heartbeat for now; Activity view consumes this).
-export function streamEvents(runId: string, onEvent: (e: any) => void): () => void {
-  return openEventSource(`/api/ge/runs/${encodeURIComponent(runId)}/events`, (es) => {
+export function streamEvents(runId: string, onEvent: (e: any) => void, options: { source?: "local" | "firestore" } = {}): () => void {
+  const qs = new URLSearchParams();
+  if (options.source) qs.set("source", options.source);
+  return openEventSource(`/api/ge/runs/${encodeURIComponent(runId)}/events${qs.toString() ? `?${qs.toString()}` : ""}`, (es) => {
     es.onmessage = (m) => { try { onEvent(JSON.parse(m.data)); } catch { /* heartbeat */ } };
   });
 }
@@ -789,9 +792,11 @@ export type { LedgerEvent };
 
 // Subscribe to a run's live ledger event stream (SSE). Locally the server polls
 // the SQLite ledger; the cloud control plane pushes the same shape from Firestore.
-export function streamLedgerRun(runId: string, onEvent: (e: LedgerEvent) => void): () => void {
+export function streamLedgerRun(runId: string, onEvent: (e: LedgerEvent) => void, options: { source?: "local" | "firestore" } = {}): () => void {
   const seen = new Set<number>();
-  return openEventSource(`/api/ge/ledger/runs/${encodeURIComponent(runId)}/events`, (es) => {
+  const qs = new URLSearchParams();
+  if (options.source) qs.set("source", options.source);
+  return openEventSource(`/api/ge/ledger/runs/${encodeURIComponent(runId)}/events${qs.toString() ? `?${qs.toString()}` : ""}`, (es) => {
     es.onmessage = (m) => {
       try {
         const event = JSON.parse(m.data) as LedgerEvent;

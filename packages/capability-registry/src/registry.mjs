@@ -139,7 +139,7 @@ export const GE_COMMANDS = {
         ids: { type: "string", optional: true, description: "Comma-separated local workspace ids" },
         startStage: { type: "string", optional: true },
         targetStage: { type: "string", optional: true },
-        concurrency: { type: "string", optional: true, description: "Parallel remote submissions (default 2)" },
+        concurrency: { type: "string", optional: true, description: "Parallel remote submissions (default 8; env GE_REMOTE_SUBMIT_CONCURRENCY)" },
         noProxy: { type: "boolean", optional: true },
         force: { type: "boolean", optional: true, description: "Break-glass: release despite a denied admission decision (the override is recorded in the decision log)" },
       },
@@ -1178,6 +1178,7 @@ export const GE_COMMANDS = {
         vertex: { type: "boolean", optional: true },
         target: { type: "string", optional: true },
         limit: { type: "string", optional: true },
+        evalJudgeSamples: { type: "string", optional: true },
         detach: { type: "boolean", optional: true, description: "Local mode only: submit to the runtime daemon and return the run id immediately" },
       },
     },
@@ -1195,6 +1196,7 @@ export const GE_COMMANDS = {
       else if (body.vertex === false) argv.push("--no-vertex");
       if (body.target) argv.push("--target", String(body.target));
       if (body.limit) argv.push("--limit", String(body.limit));
+      if (body.evalJudgeSamples) argv.push("--eval-judge-samples", String(body.evalJudgeSamples));
       if (body.detach && body.local) argv.push("--detach");
       return argv;
     },
@@ -1338,6 +1340,26 @@ export const GE_COMMANDS = {
       config: [],
     },
     argv: () => ["daemon", "start"],
+  },
+  "daemon.cloud": {
+    id: "daemon.cloud",
+    method: "GET",
+    path: "/api/ge/daemon/cloud",
+    cli: "ge daemon cloud",
+    label: "Cloud daemon status",
+    summary: "Show cloud factory readiness across the worker, Cloud Tasks queue, and cache contract",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    observability: {
+      mode: "command-output",
+      events: false,
+    },
+    requirements: {
+      bins: ["gcloud"],
+      config: ["project", "region"],
+      cloudAuth: true,
+    },
+    argv: () => ["daemon", "cloud"],
   },
   // --- Read-only observe commands (no console job route: method/path null) ----
   "usecases.list": {
@@ -1654,6 +1676,7 @@ const COMMAND_GUIDES = {
   "pipeline.run": { when: "you want the full spec→data→simulator→build→eval→preview pipeline as a resumable run", next: ["ge pipeline status <id>", "ge runs events <id> --follow"] },
   "agents.sync": { when: "locally-generated agent code should be copied into the repository (or the agents repo)", next: ["ge handoff", "ge agents build"] },
   "daemon.start": { when: "console or detached runs need the local runtime daemon running", next: ["ge status", "mise run console"] },
+  "daemon.cloud": { when: "remote builds need a fast health check before or during fanout", next: ["ge agents build --remote --watch", "ge runs events --remote <runId> --follow"] },
   "usecases.list": { when: "you want to browse the agent use-case catalog before generating", next: ["ge pipeline run --scenario <id>", "ge okf skill --id <id>"] },
   "library.stats": { when: "you want inventory counts for the Agent Library — blueprints, verticals, buildable, proven", next: ["ge library search <query>", "ge create --from-library <slug>"] },
   "library.search": { when: "you want to find a library blueprint by keyword, vertical, or department", next: ["ge library inspect <slug>", "ge create --from-library <slug>"] },

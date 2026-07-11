@@ -124,35 +124,57 @@ async function limitedRunDocs(collectionRef, limit) {
 
 function summarizeRunDoc(doc, { events = [], items = [] } = {}) {
   const data = docData(doc);
-  const failed = items.filter((item) => ["failed", "error"].includes(docData(item).status)).length;
+  const targetStage = data.targetStage || data.target_stage || null;
+  const itemRows = items.map((itemDoc) => {
+    const item = docData(itemDoc);
+    const rawStatus = String(item.status || "unknown").toLowerCase();
+    const currentStage = item.currentStage || item.stage || null;
+    const intermediateDone = ["done", "succeeded", "published", "complete"].includes(rawStatus)
+      && item.nextStage
+      && targetStage
+      && currentStage !== targetStage;
+    return { doc: itemDoc, data: item, status: intermediateDone ? "running" : rawStatus };
+  });
+  const failed = itemRows.filter((item) => ["failed", "error"].includes(item.status)).length;
+  const done = itemRows.filter((item) => ["done", "succeeded", "published", "complete"].includes(item.status)).length;
+  const running = itemRows.filter((item) => ["running", "active", "submitted"].includes(item.status)).length;
+  const queued = itemRows.filter((item) => ["queued", "waiting"].includes(item.status)).length;
+  const derivedStatus = failed
+    ? "failed"
+    : itemRows.length && done === itemRows.length
+      ? "done"
+      : running
+        ? "running"
+        : queued
+          ? "queued"
+          : data.status || "running";
   return {
     id: docId(doc),
     kind: data.kind || "build",
     mode: data.mode || "remote",
-    status: data.status || "running",
-    ok: data.ok == null ? null : !!data.ok,
+    status: derivedStatus,
+    ok: data.ok == null ? (failed ? false : null) : !!data.ok,
     startedAt: toIso(data.startedAt) || null,
     updatedAt: toIso(data.updatedAt) || toIso(data.startedAt) || null,
     finishedAt: toIso(data.finishedAt) || null,
-    targetStage: data.targetStage || data.target_stage || null,
+    targetStage,
     planPath: null,
     runPath: null,
     eventsPath: null,
     selected: items.length || Number(data.total || 0),
     failed,
-    results: items.map((itemDoc) => {
-      const item = docData(itemDoc);
+    results: itemRows.map(({ doc: itemDoc, data: item, status }) => {
       return {
         id: docId(itemDoc),
         useCaseId: item.useCaseId || item.use_case_id || docId(itemDoc),
         title: item.title || item.useCaseId || docId(itemDoc),
         department: item.department || null,
-        status: item.status || "unknown",
-        targetStage: data.targetStage || null,
+        status,
+        targetStage,
         workspaceId: item.workspaceId || item.workspace_id || null,
         error: item.error || null,
         systems: [],
-        stages: item.currentStage || item.stage ? [{ name: item.currentStage || item.stage, status: item.status || "unknown" }] : [],
+        stages: item.currentStage || item.stage ? [{ name: item.currentStage || item.stage, status }] : [],
       };
     }),
     recentEvents: events
@@ -205,9 +227,15 @@ export async function createFirestoreLedgerReader({
     return summarizeRunDoc(snapshot, { events: runEvents, items: itemDocs });
   };
 
-  const listRuns = async ({ limit = 25 } = {}) =>
-    (await limitedRunDocs(runsCollection(), Math.max(1, Math.min(Number(limit) || 25, 100))))
-      .map((doc) => summarizeRunDoc(doc));
+  const listRuns = async ({ limit = 25 } = {}) => {
+    const docs = await limitedRunDocs(runsCollection(), Math.max(1, Math.min(Number(limit) || 25, 100)));
+    return Promise.all(docs.map(async (doc) => summarizeRunDoc(doc, {
+      items: await queryDocs(itemsCollection(docId(doc))).catch((error) => {
+        console.warn(`[run-ledger] items query failed for ${docId(doc)}; returning run without items: ${error?.message || error}`);
+        return [];
+      }),
+    })));
+  };
 
   const listenEvents = (runId, { afterSeq = 0 } = {}, onEvents, onError = () => {}) => {
     const collectionRef = eventsCollection(runId);

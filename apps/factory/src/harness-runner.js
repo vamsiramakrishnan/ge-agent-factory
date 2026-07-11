@@ -141,9 +141,10 @@ async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
   const cfg = await loadGeConfig(repoRoot);
   const resolvedProject = resolveGcpProject({ explicit: project, fallbackEnvVars: ["GCP_PROJECT_ID"] }) || cfg.project || null;
   const resolvedLocation = location
-    || process.env.GOOGLE_CLOUD_LOCATION
     || process.env.GOOGLE_GENAI_LOCATION
     || process.env.GEMINI_ENTERPRISE_LOCATION
+    || process.env.ANTIGRAVITY_VERTEX_LOCATION
+    || process.env.GOOGLE_CLOUD_LOCATION
     || cfg.geLocation
     || "global";
   return {

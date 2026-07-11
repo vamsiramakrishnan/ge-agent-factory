@@ -21,11 +21,44 @@ In plain language: this skill does NOT reimplement any station. It reads the cur
 
 1. **Assess.** Read status + mission contract + last run. Never act from assumption; act from observed state.
 2. **Guard.** Before any deploy / data load / publish / IAM / cross-project / destructive step, consult `guarding-the-factory`. If it says "needs sign-off", stop and escalate instead of acting.
-3. **Pick the next station** (see map) and delegate to that skill. Run exactly one station at a time.
-4. **Observe** the run/stage via SSE + artifacts (do not declare success from a started job).
+3. **Pick the next station** (see map) and delegate to that skill. Make one
+   orchestration decision at a time; inside that station, let the shared
+   scheduler fan independent agents/stages out in parallel.
+4. **Observe** the shared ledger via SSE/status plus artifacts (do not declare
+   success from a started job). Console, CLI, API, and MCP are submission and
+   projection surfaces over the same registry/job runner, not separate task
+   implementations.
 5. **On trouble**, hand to `triaging-runs` to decide resume / re-run / upstream fix / escalate.
 6. **Record** the decision + outcome via `recording-evidence`.
 7. **Repeat** until the goal is reached or blocked.
+
+## Mode contract
+
+- **Local:** submit through the local daemon, stream its ledger/events, and run
+  the canonical stage registry in local transports.
+- **Remote/cloud:** submit through the gateway, dispatch with Cloud Tasks to
+  workers/Cloud Build, and stream the same stage ids, result JSON, event schema,
+  and workspace archive contract.
+- A generated remote run starts at `package_data`. A prebuilt local workspace
+  uses explicit `ge handoff` and normally starts at `load_data`.
+- `validate`, eval, or preview can exercise agents-cli, but the actual runtime
+  handoff is complete only when `deploy_runtime` records a non-null remote
+  runtime id and later release stages verify it.
+
+Useful machine-readable observers:
+
+```bash
+bun tools/ge.mjs daemon status --json
+bun tools/ge.mjs daemon cloud --json
+bun tools/ge.mjs agents status --watch --json
+bun tools/ge.mjs agents logs <run-id> --stage <stage>
+```
+
+For console/API observers, status reads must use the shared asynchronous status
+board. Never put synchronous `gcloud` probes on a server request path: they
+block module/API delivery and can leave the UI on `Loading…` even though every
+completed response is 200. Coalesce identical in-flight plane probes; do not
+create a console-only status cache or contract.
 
 ## Station map (which composed skill owns what)
 
@@ -46,6 +79,12 @@ In plain language: this skill does NOT reimplement any station. It reads the cur
 
 - Acting before reading state, or declaring success from a *started* (not *finished*) run.
 - Running several stations at once instead of one decision at a time.
+- Manually submitting duplicate station jobs to get parallelism instead of
+  relying on deterministic item/stage fanout and ledger fan-in.
+- Reading only a console spinner or process stdout instead of the shared event
+  stream and terminal stage artifacts.
+- Treating a console loading state as a frontend failure before checking
+  pending requests and server-thread cloud probes.
 - Skipping `guarding-the-factory` on an irreversible step because "it probably works".
 
 ## Done when

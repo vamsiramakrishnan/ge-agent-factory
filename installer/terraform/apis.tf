@@ -37,7 +37,7 @@ locals {
     "agentregistry.googleapis.com",
     "aiplatform.googleapis.com",
   ] : []
-  all_apis           = distinct(concat(local.required_apis, local.iap_apis, local.data_apis, local.mcp_apis, local.agent_gateway_apis))
+  all_apis = distinct(concat(local.required_apis, local.iap_apis, local.data_apis, local.mcp_apis, local.agent_gateway_apis))
 }
 
 resource "google_project_service" "enabled" {

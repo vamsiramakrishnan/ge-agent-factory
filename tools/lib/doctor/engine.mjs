@@ -20,6 +20,7 @@ import { STATE_PATHS, REPO_ROOT, displayStatePath } from "../state-paths.mjs";
 import { workspaceStoreItems, LOCAL_PROJECTS, LOCAL_PROJECT_STORE } from "../local-workspaces.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck } from "../planes/tool-plane-checks.mjs";
 import { resolveRunLedger } from "../planes/run-plane.mjs";
+import { AGENTS_CLI_PACKAGE_SPEC, AGENTS_CLI_VERSION } from "../agents-cli-version.mjs";
 
 const noop = () => {};
 const UV_CACHE = STATE_PATHS.cache.uv;
@@ -117,7 +118,7 @@ export function createDoctorPlane({ run, gcloud, ensureBin, binCheck, dataPlane,
     process.env.UV_CACHE_DIR = process.env.UV_CACHE_DIR || UV_CACHE;
     process.env.UV_LINK_MODE = process.env.UV_LINK_MODE || "hardlink";
     // agents-cli as a shared uv tool (no-op if already installed).
-    run("uv", ["tool", "install", "google-agents-cli"], { capture: true, allowFail: true });
+    run("uv", ["tool", "install", "--force", AGENTS_CLI_PACKAGE_SPEC], { capture: true, allowFail: true });
     // google-antigravity SDK — the local harness driver imports google.antigravity.
     // Install it into a repo-local .venv (uv) instead of `pip --break-system-packages`
     // into a PEP-668 externally-managed system Python (the "airlock"). The venv is
@@ -145,7 +146,8 @@ export function createDoctorPlane({ run, gcloud, ensureBin, binCheck, dataPlane,
     const py = run("uv", ["python", "find", "3.11"], { allowFail: true });
     add("python 3.11", py.ok, py.ok ? py.out : "not found", "uv python install 3.11");
     const acli = run("agents-cli", ["--version"], { allowFail: true });
-    add("agents-cli", acli.ok, acli.ok ? acli.out.split("\n")[0] : "not found", "uv tool install google-agents-cli");
+    const agentsCliReady = acli.ok && String(acli.out || "").includes(AGENTS_CLI_VERSION);
+    add("agents-cli", agentsCliReady, acli.ok ? acli.out.split("\n")[0] : "not found", `uv tool install --force ${AGENTS_CLI_PACKAGE_SPEC}`);
     const venvPy = harnessVenvPython();
     const harnessPy = process.env.GE_HARNESS_PYTHON || (existsSync(venvPy) ? venvPy : "python3");
     const ag = run(harnessPy, ["-c", "import google.antigravity"], { allowFail: true });

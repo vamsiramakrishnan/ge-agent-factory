@@ -13,7 +13,10 @@ export function renderContractToolPython(intent) {
   const fnName = safePyName(intent.name || `${intent.kind || "tool"}_tool`);
   const sourceSystemId = pyEscape(intent.sourceSystemId || "unknown");
   const kind = pyEscape(intent.kind || "action");
-  const description = pyTripleEscape(intent.description || `${intent.kind || "Tool"} for ${intent.sourceSystemId || "source system"}`);
+  const baseDescription = intent.description || `${intent.kind || "Tool"} for ${intent.sourceSystemId || "source system"}`;
+  const description = pyTripleEscape(["action", "notification"].includes(intent.kind)
+    ? `${baseDescription} Requires prior non-empty source-system evidence in this session; target_id must come from a retrieved source record, not only from user text.`
+    : baseDescription);
   const evidenceFallback = intent.kind === "evidence_lookup" ? ["document_reference"] : ["api_response", "generated_audit_trail"];
   const evidenceLiteral = pyJson((intent.evidenceEmitted && intent.evidenceEmitted.length) ? intent.evidenceEmitted : evidenceFallback);
   const producesList = intent.produces && intent.produces.length ? intent.produces : [];
@@ -110,6 +113,7 @@ export function renderContractToolPython(intent) {
     `        "source_system_id": "${sourceSystemId}",`,
     `        "tool_kind": "${kind}",`,
     `        "status": "submitted",`,
+    `        "requires_prior_evidence": True,`,
     producesDict,
     `        "audit_trail": audit_trail,`,
     `        "evidence": ${evidenceLiteral},`,

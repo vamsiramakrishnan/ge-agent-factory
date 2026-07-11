@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, test } from "bun:test";
-import { createFactoryPlan, runFactoryPlan } from "./factory.js";
+import { __test, createFactoryPlan, runFactoryPlan } from "./factory.js";
 
 describe("local factory contract", () => {
   test("usecase selector creates a single-item plan", async () => {
@@ -43,5 +43,19 @@ describe("local factory contract", () => {
     } finally {
       await rm(dataRoot, { recursive: true, force: true });
     }
+  });
+
+  test("data packaging uses stable use-case ids, not display titles", () => {
+    const args = __test.buildPlanDataArgs({
+      item: {
+        useCaseId: "account-opening-doc-followup-agent",
+        title: "Account Opening Document Follow-Up Agent",
+      },
+      workspaceDir: "/tmp/ws",
+      targets: { project: "test-project" },
+      topology: { geminiEnterpriseLocation: "global" },
+    });
+
+    expect(args[args.indexOf("--usecase") + 1]).toBe("account-opening-doc-followup-agent");
   });
 });

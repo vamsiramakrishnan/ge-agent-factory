@@ -7,8 +7,9 @@ import { groupResumeActions } from "../lib/agents-resume.mjs";
 import { registerBundle, trackAgent } from "../lib/okf-lifecycle.mjs";
 import { submitDetached } from "../lib/daemon/detached-submit.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
-import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_BUILD_BOUNDARY, argFlag, argValue } from "./shared.mjs";
 import { sourceTimestamp } from "../../apps/factory/src/source-clock.js";
+import { DEFAULT_REMOTE_SUBMIT_CONCURRENCY } from "../lib/provision.mjs";
 
 // One render + poll loop shared by `ge agents status --watch` and
 // `ge agents build --watch`, so kicking off a remote build and watching it
@@ -23,6 +24,23 @@ function renderStatusBoard(r, { live = false } = {}) {
   const t = r.tally;
   out(`  ${ui.glyph("passed")} ${pc.green("done")} ${t.done}   ${ui.glyph("running")} ${pc.cyan("running")} ${t.running}   ${ui.glyph("queued")} ${pc.cyan("queued")} ${t.queued}   ${ui.glyph("failed")} ${pc.red("failed")} ${t.failed}   unknown ${t.unknown}`);
   out(pc.dim("  by stage: " + Object.entries(r.stages).map(([k, v]) => `${k}:${v}`).join("  ")));
+}
+
+export function jsonWatchFrame(kind, data = {}) {
+  return {
+    kind,
+    ts: new Date().toISOString(),
+    ...data,
+  };
+}
+
+export async function streamStatusSnapshotsUntilTerminal(cfg, { noProxy, intervalMs = 15000, write = out, status = core.status, kind = "ge.agents.status.snapshot" } = {}) {
+  for (;;) {
+    const snapshot = await status(cfg, { noProxy });
+    write(JSON.stringify(jsonWatchFrame(kind, { status: snapshot })));
+    if (snapshot.terminal) return snapshot;
+    await new Promise((s) => setTimeout(s, intervalMs));
+  }
 }
 
 async function watchStatusUntilTerminal(cfg, { noProxy } = {}) {
@@ -60,14 +78,15 @@ function localBuildResubmitArgv(args, { target, vertex }) {
   argv.push(vertex ? "--vertex" : "--no-vertex");
   if (args.location) argv.push("--location", String(args.location));
   if (args.model) argv.push("--model", String(args.model));
-  if (args["max-output-tokens"]) argv.push("--max-output-tokens", String(args["max-output-tokens"]));
+  if (argValue(args, "max-output-tokens")) argv.push("--max-output-tokens", String(argValue(args, "max-output-tokens")));
+  if (argValue(args, "eval-judge-samples")) argv.push("--eval-judge-samples", String(argValue(args, "eval-judge-samples")));
   if (args.warm) argv.push("--warm");
   return argv;
 }
 
 const agentsBuild = defineCommand({
   meta: { name: "build", description: "Build agents. Uses the active mode (ge mode); --local/--remote override" },
-  args: { ...common, canary: { type: "boolean", description: "Scope: one canary agent" }, all: { type: "boolean", description: "Scope: the whole fleet" }, dept: { type: "string", description: "Scope: one department" }, ids: { type: "string", description: "Scope: comma-separated agent/workspace ids" }, concurrency: { type: "string", description: "Parallel remote submissions (default 2)" }, force: { type: "boolean", description: "Rebuild/resubmit even if already completed (local: wipes the selected workspaces first)" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string", description: "Max workspaces to build (local)" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean", description: "Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" }, watch: { type: "boolean", description: "Remote: after submitting, watch run status until all runs are terminal" }, detach: { type: "boolean", description: "Local only: submit to the runtime daemon and return immediately with a run id (close-your-laptop)" } },
+  args: { ...common, canary: { type: "boolean", description: "Scope: one canary agent" }, all: { type: "boolean", description: "Scope: the whole fleet" }, dept: { type: "string", description: "Scope: one department" }, ids: { type: "string", description: "Scope: comma-separated agent/workspace ids" }, concurrency: { type: "string", description: `Parallel remote submissions (default ${DEFAULT_REMOTE_SUBMIT_CONCURRENCY}; env GE_REMOTE_SUBMIT_CONCURRENCY)` }, force: { type: "boolean", description: "Rebuild/resubmit even if already completed (local: wipes the selected workspaces first)" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string", description: "Max workspaces to build (local)" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean", description: "Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "eval-judge-samples": { type: "string", description: "Override behavior-contract judge samples (1-32; default from config)" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" }, watch: { type: "boolean", description: "Remote: after submitting, watch run status until all runs are terminal" }, detach: { type: "boolean", description: "Local only: submit to the runtime daemon and return immediately with a run id (close-your-laptop)" } },
   run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const scope = args.canary ? "canary" : args.all ? "all" : undefined;
@@ -81,7 +100,7 @@ const agentsBuild = defineCommand({
     }
     if (mode === "local") {
       const target = args.target || LOCAL_BUILD_BOUNDARY; // stop at the build boundary by default
-      const vertex = args.vertex === false || args["no-vertex"] === true ? false : true;
+      const vertex = args.vertex === false || argFlag(args, "no-vertex") ? false : true;
       if (args.detach) {
         const result = await submitDetached({ argv: localBuildResubmitArgv(args, { target, vertex }) });
         emit(args, result, (r) => {
@@ -93,7 +112,7 @@ const agentsBuild = defineCommand({
         });
         return;
       }
-      const res = await core.provisionLocal(cfg, { scope, ids: args.ids, dept: args.dept, limit: args.limit, target, vertex, location: args.location, model: args.model, maxOutputTokens: args["max-output-tokens"], warm: args.warm, force: args.force, log: elog });
+      const res = await core.provisionLocal(cfg, { scope, ids: args.ids, dept: args.dept, limit: args.limit, target, vertex, location: args.location, model: args.model, maxOutputTokens: argValue(args, "max-output-tokens"), evalJudgeSamples: argValue(args, "eval-judge-samples"), warm: args.warm, force: args.force, log: elog });
       emit(args, res, (r) => {
         out(`\n${ui.glyph("passed")} ${pc.green(`local build → ${r.target} (build boundary)`)}`);
         out(ui.kv([
@@ -110,14 +129,24 @@ const agentsBuild = defineCommand({
       });
       return;
     }
-    const refine = !args["no-refine"] && process.env.REFINE !== "0";
-    const res = await core.provision(cfg, { scope, ids: args.ids, dept: args.dept, concurrency: args.concurrency || "2", force: args.force, noProxy: args["no-proxy"], refine, model: args.model, maxOutputTokens: args["max-output-tokens"], log: elog });
+    const noProxy = argFlag(args, "no-proxy");
+    const refine = !argFlag(args, "no-refine") && process.env.REFINE !== "0";
+    const res = await core.provision(cfg, { scope, ids: args.ids, dept: args.dept, concurrency: args.concurrency, force: args.force, noProxy, refine, model: args.model, maxOutputTokens: argValue(args, "max-output-tokens"), evalJudgeSamples: argValue(args, "eval-judge-samples"), log: elog });
+    if (args.watch && args.json && res.submitted) {
+      out(JSON.stringify(jsonWatchFrame("ge.agents.build.submitted", { submission: res })));
+      const finalStatus = await streamStatusSnapshotsUntilTerminal(cfg, {
+        noProxy,
+        kind: "ge.agents.build.status",
+      });
+      out(JSON.stringify(jsonWatchFrame("ge.agents.build.result", { ...res, status: finalStatus })));
+      return;
+    }
     emit(args, res, (r) => {
       out(`\n  submitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.note ? pc.dim("  " + r.note) : ""}`);
       if (r.submitted && !args.watch) out(ui.next("ge agents status --watch", "track the submitted runs to completion"));
     });
     if (args.watch && !args.json && res.submitted) {
-      await watchStatusUntilTerminal(cfg, { noProxy: args["no-proxy"] });
+      await watchStatusUntilTerminal(cfg, { noProxy });
     }
   }),
 });
@@ -126,11 +155,19 @@ const agentsStatus = defineCommand({
   meta: { name: "status", description: "Poll submitted runs (stage tally)" },
   args: { ...common, watch: { type: "boolean", description: "Re-poll every 15s until all runs are terminal" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" } },
   run: guarded(async ({ args }) => {
-    if (args.watch && !args.json) {
-      await watchStatusUntilTerminal(cfgFrom(args), { noProxy: args["no-proxy"] });
+    const noProxy = argFlag(args, "no-proxy");
+    if (args.watch && args.json) {
+      await streamStatusSnapshotsUntilTerminal(cfgFrom(args), {
+        noProxy,
+        kind: "ge.agents.status.snapshot",
+      });
       return;
     }
-    const res = await core.status(cfgFrom(args), { noProxy: args["no-proxy"] });
+    if (args.watch && !args.json) {
+      await watchStatusUntilTerminal(cfgFrom(args), { noProxy });
+      return;
+    }
+    const res = await core.status(cfgFrom(args), { noProxy });
     emit(args, res, (r) => {
       renderStatusBoard(r);
       if (r.tally.failed) {
@@ -232,9 +269,9 @@ const agentsResume = defineCommand({
       if (group.action === "build_local") {
         executed.push({ action: group.action, result: await core.provisionLocal(cfg, { ids: group.useCaseIds.join(","), target, log: elog }) });
       } else if (group.action === "handoff") {
-        executed.push({ action: group.action, result: await core.handoff(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", concurrency: "2", log: elog }) });
+        executed.push({ action: group.action, result: await core.handoff(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", log: elog }) });
       } else if (group.action === "advance_remote") {
-        executed.push({ action: group.action, result: await core.provision(cfg, { ids: group.useCaseIds.join(","), concurrency: "2", log: elog }) });
+        executed.push({ action: group.action, result: await core.provision(cfg, { ids: group.useCaseIds.join(","), log: elog }) });
       }
     }
     emit(args, { ...result, executed: true, results: executed }, (r) => {

@@ -10,14 +10,19 @@ COPY packages ./packages
 COPY tools ./tools
 COPY apps/factory/package.json apps/factory/
 COPY apps/console/package.json apps/console/
+COPY apps/docs/package.json apps/docs/
 COPY apps/presentation/package.json apps/presentation/
 RUN bun install --frozen-lockfile --production --ignore-scripts
 
 COPY apps/factory/scripts ./apps/factory/scripts
 COPY apps/factory/src ./apps/factory/src
-COPY apps/factory/generated ./apps/factory/generated
+COPY apps/factory/catalog ./apps/factory/catalog
+# Build the git-ignored use-case catalog artifact inside the image. The gateway
+# imports the same lazy catalog loader as local mode, and the sync reads slide
+# use-case definitions from apps/presentation.
+COPY apps/presentation/src/components/slides/use-cases ./apps/presentation/src/components/slides/use-cases
+RUN cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs
 COPY apps/factory/cloudbuild.factory-stage.yaml ./apps/factory/cloudbuild.factory-stage.yaml
-COPY apps/factory/cloudbuild.factory-stage.full.yaml ./apps/factory/cloudbuild.factory-stage.full.yaml
 
 WORKDIR /app/apps/factory
 EXPOSE 8080

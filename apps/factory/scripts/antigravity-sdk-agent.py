@@ -10,6 +10,7 @@ import uuid
 os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
 
 TRUTHY = {"1", "true", "yes", "on"}
+LEGACY_OPTIONAL_BUILTIN_TOOLS = {"DELETE_FILE", "WRITE_FILE"}
 
 
 def first_env(*names: str) -> str | None:
@@ -158,7 +159,11 @@ def _mcp_servers_from_specs(specs, McpStdioServer, McpSseServer, McpStreamableHt
         elif transport in ("http", "streamable", "streamable-http"):
             servers.append(McpStreamableHttpServer(name=name, url=spec["url"], headers=spec.get("headers")))
         else:
-            servers.append(McpSseServer(name=name, url=spec["url"], headers=spec.get("headers")))
+            if McpSseServer is not None:
+                servers.append(McpSseServer(name=name, url=spec["url"], headers=spec.get("headers")))
+            else:
+                emit_status("mcp_sse_compat", name=name, fallback="streamable-http")
+                servers.append(McpStreamableHttpServer(name=name, url=spec["url"], headers=spec.get("headers")))
     return servers
 
 
@@ -224,6 +229,8 @@ def resolve_disabled_tools(names, types):
             key = str(raw).strip().upper()
             if hasattr(builtins, key):
                 resolved.append(getattr(builtins, key))
+            elif key in LEGACY_OPTIONAL_BUILTIN_TOOLS:
+                continue
             else:
                 emit_status("disable_tool_unknown", name=raw)
     except Exception as exc:  # noqa: BLE001
@@ -310,10 +317,10 @@ async def main() -> int:
         from google.antigravity import types
         from google.antigravity.types import (
             McpStdioServer,
-            McpSseServer,
             McpStreamableHttpServer,
             from_file,
         )
+        McpSseServer = getattr(types, "McpSseServer", None)
         from google.antigravity.hooks import hooks
         from google.antigravity.hooks import policy as agpolicy
         from google.antigravity.triggers import every as trigger_every
@@ -363,7 +370,12 @@ async def main() -> int:
     )
     use_vertex = args.vertex or first_env("ANTIGRAVITY_USE_VERTEXAI", "GOOGLE_GENAI_USE_VERTEXAI", "GOOGLE_CLOUD_USE_VERTEXAI") in TRUTHY
     project = args.project or first_env("ANTIGRAVITY_VERTEX_PROJECT", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT")
-    location = args.location or first_env("ANTIGRAVITY_VERTEX_LOCATION", "GOOGLE_CLOUD_LOCATION", "GOOGLE_GENAI_LOCATION")
+    location = args.location or first_env(
+        "GOOGLE_GENAI_LOCATION",
+        "GEMINI_ENTERPRISE_LOCATION",
+        "ANTIGRAVITY_VERTEX_LOCATION",
+        "GOOGLE_CLOUD_LOCATION",
+    ) or "global"
     config_kwargs = {
         "system_instructions": system_instructions,
         "workspaces": [os.path.abspath(args.workspace_dir)],
@@ -593,15 +605,15 @@ async def main() -> int:
             structured_output = await response.structured_output()
             if structured_output is not None:
                 emit_status("structured_output", **preview_json(structured_output, 2000))
-                # When the schema produced a validated object but no text streamed,
-                # surface it on stdout so the caller's JSON parser still has a
-                # conforming object to read.
-                if not saw_text:
-                    dumped = dump_model(structured_output)
-                    try:
-                        print(json.dumps(dumped, sort_keys=True), flush=True)
-                    except TypeError:
-                        print(json.dumps(dumped, sort_keys=True, default=str), flush=True)
+                # Always surface the validated object on stdout for machine callers.
+                # Some SDK versions emit a plain "Finished" text chunk and put the
+                # schema-conformant payload only in structured_output; the factory
+                # parser intentionally reads stdout, not status stderr.
+                dumped = dump_model(structured_output)
+                try:
+                    print(json.dumps(dumped, sort_keys=True), flush=True)
+                except TypeError:
+                    print(json.dumps(dumped, sort_keys=True, default=str), flush=True)
             emit_status("done", elapsedSec=round(time.monotonic() - started_at, 1), textChars=text_chars, thoughtChars=thought_chars, toolCalls=tool_calls)
     except Exception as exc:
         emit_status("error", errorType=exc.__class__.__name__, message=str(exc), phase=phase_ref.get("phase", "unknown"))

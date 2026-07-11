@@ -71,7 +71,7 @@ registry_tools = api_registry.get_toolset(
 )
 
 root_agent = LlmAgent(
-    model="gemini-flash-latest",
+    model="gemini-3.5-flash",
     name="registry_backed_agent",
     instruction="Use registered tools where appropriate.",
     tools=[registry_tools],
@@ -99,7 +99,7 @@ remote_agent = registry.get_remote_a2a_agent(
 )
 
 root_agent = LlmAgent(
-    model="gemini-flash-latest",
+    model="gemini-3.5-flash",
     name="composed_agent",
     instruction="Use governed tools and sub-agents.",
     tools=[mcp_toolset],

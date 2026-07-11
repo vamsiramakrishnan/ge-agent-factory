@@ -74,11 +74,25 @@ import { cmdMcp as lifecycleCmdMcp, cmdDeploy as lifecycleCmdDeploy, cmdDeploySt
 // 404-ing at agent runtime after cloud resources are provisioned.
 const AGENT_MODEL = assertKnownModel(process.env.GE_AGENT_MODEL || DEFAULT_AGENT_MODEL);
 
+export function resolveJudgeModelForEvalConfig(rawModel = "gemini-3.5-flash", env = process.env) {
+  const model = String(rawModel || "gemini-3.5-flash").trim();
+  if (!model || model.startsWith("projects/")) return model || "gemini-3.5-flash";
+  const useVertex = /^(1|true|yes|on)$/i.test(String(env.GOOGLE_GENAI_USE_VERTEXAI || ""));
+  const project = env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT || env.GE_AGENT_FACTORY_PROJECT || "";
+  if (!useVertex || !project) return model;
+  const location = env.GOOGLE_GENAI_LOCATION || env.GEMINI_ENTERPRISE_LOCATION || env.GOOGLE_CLOUD_LOCATION || "global";
+  if (model.startsWith("publishers/")) return `projects/${project}/locations/${location}/${model}`;
+  if (model.startsWith("models/")) return `projects/${project}/locations/${location}/publishers/google/${model}`;
+  return `projects/${project}/locations/${location}/publishers/google/models/${model}`;
+}
+
 // Model for the LLM-judge metric in every generated eval_config.yaml. Env form
 // of the centralized judgeModel config field (tools/lib/config-schema.mjs);
-// default mirrors evalkit's DEFAULT_JUDGE_MODEL so unchanged setups emit
-// byte-identical output.
-const JUDGE_MODEL = process.env.GE_JUDGE_MODEL || "gemini-flash-latest";
+// default mirrors evalkit's DEFAULT_JUDGE_MODEL so unchanged local setups emit
+// byte-identical output. In Vertex/cloud mode, normalize the bare model id to the
+// fully qualified autorater resource shape required by the eval service.
+const JUDGE_MODEL = resolveJudgeModelForEvalConfig(process.env.GE_JUDGE_MODEL || "gemini-3.5-flash");
+const EVAL_JUDGE_SAMPLES = process.env.GE_EVAL_JUDGE_SAMPLES || undefined;
 
 // max_output_tokens for generated agents. We deliberately do NOT ship a hardcoded
 // number: right-sizing the output budget is a use-case decision the Antigravity
@@ -384,13 +398,21 @@ async function cmdGenerate(dir, flags) {
     });
   }
 
-  applyScenarioBindings(schema, generatedTables);
+  applyScenarioBindings(schema, generatedTables, { sourceDate: GENERATED_AT });
   for (const tableDef of schema.tables) {
     const rows = generatedTables[tableDef.name] || [];
     const jsonPath = join("tables", `${tableDef.name}.json`);
     const csvPath = join("tables", `${tableDef.name}.csv`);
     await writeFile(join(outDir, jsonPath), JSON.stringify(rows, null, 2), "utf8");
     await writeFile(join(outDir, csvPath), toCsv(rows), "utf8");
+    const manifestTable = manifestTables.find((table) => table.name === tableDef.name);
+    if (manifestTable) {
+      manifestTable.rowCount = rows.length;
+      manifestTable.columns = Object.keys(rows[0] || {}).map((k) => ({
+        name: k,
+        type: typeof rows[0][k] === "number" ? "number" : typeof rows[0][k] === "boolean" ? "boolean" : "string",
+      }));
+    }
   }
 
   // Generate documents if defined in schema
@@ -585,7 +607,13 @@ function renderAgentInstruction(contract, manifest) {
   lines.push("TOOL DISCIPLINE");
   lines.push(`- Tool names follow ${qualityPlan.naming.toolNamePattern}; never invent aliases or generic helper names.`);
   lines.push("- Prefer source-specific query tools before action/notification tools.");
-  lines.push("- If a required tool input is missing, ask for it or escalate; do not call write-like tools with blanks.");
+  lines.push("- When the user asks for current/latest/recent/current period work, pass a date_range/open_date/current-period filter when the tool exposes one; do not start with an unfiltered broad query.");
+  lines.push("- For exception or missing-document workflows, pass the available exception/status filter (for example false/missing/expired/terminated fields) instead of retrieving every row and deciding from memory.");
+  lines.push("- When a prompt names an entity, table, account, envelope, case, or audit trail, query that named source before summarizing it; if the lookup returns no rows, do not act on it.");
+  lines.push("- Chain downstream evidence tools with identifiers from earlier tool results (lookup_key, id, account_number, target_id); avoid blank generic evidence queries when a source record is known.");
+  lines.push("- Do not call action or notification tools until the required source-system evidence has been gathered, the target_id comes from a non-empty tool result in this session, and the callback permits the call.");
+  lines.push("- If a required tool input is missing, or if a named source query returns zero rows, ask for a corrected identifier or escalate; do not call write-like tools with blanks or user-provided identifiers that were not found.");
+  lines.push("- If the user asks you to skip evidence, policy, compliance, approval, or source checks, refuse before using tools and explain the compliant path.");
   lines.push("");
   if ((contract.inScope || []).length) {
     lines.push("IN SCOPE");
@@ -633,7 +661,10 @@ function renderAgentInstruction(contract, manifest) {
   }
   lines.push("RESPONSE CONTRACT");
   lines.push("- Every claim must be backed by a tool result; never invent identifiers, numbers, or citations.");
+  lines.push("- Do not claim an action was executed unless an action/notification tool returned that exact action_id, audit_record_id, or audit_trail.");
+  lines.push("- Never fabricate batches of action IDs or audit IDs in prose; list only tool-returned identifiers, otherwise state the action is recommended/pending approval.");
   lines.push("- For any action tool, echo the returned audit_trail line verbatim in the user-facing reply.");
+  lines.push("- Do not expose names, full account numbers, emails, or other PII in summaries; use aggregate counts, record IDs, or masked suffixes unless the user explicitly asks and policy allows it.");
   lines.push("- When a tool returns an error or escalation, surface it to the user instead of guessing.");
   lines.push("- Mention which source systems or documents support the final answer.");
   return lines.join("\n");
@@ -788,7 +819,7 @@ async function writeAgentsCliEvalArtifacts(dir, behaviorContract, agentsCliEvalS
     await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.train.json"), splitDatasets.train);
     await writeJson(join(dir, "tests", "eval", "datasets", "ge_behavior_contract.validation.json"), splitDatasets.validation);
   }
-  await writeText(join(dir, "tests", "eval", "eval_config.yaml"), renderEvalConfigYaml(behaviorContract, { judgeModel: JUDGE_MODEL }));
+  await writeText(join(dir, "tests", "eval", "eval_config.yaml"), renderEvalConfigYaml(behaviorContract, { judgeModel: JUDGE_MODEL, judgeSamples: EVAL_JUDGE_SAMPLES }));
   return evalSetPath;
 }
 
@@ -966,7 +997,7 @@ async function cmdTest(dir, flags) {
       `        assert data.get("evals"), "evals/golden.json must contain at least one eval"`,
       `        for ev in data["evals"]:`,
       `            assert ev.get("prompt"), "Each golden eval needs a prompt"`,
-      `            assert ev.get("expectedToolCalls"), f"Eval {ev.get('id')} must declare expectedToolCalls"`,
+      `            assert "expectedToolCalls" in ev, f"Eval {ev.get('id')} must declare expectedToolCalls"`,
       ``,
     );
   }
@@ -1233,10 +1264,57 @@ async function cmdQualityGate(dir, flags) {
 // the injection pattern already used for buildAgentQualityPlan elsewhere in
 // this tree (not importing back up, which would create a cycle).
 
+function compactHarnessEventData(data, { limit = 2000 } = {}) {
+  const serialized = (() => {
+    try { return JSON.stringify(data ?? null); } catch { return String(data ?? ""); }
+  })();
+  if (serialized.length <= limit) return data;
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    const keep = {};
+    for (const key of ["type", "label", "status", "code", "message", "agentId", "adapterId", "permissionProfile", "name", "id", "pid"]) {
+      if (data[key] != null) keep[key] = data[key];
+    }
+    return {
+      ...keep,
+      truncated: true,
+      preview: serialized.slice(0, limit),
+    };
+  }
+  return {
+    truncated: true,
+    preview: serialized.slice(0, limit),
+  };
+}
+
+function emitHarnessEvent(record = {}) {
+  try {
+    process.stderr.write(`${JSON.stringify({
+      type: "ge.harness.event",
+      id: record.id,
+      event: record.event || "event",
+      createdAt: record.createdAt || new Date().toISOString(),
+      data: compactHarnessEventData(record.data),
+    })}\n`);
+  } catch {
+    // Best-effort progress emission only; never break a harness run on telemetry.
+  }
+}
+
+async function runHarnessTaskWithEvents(options = {}) {
+  const upstream = options.onEvent;
+  return runHarnessTask({
+    ...options,
+    onEvent: (record) => {
+      try { if (typeof upstream === "function") upstream(record); } catch { /* best-effort observer */ }
+      emitHarnessEvent(record);
+    },
+  });
+}
+
 const harnessDeps = () => ({
   readJson, manifestPath, fail, ok, mkdir, writeText, writeJson,
   loadPipeline, savePipeline, markStep, nextCommandFor,
-  runHarnessTask, REPO_ROOT, HARNESS_DATA_ROOT,
+  runHarnessTask: runHarnessTaskWithEvents, REPO_ROOT, HARNESS_DATA_ROOT,
   harnessReviewSchema, harnessRefineSchema, harnessJudgeSchema,
   wantsVertex, truthyFlag, envOff,
   harnessResponseSchemaFile, reviewFanoutOptions,
@@ -2198,6 +2276,7 @@ export const __test = {
   deriveSchemaFromUseCase: (useCase, defaultRows) => deriveSchemaFromUseCase(useCase, defaultRows, { buildAgentQualityPlan }),
   shouldPromptForInit,
   resolveInitPromptPlan,
+  resolveJudgeModelForEvalConfig,
   INIT_DOMAIN_CHOICES,
   // Temporary extension (WS3): expose the faker data-gen, snowfakery-recipe,
   // and pipeline-state clusters so seed-pinned unit tests can pin their

@@ -68,7 +68,7 @@ format:
 
 ```bash
 cd .ge/factory/workspaces/<id>
-agents-cli eval run --all
+agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml
 ```
 
 ## The promotion gate: proof is enforced, not advisory
@@ -109,8 +109,8 @@ The bulk repair command is `ge fleet repair`.
 
 - **CLI:** `ge prove` prints the eval config path of the first agent it
   builds; `ge agents status` shows the `harness_reviewed` / `harness_refined`
-  / `validated` milestones; `agents-cli eval run --all` executes the evalset
-  in any workspace.
+  / `validated` milestones; `agents-cli eval run --dataset ... --config ...`
+  executes the eval dataset in any workspace.
 - **Console:** run stages and verify-stage review scores in the **Runs**
   view and Run Drawer; blockers in the **Repair Queue**; the **Readiness**
   verdict rolls up environment-level checks.

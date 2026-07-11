@@ -18,11 +18,11 @@
 // human command that refreshes the tracked copy after a legitimate change.
 //
 //   node tools/check-generated-drift.mjs   # exit 1 on drift (part of source:hygiene)
-import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSyncCapture } from "@ge/std/subprocess";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -63,10 +63,9 @@ export function checkGeneratedDrift(rows = GENERATED_FILES, { root = ROOT } = {}
     try {
       const outPath = join(tmp, "regenerated");
       const [cmd, ...args] = row.command;
-      const run = spawnSync(cmd, args, {
+      const run = spawnSyncCapture(cmd, args, {
         cwd: root,
         env: { ...process.env, [row.outEnv]: outPath },
-        encoding: "utf8",
         timeout: 120_000,
       });
       if (run.status !== 0) {

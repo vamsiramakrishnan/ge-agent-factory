@@ -14,12 +14,13 @@ substitutions:
   _RUN_AGENT_LINT: "true"
   _RUN_AGENT_OPTIMIZE: "false"
   _RUN_DEPLOYED_SMOKE: "true"
+  _EVAL_JUDGE_SAMPLES: "5"
   _DISPLAY_NAME: ""
   _DESCRIPTION: ""
   _TOOL_DESCRIPTION: ""
   _PREVIEW_PROMPT: "hello"
-  # Shared builder image (toolchain + warm uv cache). Falls back to the public
-  # uv base image; the worker overrides this with the ge-agent-factory-builder image.
+  # Shared builder image (toolchain + warm uv cache + ge-factory-run-stage).
+  # The worker overrides this with the project-local ge-agent-factory-builder image.
   _BUILDER_IMAGE: "ghcr.io/astral-sh/uv:python3.11-bookworm"
 
 options:
@@ -49,225 +50,79 @@ steps:
     entrypoint: bash
     dir: /workspace/agent
     env:
+      - _STAGE=${_STAGE}
+      - _ITEM_ID=${_ITEM_ID}
+      - _AGENT_NAME=${_AGENT_NAME}
+      - _RUNTIME_REGION=${_RUNTIME_REGION}
+      - _RUN_AGENT_EVALS=${_RUN_AGENT_EVALS}
+      - _RUN_AGENT_LINT=${_RUN_AGENT_LINT}
+      - _RUN_AGENT_OPTIMIZE=${_RUN_AGENT_OPTIMIZE}
+      - _RUN_DEPLOYED_SMOKE=${_RUN_DEPLOYED_SMOKE}
+      - GE_EVAL_JUDGE_SAMPLES=${_EVAL_JUDGE_SAMPLES}
+      - _DISPLAY_NAME=${_DISPLAY_NAME}
+      - _DESCRIPTION=${_DESCRIPTION}
+      - _TOOL_DESCRIPTION=${_TOOL_DESCRIPTION}
+      - _PREVIEW_PROMPT=${_PREVIEW_PROMPT}
+      - GE_AGENT_FACTORY_ITEM_ID=${_ITEM_ID}
+      - GE_AGENT_FACTORY_ARTIFACT_PREFIX=${_ARTIFACT_PREFIX}
+      - PROJECT_ID=${PROJECT_ID}
+      - GOOGLE_CLOUD_PROJECT=${PROJECT_ID}
+      - GCLOUD_PROJECT=${PROJECT_ID}
       - GOOGLE_GENAI_USE_VERTEXAI=1
       - GOOGLE_GENAI_LOCATION=${_GOOGLE_GENAI_LOCATION}
+      - GOOGLE_CLOUD_LOCATION=${_GOOGLE_GENAI_LOCATION}
+      - GOOGLE_CLOUD_REGION=${_GOOGLE_GENAI_LOCATION}
+      - _GEMINI_ENTERPRISE_APP_ID=${_GEMINI_ENTERPRISE_APP_ID}
       - GEMINI_ENTERPRISE_LOCATION=${_GEMINI_ENTERPRISE_LOCATION}
       - GEMINI_ENTERPRISE_APP_ID=${_GEMINI_ENTERPRISE_APP_ID}
     args:
       - -ceu
       - |
-        case "${_STAGE}" in
-          validate)
-            # agents-cli >= 1.0 (validated against 1.0.0): the modern eval flow is
-            # `eval generate` (agent inference over tests/eval/datasets/*.json in
-            # EvaluationDataset form) + `eval grade` (metrics from
-            # tests/eval/eval_config.yaml). This retires the old <0.3 pin
-            # ('eval run --all' over the legacy evalsets) and its exit-code
-            # workaround: grading verdicts are parsed from the grade-results JSON.
-            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli
-            export PATH="$$HOME/.local/bin:$$PATH"
-            agents-cli install
-            mkdir -p artifacts
-            agents-cli info --json > artifacts/agents-cli-info.json
-            if [[ "${_RUN_AGENT_LINT}" == "true" ]]; then
-              agents-cli lint --fix --skip-codespell --skip-ty
-            fi
-            uv run pytest tests/test_smoke.py -q
-            EVAL_STATUS="skipped"
-            EVAL_EXIT=0
-            if [[ "${_RUN_AGENT_EVALS}" == "true" && -f tests/eval/datasets/ge_behavior_contract.json ]]; then
-              EVAL_CONFIG_ARG=""
-              if [[ -f tests/eval/eval_config.yaml ]]; then
-                EVAL_CONFIG_ARG="--config tests/eval/eval_config.yaml"
-              fi
-              # Two-step form (not `eval run`) so the traces and grade results land
-              # at known artifact paths for the gate below and for debugging.
-              if agents-cli eval generate --dataset tests/eval/datasets/ge_behavior_contract.json --output artifacts/traces/ > artifacts/eval-generate-stdout.log 2>&1 \
-                && agents-cli eval grade --traces artifacts/traces/ --output artifacts/grade_results/ $$EVAL_CONFIG_ARG --project "$PROJECT_ID" > artifacts/eval-grade-stdout.log 2>&1; then
-                EVAL_STATUS="graded"
-              else
-                EVAL_EXIT=$$?
-                EVAL_STATUS="failed"
-              fi
-              cat artifacts/eval-generate-stdout.log artifacts/eval-grade-stdout.log 2>/dev/null || true
-              if [[ "$$EVAL_STATUS" == "graded" ]]; then
-                # Authoritative gate: `eval grade` exits 0 regardless of scores, so
-                # parse the grade-results JSON (a vertexai EvaluationResult dump:
-                # summary_metrics[].{metric_name,mean_score,num_cases_error}) and
-                # check each metric against the ge_thresholds block that the
-                # generated eval_config.yaml carries (a GE extension agents-cli
-                # ignores). Metric names are compared with the _vN suffix stripped
-                # because the SDK reports predefined metrics in versioned form.
-                # (Heredoc lines sit at the script's base indent: a literal-block
-                # heredoc terminator must be at column 0 of the resulting script.)
-                GATE_EXIT=0
-                uv run --no-project --with pyyaml python3 - <<'EVAL_GATE' || GATE_EXIT=$$?
-        import glob, json, re, sys
-        import yaml
-        results = sorted(glob.glob("artifacts/grade_results/results_*.json"))
-        verdict = {"resultsFile": results[-1] if results else None, "failures": [], "checked": []}
-        data = {}
-        if not results:
-            verdict["failures"].append("no grade-results JSON found under artifacts/grade_results/")
-        else:
-            with open(results[-1], encoding="utf-8") as f:
-                data = json.load(f)
-        try:
-            with open("tests/eval/eval_config.yaml", encoding="utf-8") as f:
-                thresholds = (yaml.safe_load(f) or {}).get("ge_thresholds") or {}
-        except FileNotFoundError:
-            thresholds = {}
-        def base(name):
-            return re.sub(r"_v\d+$$", "", name or "")
-        wanted = {base(name): threshold for name, threshold in thresholds.items()}
-        for metric in data.get("summary_metrics") or []:
-            name = base(metric.get("metric_name"))
-            errors = metric.get("num_cases_error") or 0
-            if errors:
-                verdict["failures"].append("%s: %d eval case(s) errored" % (name, errors))
-            if name not in wanted:
-                continue
-            mean = metric.get("mean_score")
-            verdict["checked"].append({"metric": name, "meanScore": mean, "threshold": wanted[name]})
-            if mean is None:
-                verdict["failures"].append("%s: no mean_score in grade results" % name)
-            elif mean < wanted[name]:
-                verdict["failures"].append("%s: mean_score %.4f below threshold %s" % (name, mean, wanted[name]))
-        missing = sorted(set(wanted) - {checked["metric"] for checked in verdict["checked"]})
-        if missing:
-            verdict["failures"].append("thresholded metrics missing from grade results: %s" % ", ".join(missing))
-        verdict["status"] = "failed" if verdict["failures"] else "passed"
-        with open("artifacts/eval-verdict.json", "w", encoding="utf-8") as f:
-            json.dump(verdict, f, indent=2)
-        print(json.dumps(verdict, indent=2))
-        sys.exit(1 if verdict["failures"] else 0)
-        EVAL_GATE
-                if [[ "$$GATE_EXIT" -eq 0 ]]; then
-                  EVAL_STATUS="passed"
-                else
-                  EVAL_STATUS="failed"
-                  EVAL_EXIT="$$GATE_EXIT"
-                fi
-              fi
-            fi
-            if [[ "$$EVAL_STATUS" == "failed" ]]; then
-              printf '{"status":"failed","stage":"validate","owner":"cloud_build","nextStage":null,"error":"agents-cli eval generate/grade gate failed with exit %s (see artifacts/eval-verdict.json)","evalStatus":"failed"}\n' "$$EVAL_EXIT" > artifacts/factory-validate-result.json
-              exit "$$EVAL_EXIT"
-            fi
-            OPTIMIZE_STATUS="skipped"
-            if [[ "${_RUN_AGENT_OPTIMIZE}" == "true" ]]; then
-              if [[ -f tests/eval/optimization_config.json ]]; then
-                # agents-cli 1.0's `eval optimize` still reads this config path by
-                # default and auto-detects its ADK-EvalSet-format datasets; the
-                # holdout EvaluationDatasets (tests/eval/datasets/*.train/.validation)
-                # are its direct --dataset inputs when a split exists.
-                agents-cli eval optimize --config tests/eval/optimization_config.json
-                OPTIMIZE_STATUS="passed"
-              else
-                echo "Optimization requested but tests/eval/optimization_config.json is missing." >&2
-                exit 2
-              fi
-            fi
-            printf '{"status":"done","stage":"validate","owner":"cloud_build","nextStage":null,"lintStatus":"%s","evalStatus":"%s","optimizeStatus":"%s"}\n' "${_RUN_AGENT_LINT}" "$$EVAL_STATUS" "$$OPTIMIZE_STATUS" > artifacts/factory-validate-result.json
-            ;;
-          preview)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
-            export PATH="$$HOME/.local/bin:$$PATH"
-            agents-cli install
-            mkdir -p artifacts
-            agents-cli info --json > artifacts/agents-cli-info.json
-            PREVIEW_PROMPT="${_PREVIEW_PROMPT}"
-            PREVIEW_EXIT=0
-            timeout --preserve-status 60s agents-cli run "$$PREVIEW_PROMPT" --start-server > artifacts/preview-stdout.log 2>&1 || PREVIEW_EXIT=$$?
-            if [[ "$$PREVIEW_EXIT" -eq 0 || "$$PREVIEW_EXIT" -eq 143 ]] && [[ -s artifacts/preview-stdout.log ]]; then
-              # Build JSON via python json.dumps so a prompt containing quotes,
-              # backslashes, or newlines can't produce invalid JSON.
-              python3 -c 'import json,sys; print(json.dumps({"status":"done","stage":"preview","owner":"cloud_build","nextStage":None,"exitCode":int(sys.argv[1]),"prompt":sys.argv[2]}))' "$$PREVIEW_EXIT" "$$PREVIEW_PROMPT" > artifacts/factory-preview-result.json
-            else
-              python3 -c 'import json,sys; print(json.dumps({"status":"failed","stage":"preview","owner":"cloud_build","nextStage":None,"error":"agents-cli run failed with exit %s" % sys.argv[1],"exitCode":int(sys.argv[1])}))' "$$PREVIEW_EXIT" > artifacts/factory-preview-result.json
-              exit "$$PREVIEW_EXIT"
-            fi
-            ;;
-          deploy_runtime)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
-            export PATH="$$HOME/.local/bin:$$PATH"
-            mkdir -p artifacts
-            agents-cli scaffold enhance . --name "${_AGENT_NAME}" --deployment-target agent_runtime --agent-directory app --yes
-            if grep -q '^deployment_target[[:space:]]*=' pyproject.toml; then
-              sed -i '0,/^deployment_target[[:space:]]*=.*/s//deployment_target = "agent_runtime"/' pyproject.toml
-            else
-              printf '\n[tool.agents-cli.create_params]\ndeployment_target = "agent_runtime"\n' >> pyproject.toml
-            fi
-            agents-cli install
-            agents-cli info --json > artifacts/agents-cli-info.json
-            agents-cli deploy --project "$PROJECT_ID" --region "${_RUNTIME_REGION}" --no-confirm-project --agent-identity --no-wait
-            printf '{"status":"done","stage":"deploy_runtime","owner":"cloud_build"}\n' > artifacts/factory-deploy_runtime-result.json
-            ;;
-          poll_runtime)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
-            export PATH="$$HOME/.local/bin:$$PATH"
-            mkdir -p artifacts
-            # deploy_runtime used --no-wait, so deployment_metadata.json starts
-            # with only a pending operation. A single --status only writes
-            # remote_agent_runtime_id once the op is done. Agent Runtime
-            # provisioning takes 5-10+ min, so LOOP: re-run --status and poll the
-            # metadata file until the runtime id appears (or time out and fail).
-            RUNTIME_READY=0
-            for ATTEMPT in $$(seq 1 24); do
-              agents-cli deploy --project "$PROJECT_ID" --region "${_RUNTIME_REGION}" --no-confirm-project --status || true
-              if python3 -c 'import json, os, sys; sys.exit(1) if not os.path.exists("deployment_metadata.json") else None; m=json.load(open("deployment_metadata.json")); rid=(m.get("remote_agent_runtime_id") or m.get("agent_runtime_id") or "").strip(); sys.exit(0 if rid else 1)' 2>/dev/null; then
-                RUNTIME_READY=1
-                echo "Agent Runtime ready after attempt $$ATTEMPT."
-                break
-              fi
-              echo "Agent Runtime not ready yet (attempt $$ATTEMPT/24); sleeping 30s..."
-              sleep 30
-            done
-            if [[ "$$RUNTIME_READY" -ne 1 ]]; then
-              echo "Timed out waiting for Agent Runtime readiness (remote_agent_runtime_id never appeared)." >&2
-              printf '{"status":"failed","stage":"poll_runtime","owner":"cloud_build","error":"timed out waiting for Agent Runtime readiness (no remote_agent_runtime_id after ~12 min)"}\n' > artifacts/factory-poll_runtime-result.json
-              exit 1
-            fi
-            if [[ "${_RUN_DEPLOYED_SMOKE}" == "true" && -f deployment_metadata.json ]]; then
-              REMOTE_URL="$(python3 -c "import json; from pathlib import Path; m=json.loads(Path('deployment_metadata.json').read_text()); r=(m.get('remote_agent_runtime_id') or m.get('agent_runtime_id') or '').split('/'); print(('https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/reasoningEngines/%s' % (r[r.index('locations')+1], r[r.index('projects')+1], r[r.index('locations')+1], r[r.index('reasoningEngines')+1])) if 'reasoningEngines' in r else '')")"
-              if [[ -n "$$REMOTE_URL" ]]; then
-                agents-cli run "${_PREVIEW_PROMPT}" --url "$$REMOTE_URL" --mode adk > artifacts/deployed-smoke-stdout.log 2>&1
-                python3 -c 'import json,sys; print(json.dumps({"status":"done","stage":"poll_runtime","owner":"cloud_build","url":sys.argv[1]}))' "$$REMOTE_URL" > artifacts/factory-poll_runtime-result.json
-              else
-                printf '{"status":"skipped","stage":"poll_runtime","owner":"cloud_build","reason":"no agent runtime url"}\n' > artifacts/factory-poll_runtime-result.json
-              fi
-            else
-              printf '{"status":"done","stage":"poll_runtime","owner":"cloud_build","reason":"runtime ready; smoke skipped"}\n' > artifacts/factory-poll_runtime-result.json
-            fi
-            ;;
-          publish_enterprise)
-            command -v agents-cli >/dev/null 2>&1 || uv tool install google-agents-cli  # unpinned: every flag this stage uses was validated against 1.0.0
-            export PATH="$$HOME/.local/bin:$$PATH"
-            PUBLISH_ARGS=(
-              "publish" "gemini-enterprise"
-              "--metadata-file" "deployment_metadata.json"
-              "--project-id" "$PROJECT_ID"
-              "--gemini-enterprise-app-id" "${_GEMINI_ENTERPRISE_APP_ID}"
-              "--registration-type" "adk"
-            )
-            if [[ -n "${_DISPLAY_NAME}" ]]; then
-              PUBLISH_ARGS+=("--display-name" "${_DISPLAY_NAME}")
-            fi
-            if [[ -n "${_DESCRIPTION}" ]]; then
-              PUBLISH_ARGS+=("--description" "${_DESCRIPTION}")
-            fi
-            if [[ -n "${_TOOL_DESCRIPTION}" ]]; then
-              PUBLISH_ARGS+=("--tool-description" "${_TOOL_DESCRIPTION}")
-            fi
-            mkdir -p artifacts
-            agents-cli "$${PUBLISH_ARGS[@]}"
-            printf '{"status":"done","stage":"publish_enterprise","owner":"cloud_build"}\n' > artifacts/factory-publish_enterprise-result.json
-            ;;
-          *)
-            echo "Unsupported Cloud Build factory stage: ${_STAGE}" >&2
-            exit 2
-            ;;
-        esac
+        STAGE_EXIT=0
+        if ! command -v ge-factory-run-stage >/dev/null 2>&1; then
+          echo "ge-factory-run-stage not found in _BUILDER_IMAGE=${_BUILDER_IMAGE}; run 'ge images build builder' and set GE_AGENT_FACTORY_BUILDER_IMAGE." >&2
+          STAGE_EXIT=2
+        else
+          mkdir -p artifacts
+          rm -f "artifacts/factory-${_STAGE}-result.json"
+          ge-factory-run-stage > >(tee artifacts/run-stage.log) 2> >(tee -a artifacts/run-stage.log >&2) || STAGE_EXIT=$$?
+        fi
+        printf '%s\n' "$$STAGE_EXIT" > .ge-stage-exit
+        if [[ "$$STAGE_EXIT" -ne 0 && ! -f "artifacts/factory-${_STAGE}-result.json" ]]; then
+          mkdir -p artifacts
+          python3 - "$$STAGE_EXIT" "${_STAGE}" <<'PY'
+        import json
+        import pathlib
+        import re
+        import sys
+
+        exit_code = int(sys.argv[1])
+        stage = sys.argv[2]
+        log_path = pathlib.Path("artifacts/run-stage.log")
+        detail = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""
+        lines = [line.strip() for line in detail.splitlines() if line.strip()]
+        first_error = next(
+          (line for line in lines if re.search(r"error|failed|exception|traceback|permission|denied|invalid|threshold|mean_score|timeout|deadline|quota|not found", line, re.I)),
+          lines[-1] if lines else f"ge-factory-run-stage exited {exit_code}",
+        )
+        if len(first_error) > 500:
+          first_error = first_error[-500:]
+        result = {
+          "status": "failed",
+          "stage": stage,
+          "owner": "cloud_build",
+          "nextStage": None,
+          "exitCode": exit_code,
+          "error": f"ge-factory-run-stage exited {exit_code} before writing a stage result artifact",
+          "classification": "stage_command",
+          "firstError": first_error,
+          "fixHint": "Open the Cloud Build log for the run-stage step; the stage process exited before it could write its structured result.",
+        }
+        pathlib.Path("artifacts").mkdir(exist_ok=True)
+        pathlib.Path(f"artifacts/factory-{stage}-result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        PY
+        fi
+        exit 0
 
   - id: persist-artifacts
     name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
@@ -277,22 +132,53 @@ steps:
       - -ceu
       - |
         if [[ -n "${_ARTIFACT_PREFIX}" ]]; then
+          STAGE_EXIT=0
+          if [[ -f .ge-stage-exit ]]; then
+            STAGE_EXIT="$$(cat .ge-stage-exit)"
+          fi
           if [[ -f "artifacts/factory-${_STAGE}-result.json" ]]; then
             gcloud storage cp "artifacts/factory-${_STAGE}-result.json" "${_ARTIFACT_PREFIX}/factory-${_STAGE}-result.json"
           fi
-          tar \
-            --exclude .venv \
-            --exclude node_modules \
-            --exclude .pytest_cache \
-            --exclude __pycache__ \
-            --exclude .ruff_cache \
-            --exclude .mypy_cache \
-            --exclude .ge-harness \
-            --exclude runs \
-            -czf /workspace/agent-result.tar.gz .
-          gcloud storage cp /workspace/agent-result.tar.gz "${_ARTIFACT_PREFIX}/agent-result.tar.gz"
+          if [[ "$$STAGE_EXIT" == "0" ]]; then
+            tar \
+              --exclude .venv \
+              --exclude node_modules \
+              --exclude .pytest_cache \
+              --exclude __pycache__ \
+              --exclude .ruff_cache \
+              --exclude .mypy_cache \
+              --exclude .ge-harness \
+              --exclude runs \
+              -czf /workspace/agent-result.tar.gz .
+            gcloud storage cp /workspace/agent-result.tar.gz "${_ARTIFACT_PREFIX}/agent-result.tar.gz"
+            gcloud storage cp /workspace/agent-result.tar.gz "${_ARTIFACT_PREFIX}/workspace.tar.gz"
+          else
+            echo "stage ${_STAGE} failed with exit $$STAGE_EXIT; preserving previous workspace.tar.gz"
+          fi
+          for dir in artifacts tests/eval evals; do
+            if [[ -e "$dir" ]]; then
+              # Sync contents to the exact diagnostic tree and compare hashes so
+              # later stages do not upload validation's eval corpus again.
+              gcloud storage rsync "$dir" "${_ARTIFACT_PREFIX}/files/./$dir" --recursive --checksums-only || true
+            fi
+          done
           find . -maxdepth 3 \
-            \( -path './.venv' -o -path './node_modules' -o -path './.pytest_cache' -o -path './.ge-harness' -o -path './runs' \) -prune -o \
-            \( -name '*.json' -o -name '*.md' -o -name '*.jsonl' \) -print0 \
+            \( -path './.venv' -o -path './node_modules' -o -path './.pytest_cache' -o -path './.ge-harness' -o -path './runs' -o -path './artifacts' -o -path './tests/eval' -o -path './evals' \) -prune -o \
+            \( -name '*.json' -o -name '*.md' -o -name '*.jsonl' -o -name '*.log' \) -print0 \
             | xargs -0 -I{} gcloud storage cp "{}" "${_ARTIFACT_PREFIX}/files/{}" || true
+        fi
+
+  - id: fail-stage-if-needed
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    entrypoint: bash
+    dir: /workspace/agent
+    args:
+      - -ceu
+      - |
+        if [[ -f .ge-stage-exit ]]; then
+          code="$$(cat .ge-stage-exit)"
+          if [[ "$${code}" != "0" ]]; then
+            echo "factory stage ${_STAGE} failed with exit $${code}; artifacts have been persisted." >&2
+            exit "$${code}"
+          fi
         fi

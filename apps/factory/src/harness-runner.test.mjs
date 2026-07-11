@@ -9,7 +9,7 @@ describe("harness runner config", () => {
   // ambient project/location env vars that would win over the file are
   // cleared for the duration — so this passes (and means the same thing) on a
   // machine with no gcloud config and on a developer laptop with one.
-  const ENV_KEYS = ["GCP_PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION", "GOOGLE_GENAI_LOCATION", "GEMINI_ENTERPRISE_LOCATION"];
+  const ENV_KEYS = ["GCP_PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION", "GOOGLE_GENAI_LOCATION", "GEMINI_ENTERPRISE_LOCATION", "ANTIGRAVITY_VERTEX_LOCATION"];
   let savedEnv;
   let tmpRepoRoot;
   beforeAll(() => {
@@ -35,6 +35,22 @@ describe("harness runner config", () => {
     });
 
     expect(defaults.project).toBe("c12-test-project");
+    expect(defaults.location).toBe("global");
+  });
+
+  test("prefers Gemini global location over Cloud Run region env", async () => {
+    process.env.GOOGLE_CLOUD_LOCATION = "us-central1";
+    process.env.GEMINI_ENTERPRISE_LOCATION = "global";
+    delete process.env.GOOGLE_GENAI_LOCATION;
+    delete process.env.ANTIGRAVITY_VERTEX_LOCATION;
+
+    const defaults = await __test.resolveVertexDefaults({
+      repoRoot: tmpRepoRoot,
+      project: null,
+      location: null,
+      vertex: true,
+    });
+
     expect(defaults.location).toBe("global");
   });
 

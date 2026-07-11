@@ -24,10 +24,28 @@ export const elog = (m) => process.stderr.write(pc.dim(`  ${m}`) + "\n");
 export const blog = (m) => process.stderr.write(pc.bold(m) + "\n");
 export const out = (line = "") => process.stdout.write(line + "\n");
 
+function camelizeFlag(key) {
+  return String(key || "").replace(/-([a-z])/g, (_, ch) => ch.toUpperCase());
+}
+
+export function argValue(args = {}, key, fallback = undefined) {
+  const camel = camelizeFlag(key);
+  return args[camel] ?? args[key] ?? fallback;
+}
+
+export function argFlag(args = {}, key) {
+  if (String(key || "").startsWith("no-")) {
+    const positive = String(key).slice(3);
+    const positiveCamel = camelizeFlag(positive);
+    if (args[positiveCamel] === false || args[positive] === false) return true;
+  }
+  return Boolean(argValue(args, key, false));
+}
+
 // Map CLI flags → loadConfig inputs.
 export const cfgFrom = (a) => core.loadConfig({
   project: a.project, projectNumber: a.projectNumber, agentIdentityOrgId: a.agentIdentityOrgId, region: a.region,
-  bucket: a.bucket, gatewayUrl: a.gatewayUrl, geApp: a.geApp,
+  bucket: a.bucket, gatewayUrl: a.gatewayUrl, gatewayTransport: a.gatewayTransport || a["gateway-transport"], geApp: a.geApp,
 });
 
 // Shared args every command accepts.
@@ -52,6 +70,7 @@ export const common = {
   agentIdentityOrgId: { type: "string", description: "Organization ID for Agent Identity principalSet trust domain" },
   bucket: { type: "string", description: "Artifact bucket override (default <project>-ge-agent-factory)" },
   gatewayUrl: { type: "string", description: "Gateway URL for direct-HTTPS calls (no proxy tunnel)", alias: ["gateway-url"] },
+  gatewayTransport: { type: "string", description: "Gateway transport: proxy|direct", alias: ["gateway-transport"] },
   geApp: { type: "string", description: "Gemini Enterprise app/engine id", alias: ["ge-app"] },
 };
 

@@ -1,5 +1,6 @@
 import { describe, expect, it, mock, spyOn } from "bun:test";
-import { defaultFactoryStartStage, firestoreValue, parseGsUri, humanize, deriveToolDescription } from "./factory-gateway.js";
+import { buildStatelessScaffoldArgs, buildWorkspaceCacheKey, defaultFactoryStartStage, FACTORY_GATEWAY_STAGES, firestoreValue, parseGsUri, humanize, deriveToolDescription, summarizeFactoryRunSnapshot } from "./factory-gateway.js";
+import { FACTORY_STAGE_IDS } from "./factory-orchestration.js";
 
 describe("Factory API Bridge Core Helpers", () => {
   it("parses GCS URIs correctly", () => {
@@ -26,10 +27,81 @@ describe("Factory API Bridge Core Helpers", () => {
     });
   });
 
-  it("starts generated remote factory runs at harness_refine when refine is enabled", () => {
-    expect(defaultFactoryStartStage({ refine: true })).toBe("harness_refine");
-    expect(defaultFactoryStartStage({ refine: false })).toBe("validate");
+  it("starts generated remote factory runs at package_data", () => {
+    expect(defaultFactoryStartStage({ refine: true })).toBe("package_data");
+    expect(defaultFactoryStartStage({ refine: false })).toBe("package_data");
     expect(defaultFactoryStartStage({ prebuiltArchive: "gs://bucket/workspace.tar.gz", refine: true })).toBe("load_data");
+  });
+
+  it("uses the worker's canonical stage registry for gateway status", () => {
+    expect(FACTORY_GATEWAY_STAGES).toBe(FACTORY_STAGE_IDS);
+    expect(FACTORY_GATEWAY_STAGES).toContain("package_data");
+  });
+
+  it("scaffolds deterministically in the gateway and leaves harness refine to workers", () => {
+    const args = buildStatelessScaffoldArgs({
+      generatorScript: "/app/apps/factory/scripts/factory.mjs",
+      tempDir: "/tmp/run-1",
+      request: { useCaseId: "account-opening-doc-followup-agent" },
+      title: "Account Opening Document Follow-Up Agent",
+      systems: "Temenos Transact,BigQuery",
+      rows: 30,
+      domain: "banking",
+    });
+    expect(args).toContain("--harness-review");
+    expect(args).toContain("--harness-refine");
+    expect(args.slice(args.indexOf("--harness-review"), args.indexOf("--harness-review") + 2)).toEqual(["--harness-review", "false"]);
+    expect(args.slice(args.indexOf("--harness-refine"), args.indexOf("--harness-refine") + 2)).toEqual(["--harness-refine", "false"]);
+  });
+
+  it("summarizes durable stage artifacts at the gateway status boundary", () => {
+    expect(summarizeFactoryRunSnapshot(
+      { status: "submitted", targetStage: "publish_enterprise", startStage: "harness_refine" },
+      { harness_refine: { status: "done", nextStage: "validate" } },
+    )).toMatchObject({ status: "running", currentStage: "validate", terminal: false });
+
+    expect(summarizeFactoryRunSnapshot(
+      { status: "submitted", targetStage: "publish_enterprise" },
+      {
+        validate: {
+          status: "failed",
+          error: "bad substitution",
+          classification: "cloud_build_config",
+          firstError: "substitution too large",
+          fixHint: "shorten substitutions",
+          logUrl: "https://logs.example",
+          stageResultUri: "gs://bucket/runs/run-1/items/ws/factory-validate-result.json",
+        },
+      },
+    )).toMatchObject({
+      status: "failed",
+      currentStage: "validate",
+      terminal: true,
+      error: "bad substitution",
+      classification: "cloud_build_config",
+      firstError: "substitution too large",
+      fixHint: "shorten substitutions",
+      logUrl: "https://logs.example",
+      stageResultUri: "gs://bucket/runs/run-1/items/ws/factory-validate-result.json",
+    });
+  });
+
+  it("builds deterministic revision-scoped workspace cache keys", () => {
+    const input = {
+      title: "Agent",
+      useCaseId: "agent",
+      rows: "48",
+      systems: ["A", "B"],
+      domain: "finance",
+      generationSpec: { b: 2, a: 1 },
+      model: "gemini-3.5-flash",
+      judgeModel: "gemini-3.5-flash",
+      evalJudgeSamples: "5",
+    };
+    const env = { K_REVISION: "rev-1" };
+    expect(buildWorkspaceCacheKey(input, env)).toBe(buildWorkspaceCacheKey({ ...input, generationSpec: { a: 1, b: 2 } }, env));
+    expect(buildWorkspaceCacheKey(input, env)).not.toBe(buildWorkspaceCacheKey(input, { K_REVISION: "rev-2" }));
+    expect(buildWorkspaceCacheKey(input, env)).not.toBe(buildWorkspaceCacheKey({ ...input, evalJudgeSamples: "1" }, env));
   });
 });
 
@@ -45,10 +117,11 @@ describe("Factory Bridge — consume prebuilt archive + console generationSpec",
     expect(defaultFactoryStartStage({ prebuiltArchive: "gs://bucket/runs/r1/workspace.tar.gz", refine: false })).toBe("load_data");
   });
 
-  it("falls back to a generated build (no archive) at harness_refine / validate", () => {
-    // Without an archive we generate the workspace: refine→harness_refine, no-refine→validate.
-    expect(defaultFactoryStartStage({ prebuiltArchive: null, refine: true })).toBe("harness_refine");
-    expect(defaultFactoryStartStage({ prebuiltArchive: null, refine: false })).toBe("validate");
+  it("packages generated builds before optional refine and validation", () => {
+    // The worker's package_data stage advances through harness_refine; refine=false
+    // makes that stage a no-op without skipping the data-package contract.
+    expect(defaultFactoryStartStage({ prebuiltArchive: null, refine: true })).toBe("package_data");
+    expect(defaultFactoryStartStage({ prebuiltArchive: null, refine: false })).toBe("package_data");
   });
 
   it("parses the prebuilt archive GCS URI into bucket + object for consumption", () => {

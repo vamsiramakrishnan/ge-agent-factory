@@ -15,6 +15,7 @@
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { parseList } from "@ge/std/list";
+import { buildStageFanout } from "@ge/run-ledger/control-plane";
 import { pool } from "./gcp.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
 import { runDocsCheck } from "./docs-check.mjs";
@@ -34,6 +35,11 @@ import { admitForHandoff } from "./admission/admission-ops.mjs";
 import { HANDOFF_TAR_EXCLUDES } from "./handoff-package.mjs";
 
 const noop = () => {};
+export const DEFAULT_REMOTE_SUBMIT_CONCURRENCY = 8;
+
+export function defaultRemoteSubmitConcurrency(env = process.env) {
+  return parseConcurrency(env.GE_REMOTE_SUBMIT_CONCURRENCY, { fallback: DEFAULT_REMOTE_SUBMIT_CONCURRENCY });
+}
 
 // Mirrors factory-core's parseIdList (accepts a CSV string or an array, always
 // returns a trimmed, empty-free list) — kept local so this module has no
@@ -101,7 +107,7 @@ export function createProvisionOps({
   }
   const STATE_PATH = STATE_PATHS.envState;
 
-  async function provision(cfg, { scope, ids, dept, concurrency = 2, noProxy = false, force = false, refine = true, model = null, maxOutputTokens = null, log = noop } = {}) {
+  async function provision(cfg, { scope, ids, dept, concurrency = defaultRemoteSubmitConcurrency(), noProxy = false, force = false, refine = true, model = null, maxOutputTokens = null, evalJudgeSamples = null, log = noop } = {}) {
     ensureGcloud();
     if (!cfg.project) throw new Error("No project. Run `ge init`.");
     if (!cfg.geAppId) throw new Error("geAppId unset. Add it to .ge.json or set GEMINI_ENTERPRISE_APP_ID.");
@@ -116,9 +122,19 @@ export function createProvisionOps({
     if (!pending.length) return { submitted: 0, failed: 0, total: agents.length, results: [], note: "nothing to submit (use force to resubmit)" };
 
     const conc = parseConcurrency(concurrency);
+    const remoteLedgerRunId = `remote-build-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+    const submissionFanout = buildStageFanout({
+      runId: remoteLedgerRunId,
+      stage: "submit",
+      attempt: 1,
+      targetStage: "publish_enterprise",
+      workItems: pending.map((agent) => ({ id: agent.id, workspaceId: agent.workspaceId })),
+    });
+    const fanoutByAgent = new Map(submissionFanout.tasks.map((task) => [task.itemId, task]));
     const results = [];
     await withGateway(cfg, async (url, ctx = {}) => {
       await pool(pending, conc, async (a) => {
+        const fanoutTask = fanoutByAgent.get(a.id);
         const payload = {
           title: a.title, useCaseId: a.useCaseId, workspace: a.workspaceId, targetStage: a.targetStage,
           rows: String(a.rows), systems: a.systems, generationSpec: { domain: a.domain, description: a.goal },
@@ -132,6 +148,7 @@ export function createProvisionOps({
           // The eval-judge model, forwarded the same way so a .ge.json judgeModel
           // reaches the remote generator's eval_config.yaml (parity with local).
           ...(cfg.judgeModel ? { judgeModel: cfg.judgeModel } : {}),
+          ...(evalJudgeSamples || cfg.evalJudgeSamples ? { evalJudgeSamples: evalJudgeSamples || cfg.evalJudgeSamples } : {}),
           // The harness review/refine model — provisionLocal pins it from
           // cfg.refinementModel, so forward it remotely too or the cloud harness
           // silently runs review/refine on agentModel instead.
@@ -154,12 +171,12 @@ export function createProvisionOps({
         if (res.ok && res.json?.ok) {
           state.completed[a.id] = { runId: res.json.runId, workspaceId: res.json.workspaceId, at: new Date().toISOString() };
           delete state.failed[a.id];
-          results.push({ id: a.id, ok: true, runId: res.json.runId });
+          results.push({ id: a.id, ok: true, runId: res.json.runId, fanoutKey: fanoutTask?.key, taskId: fanoutTask?.taskId });
           log(`✓ ${a.id} → ${res.json.runId}`);
         } else {
           const error = res.json?.message || `HTTP ${res.status}: ${(res.text || "").slice(0, 120)}`;
           state.failed[a.id] = { error };
-          results.push({ id: a.id, ok: false, error });
+          results.push({ id: a.id, ok: false, error, fanoutKey: fanoutTask?.key, taskId: fanoutTask?.taskId });
           log(`✗ ${a.id} ${error}`);
         }
         writeJson(STATE_PATH, state);
@@ -168,7 +185,7 @@ export function createProvisionOps({
     // Shadow the remote submission into the durable ledger.
     const agentById = new Map(pending.map((a) => [a.id, a]));
     await ledgerWrite((l) => l.recordRemoteSubmission({
-      runId: `remote-build-${new Date().toISOString().replace(/[:.]/g, "-")}`,
+      runId: remoteLedgerRunId,
       mode: "remote",
       kind: "build",
       targetStage: "published",
@@ -182,13 +199,13 @@ export function createProvisionOps({
         at: state.completed?.[r.id]?.at,
       })),
     }));
-    return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: pending.length, results };
+    return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: pending.length, fanout: submissionFanout, results };
   }
 
   // Local mode: run the whole pipeline on this machine via the Antigravity SDK
   // harness (ge-harness factory plan + run --vertex) instead of the cloud gateway.
   // Generated workspaces land in .ge/factory/projects/.
-  async function provisionLocal(cfg, { scope, ids, dept, limit, target = "published", vertex = true, location = null, model = null, maxOutputTokens = null, warm = false, force = false, log = noop } = {}) {
+  async function provisionLocal(cfg, { scope, ids, dept, limit, target = "published", vertex = true, location = null, model = null, maxOutputTokens = null, evalJudgeSamples = null, warm = false, force = false, log = noop } = {}) {
     ensureBin("node");
     if (vertex && !cfg.project) throw new Error("local --vertex needs a project (set GOOGLE_CLOUD_PROJECT or run `ge init`).");
     // One runId shared by the live ledger stream and the final ingest (idempotent).
@@ -241,6 +258,8 @@ export function createProvisionOps({
     // so a .ge.json judgeModel only reaches it if exported here — parity with
     // GE_AGENT_MODEL above.
     if (cfg.judgeModel) process.env.GE_JUDGE_MODEL = cfg.judgeModel;
+    const judgeSamples = evalJudgeSamples || cfg.evalJudgeSamples;
+    if (judgeSamples) process.env.GE_EVAL_JUDGE_SAMPLES = String(judgeSamples);
     if (maxOutputTokens != null && String(maxOutputTokens).trim() !== "") {
       process.env.GE_AGENT_MAX_OUTPUT_TOKENS = String(maxOutputTokens);
     }
@@ -499,7 +518,7 @@ export function createProvisionOps({
   // boundary (default load_data → deploy_runtime → register_tools → publish_enterprise),
   // consuming the prebuilt workspace instead of regenerating. Pairs with `ge agents
   // build --local` (build + validate on this machine).
-  async function handoff(cfg, { ids, startStage = "load_data", targetStage = "publish_enterprise", concurrency = "2", noProxy = false, force = false, log = noop } = {}) {
+  async function handoff(cfg, { ids, startStage = "load_data", targetStage = "publish_enterprise", concurrency = defaultRemoteSubmitConcurrency(), noProxy = false, force = false, log = noop } = {}) {
     ensureGcloud();
     if (!cfg.project) throw new Error("No project. Run `ge init`.");
     if (!cfg.bucket) throw new Error("No artifact bucket in config.");

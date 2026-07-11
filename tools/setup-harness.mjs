@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { AGENTS_CLI_PACKAGE_SPEC, AGENTS_CLI_VERSION } from "./lib/agents-cli-version.mjs";
 
 console.log("====================================================");
 console.log("   GE Agent Factory — Local Harness Setup Wizard   ");
@@ -39,17 +40,17 @@ console.log(`✅ Found: ${uvVersion}`);
 
 // 3. Verify and install google-agents-cli (Gemini/Claude ADK Harness)
 console.log("\nChecking google-agents-cli (AGY/Gemini Harness)...");
-let hasAgentsCli = run("google-agents-cli --version", true);
-if (!hasAgentsCli) {
-  console.log("⚠️ google-agents-cli is missing. Installing globally via UV...");
-  run("uv tool install google-agents-cli");
-  hasAgentsCli = run("google-agents-cli --version", true);
+let hasAgentsCli = run("agents-cli --version", true);
+if (!hasAgentsCli?.includes(AGENTS_CLI_VERSION)) {
+  console.log(`⚠️ agents-cli ${AGENTS_CLI_VERSION} is required. Installing globally via UV...`);
+  run(`uv tool install --force ${AGENTS_CLI_PACKAGE_SPEC}`);
+  hasAgentsCli = run("agents-cli --version", true);
   if (!hasAgentsCli) {
-    console.error("❌ Failed to install google-agents-cli. Please install manually using 'uv tool install google-agents-cli'.");
+    console.error(`❌ Failed to install agents-cli. Run 'uv tool install --force ${AGENTS_CLI_PACKAGE_SPEC}'.`);
     process.exit(1);
   }
 }
-console.log("✅ Installed: google-agents-cli");
+console.log(`✅ Installed: agents-cli ${AGENTS_CLI_VERSION}`);
 
 // 4. Verify GCP Gcloud CLI
 console.log("\nChecking Google Cloud SDK (gcloud)...");

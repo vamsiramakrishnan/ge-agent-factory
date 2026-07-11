@@ -44,7 +44,7 @@ with the target's own tools directly:
 
 ```bash
 cd .ge/factory/workspaces/<id>
-agents-cli eval run --all          # the factory-generated evalset, in agents-cli's format
+agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml
 # agents-cli deploy                # the same command the factory's release stages run
 ```
 

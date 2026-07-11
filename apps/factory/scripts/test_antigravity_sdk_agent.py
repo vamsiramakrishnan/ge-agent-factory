@@ -6,6 +6,7 @@ is imported lazily inside main()), so they run anywhere. Runnable directly
 (`python3 test_antigravity_sdk_agent.py`) or via pytest.
 """
 import importlib.util
+import json
 import os
 from pathlib import Path
 
@@ -24,6 +25,20 @@ class _FakeBuiltins:
 
 class _FakeTypes:
     BuiltinTools = _FakeBuiltins
+
+
+class _FakeModernBuiltins:
+    EDIT_FILE = "edit_file"
+    GENERATE_IMAGE = "generate_image"
+
+
+class _FakeModernTypes:
+    BuiltinTools = _FakeModernBuiltins
+
+
+class _FakeMcpServer:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
 def test_recovery_hint_policy_denied():
@@ -58,11 +73,41 @@ def test_resolve_disabled_tools_skips_unknown():
     assert resolved == ["delete_file", "generate_image"]
 
 
+def test_resolve_disabled_tools_quietly_skips_legacy_optional_tools():
+    resolved = agy.resolve_disabled_tools(["DELETE_FILE", "WRITE_FILE", "generate_image"], _FakeModernTypes)
+    assert resolved == ["generate_image"]
+
+
 def test_protect_pred_matches_basename():
     pred = agy._make_protect_pred("tools.py")
     assert pred({"path": "/ws/app/tools.py"}) is True
     assert pred({"absolute_path": "/ws/app/agent.py"}) is False
     assert pred("not-a-dict") is False
+
+
+def test_mcp_sse_falls_back_to_streamable_http_when_sdk_lacks_sse_type():
+    servers = agy._mcp_servers_from_specs(
+        [json.dumps({"transport": "sse", "name": "hr", "url": "https://mcp.example.com"})],
+        _FakeMcpServer,
+        None,
+        _FakeMcpServer,
+    )
+    assert len(servers) == 1
+    assert servers[0].kwargs["name"] == "hr"
+    assert servers[0].kwargs["url"] == "https://mcp.example.com"
+
+
+def test_mcp_sse_uses_native_type_when_sdk_provides_it():
+    class _NativeSse(_FakeMcpServer):
+        pass
+
+    servers = agy._mcp_servers_from_specs(
+        [json.dumps({"transport": "sse", "name": "hr", "url": "https://mcp.example.com"})],
+        _FakeMcpServer,
+        _NativeSse,
+        _FakeMcpServer,
+    )
+    assert isinstance(servers[0], _NativeSse)
 
 
 if __name__ == "__main__":

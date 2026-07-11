@@ -59,6 +59,7 @@ export default function App() {
   const [status, setStatus] = useState<StatusBoard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [navigationOpen, setNavigationOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<ParsedRoute>(parseHash(location.hash));
 
   const refresh = useCallback(async () => {
@@ -76,7 +77,10 @@ export default function App() {
   }, [refresh]);
 
   useEffect(() => {
-    const handler = () => setCurrentRoute(parseHash(location.hash));
+    const handler = () => {
+      setCurrentRoute(parseHash(location.hash));
+      setNavigationOpen(false);
+    };
     window.addEventListener("hashchange", handler);
     return () => window.removeEventListener("hashchange", handler);
   }, []);
@@ -130,6 +134,7 @@ export default function App() {
         mode={status?.mode || "local"}
         onModeChange={handleModeChange}
         onOpenPalette={() => setPaletteOpen(true)}
+        onOpenNavigation={() => setNavigationOpen(true)}
       />
 
       {/* Golden-path position: capture → prove → handoff, server-derived
@@ -143,8 +148,8 @@ export default function App() {
       )}
 
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar route={currentRoute.route} />
-        <main className="flex-1 overflow-y-auto">
+        <Sidebar route={currentRoute.route} open={navigationOpen} onClose={() => setNavigationOpen(false)} />
+        <main className="min-w-0 flex-1 overflow-y-auto">
           <Breadcrumbs route={currentRoute.route} params={currentRoute.params} />
           <ErrorBoundary label={currentRoute.route} resetKey={location.hash}>
             <Suspense fallback={<ViewFallback />}>

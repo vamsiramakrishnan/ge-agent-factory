@@ -127,7 +127,7 @@ evals:
   domainPacks: [aml]
 models:
   refinement: gemini-3.5-flash
-  judge: gemini-flash-latest
+  judge: gemini-3.5-flash
 policies:
   admission: { required: true, maxAgeDays: 14 }
   promotion: { requireLiveProof: true }
@@ -226,7 +226,7 @@ Models doctor — <no project>
   ✗ vertex.gcloud     gcloud not found on PATH
   ▲ harness.python    fallback (no override, no repo .venv) — google-antigravity may not be importable
   ✓ model.refinement  gemini-3.5-flash (recognized family)
-  ✓ model.judge       gemini-flash-latest (recognized family)
+  ✓ model.judge       gemini-3.5-flash (recognized family)
   ▲ adc               no GOOGLE_APPLICATION_CREDENTIALS and no application-default credentials found
 ```
 

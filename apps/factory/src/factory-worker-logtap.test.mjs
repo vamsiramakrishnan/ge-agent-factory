@@ -3,15 +3,40 @@ import { mkdir, mkdtemp, readFile, writeFile, chmod } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  cloudBuildLogDelta,
+  cloudBuildLogLinesFromEntries,
+  cloudBuildPollArtifactName,
+  cloudBuildSubmissionArtifactName,
   logStage,
   makeLedgerLogTap,
+  mirrorCloudBuildLogs,
+  progressFromCloudBuildLogLine,
+  readCloudBuildLogsFromLogging,
   resolveBuilderServiceAccount,
   extractCommandError,
   isTransientFailure,
   runFactoryWorker,
+  projectStageEventToItem,
   parseWorkerPayload,
+  stageResultArtifactCandidates,
 } from "./factory-worker.js";
 import { createFirestoreLedgerReader } from "../../../tools/lib/ledger/run-ledger-firestore.mjs";
+
+test("item projection advances intermediate stages without declaring the run terminal", () => {
+  const payload = { stage: "deploy_runtime" };
+  expect(projectStageEventToItem(payload, { type: "stage_done", status: "done", nextStage: "poll_runtime" })).toEqual({
+    status: "running",
+    currentStage: "poll_runtime",
+  });
+  expect(projectStageEventToItem(payload, { type: "stage_next_queued", status: "queued", nextStage: "poll_runtime" })).toEqual({
+    status: "queued",
+    currentStage: "poll_runtime",
+  });
+  expect(projectStageEventToItem({ stage: "publish_enterprise" }, { type: "stage_done", status: "done", nextStage: null })).toEqual({
+    status: "done",
+    currentStage: "publish_enterprise",
+  });
+});
 
 // ── Security hardening Stage B: builds submit AS the builder SA + explicit logs ──
 test("resolveBuilderServiceAccount: default reconstructs the conventional builder SA path", () => {
@@ -230,6 +255,168 @@ test("BUG2: out-of-order ts insert is delivered once, nothing re-delivered", asy
   expect(delivered.filter((s) => s === 10 || s === 20)).toEqual([]);
 });
 
+test("Cloud Build log mirror computes a cursor-based delta", () => {
+  const first = cloudBuildLogDelta("a\nb\nc\n", 0);
+  expect(first).toEqual({ lines: ["a", "b", "c"], nextOffset: 3, droppedLines: 0 });
+  const second = cloudBuildLogDelta("a\nb\nc\nd\n", 3);
+  expect(second).toEqual({ lines: ["d"], nextOffset: 4, droppedLines: 0 });
+});
+
+test("Cloud Build progress parser recognizes builder markers and Cloud Build steps", () => {
+  expect(progressFromCloudBuildLogLine('Step #1 - "run-stage": ::ge-progress validate.eval_grade agents-cli eval grade')).toEqual({
+    phase: "validate.eval_grade",
+    message: "agents-cli eval grade",
+  });
+  expect(progressFromCloudBuildLogLine('Starting Step #0 - "restore-workspace"')).toEqual({
+    phase: "cloud_build.restore_workspace",
+    message: "restore workspace archive",
+  });
+});
+
+test("Cloud Build log entries are ordered by build insert ordinal", () => {
+  expect(cloudBuildLogLinesFromEntries([
+    { insertId: "build-1-12", timestamp: "2026-01-01T00:00:01Z", textPayload: "third" },
+    { insertId: "build-1-2", timestamp: "2026-01-01T00:00:01Z", textPayload: "second" },
+    { insertId: "build-1-1", timestamp: "2026-01-01T00:00:01Z", textPayload: "first" },
+    { insertId: "build-1-x", timestamp: "2026-01-01T00:00:00Z", textPayload: "fallback" },
+  ], "build-1")).toEqual(["first", "second", "third", "fallback"]);
+});
+
+test("Cloud Build logs can be read directly from Cloud Logging", async () => {
+  const requests = [];
+  const read = await readCloudBuildLogsFromLogging("project-1", "build-1", {
+    fetchLogs: async (url, opts) => {
+      requests.push({ url, opts });
+      return {
+        ok: true,
+        text: async () => JSON.stringify({
+          entries: [
+            { insertId: "build-1-2", textPayload: "line 2" },
+            { insertId: "build-1-1", textPayload: "line 1" },
+          ],
+        }),
+      };
+    },
+  });
+  expect(read).toMatchObject({ ok: true, lines: ["line 1", "line 2"], truncated: false });
+  expect(requests[0].url).toBe("https://logging.googleapis.com/v2/entries:list");
+  const body = JSON.parse(requests[0].opts.body);
+  expect(body.resourceNames).toEqual(["projects/project-1"]);
+  expect(body.filter).toContain('resource.labels.build_id="build-1"');
+  expect(body.filter).toContain('logName="projects/project-1/logs/cloudbuild"');
+  expect(body.orderBy).toBe("timestamp asc");
+});
+
+test("Cloud Build log mirror writes only new lines and emits progress frames", async () => {
+  const logFrames = [];
+  const progressFrames = [];
+  const mirrored = await mirrorCloudBuildLogs(
+    {
+      runId: "run-1",
+      itemId: "item-1",
+      stage: "validate",
+      cloud: { projectId: "project-1", pubsubTopic: "topic-1" },
+      options: { cloudBuildLogOffset: 2 },
+    },
+    "build-1",
+    {
+      run: async (cmd, args) => {
+        expect(cmd).toBe("gcloud");
+        expect(args).toContain("build-1");
+        return {
+          code: 0,
+          stdout: [
+            "old 1",
+            "old 2",
+            'Step #1 - "run-stage": ::ge-progress validate.eval_generate agents-cli eval generate',
+            "new tail",
+            "",
+          ].join("\n"),
+          stderr: "",
+        };
+      },
+      makeTap: (_payload, _base, opts) => makeLedgerLogTap(payload, () => {}, {
+        write: async (lines, frame, doc) => {
+          expect(opts).toBeDefined();
+          logFrames.push({ lines, frame, doc });
+        },
+      }),
+      writeProgress: async (_payload, event) => {
+        progressFrames.push(event);
+      },
+    },
+  );
+
+  expect(mirrored).toMatchObject({ ok: true, offset: 4, mirroredLines: 2, progressEvents: 1 });
+  expect(logFrames.flatMap((frame) => frame.lines)).toEqual([
+    'Step #1 - "run-stage": ::ge-progress validate.eval_generate agents-cli eval generate',
+    "new tail",
+  ]);
+  expect(progressFrames).toEqual([
+    {
+      type: "stage_progress",
+      status: "running",
+      data: {
+        phase: "validate.eval_generate",
+        message: "agents-cli eval generate",
+        buildId: "build-1",
+      },
+    },
+  ]);
+});
+
+test("Cloud Build log mirror falls back to Cloud Logging when gcloud returns no lines", async () => {
+  const logFrames = [];
+  const progressFrames = [];
+  const mirrored = await mirrorCloudBuildLogs(
+    {
+      runId: "run-1",
+      itemId: "item-1",
+      stage: "validate",
+      cloud: { projectId: "project-1", pubsubTopic: "topic-1" },
+      options: { cloudBuildLogOffset: 0 },
+    },
+    "build-1",
+    {
+      run: async () => ({ code: 0, stdout: "", stderr: "" }),
+      readLogs: async () => ({
+        ok: true,
+        lines: [
+          'Starting Step #1 - "run-stage"',
+          'Step #1 - "run-stage": ::ge-progress validate.smoke pytest smoke tests',
+        ],
+      }),
+      makeTap: (_payload, _base, opts) => makeLedgerLogTap(payload, () => {}, {
+        write: async (lines, frame, doc) => {
+          logFrames.push({ lines, frame, doc, opts });
+        },
+      }),
+      writeProgress: async (_payload, event) => {
+        progressFrames.push(event);
+      },
+    },
+  );
+
+  expect(mirrored).toMatchObject({ ok: true, offset: 2, mirroredLines: 2, progressEvents: 2, source: "cloud_logging" });
+  expect(logFrames.flatMap((frame) => frame.lines)).toEqual([
+    'Starting Step #1 - "run-stage"',
+    'Step #1 - "run-stage": ::ge-progress validate.smoke pytest smoke tests',
+  ]);
+  expect(progressFrames.map((event) => event.data.phase)).toEqual([
+    "cloud_build.run_stage",
+    "validate.smoke",
+  ]);
+});
+
+test("Cloud Build poll/submission artifacts do not collide with terminal stage result", () => {
+  expect(stageResultArtifactCandidates("gs://bucket/runs/r/items/i", "validate")).toEqual([
+    "gs://bucket/runs/r/items/i/factory-validate-result.json",
+    "gs://bucket/runs/r/items/i/files/./artifacts/factory-validate-result.json",
+  ]);
+  expect(cloudBuildPollArtifactName("validate")).toBe("factory-validate-poll-result.json");
+  expect(cloudBuildSubmissionArtifactName("validate")).toBe("factory-validate-cloud-build.json");
+});
+
 // ── P0: surface the REAL stage error + don't retry forever ────────────────────
 // extractCommandError must surface the stderr tail, not a bare "<cmd> exited N".
 test("extractCommandError surfaces the stderr tail, not a bare exit code", () => {
@@ -275,7 +462,7 @@ test("runFactoryWorker: deterministic stage failure surfaces the error, emits st
     targetStage: "load_data", // no next-stage enqueue
     workspaceDir: dir,
     cloud: { projectId: "" }, // local: Firestore/artifacts/log-tap all skipped
-  });
+  }, { GOOGLE_CLOUD_PROJECT: "", GCLOUD_PROJECT: "", GE_AGENT_FACTORY_PROJECT: "" });
 
   const result = await runFactoryWorker(payload, { dryRun: false });
 
@@ -314,7 +501,7 @@ test("runFactoryWorker: transient stage failure is marked retryable", async () =
     targetStage: "load_data",
     workspaceDir: dir,
     cloud: { projectId: "" },
-  });
+  }, { GOOGLE_CLOUD_PROJECT: "", GCLOUD_PROJECT: "", GE_AGENT_FACTORY_PROJECT: "" });
   const result = await runFactoryWorker(payload, { dryRun: false });
   expect(result.status).toBe("failed");
   expect(result.retryable).toBe(true);

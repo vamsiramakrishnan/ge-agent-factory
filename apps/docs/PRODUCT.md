@@ -36,12 +36,14 @@ platform because the documentation itself feels certified.
 ## Brand Personality
 
 Precise, instrumented, calm. The design identity is "Modernist Functionalism"
-(`packages/design/src/palette.mjs`) — a Braun/Dieter Rams-inspired
+(`Modernist Functionalism Design System.zip` and
+`packages/design/src/palette.mjs`) — a Braun/Dieter Rams-inspired
 instrument-panel chrome: warm neutral paper, hairline strokes instead of
 shadows, one reserved signal color (Braun Blue `#00408b` means
 "live/interactive"), one green means "passed", and all other color budget is
-semantic status, not decoration. Tone of voice in copy is expert and direct,
-never salesy.
+semantic status, not decoration. Hanken Grotesk carries body, headings, and
+interface chrome; JetBrains Mono is reserved for code and data. Tone of voice
+in copy is expert and direct, never salesy.
 
 ## Anti-references
 

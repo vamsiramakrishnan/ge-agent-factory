@@ -57,8 +57,9 @@ test("sequential topology emits a SequentialAgent of stage sub-agents", () => {
   // One Agent per stage, var-named scenario_stepId.
   expect(py).toContain("demo_agent_gather = Agent(");
   expect(py).toContain("demo_agent_decide = Agent(");
-  // before_agent_callback is wired on EVERY sub-agent (parallel branches don't share state).
-  expect(py.match(/before_agent_callback=initialize_workflow_state,/g)).toHaveLength(2);
+  // before_agent_callback is wired on the orchestration root and EVERY
+  // sub-agent (parallel branches do not share state).
+  expect(py.match(/before_agent_callback=initialize_workflow_state,/g)).toHaveLength(3);
   // Distinct per-stage output_key.
   expect(py).toContain('output_key="gather_output"');
   expect(py).toContain('output_key="decide_output"');

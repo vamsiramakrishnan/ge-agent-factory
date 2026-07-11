@@ -2,7 +2,7 @@
 // class (blindspot audit, class: config-not-consumed).
 //
 // The centralized build-affecting config fields (agentModel, judgeModel,
-// refinementModel, harnessAgent) must reach the generator/harness on BOTH the
+// evalJudgeSamples, refinementModel, harnessAgent) must reach the generator/harness on BOTH the
 // local and remote build paths. Resolution (flag→env→file→default) is unit-
 // tested elsewhere; this asserts *consumption* on the remote path, which was
 // enforced only by code comments — and where harnessAgent silently no-op'd
@@ -10,7 +10,7 @@
 // forwarding retrofitted one at a time; this test makes a dropped field on the
 // remote path fail by construction so the whole class can't recur.
 import { describe, expect, test } from "bun:test";
-import { createProvisionOps } from "./provision.mjs";
+import { DEFAULT_REMOTE_SUBMIT_CONCURRENCY, createProvisionOps, defaultRemoteSubmitConcurrency } from "./provision.mjs";
 
 // Minimal injected deps: capture the payload the remote path POSTs to the
 // gateway, stub everything with side effects to no-ops.
@@ -51,6 +51,7 @@ describe("remote provision payload consumes build-affecting config", () => {
   const CASES = [
     { field: "agentModel", value: "gemini-x", payloadKey: "model" },
     { field: "judgeModel", value: "judge-x", payloadKey: "judgeModel" },
+    { field: "evalJudgeSamples", value: "1", payloadKey: "evalJudgeSamples" },
     { field: "refinementModel", value: "refine-x", payloadKey: "refinementModel" },
     { field: "harnessAgent", value: "claude", payloadKey: "harnessProvider" },
   ];
@@ -63,4 +64,20 @@ describe("remote provision payload consumes build-affecting config", () => {
       expect(payloads[0][payloadKey]).toBe(value);
     });
   }
+
+  test("remote submission fanout defaults above the old serial-ish value and honors env override", () => {
+    expect(DEFAULT_REMOTE_SUBMIT_CONCURRENCY).toBe(8);
+    expect(defaultRemoteSubmitConcurrency({})).toBe(8);
+    expect(defaultRemoteSubmitConcurrency({ GE_REMOTE_SUBMIT_CONCURRENCY: "12" })).toBe(12);
+    expect(() => defaultRemoteSubmitConcurrency({ GE_REMOTE_SUBMIT_CONCURRENCY: "0" })).toThrow(/between/);
+  });
+
+  test("remote submission returns a deterministic fanout plan", async () => {
+    const { ops } = opsCapturingPayload();
+    const result = await ops.provision(BASE_CFG, { scope: "all" });
+    expect(result.fanout).toMatchObject({ kind: "stage_fanout", stage: "submit", total: 1 });
+    expect(result.results[0].fanoutKey.startsWith("remote-build-")).toBe(true);
+    expect(result.results[0].fanoutKey.endsWith(":asc-1:submit:1")).toBe(true);
+    expect(result.results[0].taskId).toMatch(/asc-1-submit-1-[a-f0-9]{10}$/);
+  });
 });

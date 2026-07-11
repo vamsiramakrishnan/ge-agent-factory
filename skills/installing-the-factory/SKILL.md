@@ -37,8 +37,9 @@ phase — the whole workflow is idempotent and safe to re-run after a failure.
    `ge-agent-factory` with `mise.toml` at its root. If not, clone it.
 2. **mise** — check: `mise --version` works. If not, install it and add the
    shims to PATH for this shell.
-3. **Toolchain + deps + `ge`** — check: `bun --version` works inside the repo
-   and `$BIN/ge` exists (default `~/.local/bin/ge`). If not, `mise trust && mise install`, then
+3. **Toolchain + deps + `ge`** — check: `bun --version` works inside the repo,
+   `agents-cli --version` matches `apps/factory/agents-cli-version.txt`, and
+   `$BIN/ge` exists (default `~/.local/bin/ge`). If not, `mise trust && mise install`, then
    `mise run setup` (installs JS deps, syncs the use-case catalog and skills,
    installs the `ge` command, and starts the local run daemon — the daemon
    step is best-effort and may be skipped in sandboxes).
@@ -76,6 +77,7 @@ Phase 2 — toolchain, dependencies, `ge`:
 ```bash
 mise trust && mise install    # provisions Bun, Python, uv, Terraform (pinned)
 mise run setup                # bun install → catalog + deps + ge install + skills-sync + daemon
+mise run deps                 # reconcile agents-cli to the repo's canonical version pin
 ```
 
 Phase 3 — verify (structured; exits non-zero with what/fix on any failure):
@@ -106,6 +108,9 @@ AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # same, for Claude 
   --local` + `ge prove` prove the install.
 - Installing Bun/Terraform globally by hand — versions are pinned by mise;
   hand-installs drift and shadow the pinned ones.
+- Installing an arbitrary latest agents-cli. The supported version is pinned
+  in `apps/factory/agents-cli-version.txt`; `mise run deps`, worker images, and
+  builder images all consume that same file.
 - Running `mise run setup` before `mise trust` in a fresh clone — mise refuses
   untrusted config; trust the repo's `mise.toml` first.
 - Skipping `ge init` and then treating cloud-config errors as install
@@ -116,8 +121,9 @@ AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # same, for Claude 
 
 ## Done when
 
-- `mise --version`, `bun --version`, and `$BIN/ge` (default
+- `mise --version`, `bun --version`, `agents-cli --version`, and `$BIN/ge` (default
   `~/.local/bin/ge`) all resolve inside the repo.
+- The installed agents-cli version matches `apps/factory/agents-cli-version.txt`.
 - `node skills/installing-the-factory/scripts/verify-install.mjs` exits 0.
 - `bun tools/ge.mjs doctor --local` reports the local toolchain green.
 - `bun tools/ge.mjs prove` passes its first proof.

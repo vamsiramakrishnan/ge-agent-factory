@@ -59,7 +59,9 @@ family header and the byte-golden constraints that pin each):
 - `renderEvalConfigYaml` — `tests/eval/eval_config.yaml` for `eval grade`:
   built-in metrics mapped from the v1 criteria, the behavior-contract
   LLM-judge metric (`judge_model_sampling_count: 5` — native
-  self-consistency), and the `ge_thresholds` CI-gate extension block.
+  self-consistency), the hard-gated `ge_thresholds` extension block, and
+  `ge_diagnostic_metrics` for telemetry such as built-in tool-use quality that
+  is not reliable for intentional no-tool governance refusals.
 - `renderHoldoutSplit` — the deterministic per-id train/validation split that
   feeds the split datasets (written as `tests/eval/holdout_split.json`).
 
