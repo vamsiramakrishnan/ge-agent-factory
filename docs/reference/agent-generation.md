@@ -1,5 +1,6 @@
 ---
 title: Agent generation
+description: See how a contract becomes a runnable Google Agent Development Kit workspace, including generated files, tools, tests, evaluations, and manifests.
 parent: Reference
 nav_order: 5
 layout: default

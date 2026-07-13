@@ -217,7 +217,10 @@ function findCalloutWarnings(relPath, content, calloutTypes) {
   return warnings;
 }
 
-export function runDocsCheck({ root = process.cwd(), include = ["README.md", "docs"] } = {}) {
+export function runDocsCheck({
+  root = process.cwd(),
+  include = ["README.md", "AGENTS.md", "SETUP.md", "CONTRIBUTING.md", "docs"],
+} = {}) {
   const repoRoot = resolve(root);
   const files = [];
   for (const relPath of include) {

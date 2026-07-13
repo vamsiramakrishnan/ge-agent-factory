@@ -19,12 +19,22 @@ import catalog from "../data/agent-catalog.json";
 // config — normalize so the join never drops the separator.
 const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const agentHref = (slug: string) => `${base}catalog/agents/${slug}/`;
+const idPart = (value: unknown) => String(value ?? "catalog").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
 
 // A caller may pass a pre-shaped `data` payload (same shape as the catalog
 // JSON) to render a different fleet — VerticalPeriodicTable.astro maps the
 // vertical agents (industries → tabs, value streams → domain groups) into
 // this shape. Default stays the horizontal deck grid.
-const { departments, domains, legend, agents, meta } = ((Astro.props as any).data ?? catalog) as any;
+const { departments, domains, legend, agents, tabLabel = "Departments" } = ((Astro.props as any).data ?? catalog) as any;
+const tableId = `pt-${idPart(departments[0]?.key)}`;
+const tabId = (key: string) => `${tableId}-tab-${idPart(key)}`;
+const panelId = (key: string) => `${tableId}-panel-${idPart(key)}`;
+const agentLabel = (agent: any) => [
+  `${agent.agentId}: ${agent.title}.`,
+  `${agent.layerLabel}; ${agent.triggerLabel}.`,
+  agent.hitl ? (agent.hitlActor ? `Human review by ${agent.hitlActor}.` : "Human review required.") : "",
+  "View agent spec.",
+].filter(Boolean).join(" ");
 
 // Group agents by domain, domains by department; compute a faithful column
 // count per department (deck: 8/10/12/13 by the largest domain in view).
@@ -76,14 +86,18 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
 
 <section class="pt" data-active-dept={departments[0]?.key}>
   {/* ── Department switcher ─────────────────────────────────────── */}
-  <div class="pt-tabs" role="tablist" aria-label="Departments">
+  <div class="pt-tabs" role="tablist" aria-label={tabLabel} aria-orientation="horizontal">
     {
       departments.map((dept: any) => (
         <button
           class="pt-tab"
           role="tab"
+          type="button"
+          id={tabId(dept.key)}
           data-dept={dept.key}
+          aria-controls={panelId(dept.key)}
           aria-selected={dept.key === departments[0]?.key ? "true" : "false"}
+          tabindex={dept.key === departments[0]?.key ? 0 : -1}
         >
           <span class="pt-tab-label">{dept.shortLabel}</span>
           <span class="pt-tab-count">{dept.agentCount}</span>
@@ -97,6 +111,9 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     byDept.map((dept: any) => (
       <div
         class="pt-view"
+        id={panelId(dept.key)}
+        role="tabpanel"
+        aria-labelledby={tabId(dept.key)}
         data-dept-view={dept.key}
         hidden={dept.key !== departments[0]?.key}
       >
@@ -119,12 +136,12 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
           {/* Grid, grouped by domain */}
           <div class="pt-grid-wrap">
             {dept.deptDomains.map((domain: any) => (
-              <div class="pt-group">
-                <a class="pt-group-head" href={`#${domain.id}`}>
+              <div class="pt-group" id={domain.id}>
+                <div class="pt-group-head">
                   <span class="pt-group-swatch" style={`background:${domain.color}`} />
                   <span class="pt-group-title">{domain.title}</span>
                   <span class="pt-group-count">{domain.agents.length}</span>
-                </a>
+                </div>
                 <div class="pt-grid" style={`--pt-cols:${dept.gridCols}`}>
                   {domain.agents.map((a: any) => (
                     <a
@@ -133,9 +150,14 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
                       data-uc={a.ucId}
                       style={`--pt-domain:${a.domainColor}`}
                       title={`${a.agentId} · ${a.title}`}
+                      aria-label={agentLabel(a)}
                     >
                       <span class="pt-cell-num">{a.num}</span>
                       <span class="pt-cell-name">{a.shortName}</span>
+                      <span class="pt-cell-title">{a.title}</span>
+                      <span class="pt-cell-mobile-meta">
+                        {a.agentId} · {a.layerLabel} · {a.triggerLabel}{a.hitl ? " · Human review" : ""}
+                      </span>
                       <span class="pt-cell-dot" style={`background:${a.layerColor}`} />
                       <svg class="pt-cell-trig" style={`color:${a.triggerColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d={TRIGGER_PATHS[a.triggerType]} />
@@ -170,7 +192,7 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
               <a class="pt-detail-link" data-detail-link>View agent spec →</a>
             </div>
             <div class="pt-detail pt-detail-empty" data-detail-empty>
-              Hover or tap an element to see its details.
+              Hover or focus an element to see its details.
             </div>
 
             <div class="pt-legend">
@@ -221,25 +243,43 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
 </section>
 
 <script>
-  const root = document.querySelector<HTMLElement>(".pt");
-  if (root) {
+  document.querySelectorAll<HTMLElement>(".pt").forEach((root) => {
     const hover = JSON.parse(
       root.querySelector<HTMLElement>("[data-pt-hover]")?.textContent || "{}",
     );
 
     // Department switcher
-    const tabs = root.querySelectorAll<HTMLButtonElement>(".pt-tab");
-    const views = root.querySelectorAll<HTMLElement>("[data-dept-view]");
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>(".pt-tab"));
+    const views = Array.from(root.querySelectorAll<HTMLElement>("[data-dept-view]"));
+    const activate = (tab: HTMLButtonElement, moveFocus = false) => {
+      const key = tab.dataset.dept;
+      tabs.forEach((candidate) => {
+        const selected = candidate === tab;
+        candidate.setAttribute("aria-selected", String(selected));
+        candidate.tabIndex = selected ? 0 : -1;
+      });
+      views.forEach((view) => (view.hidden = view.dataset.deptView !== key));
+      root.dataset.activeDept = key || "";
+      if (moveFocus) tab.focus();
+    };
+
     tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const key = tab.dataset.dept;
-        tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
-        views.forEach((v) => (v.hidden = v.dataset.deptView !== key));
-        root.dataset.activeDept = key || "";
+      tab.addEventListener("click", () => activate(tab));
+      tab.addEventListener("keydown", (event) => {
+        const current = tabs.indexOf(tab);
+        let next = current;
+        if (event.key === "ArrowRight") next = (current + 1) % tabs.length;
+        else if (event.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+        else if (event.key === "Home") next = 0;
+        else if (event.key === "End") next = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        activate(tabs[next], true);
       });
     });
 
-    // Hover / focus / tap detail panel (scoped per department view)
+    // Hover / focus detail panel (scoped per department view). On compact
+    // layouts each tile is already a descriptive, direct navigation card.
     views.forEach((view) => {
       const panel = view.querySelector<HTMLElement>("[data-detail]");
       const empty = view.querySelector<HTMLElement>("[data-detail-empty]");
@@ -289,7 +329,7 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
         cell.addEventListener("focus", () => show(cell.dataset.uc));
       });
     });
-  }
+  });
 </script>
 
 <!-- Widen the reading measure for the catalog route only. Astro ships this
@@ -341,6 +381,10 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     background: var(--sl-color-accent);
     border-color: var(--sl-color-accent);
     color: #fff;
+  }
+  .pt-tab:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
   }
   .pt-tab-count {
     font-family: var(--sl-font-mono);
@@ -410,9 +454,6 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     text-decoration: none;
     color: var(--pt-ink-dim);
   }
-  .pt-group-head:hover .pt-group-title {
-    color: var(--sl-color-text-accent);
-  }
   .pt-group-swatch {
     width: 0.6rem;
     height: 0.6rem;
@@ -460,7 +501,10 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     transform: scale(1.12);
     z-index: 5;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
-    outline: none;
+  }
+  .pt-cell:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
   }
   .pt-cell-num {
     font-family: var(--sl-font-mono);
@@ -482,6 +526,10 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  .pt-cell-title,
+  .pt-cell-mobile-meta {
+    display: none;
   }
   .pt-cell-dot {
     width: 0.35rem;
@@ -656,5 +704,101 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     font-size: 0.6rem;
     color: var(--pt-ink-dim);
     flex-shrink: 0;
+  }
+
+  /* Compact layouts trade the dense periodic grid for readable navigation
+     cards. A tap follows the link directly; hover-only detail is desktop-only. */
+  @media (max-width: 59.999rem) {
+    .pt-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: inline proximity;
+      padding: 0.15rem 0.15rem 0.55rem;
+    }
+    .pt-tab {
+      min-height: 2.75rem;
+      padding-inline: 0.85rem;
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      font-size: 0.8rem;
+    }
+    .pt-group {
+      margin-bottom: 1.2rem;
+    }
+    .pt-group-head {
+      min-height: 2rem;
+      padding-block: 0.35rem;
+    }
+    .pt-group-title {
+      font-size: 0.78rem;
+    }
+    .pt-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.45rem;
+    }
+    .pt-cell {
+      display: grid;
+      grid-template-columns: 3.4rem minmax(0, 1fr);
+      grid-template-areas:
+        "num name"
+        "num title"
+        "num meta";
+      align-items: center;
+      justify-items: start;
+      min-height: 4.5rem;
+      padding: 0.6rem 0.75rem;
+      border-top-width: 1px;
+      border-left: 4px solid var(--pt-domain, var(--pt-border));
+      border-radius: 0.45rem;
+      text-align: left;
+    }
+    .pt-cell:hover,
+    .pt-cell:focus-visible {
+      transform: none;
+    }
+    .pt-cell-num {
+      position: static;
+      grid-area: num;
+      align-self: center;
+      transform: none;
+      font-size: 0.74rem;
+      line-height: 1.2;
+    }
+    .pt-cell-name {
+      grid-area: name;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      text-align: left;
+      -webkit-line-clamp: unset;
+    }
+    .pt-cell-title {
+      display: block;
+      grid-area: title;
+      color: var(--pt-ink-dim);
+      font-size: 0.8rem;
+      line-height: 1.25;
+    }
+    .pt-cell-mobile-meta {
+      display: block;
+      grid-area: meta;
+      margin-top: 0.2rem;
+      color: var(--pt-ink-dim);
+      font-family: var(--sl-font-mono);
+      font-size: 0.7rem;
+      line-height: 1.3;
+    }
+    .pt-cell-dot,
+    .pt-cell-trig,
+    .pt-cell-hitl,
+    .pt-side > .pt-detail {
+      display: none;
+    }
+    .pt-legend-domain {
+      min-height: 2.75rem;
+    }
+    .pt-legend-row {
+      font-size: 0.75rem;
+    }
   }
 </style>

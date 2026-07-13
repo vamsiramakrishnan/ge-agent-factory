@@ -89,26 +89,56 @@ const headings = [
 
   <div class="cx" id="cx-root">
     <div class="cx-controls">
-      <input class="cx-search" id="cx-search" type="search" placeholder={`Search ${total} agents — title, persona, system…`} />
-      <div class="cx-facet" id="cx-industries">
-        {industries.map((i: any) => (
-          <button class="cx-chip" data-facet="industry" data-value={i.id} style={`--chip:${i.color}`}>
-            {i.title} <span class="cx-count">{i.agentCount}</span>
-          </button>
-        ))}
-      </div>
-      <div class="cx-facet" id="cx-functions">
-        {functions.map((f: any) => (
-          <button class="cx-chip cx-chip-fn" data-facet="fn" data-value={f.id}>
-            {f.title ?? f.id}
-            {f.specializes?.length ? <span class="cx-spec">↝ {f.specializes.join(", ")}</span> : null}
-            <span class="cx-count">{f.count}</span>
-          </button>
-        ))}
-      </div>
+      <label class="cx-label" for="cx-search">Search agents</label>
+      <input
+        class="cx-search"
+        id="cx-search"
+        type="search"
+        placeholder="Title, persona, value stream, or system"
+        aria-describedby="cx-status"
+      />
+      <fieldset class="cx-facet-group">
+        <legend class="cx-label">Industry</legend>
+        <div class="cx-facet" id="cx-industries">
+          {industries.map((i: any) => (
+            <button
+              class="cx-chip"
+              type="button"
+              data-facet="industry"
+              data-value={i.id}
+              style={`--chip:${i.color}`}
+              aria-pressed="false"
+              aria-label={`${i.title}: ${i.agentCount} agents`}
+            >
+              {i.title} <span class="cx-count" aria-hidden="true">{i.agentCount}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset class="cx-facet-group">
+        <legend class="cx-label">Function</legend>
+        <div class="cx-facet" id="cx-functions">
+          {functions.map((f: any) => (
+            <button
+              class="cx-chip cx-chip-fn"
+              type="button"
+              data-facet="fn"
+              data-value={f.id}
+              aria-pressed="false"
+              aria-label={`${f.title ?? f.id}: ${f.count} agents${f.specializes?.length ? `; specializes ${f.specializes.join(", ")}` : ""}`}
+            >
+              {f.title ?? f.id}
+              {f.specializes?.length ? <span class="cx-spec" aria-hidden="true">↝ {f.specializes.join(", ")}</span> : null}
+              <span class="cx-count" aria-hidden="true">{f.count}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
     </div>
-    <p class="cx-status" id="cx-status"></p>
-    <div class="cx-grid" id="cx-grid">
+    <p class="cx-status" id="cx-status" role="status" aria-live="polite" aria-atomic="true">
+      {total} of {total} agents
+    </p>
+    <div class="cx-grid" id="cx-grid" role="region" aria-label="Matching agents" aria-describedby="cx-status">
       {index.map((a) => (
         <a
           class="cx-card"
@@ -128,31 +158,42 @@ const headings = [
         </a>
       ))}
     </div>
+    <button class="cx-more" id="cx-more" type="button" aria-controls="cx-grid" hidden>Show more agents</button>
   </div>
 </StarlightPage>
 
 <style>
   .cx-controls { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.75rem 0 0.5rem; }
+  .cx-label {
+    display: block; padding: 0; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-color-gray-3);
+  }
   .cx-search {
-    width: 100%; padding: 0.5rem 0.75rem; font-size: 0.95rem;
+    width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; font-size: 0.95rem;
     border: 1px solid var(--sl-color-gray-4); border-radius: 0.5rem;
     background: var(--sl-color-bg); color: var(--sl-color-text);
   }
+  .cx-search:focus-visible, .cx-chip:focus-visible, .cx-card:focus-visible, .cx-more:focus-visible {
+    outline: 2px solid var(--sl-color-accent); outline-offset: 2px;
+  }
+  .cx-facet-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+  .cx-facet-group .cx-label { margin-bottom: 0.4rem; }
   .cx-facet { display: flex; flex-wrap: wrap; gap: 0.35rem; }
   .cx-chip {
     display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.78rem; padding: 0.22rem 0.6rem; border-radius: 999px;
+    min-height: 2.75rem; font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 999px;
     border: 1px solid var(--sl-color-gray-4); background: var(--sl-color-bg);
     color: var(--sl-color-text); cursor: pointer;
   }
-  .cx-chip[data-on] { border-color: var(--chip, var(--sl-color-text-accent)); box-shadow: inset 0 0 0 1px var(--chip, var(--sl-color-text-accent)); }
-  .cx-chip-fn[data-on] { border-color: var(--sl-color-text-accent); box-shadow: inset 0 0 0 1px var(--sl-color-text-accent); }
+  .cx-chip[aria-pressed="true"] { border-color: var(--chip, var(--sl-color-text-accent)); box-shadow: inset 0 0 0 1px var(--chip, var(--sl-color-text-accent)); }
+  .cx-chip-fn[aria-pressed="true"] { border-color: var(--sl-color-text-accent); box-shadow: inset 0 0 0 1px var(--sl-color-text-accent); }
   .cx-count { opacity: 0.6; font-variant-numeric: tabular-nums; }
   .cx-spec { opacity: 0.55; font-size: 0.7rem; }
-  .cx-status { font-size: 0.85rem; opacity: 0.75; margin: 0.25rem 0 0.5rem; }
+  .cx-status { min-height: 1.3rem; font-size: 0.85rem; opacity: 0.75; margin: 0.25rem 0 0.5rem; }
   .cx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: 0.5rem; }
   .cx-card {
     display: flex; flex-direction: column; gap: 0.15rem;
+    min-height: 4.5rem;
     border: 1px solid var(--sl-color-gray-5); border-left: 3px solid var(--dc);
     border-radius: 0.5rem; padding: 0.5rem 0.65rem; text-decoration: none;
   }
@@ -161,6 +202,13 @@ const headings = [
   .cx-code { font-size: 0.7rem; font-family: var(--__sl-font-mono, monospace); color: var(--dc); }
   .cx-title { font-size: 0.88rem; font-weight: 600; color: var(--sl-color-white); line-height: 1.25; }
   .cx-meta { font-size: 0.72rem; color: var(--sl-color-gray-3); line-height: 1.3; }
+  .cx-more {
+    display: block; min-height: 2.75rem; margin: 1rem auto 0; padding: 0.55rem 1rem;
+    border: 1px solid var(--sl-color-gray-4); border-radius: 0.25rem;
+    background: transparent; color: var(--sl-color-white); font-weight: 600; cursor: pointer;
+  }
+  .cx-more:hover { border-color: var(--sl-color-text-accent); color: var(--sl-color-text-accent); }
+  .cx-more[hidden] { display: none; }
 </style>
 
 <script>
@@ -168,21 +216,35 @@ const headings = [
   const grid = document.getElementById("cx-grid");
   const status = document.getElementById("cx-status");
   const search = document.getElementById("cx-search") as HTMLInputElement;
+  const more = document.getElementById("cx-more") as HTMLButtonElement;
   const cards = Array.from(grid?.querySelectorAll<HTMLElement>(".cx-card") ?? []);
   const state = { industry: new Set<string>(), fn: new Set<string>(), q: "" };
+  const batchSize = 48;
+  let visibleLimit = batchSize;
 
-  function apply() {
-    let shown = 0;
+  function apply({ resetLimit = false } = {}) {
+    if (resetLimit) visibleLimit = batchSize;
+    const matches = [];
     for (const card of cards) {
       const okIndustry = !state.industry.size || state.industry.has(card.dataset.industry ?? "");
       const family = (card.dataset.family ?? "").split(" ");
       const okFn = !state.fn.size || family.some((f) => state.fn.has(f));
       const okQ = !state.q || (card.dataset.haystack ?? "").includes(state.q);
-      const on = okIndustry && okFn && okQ;
-      card.toggleAttribute("hidden", !on);
-      if (on) shown += 1;
+      if (okIndustry && okFn && okQ) matches.push(card);
     }
-    if (status) status.textContent = `${shown} of ${cards.length} agents`;
+    const visible = new Set(matches.slice(0, visibleLimit));
+    for (const card of cards) card.toggleAttribute("hidden", !visible.has(card));
+    const shown = Math.min(visibleLimit, matches.length);
+    if (status) {
+      status.textContent = shown < matches.length
+        ? `Showing ${shown} of ${matches.length} matching agents`
+        : `${matches.length} matching agent${matches.length === 1 ? "" : "s"}`;
+    }
+    if (more) {
+      const remaining = Math.max(0, matches.length - shown);
+      more.hidden = remaining === 0;
+      more.textContent = remaining > 0 ? `Show ${Math.min(batchSize, remaining)} more agents` : "Show more agents";
+    }
   }
 
   root?.addEventListener("click", (event) => {
@@ -191,12 +253,17 @@ const headings = [
     const facet = chip.dataset.facet as "industry" | "fn";
     const value = chip.dataset.value ?? "";
     const bucket = state[facet];
-    if (bucket.has(value)) { bucket.delete(value); chip.removeAttribute("data-on"); }
-    else { bucket.add(value); chip.setAttribute("data-on", ""); }
-    apply();
+    if (bucket.has(value)) bucket.delete(value);
+    else bucket.add(value);
+    chip.setAttribute("aria-pressed", String(bucket.has(value)));
+    apply({ resetLimit: true });
   });
   search?.addEventListener("input", () => {
     state.q = search.value.trim().toLowerCase();
+    apply({ resetLimit: true });
+  });
+  more?.addEventListener("click", () => {
+    visibleLimit += batchSize;
     apply();
   });
   apply();

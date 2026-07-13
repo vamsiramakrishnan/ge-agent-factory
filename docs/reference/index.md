@@ -1,5 +1,6 @@
 ---
 title: Reference
+description: Find the exact command, field, endpoint, file, stage, lifecycle state, or schema behind the factory's contract and proof layer.
 nav_order: 6
 layout: default
 has_children: true

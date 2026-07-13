@@ -2,8 +2,8 @@
 ---
 
 <starlight-theme-select class="ge-theme-switch" aria-label={Astro.locals.t('themeSelect.accessibleLabel')}>
-  <span class="ge-theme-label" aria-hidden="true">light</span>
-  <button type="button" class="ge-theme-toggle" aria-pressed="false" aria-label="Switch between light and dark theme">
+  <span class="ge-theme-label" aria-hidden="true">theme</span>
+  <button type="button" class="ge-theme-toggle" aria-pressed="false" aria-label="Switch to dark theme">
     <span class="ge-theme-knob" aria-hidden="true"></span>
   </button>
 </starlight-theme-select>
@@ -30,7 +30,12 @@
     StarlightThemeProvider.updatePickers(theme);
     root.dataset.themeChoice = theme;
     const button = root.querySelector<HTMLButtonElement>('button');
-    if (button) button.setAttribute('aria-pressed', String(theme === 'dark'));
+    const label = root.querySelector<HTMLElement>('.ge-theme-label');
+    if (label) label.textContent = theme;
+    if (button) {
+      button.setAttribute('aria-pressed', String(theme === 'dark'));
+      button.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
+    }
   }
   class StarlightThemeSelect extends HTMLElement {
     connectedCallback(): void {

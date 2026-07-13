@@ -1,5 +1,6 @@
 ---
 title: Add a ge command
+description: Add an existing ge operation to the shared capability registry so CLI, console, HTTP, and MCP surfaces stay structurally aligned.
 parent: Contributing
 nav_order: 10
 layout: default

@@ -2,11 +2,15 @@
 import EditLink from 'virtual:starlight/components/EditLink';
 import LastUpdated from 'virtual:starlight/components/LastUpdated';
 import Pagination from 'virtual:starlight/components/Pagination';
+
+const { pagination } = Astro.locals.starlightRoute;
+const showPagination = Boolean(pagination.prev || pagination.next);
+const year = new Date().getUTCFullYear();
 ---
 
 <footer class="ge-footer">
   <div class="ge-footer-measure" aria-hidden="true"></div>
-  <Pagination />
+  {showPagination && <Pagination />}
   <div class="ge-footer-meta">
     <EditLink />
     <LastUpdated />
@@ -25,5 +29,5 @@ import Pagination from 'virtual:starlight/components/Pagination';
       <div><span>reference</span><a href="/ge-agent-factory/reference/cli/">cli</a><a href="/ge-agent-factory/reference/spec-schema/">schema</a><a href="/ge-agent-factory/reference/mcp/">mcp</a></div>
     </nav>
   </div>
-  <div class="ge-footer-bottom"><span>© 2026 · apache-2.0 · built with starlight</span><span><i></i> v0.34.8 · operational</span></div>
+  <div class="ge-footer-bottom"><span>© {year} · apache-2.0 · built with starlight</span><span><i></i> source-linked · build-verified</span></div>
 </footer>

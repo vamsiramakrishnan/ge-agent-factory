@@ -84,6 +84,10 @@ export function scanZoneText(text) {
   const lines = stripExemptSpans(text).split("\n");
   for (let i = 0; i < lines.length; i += 1) {
     for (const match of lines[i].matchAll(TERM_RE)) {
+      // "Failure mode" is ordinary engineering English, not the factory's
+      // local-vs-remote execution-mode jargon this policy is meant to keep
+      // out of front-door copy.
+      if (/^modes?$/i.test(match[1]) && /\bfailure\s+$/i.test(lines[i].slice(0, match.index))) continue;
       findings.push({ line: i + 1, term: match[1].toLowerCase(), excerpt: lines[i].trim().slice(0, 120) });
     }
   }
@@ -131,6 +135,27 @@ function docsZones() {
   return zones;
 }
 
+// Curated Starlight pages are authored outside docs/, so they do not pass
+// through the canonical Start Here scan above. The landing page and tutorial
+// are front-door copy and follow the same golden-register policy.
+const CURATED_SITE_PAGES = [
+  "apps/docs/src/content/docs/index.mdx",
+  "apps/docs/src/content/docs/start/quickstart.mdx",
+  "apps/docs/src/content/docs/catalog.mdx",
+  "apps/docs/src/content/docs/catalog-verticals.mdx",
+];
+
+function curatedGoldenZones() {
+  return CURATED_SITE_PAGES.slice(0, 2)
+    .map((relPath) => join(ROOT, relPath))
+    .filter(existsSync)
+    .map((path) => ({
+      name: path.slice(ROOT.length + 1),
+      path: path.slice(ROOT.length + 1),
+      text: readFileSync(path, "utf8"),
+    }));
+}
+
 async function helpZone() {
   // The rendered Golden path section of `ge --help`, colors stripped — checked
   // from the same renderer the CLI uses, so the gate can't drift from reality.
@@ -143,7 +168,9 @@ async function helpZone() {
 // working documents (plans, design-specs, ADRs) keep their working voice.
 function copyZones() {
   const EXCLUDED_DOC_DIRS = new Set(["plans", "design-specs", "adr", "tapes", "collateral", "assets", "diagrams-src", "_includes", "_sass"]);
-  const pages = ["README.md", "SETUP.md", "CONTRIBUTING.md"].map((p) => join(ROOT, p)).filter(existsSync);
+  const pages = ["README.md", "AGENTS.md", "SETUP.md", "CONTRIBUTING.md", ...CURATED_SITE_PAGES]
+    .map((p) => join(ROOT, p))
+    .filter(existsSync);
   const docsDir = join(ROOT, "docs");
   for (const rel of readdirSync(docsDir, { recursive: true })) {
     const relPath = String(rel);
@@ -157,7 +184,7 @@ function copyZones() {
 }
 
 export async function runLangGate() {
-  const zones = [readmeZone(), ...docsZones(), await helpZone()];
+  const zones = [readmeZone(), ...docsZones(), ...curatedGoldenZones(), await helpZone()];
   const findings = [];
   for (const zone of zones) {
     for (const finding of scanZoneText(zone.text)) {

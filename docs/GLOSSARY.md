@@ -1,5 +1,6 @@
 ---
 title: Glossary
+description: Translate factory terminology into plain language and follow each term to the concept, guide, or reference page that owns it.
 nav_order: 8
 layout: default
 ---

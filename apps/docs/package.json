@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "catalog": "bun scripts/gen-catalog.mjs",
+    "social-card": "node scripts/gen-social-card.mjs",
+    "social-card:check": "node scripts/gen-social-card.mjs --check",
     "sync": "bun scripts/gen-catalog.mjs && node scripts/sync-content.mjs",
     "sync:check": "node scripts/sync-content.mjs --dry-run",
-    "dev": "bun scripts/gen-catalog.mjs && node scripts/sync-content.mjs && astro dev",
-    "build": "bun scripts/gen-catalog.mjs && node scripts/sync-content.mjs && astro build",
+    "dev": "bun scripts/gen-catalog.mjs && node scripts/dev.mjs",
+    "build": "bun scripts/gen-catalog.mjs && node scripts/gen-social-card.mjs --check && node scripts/sync-content.mjs && astro build",
+    "audit": "node scripts/audit-dist.mjs",
     "preview": "astro preview"
   },
   "dependencies": {
