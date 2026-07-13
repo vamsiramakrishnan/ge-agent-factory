@@ -1,5 +1,6 @@
 ---
 title: Operations
+description: Deploy and operate the factory, understand cloud ownership and execution modes, diagnose failed stages, and recover runs safely.
 nav_order: 6
 layout: default
 ---

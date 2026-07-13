@@ -1,19 +1,17 @@
 ---
-title: 'Tutorial: contract to handoff'
-description: Ten minutes from a fresh clone to a compiled, proven agent workspace — and the handoff command that ships it.
+title: 'Tutorial: Capture → Prove → Handoff'
+description: Set up a checkout, prove a captured contract, inspect its evidence, and hand the same workspace to Agent Engine and Gemini Enterprise.
 sidebar:
   order: 2
-  label: Ten-minute tutorial
+  label: First proof tutorial
 ---
 
 import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import CommandCard from '../../../components/CommandCard.astro';
 
-Run the whole layer once: compile an Enterprise Agent Contract into a real
-agent workspace, inspect the contract and its proof artifacts, and see the
-handoff command that gives the result to agents-cli / ADK / Gemini
-Enterprise. Everything before the final step is local — no cloud
-credentials, no side effects.
+Finish with a proven agent workspace and the exact command that hands it to
+Agent Engine and Gemini Enterprise. The default proof stays on this machine;
+the handoff uses and mutates your Google Cloud project.
 
 <Steps>
 
@@ -21,33 +19,34 @@ credentials, no side effects.
 
    ```bash
    curl https://mise.run | sh   # once, if you don't have mise
-   mise run setup               # deps + Python/uv toolchain + `ge` on PATH + local daemon
+   mise run setup               # dependencies + `ge` on PATH + local task runner
    ```
 
-2. **Initialize** (~30 s).
+2. **Capture a contract — or use the included starter.**
 
    ```bash
-   ge init                      # discover config, write .ge.json
+   ge capture                   # opens the guided interview in the console
    ```
 
-   Bare `ge` now prints a status board — local or cloud, platform state, and
-   the next step. It defaults to **local**: nothing touches Google Cloud
-   until you opt in.
+   Finish the interview to create your own Enterprise Agent Contract. For a
+   fast installation check, skip this step: `ge prove` automatically selects
+   an included starter contract when nothing has been built yet.
 
-3. **Compile and prove one contract** (~5 min).
+3. **Prove one contract** (~5 min).
 
    ```bash
-   ge devex smoke               # doctor → compile one canary contract → validated workspace
+   ge prove                     # health check → agent workspace → evals and evidence
    ```
 
-   This takes one contract from the catalog through generate → validate —
-   code, tools, simulations, evals, proof — and prints the workspace path.
+   This turns the captured or starter contract into code, tools, simulations,
+   evals, and a validated workspace. It prints the exact workspace path and
+   the next useful command.
 
 4. **Read the contract the agent was compiled from.**
 
    ```bash
    ge state paths                            # shows where local state lands
-   cd .ge/factory/workspaces/<workspace-id>  # the path `ge devex smoke` printed
+   cd .ge/factory/workspaces/<workspace-id>  # the path `ge prove` printed
    head -60 mock_systems/usecase-spec.json
    ```
 
@@ -58,46 +57,50 @@ credentials, no side effects.
 
 5. **Run the proof yourself.**
 
-   The evalset is in `agents-cli`'s own format — the layer below, used
-   directly, inside the generated workspace:
+   The generated eval dataset is in `agents-cli`'s format. Run it directly
+   from the workspace:
 
    ```bash
-   agents-cli eval run --all
+   agents-cli eval run \
+     --dataset tests/eval/datasets/ge_behavior_contract.json \
+     --config tests/eval/eval_config.yaml
    ```
 
    The proof chain (evals, spec-to-code trace, verify-stage verdicts,
    promotion gate) is what stands between this workspace and a deploy:
    [Evals as proof](/ge-agent-factory/concepts/evals-as-proof/).
 
-6. **Watch a compile live in the console.**
+6. **Inspect proof progress in the console.**
 
    ```bash
-   ge agents build --canary     # compile one contract to the build boundary
    mise run console             # → http://localhost:18260
    ```
 
-   Follow the run in **Runs** (live stage timeline + log tail), inspect the
-   agent in **Fleet → Agent detail**, and check **Readiness** for the
-   environment verdict. Under the hood the build is one registry-backed
-   command — rendered here straight from the command registry, so it can't
-   drift:
+   Open **Runs** for the stage timeline and logs, select the agent to inspect
+   its evidence, and open **Readiness** for the environment verdict.
 
-   <CommandCard id="agents.build.local" />
+   <details>
+     <summary>Run another build from the lower-level command surface</summary>
+
+     The command below is rendered from the shared command registry:
+
+     <CommandCard id="agents.build.local" />
+   </details>
 
 7. **Hand off — when you're ready, and only then.**
 
    <Tabs>
-     <TabItem label="Ship a proven workspace">
+     <TabItem label="Hand off a proven workspace">
        With the platform provisioned in your own GCP project
        ([Operations](/ge-agent-factory/operations/)):
 
        ```bash
-       ge agents ship            # cloud runs load_data → deploy → register → publish
+       ge handoff agents-cli      # load data → deploy → register tools → publish
        ```
 
        The cloud consumes the exact workspace you proved locally — it never
-       regenerates. The promotion gate blocks the ship if the proof isn't
-       green.
+       regenerates it. The proof and admission gates refuse the handoff if its
+       evidence is not ready.
      </TabItem>
      <TabItem label="Stand up the platform first">
        Use the [Open in Cloud Shell installer](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md),
@@ -105,7 +108,7 @@ credentials, no side effects.
 
        ```bash
        export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-       CANARY=1 mise run bootstrap   # stand up the planes, prove one agent end to end
+       mise run bootstrap-cloud      # stand up the cloud platform and run its readiness checks
        ```
 
        Then follow [Provision the platform](/ge-agent-factory/operations/provision-the-platform/).
@@ -114,14 +117,14 @@ credentials, no side effects.
 
 </Steps>
 
-:::tip[Every surface is scriptable]
-Every `ge` command accepts `--json`, and the same commands are HTTP routes
-(the console) and MCP tools — one registry, three surfaces. See the
-[CLI reference](/ge-agent-factory/reference/cli/).
+:::tip[Every command is scriptable]
+Every `ge` command accepts `--json`. The console and Model Context Protocol
+(MCP) tools use the same command registry. See the [CLI
+reference](/ge-agent-factory/reference/cli/).
 :::
 
 ## Where next
 
-- The idea behind what you just ran: [Core mental model](/ge-agent-factory/start/mental-model/)
 - Capture your own use case: [Capture from an interview](/ge-agent-factory/cookbooks/capture-from-interview/)
+- Understand the three-step path: [Core mental model](/ge-agent-factory/start/mental-model/)
 - The full local setup detail: [Set up locally](/ge-agent-factory/start/getting-started/)

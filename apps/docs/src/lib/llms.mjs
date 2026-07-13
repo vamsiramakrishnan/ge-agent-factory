@@ -15,24 +15,17 @@ import {
   shelterFences,
   shelterInlineCode,
 } from "../../scripts/lib/mdx-transform.mjs";
+import { SITE_SECTIONS } from "./site-ia.mjs";
 
-// Mirrors the sidebar group order in astro.config.mjs (Starlight's sidebar
-// config shape can't be shared directly). The landing page sorts into
-// "Start here"; unknown future top-level segments sort last, alphabetically.
-const SECTION_ORDER = ["start", "concepts", "cookbooks", "reference", "operations", "contributing"];
-const SECTION_LABELS = {
-  start: "Start here",
-  concepts: "Concepts",
-  cookbooks: "Cookbooks",
-  reference: "Reference",
-  operations: "Operations",
-  contributing: "Contributing",
-};
+const SECTION_ORDER = SITE_SECTIONS.map(({ key }) => key);
+const SECTION_LABELS = Object.fromEntries(SITE_SECTIONS.map(({ key, label }) => [key, label]));
 
 const ASIDE_LABELS = { note: "Note", tip: "Tip", caution: "Caution", danger: "Important" };
 
 export function sectionOf(id) {
-  return id === "index" ? "start" : id.split("/")[0];
+  if (id === "index") return "start";
+  if (id === "catalog" || id === "catalog-verticals" || id.startsWith("catalog/")) return "catalog";
+  return id.split("/")[0];
 }
 
 export function sectionLabelOf(id) {
@@ -57,6 +50,9 @@ export function orderPages(pages) {
   return [...pages].sort((a, b) => {
     const rank = sectionRank(a.id) - sectionRank(b.id);
     if (rank !== 0) return rank;
+    const aSection = sectionOf(a.id);
+    const bSection = sectionOf(b.id);
+    if (aSection !== bSection) return aSection < bSection ? -1 : 1;
     const order = orderKey(a) - orderKey(b);
     if (order !== 0) return order;
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
@@ -152,32 +148,47 @@ export function firstProseSentence(plain, max = 200) {
   return "";
 }
 
-// The llms.txt index: title, one-line description, then every published page
-// grouped by sidebar section, each with a link and a description.
-export function buildLlmsTxt({ title, description, siteRoot, pages }) {
+function catalogScopeText(catalogScope) {
+  const count = Number(catalogScope?.detailPageCount ?? 0);
+  const amount = count > 0 ? `${count} generated agent detail pages` : "the generated agent detail pages";
+  return `Catalog scope: this export includes the catalog overview pages and links to the browser-only explorer. It intentionally omits ${amount}; those pages remain available on the website.`;
+}
+
+// The llms.txt index: title, one-line description, then every published
+// content page grouped once in the same order as the site sidebar. The
+// browser-only catalog surface is linked with an explicit scope statement.
+export function buildLlmsTxt({ title, description, siteRoot, pages, catalogScope }) {
   const out = [`# ${title}`, "", `> ${description}`];
-  let section = null;
-  for (const page of pages) {
-    const label = sectionLabelOf(page.id);
-    if (label !== section) {
-      section = label;
-      out.push("", `## ${label}`, "");
+  const groups = new Map();
+  for (const page of orderPages(pages)) {
+    const section = sectionOf(page.id);
+    const group = groups.get(section) ?? [];
+    group.push(page);
+    groups.set(section, group);
+  }
+  for (const [section, sectionPages] of groups) {
+    out.push("", `## ${sectionLabelOf(section)}`, "");
+    if (section === "catalog" && catalogScope) out.push(`> ${catalogScopeText(catalogScope)}`, "");
+    for (const page of sectionPages) {
+      const desc = page.description ? `: ${page.description}` : "";
+      out.push(`- [${page.title}](${urlFor(page.id, siteRoot)})${desc}`);
     }
-    const desc = page.description ? `: ${page.description}` : "";
-    out.push(`- [${page.title}](${urlFor(page.id, siteRoot)})${desc}`);
+    if (section === "catalog" && catalogScope) {
+      out.push(`- [Catalog explorer](${siteRoot}/catalog/explorer/): filter the complete catalog by industry, function, and value stream (web-only)`);
+    }
   }
   out.push(
     "",
     "## Optional",
     "",
-    `- [llms-full.txt](${siteRoot}/llms-full.txt): every page above as one plain-markdown file`,
+    `- [llms-full.txt](${siteRoot}/llms-full.txt): the documentation content pages above as one plain-markdown file; the catalog explorer and generated agent detail pages stay web-only`,
   );
   return `${out.join("\n")}\n`;
 }
 
 // The llms-full.txt concatenation: every page as plain markdown, in the same
 // deterministic order, separated by thematic breaks.
-export function buildLlmsFullTxt({ title, description, siteRoot, pages }) {
+export function buildLlmsFullTxt({ title, description, siteRoot, pages, catalogScope }) {
   const out = [
     `# ${title} — full documentation`,
     "",
@@ -185,7 +196,11 @@ export function buildLlmsFullTxt({ title, description, siteRoot, pages }) {
     "",
     `Index of pages: ${siteRoot}/llms.txt · Site: ${urlFor("index", siteRoot)}`,
   ];
-  for (const page of pages) {
+  if (catalogScope) {
+    const scope = catalogScopeText(catalogScope).replace(/^Catalog scope:\s*/, "");
+    out.push("", `Catalog scope: ${scope} Explorer: ${siteRoot}/catalog/explorer/`);
+  }
+  for (const page of orderPages(pages)) {
     out.push("", "---", "", `# ${page.title}`, "", `URL: ${urlFor(page.id, siteRoot)}`, "", page.plain.trimEnd());
   }
   return `${out.join("\n")}\n`;

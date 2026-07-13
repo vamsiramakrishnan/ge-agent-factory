@@ -2,34 +2,38 @@
 title: Set up locally
 nav_order: 3
 layout: default
-description: Local setup, choosing whether this machine or the cloud does the building, and the fast checks that prove the repo works on your machine — no cloud project required.
+description: Install the local factory and produce a validated agent workspace without a cloud project.
 ---
 
 # Set up locally
 
-**Scope:** local-only — no cloud project or credentials required.
+**Scope:** the default proof is local-only and needs no cloud project. The
+optional preview step can use Vertex; it is called out separately below.
 
 ## Goal
 
-Get a working local factory: understand the difference between building
-**on this machine** and building **in the cloud**, and see how the fast
-checks and the one-command first proof (`ge prove`) fit into the loop — all
-without touching a cloud project.
+Install the factory and finish with one validated agent workspace. The product
+path is **Capture → Prove → Handoff**: capture an Enterprise Agent Contract,
+prove it on this machine, then hand the same workspace to the cloud only when
+you choose. This page stops after the local proof, so no cloud project or
+credentials are required.
 
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
 translations of every internal term, the operator vocabulary included.
 
-## Recommended: skills-first install
+## Recommended: verified installer
 
-Let your coding agent run the factory's install skill: it performs the
-clone/bootstrap, checks each phase, applies the structured fixes it knows
-about, and leaves the `ge` CLI plus the factory's agent skills ready for the
-next operator step.
+Run the supported GitHub installer to clone the repository, provision the
+toolchain, run `mise run setup`, verify the installation, and expose the
+factory skills to your coding agent:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
-  | bun - -- --skills agents        # clone, verify, and install skills for agent sessions
+  | bun - -- --yes --skills agents  # clone, run setup, verify, and install skills
 ```
+
+`--yes` tells the installer to execute the setup phases. Without it, the
+installer prints the phases for review and exits without installing them.
 
 Other surfaces use the same skill bundle:
 
@@ -38,12 +42,11 @@ Other surfaces use the same skill bundle:
 | Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
 | Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
 | Existing checkout | `mise run skills-install` |
-| MCP-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |
+| Model Context Protocol (MCP)-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |
 
-The proven workspace this produces is a standard
-[Google agents-cli](https://google.github.io/agents-cli/) / ADK (Agent
-Development Kit) project. The skills automate setup and operations for the
-layer above.
+After setup, `ge prove` produces a standard [Google
+agents-cli](https://google.github.io/agents-cli/) / Agent Development Kit
+(ADK) project. The skills automate setup and operations for the layer above.
 
 ## Manual prerequisites + install
 
@@ -59,7 +62,7 @@ mise run console         # open the operator UI → http://localhost:18260
 
 ## Steps
 
-1. **Prove one agent end to end.**
+1. **Prove the included starter contract.**
 
    ```bash
    ge prove
@@ -72,34 +75,37 @@ mise run console         # open the operator UI → http://localhost:18260
    it is safe to re-run any time (`ge prove --watch` re-proves whenever a
    contract changes).
 
+   To prove your own use case instead, run `ge capture`, finish the guided
+   interview, and then run `ge prove`.
+
    <details>
    <summary>Under the hood</summary>
 
    On a fresh machine, `ge prove` (also exposed as `mise run prove`) runs
    local readiness checks, sets local mode, and builds one
-   **[canary](../GLOSSARY.html#canary)** workspace (a single throwaway agent
-   used to prove the pipeline works, as opposed to building the whole
-   catalog) to the `validated` stage. Once workspaces exist, `ge prove`
+   **[canary](../GLOSSARY.html#canary)** workspace (one small catalog agent
+   used to prove the path, instead of building every contract) to the
+   `validated` stage. Once workspaces exist, `ge prove`
    rebuilds their proof via `ge agents build`.
 
    The fast pre-check on its own is `mise run devex-check` (=
-   `ge devex check`): local doctor, GitHub Pages link check, and generated
+   `ge devex check`): local doctor, documentation link checks, and generated
    workspace manifest contract validation in one fast command.
 
    </details>
 
-2. **Understand which side of the build boundary you're on.**
+2. **Know where cloud work begins.**
 
    <p align="center">
      <img src="../assets/diagrams/factory-line.svg" alt="The factory line's three phases: Author and Build, then Validate and Refine (ending at preview, the build boundary), then Release — only the Release phase touches your GCP project" width="700">
    </p>
 
-   By default, this machine runs *generate → validate* up to the **build
-   boundary** (the `previewed` stage — the last stage that runs with no
-   cloud credentials; everything after it touches your Google Cloud
-   project). Deploy/register/publish are cloud-only steps that happen at
-   handoff. You can instead have the cloud factory do the building while
-   this machine submits and observes.
+   The default `ge prove` stops at `validated` and needs no cloud credentials.
+   The optional `previewed` stage is the **build boundary**: it still runs from
+   this checkout, but its default Vertex-backed review can require a project
+   and application credentials. Deploy, tool registration, and publication
+   happen only after an explicit `ge handoff agents-cli` and mutate your
+   Google Cloud project.
 
    <details>
    <summary>Operator spelling / under the hood</summary>
@@ -118,10 +124,9 @@ mise run console         # open the operator UI → http://localhost:18260
 
    </details>
 
-   > The default when unset is to build on this machine, so a fresh clone
-   > with no cloud project never reaches Google Cloud by accident. Bare `ge`
-   > reports which side you're on anytime (the operator spelling above shows
-   > the underlying switch).
+   > A fresh checkout builds on this machine and never hands anything to
+   > Google Cloud by accident. Bare `ge` reports your current position and
+   > the exact next command.
    {: .note }
 
 3. **(Optional) Build one specific agent locally to the preview boundary.**
@@ -131,15 +136,23 @@ mise run console         # open the operator UI → http://localhost:18260
    ```
 
    This builds a single agent on this machine up to the `previewed` build
-   boundary.
+   boundary. Because preview uses Vertex by default, authenticate and set a
+   project first. To disable Vertex-backed stages, use the lower-level command
+   in the details below with `--no-vertex`.
 
    <details>
    <summary>Operator spelling / under the hood</summary>
 
-   The task-runner spelling is `mise run mode-local && CANARY=1 mise run
-   provision-local`, which is `ge agents build --local --canary` — it
+   The task-runner spelling is `CANARY=1 mise run build-agents-local`, which
+   is `ge agents build --local --canary` — it
    builds a single agent on this machine up to the `previewed` build
    boundary.
+
+   To select one contract and disable Vertex-backed stages explicitly:
+
+   ```bash
+   ge agents build --local --ids <use-case-id> --target previewed --no-vertex
+   ```
 
    </details>
 
@@ -167,9 +180,9 @@ The console should load at http://localhost:18260 and show the Readiness view.
 
 ## Next step
 
-- Run the whole path once: the [ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/).
 - Capture your own use case: [Capture from an interview](../cookbooks/capture-from-interview.html).
-- Compile a contract into an agent workspace: [Compile a contract](../cookbooks/compile-a-contract.html).
+- Run Capture → Prove → Handoff once: the [first proof tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/).
+- Inspect proof artifacts and gates: [Prove an agent](../cookbooks/prove-an-agent.html).
 
 ## Troubleshoot
 
@@ -177,41 +190,23 @@ See [`SETUP.md`](../../SETUP.md#troubleshoot) for install-time issues (missing
 Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
 to this guide's loop:
 
-Real output from running the fast check on a clean clone, before `mise run
-setup` has installed `agents-cli`/Antigravity/skills — this is what "not
-ready yet" looks like, and every line names its own fix:
+Run the fast read-only check when setup or a generated workspace looks wrong:
 
 <details open>
-<summary>Fast-check output on a clean clone (operator spelling: bun tools/ge.mjs devex check)</summary>
+<summary>Example: a clean checkout before setup</summary>
 
-```text title="bun tools/ge.mjs devex check" {3,6,9}
-DevEx Check
-  failed
-
-  Local Doctor
-  ✗ agents-cli                     not found
-      fix: uv tool install google-agents-cli
-  ✗ google-antigravity SDK         not importable (python3)
-      fix: mise run deps  (creates .venv via uv + installs the SDK)
-  ✗ harness skills manifest        .ge/skills/manifest.json missing or empty
-      fix: mise run skills-sync
-  ▲ GOOGLE_CLOUD_PROJECT           not set — required for cloud ops (provision/up/data/mcp) and both apps' read paths
-      fix: cp .env.example .env  then set GOOGLE_CLOUD_PROJECT=<your-project-id>  (or: gcloud config set project <id>)
-
-  Docs
-  ✓ 99 markdown files checked
-
-  Workspace Contracts
-  checked 0 · failed 0 · warnings 0
-
-  Next
-  $ mise run setup
+```bash
+ge devex check
 ```
+
+The check groups failures under local tools, documentation links, and
+workspace contracts. Each failure includes its exact fix; on a clean checkout
+the next command is normally `mise run setup`.
 </details>
 
-`mise run setup` runs exactly the three fixes above in order — this is why
-the first command in "Manual prerequisites + install" is a single command
-instead of three.
+`mise run setup` installs dependencies, syncs the catalog and skills, puts
+`ge` on `PATH`, and starts the local background runtime. Re-running it is the
+fastest way to reconcile an incomplete setup.
 
 - **Mock/simulator data pauses** — `mise run data-runtime` warms the Snowfakery
   runtime; it needs network/cache the first time.

@@ -14,8 +14,13 @@ src/content/docs/concepts/
 src/content/docs/cookbooks/
 src/content/docs/reference/
 src/content/docs/contributing/
+src/content/docs/console/
+src/content/docs/operations/
 src/content/docs/operations.md*
 src/content/docs/start/what-is-the-factory.md*
 src/content/docs/start/developer-guide.md*
+src/content/docs/start/getting-started.md*
+src/content/docs/start/mental-model.md*
+src/content/docs/start/vs-agents-cli.md*
 public/assets/
 public/architecture.svg

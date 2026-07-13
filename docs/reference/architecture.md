@@ -1,5 +1,6 @@
 ---
 title: Architecture
+description: Understand local and remote execution, the factory, data, and tool planes, the durable control plane, run ledger, stages, and capability ownership.
 parent: Reference
 nav_order: 2
 layout: default

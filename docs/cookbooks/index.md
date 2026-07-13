@@ -1,5 +1,6 @@
 ---
 title: Guides
+description: Complete a factory task from capture through proof and handoff, with runnable commands, expected outputs, failure modes, and repair steps.
 nav_order: 4
 has_children: true
 layout: default
@@ -7,42 +8,17 @@ layout: default
 
 # Guides
 
-These guides walk the layer this product adds above agents-cli, ADK (Agent
-Development Kit), and Gemini Enterprise: **capture** the contract, **compile**
-it into an agent, **simulate** the source systems it touches, **prove** the
-agent against the contract, and **hand off** the result to the runtime your
-organization already operates. Every step is a real command from this repo
-(`mise.toml`, `tools/ge.mjs`, `apps/factory/scripts/*`) or a real console API
-route.
+Use these guides to **capture** an Enterprise Agent Contract, **prove** a
+generated workspace against that contract, and **hand off** the same proven
+workspace to the runtime your organization operates. Compilation, source-system
+simulation, evaluation, admission, deployment, and live verification sit inside
+those three outcomes.
 
 Throughout, "the contract" means the enterprise agent contract — concretely,
 the use-case spec (`usecase-spec.json`, or `agent-spec.json` when it comes out
 of the interview). Its portable Markdown form is the OKF (Open Knowledge Format) bundle. See
 [The enterprise agent contract](../concepts/enterprise-agent-contract.html)
 and the [Glossary](../GLOSSARY.html).
-
-| # | Guide | What you get |
-|---|-------|--------------|
-| 1 | [Capture a contract in the interview](capture-from-interview.html) | A saved contract with a workflow and answerable queries, captured through the console interview |
-| 2 | [Capture a contract from documents](capture-from-documents.html) | An interview grounded in your BRD and policy documents, so the contract cites real requirements |
-| 3 | [Capture a source system from OpenAPI](capture-from-openapi.html) | A simulated source-system twin synthesized from an OpenAPI document |
-| 4 | [Compile a contract](compile-a-contract.html) | A runnable agent compiled from the contract (`ge agents build --canary`) |
-| 5 | [Contract ⇄ OKF](spec-to-okf.html) | The contract's portable Markdown form — an OKF bundle — and the round-trip back |
-| 6 | [Generate simulations](generate-simulations.html) | Simulated source systems with deterministic seed data, mounted or promoted |
-| 7 | [Prove an agent](prove-an-agent.html) | The behavior-contract eval set run as proof that the agent honors its contract |
-| 8 | [Repair a failed proof](repair-failed-proof.html) | A diagnosed failure and a repaired, re-proven agent |
-| 9 | [Admit an agent](admit-an-agent.html) | A signed Agent Passport over the proof pack, and the recorded admission decision that gates the handoff |
-| 10 | [Hand off to agents-cli](handoff-agents-cli.html) | The compiled agent handed to the agents-cli workflow |
-| 11 | [Hand off to ADK / Gemini Enterprise](handoff-adk-gemini-enterprise.html) | The compiled agent handed to ADK or Gemini Enterprise |
-| 12 | [Drive a shipped agent](drive-a-shipped-agent.html) | A live conversation with the deployed agent, instrumented per turn, recordable as eval cases and cassettes |
-| 13 | [Compile behavioral evals](compile-behavioral-evals.html) | An executable behavior suite derived from the contract — evalset, coverage, grading dataset, and load profile |
-| 14 | [Prove the shipped agent live](prove-live.html) | Evalset cases run through the deployed assist surface — metric grid, conformance baselines, and the live gate verdict |
-| 15 | [Bench against live budgets](bench-live-budgets.html) | Latency and error budgets verdicted against the live surface, with cassette replay for CI |
-| 16 | [Bring your own systems](bring-your-own-systems.html) | A live system bound to a contract, or a whole set of customizations — bindings, eval packs, model/policy choices — packaged into one validated `ge.byo.yaml` manifest |
-
-> Where a path or flag differs from what you'd expect, the guide calls it out
-> explicitly.
-{: .note }
 
 ## Recommended paths
 
@@ -55,4 +31,44 @@ and the [Glossary](../GLOSSARY.html).
 | Fresh clone, no cloud | [Getting started](../start/getting-started.html) → [Capture a contract in the interview](capture-from-interview.html) → [Compile a contract](compile-a-contract.html) → [Prove an agent](prove-an-agent.html) |
 | Business use case, no contract yet | [Capture a contract from documents](capture-from-documents.html) → [Capture a contract in the interview](capture-from-interview.html) → [Contract ⇄ OKF](spec-to-okf.html) → [Compile a contract](compile-a-contract.html) |
 | New source system | [Capture a source system from OpenAPI](capture-from-openapi.html) → [Generate simulations](generate-simulations.html) → [Prove an agent](prove-an-agent.html) |
-| First cloud release | [Provision the platform](../operations/provision-the-platform.html) → [Deploy the Agent Gateway](../operations/agent-gateway.html) → [Run and observe](../operations/run-and-observe.html) |
+| First cloud release | [Provision the platform](../operations/provision-the-platform.html) → [Deploy and publish a proven workspace](handoff-adk-gemini-enterprise.html) → [Prove it live](prove-live.html) |
+
+## Capture
+
+| Guide | Outcome |
+|---|---|
+| [Capture a contract in the interview](capture-from-interview.html) | A saved contract with a workflow and answerable queries |
+| [Capture a contract from documents](capture-from-documents.html) | A contract grounded in a BRD or policy source |
+| [Capture a source system from OpenAPI](capture-from-openapi.html) | A simulated source-system twin synthesized from an API description |
+| [Contract ⇄ OKF](spec-to-okf.html) | A portable Open Knowledge Format bundle and a verified round-trip |
+
+## Prove
+
+| Guide | Outcome |
+|---|---|
+| [Compile a contract](compile-a-contract.html) | A runnable agent workspace generated from the contract |
+| [Generate simulations](generate-simulations.html) | Deterministic source-system twins mounted or promoted into the corpus |
+| [Compile behavioral evaluations](compile-behavioral-evals.html) | An executable evaluation suite with coverage, grading data, and a load profile |
+| [Prove an agent](prove-an-agent.html) | Contract-derived evaluations and promotion evidence for a local workspace |
+| [Repair a failed proof](repair-failed-proof.html) | A diagnosed blocker and a repaired, re-proven workspace |
+| [Admit an agent](admit-an-agent.html) | A signed Agent Passport and a recorded admission decision |
+
+## Hand off and operate
+
+| Guide | Outcome |
+|---|---|
+| [Use a generated workspace with agents-cli](handoff-agents-cli.html) | The standard agents-cli and Agent Development Kit project opened and evaluated directly |
+| [Deploy and publish a proven workspace](handoff-adk-gemini-enterprise.html) | The proven workspace deployed to Agent Engine and published to Gemini Enterprise |
+| [Drive a shipped agent](drive-a-shipped-agent.html) | A live, instrumented conversation that can become an evaluation case or cassette |
+| [Prove the shipped agent live](prove-live.html) | Evaluation cases run through the deployed assist surface with a live gate verdict |
+| [Bench against live budgets](bench-live-budgets.html) | Latency and error budgets checked against live traffic or cassette replay |
+
+## Extend
+
+| Guide | Outcome |
+|---|---|
+| [Bring your own systems](bring-your-own-systems.html) | System bindings, evaluation packs, models, and policy choices packaged in one validated manifest |
+
+> Each guide states its scope before the first command, including whether the
+> task is local-only or can change cloud resources.
+{: .note }

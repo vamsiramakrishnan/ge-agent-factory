@@ -12,6 +12,7 @@ import {
   siteRootFrom,
 } from "../lib/llms.mjs";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../lib/site-meta.mjs";
+import catalog from "../data/agent-catalog.json";
 
 export async function GET() {
   const entries = await getCollection("docs");
@@ -21,7 +22,10 @@ export async function GET() {
     title: entry.data.title,
     description: entry.data.description || firstProseSentence(plainifyMdx(entry.body)),
   }));
-  return new Response(buildLlmsTxt({ title: SITE_TITLE, description: SITE_DESCRIPTION, siteRoot, pages }), {
+  const catalogScope = {
+    detailPageCount: Number(catalog.meta.totalAgents) + Number(catalog.meta.totalVerticalAgents),
+  };
+  return new Response(buildLlmsTxt({ title: SITE_TITLE, description: SITE_DESCRIPTION, siteRoot, pages, catalogScope }), {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 }

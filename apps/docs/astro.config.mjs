@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import { SITE_DESCRIPTION, SITE_TITLE } from "./src/lib/site-meta.mjs";
+import { STARLIGHT_SIDEBAR } from "./src/lib/site-ia.mjs";
 
 // The docs website. Content is NOT authored here — scripts/sync-content.mjs
 // renders the repo's canonical docs/ markdown into src/content/docs before
@@ -45,16 +46,7 @@ export default defineConfig({
         themes: ["github-dark"],
         styleOverrides: { borderRadius: "0.5rem" },
       },
-      sidebar: [
-        { label: "Start Here", autogenerate: { directory: "start" } },
-        { label: "Agent catalog", link: "/catalog/" },
-        { label: "Core Concepts", autogenerate: { directory: "concepts" } },
-        { label: "Guides", autogenerate: { directory: "cookbooks" } },
-        { label: "Console", autogenerate: { directory: "console" } },
-        { label: "Operations", autogenerate: { directory: "operations" } },
-        { label: "Reference", autogenerate: { directory: "reference" } },
-        { label: "Contributor Docs", autogenerate: { directory: "contributing" } },
-      ],
+      sidebar: STARLIGHT_SIDEBAR,
     }),
   ],
 });

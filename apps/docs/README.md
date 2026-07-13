@@ -8,10 +8,16 @@ dev/build, so this app is presentation only: theme, information architecture,
 and a handful of curated pages.
 
 ```bash
-mise run docs-site          # dev server (syncs content, then astro dev)
+mise run docs-site          # dev server; watches docs/ and resyncs on save
 bun run docs:site:build     # production build → apps/docs/dist
+bun run docs:site:check     # build + rendered-link audit + docs-site tests
 node scripts/sync-content.mjs --dry-run   # preview the docs/ → site mapping
+bun run --filter ./apps/docs social-card  # render public/og.png from og.svg
 ```
+
+The dev command generates the catalog once at startup. A prose or image save
+under `docs/` reruns only the content sync, then Astro hot-reloads the emitted
+MDX/assets; it does not rebuild the catalog on every edit.
 
 ## How a docs/ page becomes a site page
 
@@ -61,6 +67,11 @@ link check for the site.
 
 - `src/content/docs/index.mdx` — the landing page (splash + cards)
 - `src/content/docs/start/quickstart.mdx` — Steps/Tabs quickstart
+- `src/content/docs/catalog.mdx` — horizontal catalog overview
+- `src/content/docs/catalog-verticals.mdx` — industry catalog overview
+
+Everything else below `src/content/docs/` is generated and ignored. A site
+build must leave `git diff` empty; the Pages workflow enforces that invariant.
 
 ## LLM-readable exports: `/llms.txt` and `/llms-full.txt`
 
@@ -69,11 +80,15 @@ built into `dist/` by `astro build`) make the whole site one-fetch legible to
 agents, per [llmstxt.org](https://llmstxt.org/):
 
 - **`/llms.txt`** — the index: site title, one-line description, then every
-  published page (absolute URL + description), grouped by sidebar section in
-  deterministic sidebar-then-slug order.
-- **`/llms-full.txt`** — every page concatenated as plain markdown:
+  published content page (absolute URL + description), grouped by the shared
+  site information architecture in deterministic sidebar-then-slug order.
+- **`/llms-full.txt`** — every indexed content page concatenated as plain markdown:
   frontmatter dropped, MDX imports/components and the glossary linker's
   tooltip anchors stripped back out, page links absolutized.
+
+The browser-only catalog explorer and 513 generated per-agent detail pages
+stay on the website rather than expanding the text export by hundreds of
+near-identical entries. Both files state this scope and link the explorer.
 
 Both are rendered from the same synced content collection Starlight renders
 (logic in `src/lib/llms.mjs`, exercised by `tests/llms-txt.test.mjs`), so the
@@ -95,7 +110,8 @@ generated copies) and re-derive here — strategic design context lives in
 
 ## Deployment
 
-`.github/workflows/deploy-docs.yml` builds and deploys to GitHub Pages on
-pushes to `main` that touch `docs/` or `apps/docs/`. The repo's Pages settings
-must have **Source = GitHub Actions** (the legacy Jekyll site under `docs/`
-serves until that switch is flipped).
+`.github/workflows/deploy-docs.yml` builds, audits, and tests the site on every
+pull request. A successful `main` build uploads and deploys the same artifact
+to GitHub Pages. The repo's Pages settings must have **Source = GitHub
+Actions** (the legacy Jekyll site under `docs/` serves until that switch is
+flipped).

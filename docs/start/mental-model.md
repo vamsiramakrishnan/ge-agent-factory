@@ -2,17 +2,17 @@
 title: Core mental model
 nav_order: 4
 layout: default
-description: The five verbs of the contract layer — capture, compile, generate, prove, hand off — and how they map onto the commands and stages that exist today.
+description: The capture, prove, and handoff golden path — and where contract compilation and workspace generation happen inside it.
 ---
 
 # Core mental model
 
-One sentence to keep: **the factory turns enterprise intent into a contract,
-turns the contract into artifacts, proves the artifacts, and hands them off.**
-Everything in this repo — every command, console view, and generated file —
-serves one of those five verbs.
+One sentence to keep: **capture a contract, prove a generated workspace, then
+hand off that same proven workspace.** Those are the three outcomes a reader
+needs at the front door. Contract compilation and workspace generation are
+the internal phases that make local proof possible.
 
-## The five verbs
+## Three outcomes, five internal verbs
 
 | Verb | What it means | Where it happens today |
 |---|---|---|
@@ -132,9 +132,9 @@ the shallow end for weeks:
 | **Typical day** | capture in the Interview, prove a first agent, watch it in Runs | script the stages in CI, drive repairs, ship in batches, wire MCP callers |
 
 Three facts make the deep end safe to grow into: bare `ge` always prints the
-next step; every mutating command declares a risk level; and one registry
-backs all three surfaces — CLI, [console](../console/), and
-[MCP tools](../MCP.html) — so they cannot disagree.
+next step; every mutating command declares a risk level; and the CLI,
+[console](../console/), and [MCP tools](../MCP.html) dispatch through the same
+capability registry and result contracts.
 
 ## Next
 

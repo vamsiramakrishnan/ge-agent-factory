@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">GE Agent Factory</title>
+  <desc id="desc">Capture a contract, prove an agent locally, and hand off the proven workspace.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#c2c6d4" opacity="0.7"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#fcf9f8"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect x="56" y="48" width="42" height="42" rx="3" fill="#00408b"/>
+  <text x="77" y="76" text-anchor="middle" font-family="ui-monospace, monospace" font-size="15" font-weight="700" fill="#f2f4f8">af</text>
+  <text x="116" y="77" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#1b1c1c">ge agent factory</text>
+  <text x="56" y="205" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#1b1c1c">Contract in.</text>
+  <text x="56" y="280" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#1b1c1c">Proof out.</text>
+  <text x="60" y="334" font-family="Arial, sans-serif" font-size="25" fill="#383e47">Generate and verify enterprise agents before cloud handoff.</text>
+  <g transform="translate(56 420)">
+    <rect width="322" height="118" rx="6" fill="#f0eded" stroke="#c2c6d4"/>
+    <text x="24" y="35" font-family="ui-monospace, monospace" font-size="14" font-weight="700" fill="#00408b">01 / CAPTURE</text>
+    <text x="24" y="76" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#1b1c1c">Readable contract</text>
+    <path d="M336 59h54" stroke="#565e6c" stroke-width="2"/>
+    <path d="m383 51 9 8-9 8" fill="none" stroke="#565e6c" stroke-width="2"/>
+  </g>
+  <g transform="translate(446 420)">
+    <rect width="322" height="118" rx="6" fill="#e6ebff" stroke="#00408b"/>
+    <text x="24" y="35" font-family="ui-monospace, monospace" font-size="14" font-weight="700" fill="#00408b">02 / PROVE</text>
+    <text x="24" y="76" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#1b1c1c">Local evidence</text>
+    <path d="M336 59h54" stroke="#565e6c" stroke-width="2"/>
+    <path d="m383 51 9 8-9 8" fill="none" stroke="#565e6c" stroke-width="2"/>
+  </g>
+  <g transform="translate(836 420)">
+    <rect width="308" height="118" rx="6" fill="#e1f3e7" stroke="#16874a"/>
+    <text x="24" y="35" font-family="ui-monospace, monospace" font-size="14" font-weight="700" fill="#0d6d3a">03 / HAND OFF</text>
+    <text x="24" y="76" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#1b1c1c">Proven workspace</text>
+  </g>
+  <line x1="56" y1="582" x2="1144" y2="582" stroke="#1b1c1c" stroke-width="2"/>
+  <text x="56" y="607" font-family="ui-monospace, monospace" font-size="13" fill="#565e6c">capture → prove → hand off</text>
+</svg>
