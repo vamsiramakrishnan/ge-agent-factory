@@ -44,7 +44,7 @@ const agents = verticalAgents.map((a: any) => ({
   num: Number(String(a.agentId).replace(/^[A-Z]+-/, "")) || a.num,
 }));
 
-const data = { departments, domains, legend, agents, meta: null };
+const data = { departments, domains, legend, agents, tabLabel: "Industries" };
 ---
 
 <PeriodicTable data={data} />

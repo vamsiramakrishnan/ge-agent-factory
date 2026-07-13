@@ -10,10 +10,9 @@
  * instead of shadows, flat geometric shapes, lowercase technical labels,
  * tonal layering instead of elevation. "Less, but better."
  *
- * Type follows the same rule as the product: Hanken Grotesk for headings
- * and chrome, the system reading face for body copy (a deliberate
- * long-form legibility choice, see docs/DESIGN.md), JetBrains Mono for
- * code and technical labels. */
+ * Type follows the same rule as the product: Hanken Grotesk for readable
+ * interface and content copy, JetBrains Mono only for code and machine data. */
+@import "@fontsource/hanken-grotesk/400.css";
 @import "@fontsource/hanken-grotesk/500.css";
 @import "@fontsource/hanken-grotesk/600.css";
 @import "@fontsource/hanken-grotesk/700.css";
@@ -51,16 +50,17 @@
    * reader is meant to read as a sentence. */
   --ge-label-size: 0.625rem; /* 10px */
   --ge-label-tracking: 0.1em;
+  --ge-focus-ring: #8fa4ff;
 }
 
 .ge-label {
   display: inline-block;
-  font-family: var(--sl-font-mono);
-  font-size: var(--ge-label-size);
-  font-weight: 600;
-  line-height: 1rem;
-  text-transform: uppercase;
-  letter-spacing: var(--ge-label-tracking);
+  font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 0.875rem;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
   color: var(--sl-color-gray-3);
 }
 
@@ -107,6 +107,7 @@
   --ge-status-warning-text: var(--ge-status-warning-ink);
   --ge-status-repairing-text: var(--ge-status-repairing-ink);
   --ge-accent-synthesized-text: var(--ge-accent-synthesized-ink);
+  --ge-focus-ring: #00408b;
 }
 
 /* ── Dark palette — cool slate around --color-on-surface's hue, cobalt
@@ -193,7 +194,7 @@ h6,
 .site-title {
   font-family: var(--ge-display-font);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 h1,
@@ -245,7 +246,7 @@ h3 {
   font-family: var(--ge-display-font);
   font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   text-transform: lowercase;
   color: var(--sl-color-white);
   transition: color 120ms ease;
@@ -269,19 +270,22 @@ h3 {
  * navigation chrome, not prose. Same treatment for the right-rail "On this
  * page" caption, so both wayfinding panels read as one system. */
 nav.sidebar .top-level > li > details > summary .group-label > span {
-  font-family: var(--sl-font-mono);
-  font-size: var(--ge-label-size);
-  font-weight: 600;
-  letter-spacing: var(--ge-label-tracking);
-  text-transform: uppercase;
+  font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
   color: var(--sl-color-gray-3);
 }
 
 .right-sidebar-panel h2 {
-  font-size: var(--ge-label-size);
-  font-weight: 600;
-  letter-spacing: var(--ge-label-tracking);
-  text-transform: uppercase;
+  font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
 }
 
 /* Current-page marker: a quiet recessed surface plus one lit dot ahead of
@@ -328,7 +332,7 @@ nav.sidebar details[open] > summary::after {
 
 /* Focus ring matches the product (tokens.css :focus-visible). */
 :focus-visible {
-  outline: 2px solid var(--sl-color-accent);
+  outline: 2px solid var(--ge-focus-ring);
   outline-offset: 2px;
 }
 
@@ -406,9 +410,7 @@ button > kbd {
  * readout glass, and gives the title bar of a ```bash frame the same
  * industrial-label register as everywhere else. ─────────────────────────── */
 .expressive-code .frame {
-  box-shadow:
-    inset 0 2px 8px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
 }
 
 .expressive-code .frame.is-terminal .header {
@@ -645,11 +647,8 @@ button > kbd {
   line-height: 0.95;
 }
 
-/* ── Motion — one deliberate entrance on the landing hero, nothing that
- * loops or repeats on navigation. The header wordmark and every below-fold
- * card stay still; motion here orients the eye down the hero once, then gets
- * out of the way (Rams: unobtrusive). A single rise+settle on a fast-out
- * ease, staggered a beat apart, and fully removed for reduced-motion. ────── */
+/* One short orientation cue on the hero. Everything below the fold stays
+ * still, and reduced-motion readers receive no transition. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes ge-rise {
     from {
@@ -664,21 +663,16 @@ button > kbd {
 
   .hero h1,
   .hero .tagline,
-  .hero .actions,
-  .ge-hero-panel {
-    animation: ge-rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  .hero .actions {
+    animation: ge-rise 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .hero .tagline {
-    animation-delay: 90ms;
+    animation-delay: 60ms;
   }
 
   .hero .actions {
-    animation-delay: 180ms;
-  }
-
-  .ge-hero-panel {
-    animation-delay: 260ms;
+    animation-delay: 120ms;
   }
 }
 
@@ -687,92 +681,86 @@ button > kbd {
   font-size: clamp(1.05rem, 2vw, 1.35rem);
 }
 
-.ge-hero-panel {
-  position: relative;
-  margin: var(--ge-space-5) auto var(--ge-space-6);
-  padding: clamp(var(--ge-space-3), 2vw, var(--ge-space-4));
+/* The golden path is an HTML rail instead of a portrait diagram. It stays
+ * readable at phone width and gives the homepage one compact mental model. */
+.ge-stage-rail {
+  overflow: hidden;
+  margin: 0 0 var(--ge-space-7);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-xl);
   background: var(--sl-color-black);
 }
 
-.ge-hero-panel img {
-  display: block;
-  width: 100%;
-  margin: 0;
-}
-
-.ge-proof-strip,
-.ge-logo-row,
-.ge-value-grid,
-.ge-screenshot-wall,
-.ge-tape-grid {
+.ge-stage-rail ol {
   display: grid;
-  gap: var(--ge-space-4);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.ge-proof-strip {
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  margin-bottom: var(--ge-space-4);
+.ge-stage-rail li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--ge-space-3);
+  min-height: 10rem;
+  padding: var(--ge-space-5);
+  border-inline-end: 1px solid var(--sl-color-gray-5);
 }
 
-.ge-proof-strip span {
-  padding: var(--ge-space-2) var(--ge-space-3);
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: var(--ge-radius);
-  color: var(--sl-color-gray-2);
-  /* Output labels, not links — informational, so the fill is a neutral ink
-   * recess (the same duotone the tab switches use), never the blue tint a
-   * touchable element would carry. */
-  background: color-mix(in srgb, var(--sl-color-white) 6%, transparent);
+.ge-stage-rail li:last-child {
+  border-inline-end: 0;
+}
+
+.ge-stage-index {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--sl-color-accent);
+  border-radius: var(--ge-radius-sm);
+  color: var(--sl-color-text-accent);
   font-family: var(--sl-font-mono);
-  font-size: var(--sl-text-sm);
-  text-transform: lowercase;
-  letter-spacing: 0.01em;
-  text-align: center;
+  font-size: var(--sl-text-xs);
+  font-weight: 600;
 }
 
-:root[data-theme="light"] .ge-proof-strip span {
-  color: var(--sl-color-gray-1);
-}
-
-.ge-value-grid {
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  margin: var(--ge-space-6) 0 var(--ge-space-7);
-}
-
-.ge-value-card {
+.ge-stage-rail li div {
   display: flex;
-  min-height: 9rem;
   flex-direction: column;
-  justify-content: space-between;
-  gap: var(--ge-space-4);
-  padding: var(--ge-space-4);
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: var(--ge-radius-lg);
-  color: inherit;
-  text-decoration: none;
-  background: var(--sl-color-gray-6);
-  transition: border-color 120ms ease, background-color 120ms ease;
+  gap: var(--ge-space-2);
 }
 
-.ge-value-card:hover {
-  border-color: var(--sl-color-accent);
-  background-color: color-mix(in srgb, var(--sl-color-accent-low) 40%, var(--sl-color-gray-6));
-}
-
-.ge-value-card strong {
+.ge-stage-rail strong {
   color: var(--sl-color-white);
-  font-family: var(--ge-display-font);
   font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.ge-value-card span {
+.ge-stage-rail li div > span {
   color: var(--sl-color-gray-2);
+}
+
+.ge-output-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+}
+
+.ge-output-strip span {
+  padding: var(--ge-space-3);
+  color: var(--sl-color-gray-2);
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  text-align: center;
+  text-transform: lowercase;
 }
 
 .ge-logo-row {
-  grid-template-columns: repeat(5, minmax(3.5rem, 1fr));
+  display: grid;
+  grid-template-columns: repeat(5, minmax(6rem, 1fr));
+  gap: var(--ge-space-3);
   align-items: center;
   margin: 1.25rem 0;
 }
@@ -785,12 +773,19 @@ button > kbd {
  * and fill, the mask carries the glyph. The SVGs self-theme as <img> too, so
  * the same files render correctly in the README on GitHub. */
 .ge-logo {
-  display: grid;
-  place-items: center;
-  height: 3.5rem;
+  display: flex;
+  min-height: 5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ge-space-2);
+  padding: var(--ge-space-2);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-md);
   background: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-2);
+  font-size: var(--sl-text-xs);
+  text-align: center;
 }
 
 .ge-logo-mark {
@@ -805,54 +800,50 @@ button > kbd {
   background-color: var(--sl-color-gray-1);
 }
 
-.ge-screenshot-wall {
-  grid-template-columns: 1.25fr 1fr;
-  align-items: stretch;
-  margin: 1.5rem 0;
+.ge-console-preview {
+  margin: var(--ge-space-5) 0 0;
 }
 
-.ge-screenshot-wall img,
-.ge-tape-grid img {
+.ge-console-preview img {
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--ge-radius-lg);
   background: var(--sl-color-gray-6);
 }
 
-.ge-screenshot-wall img:first-child {
-  grid-row: span 2;
-}
-
-.ge-tape-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 1.5rem 0 2rem;
-}
-
-.ge-tape-grid figure {
-  margin: 0;
-}
-
-.ge-tape-grid figcaption {
+.ge-console-preview figcaption {
   margin-top: var(--ge-space-2);
   color: var(--sl-color-gray-3);
   font-size: var(--sl-text-sm);
 }
 
-:root[data-theme="light"] .ge-tape-grid figcaption {
-  color: var(--sl-color-gray-2);
-}
-
 @media (max-width: 50rem) {
-  .ge-logo-row,
-  .ge-screenshot-wall,
-  .ge-tape-grid {
+  .ge-stage-rail ol {
     grid-template-columns: 1fr;
   }
 
-  .ge-screenshot-wall img:first-child {
-    grid-row: auto;
+  .ge-stage-rail li {
+    min-height: 0;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+  }
+
+  .ge-stage-rail li:last-child {
+    border-bottom: 0;
+  }
+
+  .ge-output-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ge-logo-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ge-logo:last-child {
+    grid-column: 1 / -1;
   }
 }
 
@@ -863,7 +854,7 @@ button > kbd {
  * rule. Starlight ships the vertical guideline already; only the badge
  * shape (round -> the site's small geometric radius) changes. ──────────── */
 .sl-steps > li::before {
-  color: var(--sl-color-black);
+  color: #f2f4f8;
   background-color: var(--sl-color-accent);
   border-radius: var(--ge-radius-sm);
   box-shadow: none;
@@ -882,41 +873,39 @@ button > kbd {
 }
 
 body {
-  background:
-    linear-gradient(90deg, transparent calc(100% - 1px), color-mix(in srgb, var(--sl-color-gray-5) 45%, transparent) 0) 0 0 / calc(100% / 12) 100%,
-    var(--sl-color-black);
+  background: var(--sl-color-black);
+  font-family: var(--ge-display-font);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 /* Header: solid surface, never glass. */
-.header {
-  border: var(--ge-rule);
-  border-radius: var(--ge-radius-md);
+header.header {
+  border: 0;
+  border-bottom: var(--ge-rule);
+  border-radius: 0;
   padding-inline: var(--ge-space-3);
   background: var(--sl-color-black);
-}
-
-header.header {
   box-shadow: none;
 }
 
-.header .right-group,
-.header .social-icons {
+header.header .right-group,
+header.header .social-icons {
   gap: var(--ge-space-4);
 }
 
-.header .social-icons::after {
+header.header .social-icons::after {
   border-color: var(--sl-color-gray-5);
 }
 
-.header .social-icons a {
+header.header .social-icons a {
   color: var(--sl-color-white);
   font-family: var(--ge-display-font);
   font-weight: 600;
   text-decoration: none;
 }
 
-.header .social-icons a:hover {
+header.header .social-icons a:hover {
   color: var(--sl-color-text-accent);
   opacity: 1;
 }
@@ -1017,25 +1006,25 @@ main > .content-panel,
 }
 
 .pagination-links a svg {
-  display: none;
+  color: var(--sl-color-text-accent);
 }
-
-.pagination-links a::before,
-.pagination-links a::after {
-  font-family: var(--sl-font-mono);
-  color: var(--sl-color-gray-3);
-}
-
-.pagination-links a[rel="prev"]::before { content: "← previous"; }
-.pagination-links a[rel="next"]::before { content: "next →"; }
-.pagination-links a[rel="next"] { text-align: end; }
-.pagination-links a[rel="next"]::before { order: -1; }
 
 /* Footer colophon: inverted surface, vent grille, lowercase provenance. */
 .ge-footer {
+  --sl-color-white: #f3f0f0;
+  --sl-color-gray-2: rgba(243, 240, 240, 0.74);
+  --sl-color-gray-3: rgba(243, 240, 240, 0.58);
+  --sl-color-gray-5: rgba(243, 240, 240, 0.24);
   margin-top: var(--ge-space-7);
-  padding: var(--ge-space-5) 0 0;
-  border-top: var(--ge-rule-strong);
+  padding: var(--ge-space-5);
+  border-top: 0;
+  color: #f3f0f0;
+  background: #1b1c1c;
+}
+
+.ge-footer .ge-monogram {
+  color: #1b1c1c;
+  background: #f3f0f0;
 }
 
 .ge-footer-measure {
@@ -1117,91 +1106,14 @@ main > .content-panel,
 }
 
 @media (max-width: 50rem) {
-  body { background-image: none; }
-  .header { border-inline: 0; border-radius: 0; }
   .ge-footer-main,
   .ge-footer-nav { grid-template-columns: 1fr; }
   .ge-footer-bottom { flex-direction: column; }
 }
 
-/* ── Modernist Functionalism fidelity corrections ────────────────────────
- * The supplied system is the authority: one Hanken family, flat full-width
- * chrome, hairlines instead of floating containers, and texture confined to
- * apparatus zones. */
-body {
-  background: var(--sl-color-black);
-  font-family: var(--ge-display-font);
-  letter-spacing: 0;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.site-title,
-.ge-wordmark-text {
-  letter-spacing: 0;
-}
-
-.ge-label,
-nav.sidebar .top-level > li > details > summary .group-label > span,
-.right-sidebar-panel h2 {
-  font-family: var(--ge-display-font);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  line-height: 0.875rem;
-  letter-spacing: 0.05em;
-  text-transform: lowercase;
-}
-
-.header {
-  border: 0;
-  border-bottom: var(--ge-rule);
-  border-radius: 0;
-  background: var(--sl-color-black);
-  box-shadow: none;
-}
-
-.expressive-code .frame {
-  box-shadow: none;
-}
-
 .hero .actions {
   max-width: 48rem;
   margin-inline: auto;
-}
-
-.ge-hero-panel img {
-  width: auto;
-  max-width: 100%;
-  max-height: 44rem;
-  margin-inline: auto;
-  object-fit: contain;
-}
-
-.ge-tape-grid img {
-  height: auto;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-}
-
-.ge-footer {
-  --sl-color-white: #f3f0f0;
-  --sl-color-gray-2: rgba(243, 240, 240, 0.74);
-  --sl-color-gray-3: rgba(243, 240, 240, 0.58);
-  --sl-color-gray-5: rgba(243, 240, 240, 0.24);
-  margin-top: var(--ge-space-7);
-  padding: var(--ge-space-5);
-  border-top: 0;
-  color: #f3f0f0;
-  background: #1b1c1c;
-}
-
-.ge-footer .ge-monogram {
-  color: #1b1c1c;
-  background: #f3f0f0;
 }
 
 @media (max-width: 50rem) {

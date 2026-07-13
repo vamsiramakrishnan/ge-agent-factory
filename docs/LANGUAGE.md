@@ -1,6 +1,7 @@
 ---
 title: The language
 nav_order: 8
+description: Voice, terminology, and enforceable copy rules for GE Agent Factory commands, interfaces, and public documentation.
 ---
 
 # The language

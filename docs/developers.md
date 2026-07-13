@@ -2,12 +2,13 @@
 title: Developer Guide
 nav_order: 2
 layout: default
+description: Repository map, development loops, and verification gates for making safe changes to GE Agent Factory.
 ---
 
 # Developer Guide
 
-This guide explains why the repo is shaped this way, where the code lives, and
-how to make a change without guessing.
+Use this guide to find the right layer for a change and run the smallest check
+that proves it works.
 
 Unfamiliar term? See the [Glossary](./GLOSSARY.html) — plain-language
 definitions of harness, OKF, canary, planes, pipelines, and other jargon.
@@ -15,7 +16,7 @@ definitions of harness, OKF, canary, planes, pipelines, and other jargon.
 ## Purpose first
 
 GE Agent Factory exists to close the gap between "we can imagine an enterprise
-agent" and "we can ship, audit, test, and operate one." The system is built
+agent" and "we can hand off, audit, test, and operate one." The system is built
 around one principle: **the spec is the contract**. Business intent, source
 systems, data entities, tool bindings, workflows, eval mechanisms, generated code,
 and cloud release stages all trace back to that contract.
@@ -31,25 +32,32 @@ locally and an operator release the same artifact into a governed project.
 ```bash
 mise run setup
 mise run doctor-local
-mise run devex-check
-mise run prove
+ge prove
 mise run console
-mise run mode-local
-CANARY=1 mise run build-agents-local
 ```
 
-The local path installs the toolchain, checks docs and workspace contracts,
-proves one validated [canary](./GLOSSARY.html#canary) workspace (a single agent
-that proves the pipeline), starts the [daemon](./GLOSSARY.html#daemon) (the
-local background task runner), opens the console at
-`http://localhost:18260`, and can build one agent up to the build boundary. The
-default `mise run prove` path does not require cloud credentials.
+This installs the toolchain, proves one included contract to a validated
+workspace, and opens the console at `http://localhost:18260`. To work on your
+own use case, run `ge capture` before `ge prove`. The default proof needs no
+cloud credentials.
+
+<details>
+<summary>Lower-level developer checks</summary>
+
+```bash
+mise run devex-check                         # local tools + docs links + workspace contracts
+mise run mode-local                         # make local execution explicit
+CANARY=1 mise run build-agents-local        # build one catalog agent to the boundary
+```
+
+</details>
 
 For cloud release work:
 
 ```bash
 export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-CANARY=1 mise run bootstrap-cloud
+mise run bootstrap-cloud
+ge handoff agents-cli
 ```
 
 ## Repo map
@@ -65,7 +73,7 @@ the core imports the shared packages, and nothing imports upward
 | Path | Purpose | Start here when... |
 |---|---|---|
 | `tools/ge.mjs` | Human CLI over the factory core | Adding or debugging operator commands |
-| `tools/lib/factory-core.mjs` | Shared engine used by CLI, console, and MCP | Changing build, ship, sync, doctor, or platform behavior |
+| `tools/lib/factory-core.mjs` | Shared engine used by CLI, console, and MCP | Changing build, handoff, sync, doctor, or platform behavior |
 | `tools/lib/ledger/run-ledger.mjs` | Local/remote run state and event history | Debugging status, fleet, logs, or resumability |
 | `tools/mcp-server.mjs` | MCP surface over factory operations | Letting models or [harnesses](./GLOSSARY.html#harness) (LLM review/driver loops) drive the factory |
 | `apps/console/` | React operator UI | Changing Pipeline, Fleet, Activity, Doctor, or agent detail flows |
@@ -74,7 +82,7 @@ the core imports the shared packages, and nothing imports upward
 | `apps/factory/mcp-service/` | Runtime MCP facade for generated agents | Changing how cloud agents call source-system tools |
 | `installer/terraform/` | Cloud project platform | Changing infra, IAM, data stores, Cloud Run, Agent Gateway, or MCP |
 | `packages/` | Shared workspace libraries, including the extracted engines: `@ge/synthkit` (deterministic synthetic data — [Synthetic data](./reference/synthetic-data.html)) and `@ge/evalkit` (behavioral eval compiler + metrics — [Evaluation generation](./reference/evaluation-generation.html)). Not all packages are wired in yet; see the [modularization audit](./modularization-audit.html) for per-package integration status | Changing cross-app contracts, an engine, or reusable UI/runtime code |
-| `docs/` | GitHub Pages docs | Changing public explanation, guides, reference, or operations docs |
+| `docs/` | Canonical docs published by the Astro/Starlight app in `apps/docs` | Changing public explanation, guides, reference, or operations docs |
 
 ## Mental model
 
@@ -111,13 +119,13 @@ Treat it as the workspace contract for developers and tools:
 |---|---|
 | `source` | The originating use case, department, spec, pipeline, and fixture manifest |
 | `agent` | Runtime, entrypoint, agent path, and tool path |
-| `commands` | Copyable install, run, test, eval, doctor, repair, sync, and ship commands |
+| `commands` | Copyable install, run, test, eval, doctor, repair, sync, and handoff commands |
 | `generatedFiles` | Required and optional generated files with existence status |
 | `readiness` / `quality` | Current local health: mock data, agent, tests, trace, preview, data package |
 | `registration` | Whether deploy, registry, runtime, publish, and Gemini Enterprise handoff are ready |
 | `artifacts.items` | Validation, trace, preview, deploy, publish, data, and tool-plan artifact inventory |
 
-`ge devex check` validates the local doctor, GitHub Pages links, and generated
+`ge devex check` validates the local doctor, documentation links, and generated
 workspace contracts. `ge prove` prints the primary workspace path and
 manifest path, then gives the next commands to run.
 
@@ -172,25 +180,27 @@ merging shared behavior.
 
 | Change type | Focused check | Broader check |
 |---|---|---|
-| Docs only | `bun run docs:check` and local Jekyll build if Ruby is available | `mise run devex-check` |
-| CLI/core | `bun test tools` and the touched `ge` command | `mise run devex-check`, then `mise run ci` |
-| Console | `bun run build:console` | `mise run ci` |
-| Presentation | `bun run build:presentation` | `mise run ci` |
-| Generator | Relevant `apps/factory` tests | `mise run ci` plus canary build |
-| Python simulator runtime | `bun run test:py` | `mise run ci` plus simulator conformance test |
+| Docs only | `bun run docs:gate` and `bun run docs:site:build` | `bun run ci` |
+| CLI/core | `bun test tools` and the touched `ge` command | `mise run devex-check`, then `bun run ci` |
+| Console | `bun run build:console` | `bun run ci` |
+| Presentation | `bun run build:presentation` | `bun run ci` |
+| Generator | Relevant `apps/factory` tests | `bun run ci` plus a one-agent build |
+| Python simulator runtime | `bun run test:py` | `bun run ci` plus simulator conformance test |
 | Terraform/platform | `ge infra plan`, `ge doctor` | Canary bootstrap in a test project |
 
-`mise run ci` mirrors `cloudbuild.ci.yaml`: source hygiene → `bun run typecheck` →
-the catalog build → `bun run docs:gate` → `bun run test:gated` (the last one
-wraps `bun test apps tools packages` and cross-checks failures against
-`tools/known-test-failures.json` — see AGENTS.md's "Before you commit"
-section).
+`bun run ci` runs source hygiene → typecheck → Oxlint → the catalog build →
+`bun run docs:gate` → `bun run test:gated`. The final command shards `bun test`
+by app and package, merges the results, and cross-checks failures against
+`tools/known-test-failures.json`; see AGENTS.md's "Before you commit" section.
+`mise run ci` mirrors `cloudbuild.ci.yaml` and currently omits the standalone
+Oxlint step, so prefer `bun run ci` for the complete local gate.
 
 ## Documentation rules
 
 The docs should stay purpose-first and executable.
 
 - Start each page by saying why the thing exists.
+- Present front-door tasks in Capture → Prove → Handoff order.
 - Keep commands copyable from the repo root unless the page says otherwise.
 - Name whether commands are read-only, local-mutating, or cloud-mutating.
 - Link concepts to reference and reference to cookbooks.

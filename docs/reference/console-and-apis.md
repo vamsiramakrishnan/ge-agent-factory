@@ -1,5 +1,6 @@
 ---
 title: Console & APIs
+description: Look up console views, shared command routes, request and result contracts, run streaming, risk levels, and extension points.
 parent: Reference
 nav_order: 8
 layout: default

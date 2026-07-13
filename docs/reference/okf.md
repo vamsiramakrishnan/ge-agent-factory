@@ -1,5 +1,6 @@
 ---
 title: OKF
+description: Read the Open Knowledge Format bundle structure, spec mapping, concept types, validation rules, and lossless contract round-trip behavior.
 parent: Reference
 nav_order: 4
 layout: default

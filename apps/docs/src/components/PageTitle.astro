@@ -12,9 +12,11 @@ const { sidebar } = Astro.locals.starlightRoute;
 
 function findCrumbs(entries, path) {
   for (const entry of entries) {
-    if (entry.type === "link" && entry.isCurrent) return [...path, entry.label];
+    if (entry.type === "link" && entry.isCurrent) return [...path, { label: entry.label, href: entry.href }];
     if (entry.type === "group") {
-      const found = findCrumbs(entry.entries, [...path, entry.label]);
+      const landing = entry.entries.find((child) => child.type === "link");
+      const groupCrumb = { label: entry.label, href: landing?.href };
+      const found = findCrumbs(entry.entries, [...path, groupCrumb]);
       if (found) return found;
     }
   }
@@ -28,15 +30,15 @@ const title = Astro.locals.starlightRoute.entry.data.title;
 {
   crumbs.length > 1 && (
     <nav class="ge-breadcrumb" aria-label="Breadcrumb">
-      {crumbs.slice(0, -1).map((label) => (
+      {crumbs.slice(0, -1).map((crumb) => (
         <>
-          <span>{label}</span>
+          {crumb.href ? <a href={crumb.href}>{crumb.label}</a> : <span>{crumb.label}</span>}
           <span class="sep" aria-hidden="true">
             /
           </span>
         </>
       ))}
-      <span class="current">{crumbs[crumbs.length - 1]}</span>
+      <span class="current">{crumbs[crumbs.length - 1].label}</span>
     </nav>
   )
 }
@@ -55,6 +57,16 @@ const title = Astro.locals.starlightRoute.entry.data.title;
   .ge-breadcrumb .sep {
     font-family: var(--sl-font-mono);
     color: var(--sl-color-gray-4);
+  }
+
+  .ge-breadcrumb a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .ge-breadcrumb a:hover {
+    color: var(--sl-color-text-accent);
   }
 
   .ge-breadcrumb .current {

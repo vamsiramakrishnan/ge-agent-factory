@@ -1,5 +1,6 @@
 ---
 title: CLI
+description: Look up every current ge operator command and its exact subcommands, flags, purpose, and place in the capture, prove, and handoff path.
 parent: Reference
 nav_order: 1
 layout: default

@@ -22,6 +22,20 @@ afterEach(async () => {
 });
 
 describe("docs check", () => {
+  test("checks the repository entry-point guides by default", async () => {
+    const root = await tempRoot();
+    await writeRel(root, "README.md", "[Setup](SETUP.md)\n");
+    await writeRel(root, "SETUP.md", "[Contributing](CONTRIBUTING.md)\n");
+    await writeRel(root, "CONTRIBUTING.md", "[Agents](AGENTS.md)\n");
+    await writeRel(root, "AGENTS.md", "[Docs](docs/)\n");
+    await writeRel(root, "docs/index.md", "# Docs\n");
+
+    const result = runDocsCheck({ root });
+
+    expect(result.ok).toBe(true);
+    expect(result.checked).toBe(5);
+  });
+
   test("accepts local markdown, html, directory, and root-relative links", async () => {
     const root = await tempRoot();
     await writeRel(root, "README.md", [

@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  buildLlmsFullTxt,
   buildLlmsTxt,
   firstProseSentence,
   orderPages,
@@ -79,9 +80,12 @@ test("plainifyMdx converts html anchors and images to markdown", () => {
 test("orderPages is deterministic: sidebar section, then order, then slug", () => {
   const pages = [
     { id: "reference/cli", data: { sidebar: {} } },
+    { id: "console/readiness", data: { sidebar: {} } },
+    { id: "catalog-verticals", data: { sidebar: {} } },
     { id: "concepts/index", data: { sidebar: { order: 0 } } },
     { id: "operations", data: { sidebar: { order: 6 } } },
     { id: "index", data: {} },
+    { id: "catalog", data: { sidebar: {} } },
     { id: "reference/architecture", data: { sidebar: {} } },
     { id: "start/quickstart", data: { sidebar: { order: 2 } } },
     { id: "concepts/specs-and-okf", data: { sidebar: { order: 2 } } },
@@ -90,13 +94,17 @@ test("orderPages is deterministic: sidebar section, then order, then slug", () =
   expect(ids).toEqual([
     "index",
     "start/quickstart",
+    "catalog",
+    "catalog-verticals",
     "concepts/index",
     "concepts/specs-and-okf",
+    "console/readiness",
+    "operations",
     "reference/architecture",
     "reference/cli",
-    "operations",
   ]);
-  expect(sectionLabelOf("index")).toBe("Start here");
+  expect(sectionLabelOf("index")).toBe("Start Here");
+  expect(sectionLabelOf("catalog-verticals")).toBe("Agent catalog");
   expect(sectionLabelOf("operations")).toBe("Operations");
 });
 
@@ -114,11 +122,42 @@ test("buildLlmsTxt renders title, blockquote description, and grouped links", ()
     ],
   });
   expect(text.startsWith("# T\n\n> D.\n")).toBe(true);
-  expect(text).toContain("## Start here");
+  expect(text).toContain("## Start Here");
   expect(text).toContain("- [Quickstart](https://example.test/base/start/quickstart/): Go.");
   expect(text).toContain("## Reference");
   expect(text).toContain("- [CLI](https://example.test/base/reference/cli/)");
   expect(text).toContain("llms-full.txt");
+});
+
+test("LLM exports group each section once and state the web-only catalog scope", () => {
+  const siteRoot = "https://example.test/base";
+  const pages = [
+    { id: "console/readiness", title: "Readiness", description: "Check." },
+    { id: "catalog", title: "Horizontal", description: "Shared." },
+    { id: "console/index", title: "Console", description: "Operate." },
+    { id: "catalog-verticals", title: "Vertical", description: "Industry." },
+  ];
+  const text = buildLlmsTxt({
+    title: "T",
+    description: "D.",
+    siteRoot,
+    pages,
+    catalogScope: { detailPageCount: 513 },
+  });
+  expect(text.match(/^## Agent catalog$/gm)).toHaveLength(1);
+  expect(text.match(/^## Console$/gm)).toHaveLength(1);
+  expect(text).toContain("513 generated agent detail pages");
+  expect(text).toContain("[Catalog explorer](https://example.test/base/catalog/explorer/)");
+
+  const full = buildLlmsFullTxt({
+    title: "T",
+    description: "D.",
+    siteRoot,
+    pages: pages.map((page) => ({ ...page, plain: `${page.title} body.` })),
+    catalogScope: { detailPageCount: 513 },
+  });
+  expect(full).toContain("Catalog scope:");
+  expect(full).toContain("513 generated agent detail pages");
 });
 
 test("firstProseSentence skips non-prose and flattens links", () => {
@@ -141,9 +180,11 @@ test(
     expect(text.startsWith("# GE Agent Factory\n\n> ")).toBe(true);
     const links = text.match(/^- \[[^\]]+\]\(https:\/\/vamsiramakrishnan\.github\.io\/ge-agent-factory\/[^)]*\)/gm) ?? [];
     expect(links.length).toBeGreaterThanOrEqual(30);
-    for (const section of ["## Start here", "## Concepts", "## Cookbooks", "## Reference", "## Operations"]) {
+    for (const section of ["## Start Here", "## Agent catalog", "## Core Concepts", "## Guides", "## Operations", "## Reference"]) {
       expect(text).toContain(section);
     }
+    expect(text.match(/^## Console$/gm)).toHaveLength(1);
+    expect(text).toContain("513 generated agent detail pages");
   },
   300_000,
 );

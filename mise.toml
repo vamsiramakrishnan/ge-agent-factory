@@ -8,7 +8,7 @@
 # any task here — no separate "install uv" / "download terraform" step.
 
 [tools]
-bun = "1.3"
+bun = "1.3.13"
 python = "3.11"
 uv = "latest"
 terraform = "1.9.8"
@@ -238,8 +238,12 @@ description = "Docs-specific gate: link/image/blockquote check, diagram freshnes
 run = "bun run docs:gate"
 
 [tasks.docs-site]
-description = "Run the docs website locally (Astro/Starlight; content synced from docs/ on start)"
+description = "Run the docs website locally (Astro/Starlight; watches canonical docs/ and resyncs on save)"
 run = "bun run docs:site:dev"
+
+[tasks.docs-site-check]
+description = "Build, audit, and test the rendered docs website"
+run = "bun run docs:site:check"
 
 [tasks.prove]
 description = "One-command proof: health check → one validated agent workspace (ID=<usecase> TARGET=validated|previewed)"

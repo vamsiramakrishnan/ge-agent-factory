@@ -2,6 +2,7 @@
 title: Design
 nav_order: 9
 layout: default
+description: Authoring standards for the documentation site's typography, callouts, diagrams, screenshots, and Astro/Starlight output.
 ---
 
 # Docs design system
@@ -41,9 +42,9 @@ as one system:
   container `#f0eded`. Change a value in `palette.mjs` and re-derive
   (`bun run docs:tokens`); `node tools/check-design-tokens.mjs` guards the
   generated copies and fails the gate on drift.
-- **Fonts** — Hanken Grotesk carries headings and chrome, JetBrains Mono
-  carries code and technical labels (self-hosted via Fontsource); body copy
-  stays on the system reading face for long-form legibility.
+- **Fonts** — Hanken Grotesk carries body copy, headings, and chrome;
+  JetBrains Mono is reserved for code and machine data (both are self-hosted
+  via Fontsource). Keep prose at normal weight and a readable line length.
 
 Don't hand-roll colors or fonts in a page. If something needs a new color,
 add it to `palette.mjs` and re-derive, not inline `style=`.

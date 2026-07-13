@@ -1,5 +1,6 @@
 ---
 title: MCP
+description: Register and use the factory's typed Model Context Protocol tools, including tool tiers, authorization, responses, and extension rules.
 nav_order: 7
 layout: default
 ---

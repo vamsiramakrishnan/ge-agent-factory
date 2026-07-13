@@ -13,6 +13,7 @@ test("a seeded operator-register sentence is caught, with line numbers", () => {
 
 test("matching is word-bounded — 'model' and 'remodel' are not 'mode'", () => {
   expect(scanZoneText("The mental model, remodeled.")).toEqual([]);
+  expect(scanZoneText("Test the likely failure modes before release.")).toEqual([]);
   expect(scanZoneText("switch the mode here").map((f) => f.term)).toEqual(["mode"]);
 });
 

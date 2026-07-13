@@ -1,223 +1,183 @@
 ---
 title: GE Agent Factory
-description: GE Agent Factory generates enterprise agents from a spec — an Enterprise Agent Contract in OKF — with the code, evals, synthetic data, and simulations to prove them before handoff to agents-cli, ADK, and Gemini Enterprise.
+description: Turn a reviewed enterprise use case into a generated agent workspace with a readable contract, local simulations, contract-derived evaluations, and reviewable proof.
 template: splash
+head:
+  - tag: title
+    content: GE Agent Factory
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://vamsiramakrishnan.github.io/ge-agent-factory/og.png
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://vamsiramakrishnan.github.io/ge-agent-factory/og.png
 hero:
   tagline: >-
-    An agent is a contract with the external world — so the factory compiles it
-    from one, proves it against simulations, and hands it to agents-cli, ADK,
-    and Gemini Enterprise with a contract you can read and proof you can show a
-    reviewer.
+    Capture enterprise requirements as a readable contract, generate a real
+    agent workspace, and prove its behavior locally before anything reaches
+    your cloud project.
   actions:
-    - text: Start in 10 minutes
+    - text: Run a local proof
       link: /ge-agent-factory/start/quickstart/
       icon: right-arrow
-    - text: Let an agent install it
-      link: /ge-agent-factory/start/getting-started/
-      variant: minimal
-    - text: See the model
-      link: /ge-agent-factory/start/mental-model/
+    - text: Understand the contract
+      link: /ge-agent-factory/concepts/enterprise-agent-contract/
       variant: minimal
 ---
 
 import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 
-<div class="ge-hero-panel">
-  <div class="ge-proof-strip" aria-label="Factory outputs">
-    <span>Enterprise Agent Contract</span>
-    <span>Source-system twins</span>
-    <span>Generated evals</span>
+<section class="ge-stage-rail" aria-label="The factory path">
+  <ol>
+    <li>
+      <span class="ge-stage-index">01</span>
+      <div>
+        <strong>Capture</strong>
+        <span>Turn an interview, document, or existing spec into an Enterprise Agent Contract.</span>
+      </div>
+    </li>
+    <li>
+      <span class="ge-stage-index">02</span>
+      <div>
+        <strong>Prove</strong>
+        <span>Generate code and source-system twins, then run contract-derived evaluations locally.</span>
+      </div>
+    </li>
+    <li>
+      <span class="ge-stage-index">03</span>
+      <div>
+        <strong>Hand off</strong>
+        <span>Give the same proven workspace to agents-cli, Agent Engine, or Gemini Enterprise.</span>
+      </div>
+    </li>
+  </ol>
+  <div class="ge-output-strip" aria-label="Outputs from a local proof">
+    <span>readable contract</span>
     <span>ADK workspace</span>
-    <span>Proof pack</span>
+    <span>source-system twins</span>
+    <span>eval results</span>
+    <span>proof pack</span>
   </div>
-  <img src="/ge-agent-factory/assets/diagrams/signature-pipeline.svg" alt="Capture enterprise intent, compile a contract, generate code and source-system twins, prove with evals, then hand off to agents-cli, ADK, and Gemini Enterprise." width="1040" loading="eager" />
-</div>
+</section>
 
-<div class="ge-value-grid">
-  <a class="ge-value-card" href="/ge-agent-factory/concepts/enterprise-agent-contract/">
-    <strong>Contract-first</strong>
-    <span>Role, scope, tools, refusals, escalation, evidence, and handoff are versioned before code exists.</span>
-  </a>
-  <a class="ge-value-card" href="/ge-agent-factory/concepts/source-system-twins/">
-    <strong>Safe by default</strong>
-    <span>Agents prove behavior against local source-system twins instead of poking production during development.</span>
-  </a>
-  <a class="ge-value-card" href="/ge-agent-factory/concepts/evals-as-proof/">
-    <strong>Evidence-ready</strong>
-    <span>Generated evals, traces, and promotion gates turn “it seems fine” into reviewable proof.</span>
-  </a>
-  <a class="ge-value-card" href="/ge-agent-factory/catalog/">
-    <strong>Proven at scale</strong>
-    <span>363 horizontal and 150 industry-vertical agents run the same contract, code, evals, and simulations today.</span>
-  </a>
-</div>
+## Choose the path that matches your job
 
-Hand-writing an agent from a BRD works for one demo; skipping the BRD and
-writing straight from judgment calls is worse. The factory compiles a
-canonical Enterprise Agent Contract instead — one spec that every later
-stage is checked against, not just generated from once: codegen against
-its tool intents, evals against its success criteria, simulation against
-its declared source systems. That check is a gate, not a formality — the
-admission gate can require it to pass before an agent is allowed to ship.
+<CardGrid>
+  <LinkCard title="Evaluate locally" description="Install the toolchain, prove one starter contract, and inspect the workspace. No cloud credentials required." href="/ge-agent-factory/start/quickstart/" />
+  <LinkCard title="Capture your workflow" description="Start from an interview, requirements documents, or an OpenAPI description." href="/ge-agent-factory/cookbooks/" />
+  <LinkCard title="Operate and repair" description="Provision the platform, watch runs, inspect readiness, and recover failed proof." href="/ge-agent-factory/operations/" />
+  <LinkCard title="Contribute to the factory" description="Set up the repository, find the owning package, and run the right gate." href="/ge-agent-factory/contributing/" />
+</CardGrid>
 
-## Choose your fastest path
+## Get to your first proof
 
 <Tabs>
   <TabItem label="Ask your coding agent">
 
-The polished path is skills-first: give your assistant the factory playbooks and let it install, verify, operate, and repair the repo with the same instructions used by the harness.
+Give your coding assistant the factory skills, then ask it to install and verify the repository. This path requires Bun because Bun runs the installer.
 
-```bash
+```bash title="from the directory that should contain the checkout"
 curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
-  | bun - -- --skills agents
+  | bun - -- --yes --skills agents
 ```
 
-<div class="ge-logo-row" aria-label="Supported assistant surfaces">
-  <span class="ge-logo" role="img" aria-label="Claude Code"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/claude-code.svg')"></i></span>
-  <span class="ge-logo" role="img" aria-label="Gemini CLI"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/gemini-cli.svg')"></i></span>
-  <span class="ge-logo" role="img" aria-label="Codex"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/codex.svg')"></i></span>
-  <span class="ge-logo" role="img" aria-label="Antigravity"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/antigravity.svg')"></i></span>
-  <span class="ge-logo" role="img" aria-label="MCP"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/mcp.svg')"></i></span>
-</div>
+The [local setup guide](/ge-agent-factory/start/getting-started/) also covers Claude Code, Gemini CLI, Codex, Antigravity, and MCP clients.
 
-| Surface | Install command |
-| --- | --- |
-| Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
-| Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| Codex · Antigravity · agents-cli-style sessions | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` |
-| Any MCP client | `bun tools/mcp-server.mjs` exposes the `factory_*` tools from a checkout |
+<div class="ge-logo-row" aria-label="Supported coding-assistant surfaces">
+  <span class="ge-logo"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/claude-code.svg')" aria-hidden="true"></i><span>Claude Code</span></span>
+  <span class="ge-logo"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/gemini-cli.svg')" aria-hidden="true"></i><span>Gemini CLI</span></span>
+  <span class="ge-logo"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/codex.svg')" aria-hidden="true"></i><span>Codex</span></span>
+  <span class="ge-logo"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/antigravity.svg')" aria-hidden="true"></i><span>Antigravity</span></span>
+  <span class="ge-logo"><i class="ge-logo-mark" style="--m:url('/ge-agent-factory/assets/icons/mcp.svg')" aria-hidden="true"></i><span>MCP</span></span>
+</div>
 
   </TabItem>
   <TabItem label="Drive it yourself">
 
-Everything below is local and credential-free. It gives you a validated canary workspace on disk: contract, generated ADK code, tools, fixtures, evals, and proof artifacts.
+Everything here is local and credential-free. The result is a validated workspace on disk with its contract, generated code, tools, fixtures, evaluations, and proof artifacts.
 
 <div class="ge-journey">
   <CardGrid>
-    <Card title="Bootstrap" icon="setting">
-      <span class="ge-label">Stage 01</span> <span class="ge-eta">~5–10 min · one time</span>
+    <Card title="Set up" icon="setting">
+      <span class="ge-label">Step 01</span> <span class="ge-eta">~5–10 min · once</span>
 
       ```bash
       mise run setup
       ```
 
-      Provisions Bun, Python, uv, Terraform, repo dependencies, and the `ge` CLI.
+      Provisions the pinned toolchain, repository dependencies, skills, and the `ge` CLI.
     </Card>
     <Card title="Initialize" icon="document">
-      <span class="ge-label">Stage 02</span> <span class="ge-eta">~30 s</span>
+      <span class="ge-label">Step 02</span> <span class="ge-eta">~30 sec</span>
 
       ```bash
       ge init
       ```
 
-      Discovers local configuration and writes `.ge.json` so bare `ge` can show a next-step status board.
+      Discovers local configuration and writes `.ge.json`. Bare `ge` then shows the current state and next action.
     </Card>
     <Card title="Prove" icon="approve-check">
-      <span class="ge-label">Stage 03</span> <span class="ge-eta">~5 min</span>
+      <span class="ge-label">Step 03</span> <span class="ge-eta">~5 min</span>
 
       ```bash
-      ge devex smoke
+      ge prove
       ```
 
-      Compiles one contract into a validated workspace and refreshes the proof that gates handoff.
+      Compiles and validates one starter contract, then prints the workspace and proof paths.
     </Card>
   </CardGrid>
 </div>
 
   </TabItem>
-  <TabItem label="Operate visually">
+  <TabItem label="Use the console">
 
-Run the console when you want a live control room for contracts, OKF context, runs, proof, and repair loops.
+Open the browser control room when you want to capture a contract, follow a run, inspect proof, or repair a blocker visually.
 
 ```bash
 mise run console
-# open http://localhost:18260
 ```
 
-<div class="ge-screenshot-wall">
-  <img src="/ge-agent-factory/assets/screenshots/overview.png" alt="Factory console overview showing stage counts and the next recommended command." />
-  <img src="/ge-agent-factory/assets/screenshots/pipeline.png" alt="Pipeline view showing factory stages and run progress." />
-  <img src="/ge-agent-factory/assets/screenshots/readiness.png" alt="Readiness view showing proof and promotion status." />
-</div>
+The console opens at `http://localhost:18260`.
+
+<figure class="ge-console-preview">
+  <img src="/ge-agent-factory/assets/screenshots/overview.png" alt="Factory console overview showing stage counts and the next recommended command." width="1440" height="900" loading="lazy" />
+  <figcaption>The Overview keeps the current state, blocker, and next command together.</figcaption>
+</figure>
 
   </TabItem>
 </Tabs>
 
-## What you get after the first proof
+## What a local proof leaves behind
 
 <CardGrid>
-  <Card title="A readable contract" icon="document">
-    The Enterprise Agent Contract captures the job, scope, systems, tools, refusal rules, success criteria, and evidence requirements.
+  <Card title="Readable contract" icon="document">
+    Role, scope, systems, tools, refusal rules, success criteria, and evidence requirements stay reviewable before and after generation.
   </Card>
   <Card title="Generated workspace" icon="seti:python">
-    Standard Google ADK Python code, tool adapters, fixtures, and harness glue live in a normal workspace you can inspect.
+    Google Agent Development Kit code, tool adapters, fixtures, and support code live in a normal project you can inspect.
   </Card>
-  <Card title="Simulation twins" icon="seti:database">
-    Local source-system twins model the APIs, data, and failure modes your agent must handle before production access.
+  <Card title="Source-system twins" icon="seti:database">
+    Local simulations model the APIs, data, and failure modes the agent must handle without touching production.
   </Card>
   <Card title="Proof pack" icon="approve-check">
-    Evals, traces, stage verdicts, and promotion evidence explain why an agent is ready — or what must be repaired.
+    Evaluations, traces, stage verdicts, and promotion evidence explain what passed and what still needs repair.
   </Card>
 </CardGrid>
 
-## See the flow in motion
-
-<div class="ge-tape-grid">
-  <figure>
-    <img src="/ge-agent-factory/assets/tapes/ge-init.gif" alt="Animated terminal recording of ge init creating local factory configuration." loading="lazy" />
-    <figcaption><code>ge init</code> discovers config and prepares the repo.</figcaption>
-  </figure>
-  <figure>
-    <img src="/ge-agent-factory/assets/tapes/ge-status.gif" alt="Animated terminal recording of the ge status board." loading="lazy" />
-    <figcaption><code>ge</code> shows the next action and current factory state.</figcaption>
-  </figure>
-  <figure>
-    <img src="/ge-agent-factory/assets/tapes/ge-doctor.gif" alt="Animated terminal recording of ge doctor checking local readiness." loading="lazy" />
-    <figcaption><code>ge doctor</code> explains exactly what is ready or missing.</figcaption>
-  </figure>
-</div>
-
-## One layered system
-
-Three operator surfaces sit on one command registry; the registry drives one
-generator engine; the engine leaves a contract, an ADK workspace, and a proof
-pack on disk. Only the final handoff crosses into your Google Cloud project.
-
-<p align="center">
-  <img src="/ge-agent-factory/assets/diagrams/platform-stack.svg" alt="Five stacked layers: the surfaces layer (ge CLI, console, MCP tools and skills) drives the operator core (one command registry and job runner), which drives the generator engine (contract compiler, workspace generator, twins and synthetic data, eval compiler); the engine's output lands on disk as the contract, the ADK workspace, and the proof pack; a thick handoff edge crosses into your Google Cloud project, where agents-cli and ADK deploy to Agent Engine and publish to Gemini Enterprise" width="640" loading="lazy" />
-</p>
-
-:::note[One registry, three surfaces]
-Every operator command is a CLI command, an HTTP route in the console, and an MCP tool backed by the same registry and job runner. Start in whichever surface fits your workflow; the behavior is the same.
+:::note[One registry, three operator surfaces]
+The CLI, console, and MCP tools dispatch through the same capability registry and result contracts. Choose the surface that fits the task; the underlying command remains the same.
 :::
 
-## Do this at scale
-
-The same contract, generated code, checked evals, and simulated systems
-exist today for 363 horizontal agents across HR, Finance, IT, Marketing,
-and Procurement, plus 150 industry-vertical agents across retail, banking,
-insurance, telco, and manufacturing. Browse the canonical spec and
-generated source for any of them, laid out as a periodic table — one tile
-per agent, click through to its Enterprise Agent Contract and code.
+## Explore the system
 
 <CardGrid>
-  <LinkCard title="Horizontal catalog" description="363 shared-services agents across five departments." href="/ge-agent-factory/catalog/" />
-  <LinkCard title="Vertical catalog" description="150 industry agents across five verticals." href="/ge-agent-factory/catalog-verticals/" />
-  <LinkCard title="Catalog explorer" description="Both halves together, filterable by industry, function, and value stream." href="/ge-agent-factory/catalog/explorer/" />
-</CardGrid>
-
-None of it is hand-maintained: the catalog is generated from the same
-drift-gated registry the factory itself builds from
-(`apps/factory/src/agent-spec-registry.generated.json`), so it can never
-drift from the specs it's showing.
-
-## Jump to the job you have
-
-<CardGrid>
-  <LinkCard title="Understand the layer" description="The five-verb mental model and where the factory stops before agents-cli, ADK, and Gemini Enterprise take over." href="/ge-agent-factory/start/mental-model/" />
-  <LinkCard title="Compare to agents-cli" description="The factory is upstream contract/proof generation; agents-cli owns build, deploy, and publish." href="/ge-agent-factory/start/vs-agents-cli/" />
-  <LinkCard title="Capture a workflow" description="Turn documents, OpenAPI specs, or interviews into a governed contract." href="/ge-agent-factory/cookbooks/" />
-  <LinkCard title="Run the console" description="Browser-first capture, pipeline, proof, readiness, fleet, and repair workflows." href="/ge-agent-factory/console/" />
-  <LinkCard title="Operate the platform" description="Provision, observe, repair, and harden the control plane." href="/ge-agent-factory/operations/" />
-  <LinkCard title="Reference everything" description="Generated CLI, schema, OKF, console API, MCP, and architecture reference." href="/ge-agent-factory/reference/" />
+  <LinkCard title="Browse agent blueprints" description="Inspect horizontal and industry agents, their contracts, systems, tools, and generated source." href="/ge-agent-factory/catalog/" />
+  <LinkCard title="See the architecture" description="Understand local versus remote execution, the cloud architecture, and the durable run record." href="/ge-agent-factory/reference/architecture/" />
+  <LinkCard title="Look up exact behavior" description="Use the generated CLI, schema, config, API, MCP, and lifecycle references." href="/ge-agent-factory/reference/" />
 </CardGrid>

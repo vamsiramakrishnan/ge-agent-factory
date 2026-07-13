@@ -10,6 +10,8 @@ interface Props {
   spec: any;
   sources?: any[];
 }
+import { createFragmentIndex } from "../lib/catalog-fragments.mjs";
+
 const { spec, sources = [] } = Astro.props;
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -55,6 +57,10 @@ const colType = (c: any) => {
 const g = spec.governance || {};
 const steps = spec.workflow?.steps || [];
 const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id === id)?.name || titleize(id);
+const toolFragments = createFragmentIndex(spec.tools || [], { prefix: "tool", name: (t: any) => t.name });
+const entityFragments = createFragmentIndex(spec.entities || [], { prefix: "entity", name: (e: any) => e.name });
+const toolTarget = (name: string) => toolFragments.resolve(name);
+const entityTarget = (name: string) => entityFragments.resolve(name);
 ---
 
 <div class="okf">
@@ -130,7 +136,12 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
               <p class="okf-dim">{s.description}</p>
               {s.tools?.length > 0 && (
                 <div class="okf-chips">
-                  {s.tools.map((t: string) => <a class="okf-chip okf-chip-tool" href={`#tool-${t}`}>{t}</a>)}
+                  {s.tools.map((t: string) => {
+                    const target = toolTarget(t);
+                    return target
+                      ? <a class="okf-chip okf-chip-tool" href={`#${target}`}>{t}</a>
+                      : <span class="okf-chip okf-chip-missing" title="Referenced by the spec; not included in this rendered inventory." aria-label={`${t}; referenced but not included in this tool inventory`}>{t}</span>;
+                  })}
                 </div>
               )}
             </div>
@@ -145,8 +156,8 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
     <>
       <h2 id="tools">Agent tools <span class="okf-count">{spec.tools.length}</span></h2>
       <div class="okf-tools">
-        {spec.tools.map((t: any) => (
-          <div class="okf-tool" id={`tool-${t.name}`}>
+        {toolFragments.entries.map(({ item: t, id }) => (
+          <div class="okf-tool" id={id}>
             <div class="okf-tool-head">
               <code class="okf-tool-name">{t.name}</code>
               <span class="okf-kind" style={kindStyle(t.kind)}>{t.kind}</span>
@@ -190,12 +201,22 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
             {src.description && <p class="okf-dim okf-sys-desc">{src.description}</p>}
             {s.owns?.length > 0 && (
               <div class="okf-sys-row"><span class="okf-io-label">owns</span>
-                {s.owns.map((e: string) => <a class="okf-chip" href={`#entity-${e}`}>{e}</a>)}
+                {s.owns.map((e: string) => {
+                  const target = entityTarget(e);
+                  return target
+                    ? <a class="okf-chip" href={`#${target}`}>{e}</a>
+                    : <span class="okf-chip okf-chip-missing" title="Referenced by the spec; not included in this rendered inventory." aria-label={`${e}; referenced but not included in this entity inventory`}>{e}</span>;
+                })}
               </div>
             )}
             {s.toolNames?.length > 0 && (
               <div class="okf-sys-row"><span class="okf-io-label">tools</span>
-                {s.toolNames.map((t: string) => <a class="okf-chip okf-chip-tool" href={`#tool-${t}`}>{t}</a>)}
+                {s.toolNames.map((t: string) => {
+                  const target = toolTarget(t);
+                  return target
+                    ? <a class="okf-chip okf-chip-tool" href={`#${target}`}>{t}</a>
+                    : <span class="okf-chip okf-chip-missing" title="Referenced by the spec; not included in this rendered inventory." aria-label={`${t}; referenced but not included in this tool inventory`}>{t}</span>;
+                })}
               </div>
             )}
           </div>
@@ -212,8 +233,8 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
         Data model <span class="okf-count">{spec.entities.length} entities · {spec.counts?.columns} fields</span>
       </h2>
       <div class="okf-entities">
-        {spec.entities.map((e: any) => (
-          <details class="okf-entity" id={`entity-${e.name}`} open={spec.entities.length <= 6}>
+        {entityFragments.entries.map(({ item: e, id }) => (
+          <details class="okf-entity" id={id} open={spec.entities.length <= 6}>
             <summary>
               <code class="okf-entity-name">{e.name}</code>
               <span class="okf-entity-meta">
@@ -261,7 +282,14 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
               <div class="okf-anom">
                 <p class="okf-anom-desc">{a.description}</p>
                 {a.affectedEntities?.length > 0 && (
-                  <div class="okf-chips">{a.affectedEntities.map((x: string) => <a class="okf-chip" href={`#entity-${x}`}>{x}</a>)}</div>
+                  <div class="okf-chips">
+                    {a.affectedEntities.map((x: string) => {
+                      const target = entityTarget(x);
+                      return target
+                        ? <a class="okf-chip" href={`#${target}`}>{x}</a>
+                        : <span class="okf-chip okf-chip-missing" title="Referenced by the spec; not included in this rendered inventory." aria-label={`${x}; referenced but not included in this entity inventory`}>{x}</span>;
+                    })}
+                  </div>
                 )}
                 {a.expectedRecommendation && <p class="okf-dim"><strong>Expected:</strong> {a.expectedRecommendation}</p>}
               </div>
@@ -437,6 +465,7 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
   }
   a.okf-chip:hover { border-color: var(--sl-color-accent); color: var(--sl-color-text-accent); }
   .okf-chip-tool { color: var(--sl-color-text-accent); }
+  .okf-chip-missing { color: var(--sl-color-gray-3); border-style: dashed; }
 
   /* tools */
   .okf-tools, .okf-systems, .okf-evals, .okf-docs, .okf-anoms {

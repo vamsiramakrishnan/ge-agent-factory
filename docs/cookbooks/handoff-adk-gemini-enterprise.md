@@ -3,21 +3,20 @@ title: Hand off to ADK Agent Engine / Gemini Enterprise
 parent: Guides
 nav_order: 11
 layout: default
-description: Ship a proven workspace with ge handoff agents-cli — the post-boundary release stages deploy it to Agent Engine, register its tools, and publish it into Gemini Enterprise.
+description: Hand a proven workspace to Agent Engine, register its tools, and publish it in Gemini Enterprise without regenerating it.
 ---
 
 # Hand off to ADK Agent Engine / Gemini Enterprise
 
-**Scope:** cloud — every stage in this guide mutates your Google Cloud
-project.
+**Scope:** cloud — platform provisioning and `ge handoff agents-cli` mutate
+your Google Cloud project. The planning and status commands are read-only.
 
-`ge handoff agents-cli` deploys a proven workspace to the runtime and the
-end-user surface — the same workspace you proved, with no regeneration and
-no re-refine (see [Handoff targets](../concepts/handoff-targets.html)). It
-uploads each locally-built, proven workspace and runs the post-boundary
-release stages in your Google Cloud project (GCP) —
-`load_data → deploy_runtime → poll_runtime → register_tools → publish_enterprise`,
-with `verify_live` as the final stage of the graph.
+Finish with the exact workspace you proved running in Google Agent Development
+Kit (ADK) Agent Engine and available in Gemini Enterprise. `ge handoff
+agents-cli` uploads that workspace without regenerating or refining it again
+(see [Handoff targets](../concepts/handoff-targets.html)). By default it runs
+`load_data → deploy_runtime → poll_runtime → register_tools → publish_enterprise`.
+Live verification is an explicit final stage, not part of the default handoff.
 
 <p align="center">
   <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build stages, then Validate and Refine ending at preview (the local build boundary), then the Release stages that touch your GCP project — the part only a remote run performs" width="700">
@@ -27,20 +26,19 @@ with `verify_live` as the final stage of the graph.
 
 - A workspace has [passed its proof](prove-an-agent.html) and you want it
   live in ADK Agent Engine and discoverable in Gemini Enterprise.
-- You built locally (cheap, provable) and want the cloud to do only the
-  release half.
-- You need to re-release after a contract change and recompile.
+- You proved locally and want the cloud to perform only the release work.
+- You changed a contract, re-proved it, and need to hand off the new artifact.
 
 ## Input artifact
 
 One or more proven local workspaces under `.ge/factory/workspaces/`
-(built with `ge agents build --local`). Prerequisites:
+(built or refreshed with `ge prove`). Prerequisites:
 
-- The cloud planes stood up — the factory services plus the data and tool
-  infrastructure layers; see
-  [Provision the platform](../operations/provision-the-platform.html).
-  Verify with `ge doctor`.
-- A Gemini Enterprise app id configured: `geAppId` in `.ge.json` or
+- Run `ge up` to provision the factory services plus the data and tool
+  infrastructure layers; see [Provision the
+  platform](../operations/provision-the-platform.html). Verify them with
+  `ge doctor`.
+- Configure a Gemini Enterprise app id as `geAppId` in `.ge.json` or
 
   ```bash
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
@@ -50,84 +48,95 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
 
 ## Steps
 
-1. **Confirm the workspaces you're shipping are proven.** The deploy stage
-   enforces the promotion gate: a workspace whose validation report,
-   spec-to-code trace, or harness verdicts haven't passed is refused with a
-   list of blockers.
+1. **Preview the handoff without touching the cloud.**
 
-   > The override (`--force` on the factory deploy, or
+   ```bash
+   ge handoff plan --ids <workspace-id>
+   ```
+
+   The plan reports the workspace digest, release-stage range, and admission
+   decision. It does not upload files, submit a run, or write to the run
+   record.
+
+   The real handoff enforces the promotion gate: a workspace whose validation
+   report, spec-to-code trace, or review verdicts have not passed is refused
+   with a list of blockers.
+
+   > The override (`--force` on `ge handoff agents-cli`, or
    > `GE_ALLOW_UNPROMOTED=1`) exists so that using it is a visible,
    > deliberate act — it is logged as overridden, never silent.
    {: .warning }
 
-   On top of the promotion gate, `ge handoff` runs the
+   `ge handoff` also runs the
    [admission gate](../reference/admission.html) per workspace before
    uploading anything: a recorded decision over the workspace's signed
-   [Agent Passport](../concepts/agent-passport-and-proof-pack.html)
-   (`ge passport emit` mints one — see
-   [Admit an agent](admit-an-agent.html)). Audit mode by default; denials
-   refuse the release once `promotion.gates.admission.required` is `true`,
-   and `--force` / `GE_ADMISSION_BREAK_GLASS=1` is the recorded break-glass.
+   [Agent Passport](../concepts/agent-passport-and-proof-pack.html).
+   `ge passport emit` mints one; see [Admit an agent](admit-an-agent.html).
+   Audit mode is the default. A denial blocks release when
+   `promotion.gates.admission.required` is `true`; `--force` or
+   `GE_ADMISSION_BREAK_GLASS=1` records the break-glass decision.
 
-2. **Ship.**
+2. **Hand off the proven workspaces.**
 
    ```bash
-   ge handoff agents-cli                   # all locally-built workspaces
-   ge handoff agents-cli --ids ws-a,ws-b   # specific workspaces
+   ge handoff agents-cli                   # every locally proven workspace
+   ge handoff agents-cli --ids ws-a,ws-b   # selected workspaces
    ```
 
    Flags: `--ids <a,b>` (default: all built locally), `--start-stage`
    (default `load_data`), `--target-stage` (default `publish_enterprise`),
-   `--concurrency <n>` (default 2), `--no-proxy` (call the gateway directly
-   over HTTPS instead of the gcloud run proxy tunnel).
+   `--concurrency <n>` (default `8`, or `GE_REMOTE_SUBMIT_CONCURRENCY`), and
+   `--no-proxy` (call the gateway directly over HTTPS instead of using the
+   gcloud run proxy tunnel).
 
-   Each workspace is tarred, uploaded, and submitted as a deploy-only run
-   starting past the build boundary. Useful variants:
-
-   ```bash
-   ge handoff agents-cli --start-stage deploy_runtime   # skip load_data if stores already loaded
-   ge handoff agents-cli --target-stage verify_live     # extend through the live smoke check
-   ```
-
-   What the stages do: `load_data` creates the per-agent stores (BigQuery
-   dataset `agent_<id>`, Firestore DB `agent-<id>`, Bigtable table
-   `agent_<id>`, GCS prefix `agents/<id>/`); `deploy_runtime` runs
-   `agents-cli deploy` against the workspace's manifest
-   (`deployment_target: agent_runtime`); `poll_runtime` waits for the Agent
-   Engine runtime to be ready; `register_tools` registers the agent against
-   its department MCP service; `publish_enterprise` publishes it into your
-   Gemini Enterprise app; `verify_live` sends a live prompt and records the
-   result.
-
-3. **Watch the runs.**
+   Each workspace is archived, uploaded, and submitted as a release-only run
+   that starts after the build boundary. Useful variants:
 
    ```bash
-   ge agents status --watch            # re-polls every 15s until all runs are terminal
-   ge runs events <id> --follow        # stream one run's events live
-   ge agents logs <runId> --stage <stage>   # a failed stage's result, stderr, Cloud Build log URL
+   ge handoff agents-cli --start-stage deploy_runtime   # use data that is already loaded
+   ge handoff agents-cli --target-stage verify_live     # include the live verification stage
    ```
 
-4. **Fallback (zero local setup):** `ge agents build --remote --ids <a,b>`
-   re-runs generation in the cloud and deploys — simpler, but it redoes the
-   refine step and deploys the cloud's artifact rather than your exact
-   proven one.
+   `load_data` creates the per-agent stores (BigQuery dataset `agent_<id>`,
+   Firestore database `agent-<id>`, Bigtable table `agent_<id>`, and Google
+   Cloud Storage (GCS) prefix `agents/<id>/`). `deploy_runtime` runs
+   `agents-cli deploy` against the workspace manifest
+   (`deployment_target: agent_runtime`).
+   `poll_runtime` waits for Agent Engine, `register_tools` registers the agent
+   with its department Model Context Protocol (MCP) service,
+   `publish_enterprise` publishes it in the configured Gemini Enterprise app,
+   and optional `verify_live` sends a live prompt and records the result.
+
+3. **Watch the handoff to completion.**
+
+   ```bash
+   ge agents status --watch                  # poll until every run is terminal
+   ge runs events <run-id> --remote --follow # stream one remote run's events
+   ge agents logs <run-id> --stage <stage>   # inspect a failed stage and its Cloud Build URL
+   ```
+
+4. **Build in the cloud instead, when needed.**
+
+   `ge agents build --remote --ids <a,b>` regenerates and releases through the
+   cloud factory. Use it when there is no local proven workspace to preserve;
+   it does not hand off the exact artifact produced by a local proof.
 
 ## Expected output
 
-- `ge handoff agents-cli` prints `Shipped <n>  failed 0  (load_data → publish_enterprise, remote)`
-  with one run id per workspace.
+- `ge handoff agents-cli` reports the submitted and failed counts, the stage
+  range, and one run id per workspace.
 - `ge agents status --watch` ends with all runs terminal and none failed.
-- The agent is live in ADK Agent Engine (its runtime id lands in the
-  workspace's `deployment_metadata.json`), its tools are registered, and it
-  appears in your Gemini Enterprise app. A `verify_live` run records the
-  live exchange in `artifacts/agents-cli-verify-live.json`.
+- The agent is live in ADK Agent Engine, its runtime id is recorded in
+  `deployment_metadata.json`, its tools are registered, and it appears in
+  your Gemini Enterprise app. When you target `verify_live`, that stage
+  records the live exchange in `artifacts/agents-cli-verify-live.json`.
 
 ## Console view
 
-- **Fleet** — bulk ship/sync across workspaces; **Repair Queue** if a
+- **Fleet** — bulk handoff and sync across workspaces; **Repair Queue** if a
   release stage blocks. See
   [Fleet and repair](../console/fleet-and-repair.html).
-- **Runs** — stage-by-stage progress of each ship run, with the live event
+- **Runs** — stage-by-stage progress of each handoff run, with the live event
   stream. See [Pipeline and runs](../console/pipeline-and-runs.html).
 
 ## Generated files
@@ -136,18 +145,19 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
   Firestore database, `agent_<id>` Bigtable table, and `agents/<id>/` GCS
   prefix (created at `load_data`); the Agent Engine runtime; the MCP tool
   registration; the Gemini Enterprise listing.
-- In the workspace: `deployment_metadata.json` (runtime id) and
-  `artifacts/agents-cli-verify-live.json` (live check report) — parts of
-  the [agent passport](../concepts/agent-passport-and-proof-pack.html).
-- A record of the ship run in the durable ledger (the persistent run
+- In the workspace: `deployment_metadata.json` (runtime id) and, when the
+  target includes `verify_live`, `artifacts/agents-cli-verify-live.json`
+  (live check report) — parts of the [agent
+  passport](../concepts/agent-passport-and-proof-pack.html).
+- A record of the handoff run in the durable ledger (the persistent run
   history) — inspect with `ge ledger runs` / `ge runs list`.
 
 ## Common failures
 
 - **`geAppId unset`** — add it to `.ge.json` or set
   `GEMINI_ENTERPRISE_APP_ID`.
-- **`no local workspaces at .ge/factory/workspaces`** — run
-  `ge agents build --local` first; ship consumes prebuilt workspaces only.
+- **`no local workspaces at .ge/factory/workspaces`** — run `ge prove`; handoff
+  consumes prebuilt, proven workspaces only.
 - **Promotion gate blocked — refusing to deploy** — the run lists the
   blockers; resolve them via [repair](repair-failed-proof.html), or
   override deliberately (`GE_ALLOW_UNPROMOTED=1`).
@@ -155,7 +165,7 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
   workspace; each blocker names its fix (usually `ge prove` then
   `ge passport emit <id>` — see the
   [blocker-code table](../reference/admission.html)), or break-glass
-  deliberately (`ge handoff --force`).
+  deliberately (`ge handoff agents-cli --force`).
 - **Run stuck at `queued`** — Cloud Tasks → worker invocation failing;
   check the worker's `run.invoker` binding and run `ge doctor`.
 - **A release stage failed** — `ge agents logs <runId> --stage <stage>`
@@ -164,13 +174,13 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
 
 ## Repair
 
-- Retry from the ledger: `ge agents resume` in remote mode plans the exact
-  ship/advance actions to reach `published`; `--run` executes them.
-- Re-ship from a later stage once the cause is fixed, e.g.
+- Resume the failed release from the run record with
+  `ge agents resume --remote --run --ids <id>`.
+- Hand off from a later stage once the cause is fixed, e.g.
   `ge handoff agents-cli --ids <id> --start-stage deploy_runtime`.
 - Pre-boundary failures (validation, harness) belong to
   [Repair a failed proof](repair-failed-proof.html) — converge locally,
-  then ship again.
+  then hand off again.
 
 ## Next step
 

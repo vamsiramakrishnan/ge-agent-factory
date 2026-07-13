@@ -58,32 +58,35 @@ and an MCP server.
 
 | Path | What it is |
 |------|------------|
-| [`apps/console`](apps/console) | The main operator UI (React + Vite + Tailwind). Its Bun server exposes `/api/ge/*` — the same JSON the CLI emits. See the [Console Tour](docs/reference/console-tour.md). |
+| [`apps/console`](apps/console) | The main operator UI (React + Vite + Tailwind). Its Bun server exposes `/api/ge/*` — the same JSON the CLI emits. See the [Console Tour](docs/console/index.md). |
 | [`apps/presentation`](apps/presentation) | The transformation deck + source use-case catalog used to explain the system. |
 | [`apps/factory`](apps/factory) | The generator: the `factory` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/factory/mcp-service). The `factory.mjs` pipeline's modules are split out under [`apps/factory/scripts/factory/`](apps/factory/scripts/factory/README.md) — see that directory's README for a map of what lives where and why. |
 | [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime daemon under `tools/lib/`. |
 | [`skills/`](skills) | Cross-runtime harness skills (one dir per skill, each with a `SKILL.md`). |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in a target project. |
-| [`docs/`](docs) | The GitHub Pages documentation site plus operator runbooks, ADRs, and design specs. |
+| [`docs/`](docs) | Canonical public documentation plus runbooks, ADRs, and design specs. `apps/docs` publishes this content with Astro/Starlight on GitHub Pages. |
 | [`packages/`](packages) | Shared workspace packages: contracts (the agent-spec schema, run ledger, OKF, design tokens) plus the extracted engines — `@ge/synthkit` (deterministic synthetic data, behind `ge data synth`) and `@ge/evalkit` (behavioral eval compiler + metrics, behind `ge evals compile`). Catalog: [`packages/README.md`](packages/README.md). See [`packages/std/README.md`](packages/std/README.md) for the `@ge/std` utility catalog — check it before hand-rolling a naming/JSON/CSV/merge helper. |
 
 ---
 
 ## Running the gates (before a PR)
 
-CI is source hygiene + typecheck + catalog + the docs gate + the gated test
-suite (see [`cloudbuild.ci.yaml`](cloudbuild.ci.yaml)). Run the same gate
-locally with:
+Run the complete local gate before opening a pull request:
 
 ```bash
-mise run ci             # source:hygiene → typecheck → catalog → docs:gate → test:gated  (mirrors CI)
+bun run ci              # hygiene → typecheck → Oxlint → catalog → docs gate → gated tests
 ```
+
+The checked-in [`cloudbuild.ci.yaml`](cloudbuild.ci.yaml) runs the same
+structural checks without the standalone Oxlint step. `bun run ci` is the
+safer local superset; `mise run ci` mirrors the Cloud Build sequence exactly.
 
 Or run the individual checks:
 
 ```bash
 bun run source:hygiene   # repo hygiene guard (tools/source-hygiene.mjs)
 bun run typecheck        # typecheck every typed workspace (tsc --noEmit, per app/package)
+bun run lint             # Oxlint checks across apps, tools, and packages
 bun run docs:gate        # docs link/image/blockquote + diagram-drift + design-token checks
 bun run test:gated       # bun test apps tools packages, cross-checked against
                          # tools/known-test-failures.json (see AGENTS.md)
@@ -92,8 +95,8 @@ bun run test:gated       # bun test apps tools packages, cross-checked against
 For the Python MCP service (run from a `python3` that has pytest — see above):
 
 ```bash
-python3 -m pytest apps/factory/mcp-service        # the MCP / simulator tests
-bun run test:py                                             # same, via the package script
+python3 -m pytest apps/factory/mcp-service packages/simulator-runtime -q
+bun run test:py   # same paths, via the package script
 ```
 
 App production builds (useful when you've touched the UIs):
@@ -103,14 +106,11 @@ bun run build:console
 bun run build:presentation
 ```
 
-> CI typechecks with `bun run typecheck` because `vite build` strips types — a TS
-> error can otherwise ship silently. `apps/factory` has no `typecheck` script, so
-> `bun run typecheck` covers the console app, the presentation app, and the
-> `@ge/run-ledger`/`@ge/runtime` packages. There is no linter in this repo yet
-> (`typecheck` catches type errors, not style/correctness lint rules — see
-> `docs/plans/taste-campaign/08-next-horizon.md` item B1). The Python tests are
-> **not** part of the `bun`/Cloud Build CI gate today — run them yourself when you
-> touch `mcp-service` or the simulator packs.
+> Typecheck runs separately because Vite strips types; a TypeScript error can
+> otherwise survive a production build. Oxlint catches JavaScript and TypeScript
+> correctness problems that typecheck does not. The Python tests are **not** part
+> of the Bun or Cloud Build gate, so run `bun run test:py` when you touch
+> `mcp-service`, simulator packs, or `packages/simulator-runtime`.
 {: .note }
 
 ---
@@ -125,7 +125,7 @@ bun run build:presentation
   `feat(scope): …`, `fix(scope): …`, `chore(scope): …`, etc. Recent history is the
   reference (e.g. `feat(okf): …`, `fix(agent-gateway): …`).
 - Optional: `mise run install-hooks` installs a fast pre-commit hook that runs source
-  hygiene before each commit (the full suite runs in `mise run ci` / CI).
+  hygiene before each commit (run the full local suite with `bun run ci`).
 
 ---
 
