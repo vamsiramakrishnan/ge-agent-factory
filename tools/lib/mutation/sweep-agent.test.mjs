@@ -5,11 +5,14 @@
 // so it is gated behind GE_MUTATION_E2E to keep the default test gate quick
 // (same pattern as the repo's GE_E2E suites).
 import { test, expect, describe } from "bun:test";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { synthesizeCassetteRecords, syntheticTarget } from "./synthesize-cassette.mjs";
 import { cassetteInvocationTools, cassetteHasCitations } from "./cassette-mutations.mjs";
 import { compileAgentEvalset, sweepAgentBundle } from "./sweep-agent.mjs";
 
-const BUNDLE = "okf/shrink-anomaly-analyzer";
+const HERE = dirname(fileURLToPath(import.meta.url));
+const BUNDLE = join(HERE, "../../../okf/shrink-anomaly-analyzer");
 
 describe("cassette synthesizer", () => {
   test("meta + per-turn records satisfy the declared guards", () => {
