@@ -9,6 +9,8 @@
 //     surviving (ornamental) rather than always reporting green kills.
 import { test, expect, describe } from "bun:test";
 import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { runEvalMutants, readExpectations, planMutants, untestedGuards } from "./harness.mjs";
 import {
   dropRequiredTool,
@@ -21,10 +23,11 @@ import {
   toolNameOf,
 } from "./cassette-mutations.mjs";
 
-const EVALSET = "tools/lib/mutation/fixtures/benefits.evalset.json";
-const UNDERGUARDED = "tools/lib/mutation/fixtures/benefits-underguarded.evalset.json";
-const TOOLGAP = "tools/lib/mutation/fixtures/benefits-toolgap.evalset.json";
-const CASSETTE = "tools/lib/live/fixtures/success.ndjson";
+const HERE = dirname(fileURLToPath(import.meta.url));
+const EVALSET = join(HERE, "fixtures/benefits.evalset.json");
+const UNDERGUARDED = join(HERE, "fixtures/benefits-underguarded.evalset.json");
+const TOOLGAP = join(HERE, "fixtures/benefits-toolgap.evalset.json");
+const CASSETTE = join(HERE, "../live/fixtures/success.ndjson");
 
 function records() {
   return readFileSync(CASSETTE, "utf8")
