@@ -3,7 +3,7 @@
 **An agent is a contract with the external world.** It reads your systems,
 acts on your data, and speaks to your users — so it should be built from a
 contract, proven with evidence, and admitted to production by policy, not
-by hope.
+by vibes or by hand coding. 
 
 GE Agent Factory builds agents exactly that way. A user interview, a BRD,
 or a PRD becomes a canonical spec — an Enterprise Agent Contract, captured
