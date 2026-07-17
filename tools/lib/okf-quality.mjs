@@ -56,7 +56,8 @@ async function walk(dir, acc = []) {
   for (const ent of await readdir(dir, { withFileTypes: true })) {
     if (ent.name === "node_modules" || ent.name === ".git") continue;
     const p = join(dir, ent.name);
-    if (ent.isDirectory()) await walk(p, acc); else if (ent.isFile() && ent.name.endsWith(".md")) acc.push(p);
+    const isFixtureData = /\/fixtures\/.*\.(?:json|csv|ya?ml)$/i.test(p.replaceAll("\\", "/"));
+    if (ent.isDirectory()) await walk(p, acc); else if (ent.isFile() && (ent.name.endsWith(".md") || isFixtureData)) acc.push(p);
   }
   return acc;
 }
