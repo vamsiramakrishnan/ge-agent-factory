@@ -25,18 +25,28 @@ def _default_fields(primary_key: str) -> dict[str, str]:
 
 def _state_machine(collection: dict[str, Any]) -> dict[str, Any] | None:
     transitions = collection.get("transitions")
-    states = collection.get("states")
+    states = collection.get("states") or collection.get("transitionCandidates")
     state_field = collection.get("stateField") or collection.get("statusField")
     if not state_field and (transitions or states):
         state_field = "status"
     if not state_field:
         return None
-    if not transitions:
-        if not states:
-            return None
-        # Linear default chain through the declared states.
-        transitions = {states[i]: [states[i + 1]] for i in range(len(states) - 1)}
-    return {"stateField": state_field, "transitions": transitions, "states": states or list(transitions)}
+    if not transitions and not states:
+        return None
+    if transitions and not states:
+        states = [state for state in dict.fromkeys([
+            *transitions.keys(),
+            *(target for targets in transitions.values() for target in targets),
+        ]) if state != "*"]
+    # An enum is a vocabulary, not evidence of transition edges. When a source
+    # supplies states without transitions, preserve them for review and emit an
+    # unmodeled (fail-closed) handler instead of inventing a linear graph.
+    return {
+        "stateField": state_field,
+        "transitions": transitions,
+        "states": states,
+        "transitionCandidates": states if not transitions else None,
+    }
 
 
 def _terminal_states(transitions: dict[str, list[str]]) -> list[str]:
@@ -105,8 +115,12 @@ def build_contract_from_sketch(sketch: dict[str, Any]) -> dict[str, Any]:
         if machine:
             transitions = machine["transitions"]
             state_field = machine["stateField"]
-            fields.setdefault(state_field, "enum:" + "|".join(machine["states"]))
+            if machine["states"]:
+                fields[state_field] = "enum:" + "|".join(machine["states"])
             submit_name = f"submit_{singular}_update"
+            # Mutation annotations are part of the handler contract from
+            # birth. A state vocabulary without edges stays explicitly
+            # unmodeled until a reviewer supplies the transition graph.
             handler: dict[str, Any] = {
                 "collection": name,
                 "primaryKey": primary_key,
@@ -114,8 +128,14 @@ def build_contract_from_sketch(sketch: dict[str, Any]) -> dict[str, Any]:
                 "targetStateArg": state_field,
                 "noteArg": "note",
                 "roleArg": "role",
-                "transitions": transitions,
+                "semantics": "state_transition" if transitions else "unmodeled",
+                "compensation": "manual",
+                "idempotency": {"keyFields": ["idempotency_key"]},
             }
+            if transitions:
+                handler["transitions"] = transitions
+            else:
+                handler["transitionCandidates"] = machine["transitionCandidates"]
             if col.get("allowedRoles"):
                 handler["allowedRoles"] = col["allowedRoles"]
             if has_approvals and col.get("approvalGated", name != "approvals"):
@@ -123,7 +143,7 @@ def build_contract_from_sketch(sketch: dict[str, Any]) -> dict[str, Any]:
                     "collection": "approvals",
                     "sourceRecordField": primary_key,
                     "states": ["requested", "pending", "pending_approval"],
-                    "blockedTargetStates": _terminal_states(transitions) or [],
+                    "blockedTargetStates": _terminal_states(transitions) if transitions else [],
                 }]
             tool_handlers[submit_name] = handler
             tools.append({
@@ -136,6 +156,7 @@ def build_contract_from_sketch(sketch: dict[str, Any]) -> dict[str, Any]:
                         state_field: {"type": "string"},
                         "note": {"type": "string"},
                         "role": {"type": "string"},
+                        "idempotency_key": {"type": "string"},
                     },
                     "required": [primary_key, state_field],
                 },
@@ -168,7 +189,12 @@ def build_contract_from_sketch(sketch: dict[str, Any]) -> dict[str, Any]:
         "provenance": {"source": sketch.get("source") or "sketch", "synthesized": True},
         "schema": {"id": f"{system_id}_schema", "version": 1, "collections": schema_collections},
         "toolCatalog": {"id": f"{system_id}_tools", "version": 1, "tools": tools},
-        "workflowCatalog": {"id": f"{system_id}_workflows", "version": 1, "toolHandlers": tool_handlers},
+        "workflowCatalog": {
+            "id": f"{system_id}_workflows",
+            "version": 1,
+            "mutationModel": "ge.mutation-model.v1",
+            "toolHandlers": tool_handlers,
+        },
         "projection": {"id": f"{system_id}_projection", "version": 1, "collectionMappings": projection_mappings},
         "materialization": materialization,
         "tools": [tool["name"] for tool in tools],

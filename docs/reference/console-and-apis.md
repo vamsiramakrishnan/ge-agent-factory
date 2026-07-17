@@ -106,6 +106,8 @@ returns `202 { jobId, command }`; stream progress via
 | `POST /api/ge/agents/sync` | `ge agents sync` | Copy generated agent code into the repository | `writes-repo` | `git` on PATH |
 | `POST /api/ge/daemon/start` | `ge daemon start` | Start the local GE runtime daemon (idempotent — no-op if already running) | `starts-local-workloads` | `node` on PATH |
 | `GET /api/ge/daemon/cloud` | `ge daemon cloud` | Show cloud factory readiness across the worker, Cloud Tasks queue, and cache contract | `read-only` | `gcloud` on PATH · `.ge.json`: project, region · cloud auth |
+| `POST /api/ge/systems/mutation/infer` | `ge systems mutation infer` | Infer ge.mutation-model.v1 write semantics from an OpenAPI spec or samples (deterministic heuristic tier) and emit a reviewable proposal under .ge/systems/mutations/ — never edits a pack | `starts-local-workloads` | `node` on PATH · data-generation runtime |
+| `GET /api/ge/systems/mutation/validate` | `ge systems mutation validate` | Statically validate write semantics across the simulator corpus (or one system) against ge.mutation-model.v1 — semantics declared, profiler marker present, state graphs usable, collections real | `read-only` | — |
 <!-- END GENERATED: ge-console-commands -->
 
 ### `/api/ge/*` — read routes and bespoke handlers

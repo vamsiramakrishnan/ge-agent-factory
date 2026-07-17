@@ -72,6 +72,9 @@
         "min_ms": 20,
         "max_ms": 80
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_monitor_update": {
       "primitive": "state_machine_update",
@@ -137,6 +140,9 @@
         "min_ms": 25,
         "max_ms": 90
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_incident_update": {
       "primitive": "state_machine_update",
@@ -188,6 +194,9 @@
         "min_ms": 30,
         "max_ms": 100
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "run_monitor_check": {
       "primitive": "state_machine_update",
@@ -222,6 +231,11 @@
         "refillPerSecond": 0.2,
         "key": "agent:system"
       }
+    ,
+      "semantics": "async_job",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

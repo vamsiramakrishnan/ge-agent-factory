@@ -49,7 +49,7 @@ describe("action-kind enums — membership + parse behavior", () => {
     [
       "RiskLevelSchema",
       RiskLevelSchema,
-      ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"],
+      ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "calls-live-readonly", "read-only"],
       "read-only",
     ],
     ["DispatchModeSchema", DispatchModeSchema, ["navigate", "runTask", "resumeTask", "copyOnly"], "runTask"],

@@ -80,19 +80,36 @@
         "data synth",
         "synthkit",
         "seed data",
-        "realism profile"
+        "realism profile",
+        "system profile",
+        "replay corpus",
+        "record system traffic",
+        "compare twin to live",
+        "twin realism",
+        "mutation model",
+        "infer write semantics",
+        "validate write semantics"
       ],
       "commands": [
         "data.synth",
         "pipeline.run",
-        "daemon.start"
+        "daemon.start",
+        "systems.profile",
+        "systems.record",
+        "systems.compare",
+        "systems.mutation.infer",
+        "systems.mutation.validate",
+        "systems.mutation.apply"
       ],
       "engines": [
-        "@ge/synthkit"
+        "@ge/synthkit",
+        "@ge/byo-systems"
       ],
       "docs": [
         "docs/reference/synthetic-data.md",
-        "docs/reference/simulator-systems.md"
+        "docs/reference/simulator-systems.md",
+        "docs/cookbooks/bring-your-own-systems.md",
+        "docs/reference/cli.md"
       ]
     },
     "checking-workspaces": {
@@ -537,6 +554,15 @@
         "bind a system",
         "system binding",
         "live twin",
+        "dial a system",
+        "dispatch directive",
+        "system profile",
+        "record system traffic",
+        "replay corpus",
+        "compare twin to live",
+        "mutation model",
+        "infer write semantics",
+        "validate write semantics",
         "synthesize a system",
         "import an evalset",
         "models doctor",
@@ -554,6 +580,14 @@
         "systems.bindings",
         "systems.unbind",
         "systems.synth",
+        "systems.dial",
+        "systems.dispatch",
+        "systems.profile",
+        "systems.record",
+        "systems.compare",
+        "systems.mutation.infer",
+        "systems.mutation.validate",
+        "systems.mutation.apply",
         "evals.import",
         "models.doctor",
         "systems.list",

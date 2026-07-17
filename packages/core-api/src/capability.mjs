@@ -27,6 +27,7 @@ export const RISK_LEVELS = Object.freeze([
   "starts-workloads", // kicks off cloud-side (remote) build/run work
   "starts-local-workloads", // starts a process on the operator's machine
   "writes-repo", // writes/commits files into the local git repo
+  "calls-live-readonly", // dials an operator-configured external system, read-only ops only — never mutates it, never writes the repo
   "read-only", // reads/reports state only
 ]);
 

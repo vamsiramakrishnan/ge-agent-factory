@@ -53,11 +53,11 @@ ge systems bind crm \
 ```
 
 - `--kind` — `twin` | `mcp` | `rest`: what kind of target `--to` points at.
-- `--mode` — `twin_first` | `live_first` | `twin_only`: call-order precedence
-  between the simulated twin and the live target. `twin_first` tries the
-  twin and falls back to live; `live_first` is the reverse; `twin_only`
-  ignores the binding for calls (useful for recording a binding before the
-  live target is ready).
+- `--mode` — `twin_first` | `live_first` | `twin_only`: dispatch policy for
+  the simulated twin and live target. `twin_first` always serves the twin in
+  normal tool execution and retains the live side only for an explicit
+  comparison; `live_first` may fall back to the twin for transient live
+  failures; `twin_only` ignores the binding for calls.
 - `--connector` is informational today (no connector SDK yet) — it's a
   name your own tooling can key off, not a factory-resolved plugin.
 - `--config` takes inline JSON or a path to a JSON file of connector config.

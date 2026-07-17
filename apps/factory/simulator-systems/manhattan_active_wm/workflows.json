@@ -50,6 +50,11 @@
           "inactive"
         ]
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

@@ -1506,6 +1506,241 @@ export const GE_COMMANDS = {
     },
     argv: () => ["systems", "doctor", "--json"],
   },
+  "systems.profile": {
+    id: "systems.profile", method: null, path: null,
+    cli: "ge systems profile",
+    label: "Profile a real system",
+    summary:
+      "Capture a redacted ge.system-profile.v1 from a system's OpenAPI spec (read allowlist / write denylist / auth by reference) under .ge/systems/profiles/; with --probe, one read-only reachability dial",
+    guide: {
+      when: "an OpenAPI-described real system needs a reviewable read/write boundary before any capture or comparison",
+      next: ["ge systems record", "ge systems compare"],
+    },
+    risk: "calls-live-readonly", expectedDuration: "under 30s",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_systems_profile",
+      description:
+        "May dial a live system READ-ONLY (risk: calls-live-readonly — only with probe:true; otherwise pure spec analysis). Captures a ge.system-profile.v1 from the system's OpenAPI spec: read-op allowlist, write-op denylist, auth stored as an env-var NAME (never a value), redaction-policy hash. A spec with PII-shaped fields REQUIRES a redaction policy. Writes .ge/systems/profiles/<system>.profile.json.",
+      params: {
+        system: { type: "string", description: "System id the profile is for" },
+        openapi: { type: "string", description: "Path to the system's OpenAPI/Swagger JSON spec" },
+        baseUrl: { type: "string", optional: true, description: "Live base URL (required for probe)" },
+        auth: { type: "string", optional: true, description: "Auth reference: env:VARIABLE_NAME or none" },
+        redact: { type: "string", optional: true, description: "Path to a ge.redaction-policy.v1" },
+        probe: { type: "boolean", optional: true, description: "Dial the base URL once, read-only, for reachability" },
+        out: { type: "string", optional: true, description: "Profile output path override" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "profile", String(body.system), "--openapi", String(body.openapi), "--json"];
+      if (body.baseUrl) argv.push("--base-url", String(body.baseUrl));
+      if (body.auth) argv.push("--auth", String(body.auth));
+      if (body.redact) argv.push("--redact", String(body.redact));
+      if (body.probe) argv.push("--probe");
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "systems.record": {
+    id: "systems.record", method: null, path: null,
+    cli: "ge systems record",
+    label: "Record a replay corpus",
+    summary:
+      "Record bounded, allowlisted, read-only traffic from a profiled system into a redacted ge.replay-corpus.v1 under .ge/replay/, or import an NDJSON/HAR capture through the same redaction path",
+    guide: {
+      when: "a profiled system needs a bounded, redacted replay corpus for simulator refinement",
+      next: ["ge systems compare", "ge systems mutation infer"],
+    },
+    risk: "calls-live-readonly", expectedDuration: "under 2m",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_systems_record",
+      description:
+        "Dials a profiled live system READ-ONLY (risk: calls-live-readonly): executes only the profile's allowlisted GET paths named in the probe script, bounded by maxCalls, redacting every exchange BEFORE writing. Or imports an existing HAR/NDJSON capture (write traffic dropped, all re-redacted). Writes a ge.replay-corpus.v1 NDJSON + its redaction report.",
+      params: {
+        system: { type: "string", description: "System id (must match the profile)" },
+        profile: { type: "string", optional: true, description: "Path to the ge.system-profile.v1" },
+        script: { type: "string", optional: true, description: "Read-only probe script (JSON: {calls:[{name,path,query?}]})" },
+        maxCalls: { type: "number", optional: true, description: "Hard cap on live calls (1..500)" },
+        importHar: { type: "string", optional: true, description: "Import a HAR file instead of dialing" },
+        importNdjson: { type: "string", optional: true, description: "Import an NDJSON capture instead of dialing" },
+        redact: { type: "string", optional: true, description: "Path to a ge.redaction-policy.v1" },
+        out: { type: "string", optional: true, description: "Corpus output path override" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "record", String(body.system), "--json"];
+      if (body.profile) argv.push("--profile", String(body.profile));
+      if (body.script) argv.push("--script", String(body.script));
+      if (body.maxCalls !== undefined) argv.push("--max-calls", String(body.maxCalls));
+      if (body.importHar) argv.push("--import-har", String(body.importHar));
+      if (body.importNdjson) argv.push("--import-ndjson", String(body.importNdjson));
+      if (body.redact) argv.push("--redact", String(body.redact));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "systems.compare": {
+    id: "systems.compare", method: null, path: null,
+    cli: "ge systems compare",
+    label: "Compare a twin to live",
+    summary:
+      "Measure a twin against its real system with allowlisted read probes: endpoint/field coverage (mechanical) and latency/error realism (advisory), emitting a ge.realism-report.v1 — never dials a write endpoint",
+    guide: {
+      when: "a twin needs an evidence-backed gap report against bounded read-only live samples",
+      next: ["ge systems record", "ge systems mutation infer"],
+    },
+    risk: "calls-live-readonly", expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_systems_compare",
+      description:
+        "Dials a profiled live system READ-ONLY (risk: calls-live-readonly) and compares it to its twin pack: endpoint coverage and field coverage (mechanical pass/gap), latency-band and error-class fit (advisory). Never calls a write endpoint. Each gap names the exact command that closes it. Writes a ge.realism-report.v1.",
+      params: {
+        system: { type: "string", description: "System id (twin pack + profile must match)" },
+        profile: { type: "string", description: "Path to the ge.system-profile.v1 (must carry baseUrl)" },
+        maxCalls: { type: "number", optional: true, description: "Cap on live sample calls (default 25)" },
+        out: { type: "string", optional: true, description: "Realism report output path override" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "compare", String(body.system), "--profile", String(body.profile), "--json"];
+      if (body.maxCalls !== undefined) argv.push("--max-calls", String(body.maxCalls));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "systems.mutation.infer": {
+    id: "systems.mutation.infer", method: "POST", path: "/api/ge/systems/mutation/infer",
+    cli: "ge systems mutation infer",
+    label: "Infer write semantics",
+    summary:
+      "Infer ge.mutation-model.v1 write semantics from an OpenAPI spec or samples (deterministic heuristic tier) and emit a reviewable proposal under .ge/systems/mutations/ — never edits a pack",
+    guide: {
+      when: "write handlers need a reviewable mutation-semantics proposal without changing the simulator pack",
+      next: ["ge systems mutation validate", "ge systems mutation apply"],
+    },
+    risk: "starts-local-workloads", expectedDuration: "under 1m",
+    requirements: { bins: ["node"], config: [], dataGenerationRuntime: true },
+    mcp: {
+      tool: "factory_systems_mutation_infer",
+      description:
+        "Mutating (local .ge state only): infer write-semantics candidates (ge.mutation-model.v1 — state fields, approval blockers, idempotency, and compensation) from an OpenAPI spec or samples via the deterministic synthesis heuristic, and write a reviewable ge.mutation-proposal.v1 file. Apply is a separate, dry-run-by-default step.",
+      params: {
+        system: { type: "string", description: "Target system id the proposal is for" },
+        fromOpenapi: { type: "string", optional: true, description: "Path to an OpenAPI/Swagger JSON spec" },
+        fromSamples: { type: "string", optional: true, description: "Path to a JSON file of {collection: [rows]}" },
+        out: { type: "string", optional: true, description: "Proposal output path override" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "mutation", "infer", String(body.system), "--json"];
+      if (body.fromOpenapi) argv.push("--from-openapi", String(body.fromOpenapi));
+      if (body.fromSamples) argv.push("--from-samples", String(body.fromSamples));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
+  "systems.mutation.validate": {
+    id: "systems.mutation.validate", method: "GET", path: "/api/ge/systems/mutation/validate",
+    cli: "ge systems mutation validate",
+    label: "Validate write semantics",
+    summary:
+      "Statically validate write semantics across the simulator corpus (or one system) against ge.mutation-model.v1 — semantics declared, profiler marker present, state graphs usable, collections real",
+    guide: {
+      when: "mutation annotations need a static conformance check before or after proposal application",
+      next: ["ge systems mutation infer", "ge systems mutation apply"],
+    },
+    risk: "read-only", expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_systems_mutation_validate",
+      description:
+        "Read-only: validate every simulator pack's write handlers against ge.mutation-model.v1 — model version and compensation declared, transitions usable, handlers linked to real tools and runtime bindings, approval-blocker collections present, and idempotency keys declared in the tool input schema. Returns {ok, systems[], summary}.",
+      params: { system: { type: "string", optional: true, description: "Validate one system instead of the whole corpus" } },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "mutation", "validate", "--json"];
+      if (body.system) argv.push("--system", String(body.system));
+      return argv;
+    },
+  },
+  "systems.mutation.apply": {
+    id: "systems.mutation.apply", method: null, path: null,
+    cli: "ge systems mutation apply",
+    label: "Apply a mutation proposal",
+    summary:
+      "Apply a ge.mutation-proposal.v1 to its pack's workflows.json — dry-run by default, hash-guarded against a changed base, hand-authored handler values never overwritten",
+    guide: {
+      when: "a reviewed mutation proposal is ready for a dry run or an explicit repository write",
+      next: ["ge systems mutation validate", "ge systems compare"],
+    },
+    risk: "writes-repo", expectedDuration: "under 10s",
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_systems_mutation_apply",
+      description:
+        "Mutating (repo, only with write:true): merge a ge.mutation-proposal.v1 into the target pack's workflows.json. Dry-run by default (returns the change list without writing); refuses a proposal whose base hash no longer matches unless force; existing handler values always win over proposed ones.",
+      params: {
+        proposal: { type: "string", description: "Path to the ge.mutation-proposal.v1 file" },
+        write: { type: "boolean", optional: true, description: "Persist the merge (default: dry-run)" },
+        force: { type: "boolean", optional: true, description: "Skip the base-hash guard" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["systems", "mutation", "apply", "--proposal", String(body.proposal), "--json"];
+      if (body.write) argv.push("--write");
+      if (body.force) argv.push("--force");
+      return argv;
+    },
+  },
+  "systems.dispatch": {
+    id: "systems.dispatch",
+    method: null,
+    path: null,
+    cli: "ge systems dispatch",
+    label: "Compile the dispatch directive",
+    summary:
+      "Compile stored bindings into the tool-plane dispatch directive (ge.dispatch-directive.v1): resolved decisions only — twin by default, live-first calls require approval, twin-first carries live metadata only for explicit comparison, auth by env-var reference",
+    guide: {
+      when: "reviewed system bindings need a deterministic runtime directive without dialing or starting workloads",
+      next: ["ge systems doctor --dial", "ge systems doctor"],
+    },
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_systems_dispatch",
+      description:
+        "Read-only: compile .ge/systems/bindings.json into the dispatch directive the simulator tool plane consumes via GE_SIMULATOR_DISPATCH (schemaVersion ge.dispatch-directive.v1). Live-first rest bindings can route reads live after separate approval; twin-first bindings stay on the twin during normal execution and expose live metadata only for explicit comparison; writes always stay on the twin. Auth travels as an env var NAME (config.authEnv), never a value. Returns {env, fileEnv, directive}.",
+      params: {},
+    },
+    argv: () => ["systems", "dispatch", "--json"],
+  },
+  "systems.dial": {
+    id: "systems.dial",
+    method: null,
+    path: null,
+    cli: "ge systems doctor --dial",
+    label: "Dial live system bindings",
+    summary:
+      "Run the BYO-systems doctor plus one read-only reachability probe per stored rest binding, reporting each binding's dispatch decision (reads twin vs live; writes always twin)",
+    guide: {
+      when: "stored REST bindings need an explicitly approved, read-only reachability and authorization check",
+      next: ["ge systems dispatch", "ge systems doctor"],
+    },
+    risk: "calls-live-readonly",
+    expectedDuration: "under 30s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_systems_dial",
+      description:
+        "Dials operator-configured live systems READ-ONLY (risk: calls-live-readonly — distinct from read-only): the full BYO-systems doctor plus one HEAD/GET reachability probe per stored rest binding, with each binding's dispatch decision (reads → twin|live per mode; writes → twin, always). Auth resolves from the binding's config.authEnv env var by reference; token values never appear in results. Never issues a write-class request.",
+      params: {},
+    },
+    argv: () => ["systems", "doctor", "--dial", "--json"],
+  },
   "doctor": {
     id: "doctor",
     method: null,

@@ -55,6 +55,11 @@
         "conflict": 0.03,
         "timeout": 0.02
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

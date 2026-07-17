@@ -13,10 +13,12 @@
         "@ge/blueprint-library": "workspace:*",
         "@ge/byo-systems": "workspace:*",
         "@ge/capability-registry": "workspace:*",
+        "@ge/connector-core": "workspace:*",
         "@ge/contracts": "workspace:*",
         "@ge/core-api": "workspace:*",
         "@ge/design": "workspace:*",
         "@ge/evalkit": "workspace:*",
+        "@ge/redaction": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",
@@ -182,6 +184,7 @@
       "name": "@ge/byo-systems",
       "version": "0.1.0",
       "dependencies": {
+        "@ge/connector-core": "workspace:*",
         "@ge/std": "workspace:*",
       },
     },
@@ -191,6 +194,10 @@
       "dependencies": {
         "@ge/core-api": "workspace:*",
       },
+    },
+    "packages/connector-core": {
+      "name": "@ge/connector-core",
+      "version": "0.1.0",
     },
     "packages/contracts": {
       "name": "@ge/contracts",
@@ -236,6 +243,10 @@
       "devDependencies": {
         "fast-check": "^3.23.2",
       },
+    },
+    "packages/redaction": {
+      "name": "@ge/redaction",
+      "version": "0.1.0",
     },
     "packages/run-ledger": {
       "name": "@ge/run-ledger",
@@ -520,6 +531,8 @@
 
     "@ge/capability-registry": ["@ge/capability-registry@workspace:packages/capability-registry"],
 
+    "@ge/connector-core": ["@ge/connector-core@workspace:packages/connector-core"],
+
     "@ge/contracts": ["@ge/contracts@workspace:packages/contracts"],
 
     "@ge/core-api": ["@ge/core-api@workspace:packages/core-api"],
@@ -533,6 +546,8 @@
     "@ge/factory": ["@ge/factory@workspace:apps/factory"],
 
     "@ge/okf": ["@ge/okf@workspace:packages/okf"],
+
+    "@ge/redaction": ["@ge/redaction@workspace:packages/redaction"],
 
     "@ge/run-ledger": ["@ge/run-ledger@workspace:packages/run-ledger"],
 

@@ -1,0 +1,116 @@
+{
+  "exchange": {
+    "request": {
+      "url": "https://crm.internal.example.com/customers?email=[REDACTED]",
+      "method": "GET",
+      "headers": {
+        "Authorization": "[REDACTED]",
+        "Cookie": "[REDACTED]",
+        "Accept": "application/json",
+        "X-Api-Key": "[REDACTED]",
+        "X-Request-Id": "[REDACTED]"
+      },
+      "body": {
+        "query": "jane",
+        "requested_by": "[REDACTED]"
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Set-Cookie": "[REDACTED]"
+      },
+      "body": {
+        "customers": [
+          {
+            "customer_id": "hmac-sha256:ef355a6a53eeab2e6c1647052b2ae32bd4dfabb940c765dfaac2773d0a336ec6",
+            "name": "[REDACTED]",
+            "email": "[REDACTED]",
+            "phone": "call [REDACTED] now",
+            "ssn": "[REDACTED]",
+            "card_on_file": "[REDACTED]",
+            "order_ref": "1234 5678 9012 34",
+            "notes": "prefers email contact",
+            "balance": 1250.5
+          }
+        ],
+        "internal": {
+          "shard": "us-west-2"
+        }
+      }
+    }
+  },
+  "report": [
+    {
+      "path": "request.url.query.email",
+      "rule": "query-key:default-deny",
+      "action": "mask"
+    },
+    {
+      "path": "request.headers.authorization",
+      "rule": "header:default-deny",
+      "action": "mask"
+    },
+    {
+      "path": "request.headers.cookie",
+      "rule": "header:default-deny",
+      "action": "mask"
+    },
+    {
+      "path": "request.headers.x-api-key",
+      "rule": "header:default-deny",
+      "action": "mask"
+    },
+    {
+      "path": "request.headers.x-request-id",
+      "rule": "header:policy",
+      "action": "mask"
+    },
+    {
+      "path": "request.body.requested_by",
+      "rule": "detector:email",
+      "action": "mask"
+    },
+    {
+      "path": "response.headers.set-cookie",
+      "rule": "header:default-deny",
+      "action": "mask"
+    },
+    {
+      "path": "response.body.customers.0.customer_id",
+      "rule": "field:response.body.customers.*.customer_id",
+      "action": "hash"
+    },
+    {
+      "path": "response.body.customers.0.name",
+      "rule": "field:response.body.customers.*.name",
+      "action": "mask"
+    },
+    {
+      "path": "response.body.customers.0.email",
+      "rule": "detector:email",
+      "action": "mask"
+    },
+    {
+      "path": "response.body.customers.0.phone",
+      "rule": "detector:phone",
+      "action": "mask"
+    },
+    {
+      "path": "response.body.customers.0.ssn",
+      "rule": "detector:ssn",
+      "action": "mask"
+    },
+    {
+      "path": "response.body.customers.0.card_on_file",
+      "rule": "detector:card",
+      "action": "mask"
+    },
+    {
+      "path": "response.body.internal.api_key",
+      "rule": "field:response.body.internal.api_key",
+      "action": "drop"
+    }
+  ]
+}

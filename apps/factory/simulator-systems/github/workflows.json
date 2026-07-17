@@ -53,6 +53,9 @@
         "conflict": 0.04,
         "timeout": 0.02
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_pull_update": {
       "primitive": "state_machine_update",
@@ -96,6 +99,11 @@
         "rate_limited": 0.04,
         "timeout": 0.02
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }
