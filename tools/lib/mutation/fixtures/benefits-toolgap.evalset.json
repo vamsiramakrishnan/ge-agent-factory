@@ -1,0 +1,27 @@
+{
+  "evalSetId": "benefits-enrollment-toolgap",
+  "name": "Benefits enrollment — single required tool, exposes the 'unavailable' teeth-hole",
+  "evalCases": [
+    {
+      "evalId": "qle-plan-change",
+      "conversation": [
+        {
+          "invocationId": "qle-plan-change-0",
+          "userContent": { "role": "user", "parts": [{ "text": "Can I change my plan after having a child?" }] },
+          "finalResponse": {
+            "role": "model",
+            "parts": [{ "text": "Yes — the birth of a child is a qualifying life event, so you can change your plan within the special enrollment window." }]
+          }
+        }
+      ],
+      "geMetadata": {
+        "capabilityId": "answer-qle-enrollment",
+        "intent": "happy_path",
+        "expected": {
+          "mustCall": ["lookup_life_events"],
+          "mustCite": ["projects/demo/locations/global/dataStores/benefits/documents/qle-policy"]
+        }
+      }
+    }
+  ]
+}

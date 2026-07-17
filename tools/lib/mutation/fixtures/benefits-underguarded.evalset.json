@@ -1,0 +1,34 @@
+{
+  "evalSetId": "benefits-enrollment-underguarded",
+  "name": "Benefits enrollment — declares required tools but no forbidden-tool or citation guard",
+  "evalCases": [
+    {
+      "evalId": "qle-plan-change",
+      "conversation": [
+        {
+          "invocationId": "qle-plan-change-0",
+          "userContent": { "role": "user", "parts": [{ "text": "Can I change my plan after having a child?" }] },
+          "finalResponse": {
+            "role": "model",
+            "parts": [{ "text": "Yes — the birth of a child is a qualifying life event, so you can change your plan within the special enrollment window." }]
+          }
+        },
+        {
+          "invocationId": "qle-plan-change-1",
+          "userContent": { "role": "user", "parts": [{ "text": "How many days do I have?" }] },
+          "finalResponse": {
+            "role": "model",
+            "parts": [{ "text": "You have 30 days from the date of birth to submit the change." }]
+          }
+        }
+      ],
+      "geMetadata": {
+        "capabilityId": "answer-qle-enrollment",
+        "intent": "happy_path",
+        "expected": {
+          "mustCall": ["lookup_life_events", "check_enrollment_window"]
+        }
+      }
+    }
+  ]
+}
