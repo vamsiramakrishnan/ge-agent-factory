@@ -1,7 +1,7 @@
 {
   "name": "create-ge-agent-factory",
   "version": "0.1.0",
-  "description": "Bootstrap the GE Agent Factory from a bare machine: clone the repo, provision the toolchain via mise, install dependencies and the ge command, verify the install, and expose the factory skills to your coding agent (Claude Code, Antigravity, Codex, Gemini CLI).",
+  "description": "Bootstrap the GE Agent Factory from a bare machine: clone the repo, provision the toolchain via mise, install dependencies and the ge command, verify the install, and expose the factory skills to your coding assistant.",
   "type": "module",
   "bin": {
     "create-ge-agent-factory": "./bin/create-ge-agent-factory.mjs"
@@ -13,7 +13,7 @@
   "engines": {
     "node": ">=18"
   },
-  "keywords": ["agents", "adk", "gemini-enterprise", "skills", "bootstrap", "claude-code", "gemini-cli", "codex", "antigravity"],
+  "keywords": ["agents", "adk", "agent-factory", "skills", "bootstrap", "coding-assistant"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vamsiramakrishnan/ge-agent-factory.git",

@@ -759,16 +759,15 @@ button > kbd {
 
 .ge-logo-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(6rem, 1fr));
+  grid-template-columns: repeat(4, minmax(6rem, 1fr));
   gap: var(--ge-space-3);
   align-items: center;
   margin: 1.25rem 0;
 }
 
-/* The "works with" shelf — real assistant marks (Claude, Gemini, Codex,
- * Antigravity, MCP), tonally unified into one ink so a row of five brands
- * reads as one system instead of five competing color logos (color is
- * reserved for semantics here, not decoration). Each mark is a CSS mask so
+/* The "works with" shelf — assistant marks tonally unified into one ink so
+ * the supported surfaces read as one system instead of competing color logos
+ * (color is reserved for semantics here, not decoration). Each mark is a CSS mask so
  * its color follows the site theme exactly — the tile carries the hairline
  * and fill, the mask carries the glyph. The SVGs self-theme as <img> too, so
  * the same files render correctly in the README on GitHub. */
@@ -842,9 +841,6 @@ button > kbd {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .ge-logo:last-child {
-    grid-column: 1 / -1;
-  }
 }
 
 /* ── Steps: a numbered sequence you're actively doing (install, configure,

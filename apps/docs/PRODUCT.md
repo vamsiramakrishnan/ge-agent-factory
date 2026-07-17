@@ -17,8 +17,8 @@ landing page is the one deliberate brand moment; interior pages stay quiet.
 ## Users
 
 Platform / AI engineers evaluating or operating the GE Agent Factory, and —
-first-class here — their coding agents (Claude Code, Gemini CLI, Codex, MCP
-clients), which consume the same site via `/llms.txt` and `/llms-full.txt`.
+first-class here — their coding assistants and MCP clients, which consume the
+same site via `/llms.txt` and `/llms-full.txt`.
 Human readers arrive with a job: bootstrap the repo, capture a workflow into
 a contract, prove an agent against simulations, or triage a failing stage.
 They read reference tables, copy shell commands, and follow multi-step

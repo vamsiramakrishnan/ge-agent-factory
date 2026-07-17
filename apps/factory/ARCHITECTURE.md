@@ -10,7 +10,7 @@ one-off agents both produce the same workspace contract and promotion evidence.
 - `src/factory.js` runs catalog/batch work through the same stages.
 - `src/workspace-validation.js` and `src/spec-code-trace.js` produce deterministic
   readiness evidence.
-- `src/harness-runtime.js` sends Antigravity/Gemini/Codex/Claude the same
+- `src/harness-runtime.js` sends every supported harness adapter the same
   handoff packet and spec-to-code quality gate.
 - `src/promotion-packet.js` packages validation, preview, trace, graph, and
   promotion blockers for downstream deploy/publish planning.
@@ -50,5 +50,5 @@ Harnesses do not receive vague "make it better" instructions. They receive:
 - required completion packet,
 - validation and trace artifacts to inspect.
 
-That keeps Antigravity and other harnesses aligned with the same quality bar as
-the deterministic pipeline.
+That keeps every harness aligned with the same quality bar as the deterministic
+pipeline.

@@ -719,7 +719,7 @@ test("skill registry maps harness capabilities to repository skills", async () =
   assert.match(handoff, /\.ge-harness\/skills\/running-factory\/SKILL\.md/);
   assert.match(handoff, /google-agents-cli-workflow\/SKILL\.md/);
   assert.match(handoff, /\.ge-harness\/skills\/google-agents-cli-workflow\/SKILL\.md/);
-  assert.match(handoff, /Gemini CLI, Codex CLI, Claude Code/);
+  assert.match(handoff, /every configured harness adapter/);
   assert.match(handoff, /Spec-To-Code Quality Gate/);
   assert.match(handoff, /behaviorContract\.toolIntents/);
   assert.match(handoff, /ge_behavior_contract\.evalset\.json/);

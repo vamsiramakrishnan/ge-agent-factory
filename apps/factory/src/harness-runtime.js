@@ -173,7 +173,7 @@ export function buildHandoffPacket({
     "## Capability Skills",
     ...(Array.isArray(plan.skills) && plan.skills.length
       ? [
-          "Read these local skill files before acting. Canonical sources may be repository GE skills under .gemini/skills or installed Google Agents CLI skills under the local Agents CLI skill root. The workspace mirror is provided for sandboxed harnesses. These instructions apply to every harness adapter, including Gemini CLI, Codex CLI, Claude Code, and any nested tool they invoke.",
+          "Read these local skill files before acting. Canonical sources may be repository GE skills under .gemini/skills or installed Google Agents CLI skills under the local Agents CLI skill root. The workspace mirror is provided for sandboxed harnesses. These instructions apply to every configured harness adapter and any nested tool it invokes.",
           ...plan.skills.map((skill) => {
             const mirror = skill.workspaceRelativePath ? `; workspace mirror: ${skill.workspaceRelativePath}` : "";
             return `- ${skill.id}: ${skill.relativePath}${mirror}${skill.capability ? ` (${skill.capability})` : ""}`;

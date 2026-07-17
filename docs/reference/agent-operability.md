@@ -8,9 +8,9 @@ description: The contract that makes the factory drivable by an AI agent — pos
 
 # Agent operability
 
-**Definition:** the set of mechanisms that let an agent (Claude Code,
-Antigravity, Codex, Gemini CLI — or a CI job) operate the factory without a
-human translating for it: know where it is, run long work safely, watch it,
+**Definition:** the set of mechanisms that let a coding assistant or CI job
+operate the factory without a human translating for it: know where it is, run
+long work safely, watch it,
 resume it, answer its questions, and recover from failure with a named next
 command.
 
@@ -89,7 +89,7 @@ and both paths are discoverable from the run itself — no tribal knowledge.
   injected into the agent's context. Risky stations compose
   `guarding-the-factory` — the safety rail rides along by construction.
 - **In external sessions** the same skills install via the distribution
-  surfaces (Claude Code plugin marketplace, Gemini CLI extension,
+  surfaces (assistant plugin marketplaces, CLI extensions,
   the GitHub-backed `create-ge-agent-factory` installer script,
   `mise run skills-install`).
 - **Progressive disclosure** keeps them cheap: routing description →

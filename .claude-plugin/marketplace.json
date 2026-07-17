@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "ge-agent-factory",
-  "description": "GE Agent Factory skills for Claude Code: bootstrap the factory from a bare machine, then operate it — capture contracts, compile behavioral evals, build, prove locally and live, hand off, drive, and bench.",
+  "description": "GE Agent Factory skills to bootstrap the factory from a bare machine, then operate it — capture contracts, compile behavioral evals, build, prove locally and live, hand off, drive, and bench.",
   "owner": {
     "name": "vamsiramakrishnan",
     "url": "https://github.com/vamsiramakrishnan/ge-agent-factory"

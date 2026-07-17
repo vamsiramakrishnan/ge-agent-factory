@@ -39,7 +39,7 @@ Other surfaces use the same skill bundle:
 
 | Surface | Setup |
 | --- | --- |
-| Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
+| Plugin marketplace | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
 | Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
 | Existing checkout | `mise run skills-install` |
 | Model Context Protocol (MCP)-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |

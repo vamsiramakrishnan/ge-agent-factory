@@ -131,4 +131,4 @@ if (opt("skills") === "gemini") {
 }
 
 say(`\nNext: open ${join(repo, "skills", "installing-the-factory", "SKILL.md")} — the phase-checked bootstrap your agent can follow end to end.`);
-say(`Claude Code users can instead: /plugin marketplace add vamsiramakrishnan/ge-agent-factory && /plugin install factory-bootstrap@ge-agent-factory`);
+say(`Plugin users can instead: /plugin marketplace add vamsiramakrishnan/ge-agent-factory && /plugin install factory-bootstrap@ge-agent-factory`);

@@ -1,7 +1,7 @@
 # Working in this repo as an agent
 
-This file is for autonomous/agentic sessions (Claude Code, Cursor, Codex, or
-similar). It's deliberately short — depth lives in
+This file is for autonomous coding-agent sessions. It's deliberately short —
+depth lives in
 [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SETUP.md`](SETUP.md), and
 [`docs/developers.md`](docs/developers.md); read those for the full picture.
 This file exists for the handful of things that aren't written down anywhere
@@ -35,14 +35,14 @@ drive/verify the live agent (`driving-live-proof`), triage. Factory-run
 harnesses load them automatically. To expose them to an external assistant:
 
 ```bash
-mise run skills-install                                      # → ~/.agents/skills (Antigravity, agents-cli, Codex)
-AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # → Claude Code's skill directory
+mise run skills-install                                      # → ~/.agents/skills
+AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # → an alternate assistant skill directory
 ```
 
 Distribution surfaces (no checkout needed): the GitHub-backed
 `create-ge-agent-factory` installer script (clones, installs, verifies,
-links skills); Claude Code
-plugin marketplace (`/plugin marketplace add vamsiramakrishnan/ge-agent-factory`,
+links skills); assistant plugin marketplace
+(`/plugin marketplace add vamsiramakrishnan/ge-agent-factory`,
 then `factory-bootstrap` or `factory-operator` — manifest in
 `.claude-plugin/marketplace.json`); Gemini CLI extension
 (`gemini extensions install <repo url>` — `gemini-extension.json` +

@@ -77,7 +77,6 @@ Cloud project:
 ## Works with your coding agent
 
 <p align="center">
-  <img src="assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
   <img src="assets/icons/antigravity.svg" alt="Antigravity" height="44">&nbsp;
   <img src="assets/icons/codex.svg" alt="Codex" height="44">&nbsp;
   <img src="assets/icons/gemini-cli.svg" alt="Gemini CLI" height="44">&nbsp;
@@ -93,9 +92,9 @@ curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/
   | bun - -- --skills agents        # GitHub-backed clone + guided, verified install
 ```
 
-| Agent | Install |
+| Surface | Install |
 | --- | --- |
-| **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
+| **Plugin marketplace** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
 | **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` |
 | **Any MCP client** | `bun tools/mcp-server.mjs` from a checkout |

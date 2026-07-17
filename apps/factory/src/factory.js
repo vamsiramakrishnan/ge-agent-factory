@@ -569,7 +569,7 @@ export async function runFactoryPlan({ repoRoot, dataRoot, planPath, options = {
         const reviewArgs = ["harness-review", "--dir", workspaceDir];
         // Adapter + model resolve caller option → env (the centralized
         // GE_HARNESS_AGENT/GE_REFINEMENT_MODEL knobs) → the historical default,
-        // so claude/codex/gemini can drive review without per-call flags.
+        // so any configured adapter can drive review without per-call flags.
         const provider = options["harness-provider"] || options.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
         if (provider) reviewArgs.push("--provider", provider);
         if (options.vertex) reviewArgs.push("--vertex", String(options.vertex));

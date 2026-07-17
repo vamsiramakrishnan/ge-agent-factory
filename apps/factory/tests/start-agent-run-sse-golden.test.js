@@ -20,7 +20,7 @@ import { compareOrUpdateGolden } from "./golden-test-helpers.mjs";
 //
 // Driven via the bundled, credential-free "mock" agent (apps/factory/src/mock-agent.js,
 // see AGENT_DEFS in src/agents.js) — a real spawned subprocess with real stdout/stderr/
-// close wiring through the exact same code path a live gemini/claude/codex run would take,
+// close wiring through the exact same code path a live harness-adapter run would take,
 // but with fully offline, deterministic canned output. No gcloud/ADK/agents-cli credential
 // is required or contacted.
 //

@@ -179,8 +179,8 @@ export function createProvisionOps({
           // cfg.refinementModel, so forward it remotely too or the cloud harness
           // silently runs review/refine on agentModel instead.
           ...(cfg.refinementModel ? { refinementModel: cfg.refinementModel } : {}),
-          // The build harness itself (claude/codex/antigravity-sdk). provisionLocal
-          // pins it from cfg.harnessAgent → runOptions["harness-provider"]; forward
+          // The build harness itself. provisionLocal pins it from
+          // cfg.harnessAgent → runOptions["harness-provider"]; forward
           // it remotely too (bridge reads request.harnessProvider → worker
           // payload.options.harnessProvider) or the cloud build silently runs on
           // the antigravity-sdk default regardless of .ge.json harnessAgent.
@@ -386,7 +386,7 @@ export function createProvisionOps({
     if (harnessModel) runOptions.model = harnessModel;
     // Default harness adapter for the review/refine stages (factory.js reads
     // options["harness-provider"]); resolved here so .ge.json/GE_HARNESS_AGENT
-    // selects claude/codex/gemini without a per-invocation flag.
+    // selects the configured adapter without a per-invocation flag.
     if (cfg.harnessAgent) runOptions["harness-provider"] = cfg.harnessAgent;
     // Stream this run into the ledger live (ledgerRunId shared with the final ingest,
     // so events arrive as stages complete rather than only at the end). Best-effort.

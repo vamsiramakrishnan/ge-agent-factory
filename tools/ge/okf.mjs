@@ -121,7 +121,7 @@ const enrichPlan=defineCommand({ meta:{name:"plan",description:"Generate coverag
 const enrichGenerate=defineCommand({ meta:{name:"generate",description:"Generate a reviewable OKF enrichment patch without mutating source specs"}, args:{...common, spec:{type:"string",required:true}, target:{type:"string",default:"L4"}, root:{type:"string",default:"okf"}, "pack-root":{type:"string",default:"domain-packs"}, out:{type:"string",description:"Write patch JSON to this path"}, "max-evals":{type:"string",default:"5"}}, async run({args}){ const result=await generateEnrichmentPatch({spec:args.spec,root:args.root,packRoot:args["pack-root"],target:args.target,maxEvals:Number(args["max-evals"]||5)}); if(args.out) await writeJson(args.out,result); emit(args,result,(r)=>out(JSON.stringify(r,null,2))); }});
 const enrichApply=defineCommand({ meta:{name:"apply",description:"Apply or dry-run a structured OKF enrichment patch"}, args:{...common, patch:{type:"string",required:true}, root:{type:"string",default:"okf"}, write:{type:"boolean"}, force:{type:"boolean"}}, async run({args}){ const result=await applyEnrichmentPatch({patchPath:args.patch,root:args.root,write:args.write,force:args.force}); emit(args,result,(r)=>out(JSON.stringify(r,null,2))); }});
 const enrichShard=defineCommand({ meta:{name:"shard",description:"Group an enrichment plan into bounded parallel shard manifests"}, args:{...common, plan:{type:"string",required:true}, out:{type:"string",required:true}}, async run({args}){ const plan=JSON.parse(await readFile(args.plan,"utf8")); const shards=shardEnrichmentPlan(plan); await mkdir(args.out,{recursive:true}); for (const shard of shards) await writeJson(join(args.out, `${shard.id}.json`), shard); emit(args,{schemaVersion:"okf-enrichment-shards.v1",out:args.out,shards}, (r)=>out(`Wrote ${r.shards.length} shard(s) to ${r.out}`)); }});
-const enrichPrompt=defineCommand({ meta:{name:"prompt",description:"Render a Codex/Claude/Antigravity shard prompt from an enrichment manifest"}, args:{...common, shard:{type:"string",required:true}, harness:{type:"string",default:"codex"}, out:{type:"string"}}, async run({args}){ const shard=JSON.parse(await readFile(args.shard,"utf8")); const prompt=renderEnrichmentShardPrompt(shard,{harness:args.harness}); if(args.out){ await mkdir(dirname(args.out),{recursive:true}); await writeFile(args.out,prompt); } emit(args,{harness:args.harness,shard:shard.id,prompt},(r)=>out(r.prompt)); }});
+const enrichPrompt=defineCommand({ meta:{name:"prompt",description:"Render a harness shard prompt from an enrichment manifest"}, args:{...common, shard:{type:"string",required:true}, harness:{type:"string",default:"codex"}, out:{type:"string"}}, async run({args}){ const shard=JSON.parse(await readFile(args.shard,"utf8")); const prompt=renderEnrichmentShardPrompt(shard,{harness:args.harness}); if(args.out){ await mkdir(dirname(args.out),{recursive:true}); await writeFile(args.out,prompt); } emit(args,{harness:args.harness,shard:shard.id,prompt},(r)=>out(r.prompt)); }});
 const enrich=defineCommand({ meta:{name:"enrich",description:"Plan and shard OKF blueprint enrichment work"}, subCommands:{plan:enrichPlan, generate:enrichGenerate, apply:enrichApply, shard:enrichShard, prompt:enrichPrompt} });
 
 
@@ -181,8 +181,8 @@ const customize=defineCommand({
 });
 // `ge okf skill` — compile an agent spec into an Agent Skill package
 // (SKILL.md + references/ + scripts/ + assets/, progressive disclosure): the
-// alternative consumption path to bespoke ADK agent generation, loadable by any
-// skill-capable assistant (Claude Code, Codex, Antigravity, Gemini CLI).
+// alternative consumption path to bespoke ADK agent generation, loadable by
+// any skill-capable assistant.
 function renderSkill(r){
   out(ui.title("Agent Skill", r.name));
   out(ui.kv([["package", pc.dim(r.skill)], ["files", String(r.fileCount)]]));

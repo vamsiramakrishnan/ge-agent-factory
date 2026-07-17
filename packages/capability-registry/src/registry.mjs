@@ -660,7 +660,7 @@ export const GE_COMMANDS = {
     label: "Compile spec to Agent Skill",
     summary: "Compile an agent spec into an Agent Skill package (SKILL.md + references + scripts + assets) — the skill-based alternative to generated ADK runtime code",
     guide: {
-      when: "an agent should be consumed as a portable skill by a skill-capable assistant (Claude Code, Codex, Antigravity, Gemini CLI) instead of — or alongside — the generated ADK runtime",
+      when: "an agent should be consumed as a portable skill by a skill-capable assistant instead of — or alongside — the generated ADK runtime",
       next: ["node <out>/scripts/check-coverage.mjs"],
     },
     risk: "writes-repo",
@@ -669,7 +669,7 @@ export const GE_COMMANDS = {
     requirements: { bins: ["node"], config: [] },
     mcp: {
       tool: "factory_okf_skill",
-      description: "Local, deterministic: compile an agent spec (catalog id or spec path) into an Agent Skill package with progressive disclosure — SKILL.md operating summary, references/ (behavior contract, data/systems, example session), scripts/ (check-coverage.mjs + adk_toolset.py, the google-adk >= 1.25 SkillToolset loader), and assets/ (canonical spec + golden evals). Byte-stable for an unchanged spec; loadable by Claude Code, Codex, Antigravity, Gemini CLI, and ADK agents.",
+      description: "Local, deterministic: compile an agent spec (catalog id or spec path) into an Agent Skill package with progressive disclosure — SKILL.md operating summary, references/ (behavior contract, data/systems, example session), scripts/ (check-coverage.mjs + adk_toolset.py, the google-adk >= 1.25 SkillToolset loader), and assets/ (canonical spec + golden evals). Byte-stable for an unchanged spec; loadable by skill-capable assistants and ADK agents.",
       params: {
         id: { type: "string", optional: true, description: "Use case id from the generated catalog" },
         spec: { type: "string", optional: true, description: "Path to an agent spec JSON (alternative to id)" },

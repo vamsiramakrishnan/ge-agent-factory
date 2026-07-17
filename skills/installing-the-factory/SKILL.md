@@ -1,6 +1,6 @@
 ---
 name: installing-the-factory
-description: Installs the GE Agent Factory from a bare machine to a proven working install — repo clone, mise bootstrap, toolchain provisioning (Bun, Python, uv, Terraform), dependency install, the ge command on PATH, and a verified first proof — checking each phase before starting the next. Use when setting up the factory on a new machine or fresh clone, when ge, bun, or mise are missing from PATH, when an AI assistant (Claude Code, Antigravity, Codex, Gemini CLI) must self-install the factory before operating it, or when an existing install is broken and needs re-verification.
+description: Installs the GE Agent Factory from a bare machine to a proven working install — repo clone, mise bootstrap, toolchain provisioning (Bun, Python, uv, Terraform), dependency install, the ge command on PATH, and a verified first proof — checking each phase before starting the next. Use when setting up the factory on a new machine or fresh clone, when ge, bun, or mise are missing from PATH, when a coding assistant must self-install the factory before operating it, or when an existing install is broken and needs re-verification.
 ---
 
 # Installing The Factory
@@ -97,8 +97,8 @@ bun tools/ge.mjs prove
 Assistant-specific skill exposure (optional, after install):
 
 ```bash
-mise run skills-install                          # symlink all skills → ~/.agents/skills (Antigravity/agents-cli/Codex)
-AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # same, for Claude Code's skill directory
+mise run skills-install                          # symlink all skills → ~/.agents/skills
+AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # same, for an alternate assistant skill directory
 ```
 
 ## Common mistakes

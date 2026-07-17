@@ -17,20 +17,20 @@ What it does, in order:
 2. Prints — or with `--yes`, runs — the install phases: mise → pinned
    toolchain (Bun/Python/uv/Terraform) → `mise run setup` (deps, catalog, the
    `ge` command, skills, daemon) → structured verification.
-3. Optionally symlinks the factory skills into your coding agent's skill
+3. Optionally symlinks the factory skills into your coding assistant's skill
    directory (`--skills claude|agents`, or `--skills gemini` for the one-line
-   Gemini CLI extension install).
+   CLI extension install).
 4. Hands over to the installer of record: the repo's own
-   `skills/installing-the-factory` skill, which any coding agent
-   (Claude Code, Antigravity, Codex, Gemini CLI) can follow phase by phase.
+   `skills/installing-the-factory` skill, which any supported coding assistant
+   can follow phase by phase.
 
 Zero dependencies; needs Node ≥ 18 and `git`.
 
 ## Other install channels
 
-| Assistant | One-liner |
+| Surface | One-liner |
 | --- | --- |
-| Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` → `/plugin install factory-bootstrap@ge-agent-factory` |
+| Plugin marketplace | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` → `/plugin install factory-bootstrap@ge-agent-factory` |
 | Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
 | Antigravity / agents-cli / Codex | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --skills agents` (or in-repo: `mise run skills-install`) |
 | Any MCP client | `bun tools/mcp-server.mjs` from the repo root |

@@ -3,7 +3,7 @@
 **An agent is a contract with the external world.** It reads your systems,
 acts on your data, and speaks to your users — so it should be built from a
 contract, proven with evidence, and admitted to production by policy, not
-by vibes or by hand coding. 
+by guesswork or ad hoc implementation.
 
 GE Agent Factory builds agents exactly that way. A user interview, a BRD,
 or a PRD becomes a canonical spec — an Enterprise Agent Contract, captured
@@ -108,7 +108,6 @@ Deciding whether you need this layer at all? Read
 ## Works with your coding agent
 
 <p align="center">
-  <img src="docs/assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
   <img src="docs/assets/icons/antigravity.svg" alt="Antigravity" height="44">&nbsp;
   <img src="docs/assets/icons/codex.svg" alt="Codex" height="44">&nbsp;
   <img src="docs/assets/icons/gemini-cli.svg" alt="Gemini CLI" height="44">&nbsp;
@@ -125,9 +124,9 @@ curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/
   | bun - -- --yes --skills agents  # GitHub-backed clone + guided, verified install
 ```
 
-| Agent | Install |
+| Surface | Install |
 | --- | --- |
-| **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
+| **Plugin marketplace** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
 | **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --yes --skills agents` (in a checkout: `mise run skills-install`) |
 | **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |

@@ -38,8 +38,8 @@ if (!uvVersion) {
 }
 console.log(`✅ Found: ${uvVersion}`);
 
-// 3. Verify and install google-agents-cli (Gemini/Claude ADK Harness)
-console.log("\nChecking google-agents-cli (AGY/Gemini Harness)...");
+// 3. Verify and install google-agents-cli (ADK coding harness)
+console.log("\nChecking google-agents-cli (ADK coding harness)...");
 let hasAgentsCli = run("agents-cli --version", true);
 if (!hasAgentsCli?.includes(AGENTS_CLI_VERSION)) {
   console.log(`⚠️ agents-cli ${AGENTS_CLI_VERSION} is required. Installing globally via UV...`);

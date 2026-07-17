@@ -80,9 +80,9 @@ export async function cmdHarnessReview(dir, flags, deps) {
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
   await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
-  // Flag → env (centralized GE_HARNESS_AGENT knob) → historical default; the
-  // claude/codex adapters run this same read-only audit with the JSON schema
-  // embedded in the prompt (extractFirstJsonObject parses either way).
+  // Flag → env (centralized GE_HARNESS_AGENT knob) → historical default; every
+  // adapter runs this same read-only audit with the JSON schema embedded in the
+  // prompt (extractFirstJsonObject parses either way).
   const provider = flags.agent || flags.provider || process.env.GE_HARNESS_AGENT || "antigravity-sdk";
   const context = await readWorkspaceReviewContext(dir);
   const message = [
@@ -407,10 +407,10 @@ export async function cmdHarnessRefine(dir, flags, deps) {
 }
 
 // ── harness-as-judge ────────────────────────────────────────────────────────
-// The judge lane runs through the SAME harness adapters (antigravity-sdk,
-// claude, codex, gemini — flag → GE_HARNESS_AGENT → default) and the same
-// skill materialization as review/refine, instead of being a bare model id in
-// eval_config.yaml. Split of responsibilities:
+// The judge lane runs through the same configured harness adapter
+// (flag → GE_HARNESS_AGENT → default) and skill materialization as
+// review/refine, instead of being a bare model id in eval_config.yaml. Split
+// of responsibilities:
 //   · rubric (LLM-judged) metrics — the harness grades each case against the
 //     behavior contract's rubric prose (the SAME rubric source that renders
 //     eval_config.yaml's judge metric, via renderEvalConfig), one 0–1 score

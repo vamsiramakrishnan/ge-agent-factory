@@ -7,7 +7,6 @@
 > and `09-cloud-factory.md` for what's queued next). Kept for the §6
 > "deliberately NOT done" list, which remains binding.
 
-**Branch:** `claude/elite-engineers-top-areas-g994w3` (pushed, in sync with origin)
 **Test baseline:** judge by distinct fail **names**, not count — the only real failure is the pre-existing environmental `skill registry maps harness capabilities…` (no gcloud/agents-cli/uv/Python/`.ge.json`/Firestore in this sandbox). The subprocess-heavy golden/workflow tests produce flaky **timeout** fails that inflate the count run-to-run; identical before and after every change (verified by stash-compares). No regressions introduced. Latest: factory.mjs decomposition (see §9).
 **PR:** none opened yet (deliberately — awaiting go-ahead).
 
@@ -78,12 +77,12 @@ A neutral leaf package (`packages/std`) importable by **both** `apps/*` and `too
 
 ## 3. Multi-agent work products (for review)
 
-Two read-only orchestration fleets were run (background workflows). Their full outputs are on disk:
+Two read-only orchestration fleets were run (background workflows). Their
+findings are summarized here; temporary raw outputs were not retained in the
+repository:
 
 - **Reuse-at-scale plan** — 8 scouts → dependency-ordered/file-partitioned plan → adversarial critic. The critic caught 2 build-breakers + 2 behavior/test gaps before any edit. Drove Waves 1–4.
-  Output: `/tmp/claude-0/-home-user-ge-agent-factory/d18549c3-5436-5b8f-8956-11db7e940277/tasks/w3gkuxyrj.output`
 - **Code-elegance audit** — 8 auditors (god-files, error-handling, logging, magic values, control-flow, state/purity, abstraction, async/IO) → synthesis → adversarial verifier. ~250 raw instances → **13 confirmed keepers**; verifier corrected 2 false synthesis claims and rejected nitpicks/cleverness/deliberate-good.
-  Output: `/tmp/claude-0/-home-user-ge-agent-factory/d18549c3-5436-5b8f-8956-11db7e940277/tasks/wuegcujlj.output`
 
 ### Audit verdict: SOLID core, two concentrated debt centers
 1. **`factory.mjs` is the gravitational center** — `cmdTools()` ~534 lines, `deriveSchemaFromUseCase()` (two welded paths), `deriveColumnsForEntity()` (13-branch data-as-control-flow), + `startMissionTask` (runtime-daemon ~320), `startAgentRun` (server.js ~249).

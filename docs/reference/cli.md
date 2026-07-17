@@ -953,7 +953,7 @@ Group an enrichment plan into bounded parallel shard manifests
 
 ### `ge okf enrich prompt`
 
-Render a Codex/Claude/Antigravity shard prompt from an enrichment manifest
+Render a harness shard prompt from an enrichment manifest
 
 | Flag | Type | Description |
 |---|---|---|

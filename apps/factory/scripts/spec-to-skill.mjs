@@ -5,9 +5,9 @@
 // spec-portable SKILL.md format (progressive disclosure: a short L1 body,
 // references/ for depth, scripts/ for runnable checks, assets/ for the
 // canonical machine-readable spec). This is the alternative consumption path
-// to bespoke ADK agent generation: any skill-capable assistant (Claude Code,
-// Codex, Antigravity, Gemini CLI) can load the package and operate as the
-// specified agent, grounded in the same behavior contract. Google ADK itself
+// to bespoke ADK agent generation: any skill-capable assistant can load the
+// package and operate as the specified agent, grounded in the same behavior
+// contract. Google ADK itself
 // consumes the same format — its experimental skills API (adk.dev/skills,
 // google-adk >= 1.25) loads a package like this via load_skill_from_dir +
 // SkillToolset; scripts/adk_toolset.py below is that loader, prewired.
