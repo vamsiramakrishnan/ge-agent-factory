@@ -25,6 +25,7 @@ import {
   computeFileDigest,
   computeWorkspaceDigest,
   computeProofBinding,
+  validateProofBinding,
   createLocalSigner,
   evaluateAdmission,
   generateAdmissionKeypair,
@@ -154,18 +155,25 @@ export function emitPassport({ id } = {}) {
     });
   }
 
+  const digests = subjectDigests(workspace.dir);
+  const proofBindingCheck = validateProofBinding(packet.proofBinding, digests.proofBinding);
+  if (proofBindingCheck.ok !== true) {
+    throw new DxError(`workspace '${workspace.id}' has a stale or missing promotion proof binding.`, {
+      where: `workspace artifact: ${ARTIFACT_PATHS.promotionPacket}`,
+      why: proofBindingCheck.reason,
+      fix: "ge prove",
+    });
+  }
+
   const keys = ensureAdmissionKeys();
   const signer = createLocalSigner(keys.privateKeyPem, keys.publicKeyPem);
-  const digests = subjectDigests(workspace.dir);
-  const proofBinding = computeProofBinding(workspace.dir);
-  const boundPacket = { ...packet, proofBinding, promotionGate: packet.promotionGate || { ok: true, blockers: [] } };
 
   const attestations = [
     signStatement(buildStatement({
       subjectName: workspace.id,
       subjectDigest: digests.workspaceDigest,
       predicateType: PREDICATE_TYPES.promotionPacket,
-      predicate: boundPacket,
+      predicate: packet,
     }), signer),
   ];
   const liveProof = readJson(statePath("proof", "live-proof-result.json"), null);
@@ -186,8 +194,8 @@ export function emitPassport({ id } = {}) {
     attestations,
     workspace: {
       id: workspace.id,
-      useCaseId: boundPacket.workspace?.useCaseId || null,
-      mode: boundPacket.workspace?.mode || null,
+      useCaseId: packet.workspace?.useCaseId || null,
+      mode: packet.workspace?.mode || null,
     },
   });
   const path = writeWorkspaceJsonSync(workspace.dir, ARTIFACT_PATHS.agentPassport, passport);

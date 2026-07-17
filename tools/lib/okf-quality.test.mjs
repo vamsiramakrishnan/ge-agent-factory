@@ -81,3 +81,25 @@ test("audit reports fresh hash-bound proof binding", async()=>{
   expect(after.allowedToClaimProven).toBe(true);
   expect(after.proofBinding.allowed).toBe(true);
 });
+
+test("audit fixtureHash includes JSON, CSV, YAML, and YML fixture data", async()=>{
+  const d=await fixture({
+    "index.md":fm("Knowledge Bundle","Fixture Agent"),
+    "fixtures/input.json":"{\"value\":1}\n",
+    "fixtures/rows.csv":"id,value\n1,one\n",
+    "fixtures/config.yaml":"enabled: true\n",
+    "fixtures/aliases.yml":"primary: one\n"
+  });
+  let previous=(await auditSpec(d)).hashes.fixtureHash;
+  for(const [name,content] of [
+    ["input.json","{\"value\":2}\n"],
+    ["rows.csv","id,value\n1,two\n"],
+    ["config.yaml","enabled: false\n"],
+    ["aliases.yml","primary: two\n"]
+  ]){
+    await writeFile(join(d,"fixtures",name),content);
+    const current=(await auditSpec(d)).hashes.fixtureHash;
+    expect(current).not.toBe(previous);
+    previous=current;
+  }
+});
