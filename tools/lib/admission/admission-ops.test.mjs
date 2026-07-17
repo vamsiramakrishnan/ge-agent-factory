@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { computeProofBinding } from "../../../packages/admission/src/index.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
 import { admissionGatePolicy, shouldAdmit } from "./admission-ops.mjs";
 
@@ -37,7 +38,6 @@ describe("shouldAdmit (the handoff enforcement rule)", () => {
 
 describe("passport loop via the CLI", () => {
   const stateRoot = mkdtempSync(join(tmpdir(), "ge-admission-state-"));
-  const workspace = join(stateRoot, "factory", "workspaces", "demo-agent");
 
   function runGe(argv) {
     return spawnSync("bun", ["tools/ge.mjs", ...argv, "--json"], {
@@ -48,13 +48,28 @@ describe("passport loop via the CLI", () => {
     });
   }
 
-  test("emit → verify → admit round-trips, and tampering is caught", () => {
+  function prepareWorkspace(id, { proofBinding = "fresh" } = {}) {
+    const workspace = join(stateRoot, "factory", "workspaces", id);
     mkdirSync(join(workspace, "mock_systems"), { recursive: true });
     mkdirSync(join(workspace, "artifacts"), { recursive: true });
     mkdirSync(join(workspace, "app"), { recursive: true });
     writeFileSync(join(workspace, "mock_systems", "usecase-spec.json"), JSON.stringify({ behaviorContract: { role: "demo" } }));
-    writeFileSync(join(workspace, "artifacts", "promotion-packet.json"), JSON.stringify({ workspace: { useCaseId: "demo" }, promotionGate: { ok: true, blockers: [] }, proofBinding: { ok: true, workspace: { hex: "a".repeat(64) }, proofPolicy: { hex: "b".repeat(64) } } }));
     writeFileSync(join(workspace, "app", "agent.py"), "print('hi')\n");
+
+    const packet = { workspace: { useCaseId: "demo" }, promotionGate: { ok: true, blockers: [] } };
+    if (proofBinding !== "missing") {
+      packet.proofBinding = computeProofBinding(workspace);
+      if (proofBinding === "stale") {
+        packet.proofBinding.workspace = { ...packet.proofBinding.workspace, hex: "0".repeat(64) };
+      }
+    }
+    const packetPath = join(workspace, "artifacts", "promotion-packet.json");
+    writeFileSync(packetPath, JSON.stringify(packet));
+    return { workspace, packetPath, passportPath: join(workspace, "artifacts", "agent-passport.json") };
+  }
+
+  test("emit → verify → admit round-trips, and tampering is caught", () => {
+    const { workspace } = prepareWorkspace("demo-agent");
 
     const emitted = runGe(["passport", "emit", "demo-agent"]);
     expect(emitted.status).toBe(0);
@@ -78,4 +93,28 @@ describe("passport loop via the CLI", () => {
     expect(deniedDecision.allowed).toBe(false);
     expect(deniedDecision.blockers.map((b) => b.code)).toContain("GEADM003");
   }, 120000);
+
+  test("emit rejects a promotion packet with no stored proof binding", () => {
+    const { packetPath, passportPath } = prepareWorkspace("missing-binding-agent", { proofBinding: "missing" });
+    const packetBefore = readFileSync(packetPath, "utf8");
+
+    const emitted = runGe(["passport", "emit", "missing-binding-agent"]);
+
+    expect(emitted.status).toBe(1);
+    expect(JSON.parse(emitted.stdout).error.why).toBe("missing proof binding");
+    expect(readFileSync(packetPath, "utf8")).toBe(packetBefore);
+    expect(existsSync(passportPath)).toBe(false);
+  });
+
+  test("emit rejects rather than replacing a stale stored proof binding", () => {
+    const { packetPath, passportPath } = prepareWorkspace("stale-binding-agent", { proofBinding: "stale" });
+    const packetBefore = readFileSync(packetPath, "utf8");
+
+    const emitted = runGe(["passport", "emit", "stale-binding-agent"]);
+
+    expect(emitted.status).toBe(1);
+    expect(JSON.parse(emitted.stdout).error.why).toContain("stale proof binding: workspace");
+    expect(readFileSync(packetPath, "utf8")).toBe(packetBefore);
+    expect(existsSync(passportPath)).toBe(false);
+  });
 });
