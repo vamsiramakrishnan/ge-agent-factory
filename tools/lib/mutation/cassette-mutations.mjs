@@ -97,15 +97,32 @@ export function injectForbiddenTool(records, toolName) {
 }
 
 // Strip all grounding references — the agent answered without evidence →
-// grounding_citations sees none. This is a strip-ALL (not per-document) probe
-// on purpose: mustCite ids are symbolic and don't correspond to the document
-// paths the stream surfaces as citation.source, so a per-id removal couldn't
-// reliably find the citation to remove and would false-survive. Removing every
-// citation is the faithful test of "does this eval require grounding at all."
+// grounding_citations sees none. This probes citation presence; concrete
+// source identity is probed separately by replaceRequiredCitation.
 export function stripCitations(records) {
   const next = clone(records);
   forEachReply(next, (reply) => {
     if (reply.groundedContent?.textGroundingMetadata) delete reply.groundedContent.textGroundingMetadata;
+  });
+  return next;
+}
+
+// Replace one concrete required citation while leaving the citation record in
+// place. This distinguishes source-identity enforcement from the weaker
+// "some evidence exists" check: a proof that only counts citations lets this
+// mutant survive.
+export function replaceRequiredCitation(records, citationId) {
+  const next = clone(records);
+  forEachReply(next, (reply) => {
+    const references = reply.groundedContent?.textGroundingMetadata?.references;
+    if (!Array.isArray(references)) return;
+    for (const reference of references) {
+      const doc = reference?.documentMetadata;
+      if (!doc || (doc.document !== citationId && doc.uri !== citationId)) continue;
+      doc.document = `mutant://unrelated/${encodeURIComponent(citationId)}`;
+      doc.uri = `mutant://unrelated/${encodeURIComponent(citationId)}`;
+      doc.title = "Unrelated mutation-test source";
+    }
   });
   return next;
 }

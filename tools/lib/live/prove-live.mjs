@@ -44,6 +44,18 @@ export function tokenF1(reference, candidate) {
   return (2 * precision * recall) / (precision + recall);
 }
 
+// Some mustCite values are concrete stream addresses (resource names/URIs),
+// while compiler-generated values can be logical claim ids. Concrete values
+// can be checked exactly; logical ids still fall back to presence until the
+// transcript carries a claim-to-source mapping.
+export function isAddressableCitationExpectation(value) {
+  return typeof value === "string" && /^(?:projects\/|(?:gs|s3|https?):\/\/|urn:)/i.test(value);
+}
+
+export function citationMatchesExpectation(citation, expected) {
+  return [citation?.source, citation?.uri].filter(Boolean).includes(expected);
+}
+
 // Evaluate the GE-owned metrics for one case. `expected` comes from the
 // compiled case metadata (geMetadata.expected) when present.
 export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35, replay } = {}) {
@@ -119,18 +131,20 @@ export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35,
   }
 
   if (expected.mustCite?.length) {
-    // Presence-only by design: mustCite ids are symbolic (e.g. "auth-qle-policy")
-    // and do not correspond to the document paths the live stream surfaces as
-    // citation.source, so the proof can only assert that the answer was grounded
-    // in *some* evidence, not that a specific document was cited. Tightening this
-    // to specific-document matching would false-fail every evalset whose mustCite
-    // is a logical id (which is the compiler's convention).
     const cited = transcript.turns.flatMap((turn) => turn.citations || []);
+    const addressable = expected.mustCite.filter(isAddressableCitationExpectation);
+    const symbolic = expected.mustCite.filter((value) => !isAddressableCitationExpectation(value));
+    const missing = addressable.filter((required) => !cited.some((citation) => citationMatchesExpectation(citation, required)));
+    const failed = !cited.length || missing.length > 0;
     metrics.push({
       metric: "grounding_citations",
       runner: "ge",
-      status: cited.length ? "pass" : "fail",
-      detail: cited.length ? `${cited.length} citation(s) in the stream` : "case requires citations but the stream carried none",
+      status: failed ? "fail" : "pass",
+      detail: !cited.length
+        ? "case requires citations but the stream carried none"
+        : missing.length
+          ? `missing required citation source(s): ${missing.join(", ")}`
+          : `${cited.length} citation(s) in the stream${addressable.length ? `; matched ${addressable.length} concrete source(s)` : ""}${symbolic.length ? `; ${symbolic.length} logical id(s) checked for presence only` : ""}`,
     });
   } else {
     metrics.push({ metric: "grounding_citations", runner: "ge", status: "not_applicable", detail: "case declares no citation expectations" });

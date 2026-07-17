@@ -18,11 +18,12 @@
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { proveLive } from "../live/prove-live.mjs";
+import { proveLive, isAddressableCitationExpectation } from "../live/prove-live.mjs";
 import {
   dropRequiredTool,
   injectForbiddenTool,
   stripCitations,
+  replaceRequiredCitation,
   corruptAnswer,
   toNdjson,
   cassetteHasCitations,
@@ -76,12 +77,15 @@ export function planMutants(expected) {
   for (const tool of expected.mustNotCall) {
     plan.push({ id: `inject_forbidden_tool:${tool}`, metric: "tool_trajectory", guard: "mustNotCall", apply: (records) => injectForbiddenTool(records, tool) });
   }
-  // Grounding is presence-only at the proof layer (mustCite ids are symbolic,
-  // not matchable to the stream's citation sources), so the faithful probe is
-  // to strip every citation: a case that declares mustCite must fail when the
-  // answer carries no evidence at all.
+  // Always probe the minimum citation-presence contract. When mustCite names a
+  // concrete resource/URI, also replace that source while preserving another
+  // citation-shaped record; this proves identity matching rather than merely
+  // proving that the stream contained some evidence.
   if (expected.mustCite.length) {
     plan.push({ id: "strip_citations", metric: "grounding_citations", guard: "mustCite", apply: stripCitations });
+    for (const cite of expected.mustCite.filter(isAddressableCitationExpectation)) {
+      plan.push({ id: `replace_required_citation:${cite}`, metric: "grounding_citations", guard: "mustCite", apply: (records) => replaceRequiredCitation(records, cite) });
+    }
   }
   if (expected.hasReference) {
     plan.push({ id: "corrupt_answer", metric: "response_match", guard: "reference", apply: corruptAnswer });
@@ -101,6 +105,14 @@ export function untestedGuards(expected, cassetteRecords) {
   }
   if (!expected.mustCite.length && cassetteHasCitations(cassetteRecords)) {
     gaps.push({ guard: "mustCite", metric: "grounding_citations", note: "agent cites evidence but no mustCite guard is declared — an ungrounded answer would pass the proof" });
+  }
+  const symbolicCitations = expected.mustCite.filter((cite) => !isAddressableCitationExpectation(cite));
+  if (symbolicCitations.length) {
+    gaps.push({
+      guard: "mustCiteIdentity",
+      metric: "grounding_citations",
+      note: `logical citation id(s) are presence-only until the transcript maps claims to sources: ${symbolicCitations.join(", ")}`,
+    });
   }
   return gaps;
 }

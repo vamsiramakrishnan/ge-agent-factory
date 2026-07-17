@@ -18,28 +18,26 @@ const RECORDED_AT = "2026-01-01T00:00:00.000Z";
 
 // Build a compliant citation reference block (shape mirrors the checked-in
 // success.ndjson fixture that proveLive is known to surface as a citation).
-function citationBlock(cite) {
+function citationBlock(cites) {
   return {
-    references: [
-      {
-        documentMetadata: {
-          document: cite,
-          title: "Synthesized evidence",
-          uri: `gs://synthetic/${encodeURIComponent(cite)}.pdf`,
-        },
+    references: cites.map((cite) => ({
+      documentMetadata: {
+        document: cite,
+        title: "Synthesized evidence",
+        uri: `gs://synthetic/${encodeURIComponent(cite)}.pdf`,
       },
-    ],
+    })),
   };
 }
 
 // records for one turn: request → in-progress → content (tools + optional
 // citation) → succeeded. Tools/citation ride the first turn only; proveLive
 // aggregates invocationTools across the whole transcript.
-function turnRecords({ turnIndex, userText, session, tools, cite, agentId, target }) {
+function turnRecords({ turnIndex, userText, session, tools, cites, agentId, target }) {
   // textGroundingMetadata sits on groundedContent, a sibling of content —
   // the shape proveLive and cassetteHasCitations read (see success.ndjson).
   const groundedContent = { content: { text: `Synthesized compliant answer for turn ${turnIndex}.` } };
-  if (cite) groundedContent.textGroundingMetadata = citationBlock(cite);
+  if (cites.length) groundedContent.textGroundingMetadata = citationBlock(cites);
   const contentChunk = {
     type: "chunk",
     turn: turnIndex,
@@ -70,7 +68,7 @@ function turnRecords({ turnIndex, userText, session, tools, cite, agentId, targe
 // is the case's geMetadata.expected; `target`/`agentId` seed the meta record.
 export function synthesizeCassetteRecords(turns, expected = {}, { target, agentId, session = "synthetic-session-0" } = {}) {
   const tools = expected.mustCall || [];
-  const cite = (expected.mustCite || [])[0] || null;
+  const cites = expected.mustCite || [];
   const records = [{ type: "meta", version: 1, target, recordedAt: RECORDED_AT }];
   turns.forEach((turn, turnIndex) => {
     records.push(
@@ -79,7 +77,7 @@ export function synthesizeCassetteRecords(turns, expected = {}, { target, agentI
         userText: turn.user || turn,
         session: `${target?.engine || "engine"}/sessions/${session}`,
         tools: turnIndex === 0 ? tools : [],
-        cite: turnIndex === 0 ? cite : null,
+        cites: turnIndex === 0 ? cites : [],
         agentId,
         target,
       }),

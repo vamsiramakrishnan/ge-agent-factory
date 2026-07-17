@@ -16,6 +16,7 @@ import {
   dropRequiredTool,
   injectForbiddenTool,
   stripCitations,
+  replaceRequiredCitation,
   corruptAnswer,
   cassetteInvocationTools,
   cassetteHasCitations,
@@ -52,6 +53,27 @@ describe("cassette mutation operators", () => {
   test("stripCitations removes all grounding references", () => {
     expect(cassetteHasCitations(records())).toBe(true);
     expect(cassetteHasCitations(stripCitations(records()))).toBe(false);
+  });
+
+  test("replaceRequiredCitation preserves grounding but removes the required source", () => {
+    const required = "projects/demo/locations/global/dataStores/benefits/documents/qle-policy";
+    const after = replaceRequiredCitation(records(), required);
+    expect(cassetteHasCitations(after)).toBe(true);
+    expect(JSON.stringify(after)).not.toContain(`\"document\":\"${required}\"`);
+    expect(JSON.stringify(after)).toContain("mutant://unrelated/");
+  });
+
+  test("replaceRequiredCitation also matches a required URI", () => {
+    const required = "gs://benefits/policies/qle.pdf";
+    const input = records();
+    const reference = input
+      .flatMap((record) => record.json?.answer?.replies || [])
+      .flatMap((reply) => reply.groundedContent?.textGroundingMetadata?.references || [])[0];
+    reference.documentMetadata.document = "projects/demo/documents/policy";
+    reference.documentMetadata.uri = required;
+    const after = replaceRequiredCitation(input, required);
+    expect(JSON.stringify(after)).not.toContain(required);
+    expect(JSON.stringify(after)).toContain("mutant://unrelated/");
   });
 
   test("toolNameOf normalizes string and object tool forms", () => {
@@ -96,8 +118,12 @@ describe("expectation reading + planning", () => {
   test("planMutants emits one mutant per declared expectation", () => {
     const expected = readExpectations(JSON.parse(readFileSync(EVALSET, "utf8")));
     const plan = planMutants(expected);
-    // 2 mustCall + 1 mustNotCall + 1 mustCite + 1 reference
-    expect(plan.length).toBe(5);
+    // 2 mustCall + 1 mustNotCall + citation presence + concrete citation
+    // identity + 1 reference
+    expect(plan.length).toBe(6);
+    expect(plan.map((m) => m.id)).toContain(
+      "replace_required_citation:projects/demo/locations/global/dataStores/benefits/documents/qle-policy",
+    );
     expect(plan.map((m) => m.metric)).toContain("tool_trajectory");
     expect(plan.map((m) => m.metric)).toContain("grounding_citations");
     expect(plan.map((m) => m.metric)).toContain("response_match");
@@ -109,13 +135,21 @@ describe("expectation reading + planning", () => {
     const guards = gaps.map((g) => g.guard).sort();
     expect(guards).toEqual(["mustCite", "mustNotCall"]);
   });
+
+  test("untestedGuards exposes logical citation ids as presence-only", () => {
+    const gaps = untestedGuards(
+      { mustCall: ["lookup"], mustNotCall: ["write"], mustCite: ["claim-policy"], hasReference: false },
+      records(),
+    );
+    expect(gaps.map((gap) => gap.guard)).toEqual(["mustCiteIdentity"]);
+  });
 });
 
 describe("integration — real offline proof", () => {
   test("a fully-guarded evalset kills every mutant by its intended guard", async () => {
     const result = await runEvalMutants({ evalset: EVALSET, cassette: CASSETTE });
     expect(result.baseline.passed).toBe(true);
-    expect(result.score.generated).toBe(5);
+    expect(result.score.generated).toBe(6);
     expect(result.score.survived).toBe(0);
     expect(result.ornamental).toBe(false);
     expect(result.mutants.every((m) => m.killedByIntendedGuard)).toBe(true);
@@ -159,10 +193,11 @@ describe("discrimination — a proof that ignores tool/citation guards", () => {
   test("tool and citation mutants survive → flagged ornamental", async () => {
     const result = await runEvalMutants({ evalset: EVALSET, cassette: CASSETTE }, { proveLiveImpl: stubProveLive });
     expect(result.ornamental).toBe(true);
-    // drop×2 + inject×1 + strip×1 survive; corrupt_answer is killed by response_match
-    expect(result.score.survived).toBe(4);
+    // drop×2 + inject×1 + strip×1 + replace-citation×1 survive;
+    // corrupt_answer is killed by response_match.
+    expect(result.score.survived).toBe(5);
     const survivedGuards = result.survived.map((m) => m.guard).sort();
-    expect(survivedGuards).toEqual(["mustCall", "mustCall", "mustCite", "mustNotCall"]);
+    expect(survivedGuards).toEqual(["mustCall", "mustCall", "mustCite", "mustCite", "mustNotCall"]);
     expect(result.mutants.find((m) => m.id === "corrupt_answer").killed).toBe(true);
   });
 });

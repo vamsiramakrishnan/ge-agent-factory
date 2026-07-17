@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { synthesizeCassetteRecords, syntheticTarget } from "./synthesize-cassette.mjs";
 import { cassetteInvocationTools, cassetteHasCitations } from "./cassette-mutations.mjs";
-import { compileAgentEvalset, sweepAgentBundle } from "./sweep-agent.mjs";
+import { collectCitationIdentityGaps, compileAgentEvalset, sweepAgentBundle } from "./sweep-agent.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUNDLE = join(HERE, "../../../okf/shrink-anomaly-analyzer");
@@ -19,13 +19,16 @@ describe("cassette synthesizer", () => {
     const target = syntheticTarget("demo");
     const records = synthesizeCassetteRecords(
       [{ user: "first" }, { user: "second" }],
-      { mustCall: ["tool_a", "tool_b"], mustCite: ["doc-1"] },
+      { mustCall: ["tool_a", "tool_b"], mustCite: ["projects/demo/documents/one", "projects/demo/documents/two"] },
       { target, agentId: "agent-demo" },
     );
     expect(records[0].type).toBe("meta");
     expect(records[0].target.engine).toContain("demo-engine");
     expect(cassetteInvocationTools(records).sort()).toEqual(["tool_a", "tool_b"]);
     expect(cassetteHasCitations(records)).toBe(true);
+    const serialized = JSON.stringify(records);
+    expect(serialized).toContain("projects/demo/documents/one");
+    expect(serialized).toContain("projects/demo/documents/two");
   });
 
   test("session threading: turn 0 opens a session, later turns reuse it", () => {
@@ -54,6 +57,26 @@ describe("OKF → evalset compile", () => {
     const withCite = evalset.evalCases.filter((kase) => (kase.geMetadata?.expected?.mustCite || []).length);
     expect(withCite.length).toBe(0);
   });
+});
+
+test("bundle aggregation preserves logical citation identity gaps", () => {
+  const gaps = collectCitationIdentityGaps([
+    {
+      caseId: "citation-case",
+      gaps: [
+        { guard: "mustCiteIdentity", metric: "grounding_citations", note: "logical id is presence-only" },
+        { guard: "mustNotCall", metric: "tool_trajectory", note: "unrelated gap" },
+      ],
+    },
+  ]);
+  expect(gaps).toEqual([
+    {
+      caseId: "citation-case",
+      guard: "mustCiteIdentity",
+      metric: "grounding_citations",
+      note: "logical id is presence-only",
+    },
+  ]);
 });
 
 describe.skipIf(!process.env.GE_MUTATION_E2E)("real agent sweep (GE_MUTATION_E2E)", () => {

@@ -28,6 +28,14 @@ function hasGuards(expected = {}) {
   return Boolean((expected.mustCall || []).length || (expected.mustNotCall || []).length || (expected.mustCite || []).length);
 }
 
+export function collectCitationIdentityGaps(cases) {
+  return cases.flatMap((entry) =>
+    (entry.gaps || [])
+      .filter((gap) => gap.guard === "mustCiteIdentity")
+      .map((gap) => ({ caseId: entry.caseId, ...gap })),
+  );
+}
+
 // Compile the bundle to its ADK evalset. Returns { agentId, evalset, errors }.
 export async function compileAgentEvalset(bundleDir) {
   const { spec, errors } = await compileOkfBundle(bundleDir);
@@ -44,7 +52,20 @@ export async function sweepAgentBundle(bundleDir, { proveLiveImpl } = {}) {
   // A partial spec would yield a misleadingly-green sweep. Structured OKF
   // compile errors are fatal here, as they are on every other OKF surface.
   if (errors.length) {
-    return { agentId, bundleDir, ok: false, compileErrors: errors, coverage: null, cases: [], ornamentalCases: [], noGuard: [], totals: { generated: 0, killed: 0, survived: 0 }, ornamental: false };
+    return {
+      agentId,
+      bundleDir,
+      ok: false,
+      compileErrors: errors,
+      coverage: null,
+      cases: [],
+      ornamentalCases: [],
+      noGuard: [],
+      citationIdentityGaps: [],
+      totals: { generated: 0, killed: 0, survived: 0 },
+      ornamental: false,
+      partialCoverage: false,
+    };
   }
   const target = syntheticTarget(agentId);
   const work = mkdtempSync(join(tmpdir(), "ge-agent-sweep-"));
@@ -72,11 +93,13 @@ export async function sweepAgentBundle(bundleDir, { proveLiveImpl } = {}) {
         generated: result.score.generated,
         killed: result.score.killed,
         survived: result.survived.map((m) => ({ id: m.id, guard: m.guard })),
+        gaps: result.gaps,
         ornamental: result.ornamental,
       });
     }
 
     const ornamentalCases = cases.filter((entry) => entry.ornamental);
+    const citationIdentityGaps = collectCitationIdentityGaps(cases);
     const totals = cases.reduce(
       (acc, entry) => ({ generated: acc.generated + entry.generated, killed: acc.killed + entry.killed, survived: acc.survived + entry.survived.length }),
       { generated: 0, killed: 0, survived: 0 },
@@ -103,8 +126,10 @@ export async function sweepAgentBundle(bundleDir, { proveLiveImpl } = {}) {
       cases,
       ornamentalCases,
       noGuard,
+      citationIdentityGaps,
       totals,
       ornamental: ornamentalCases.length > 0,
+      partialCoverage: citationIdentityGaps.length > 0,
     };
   } finally {
     rmSync(work, { recursive: true, force: true });

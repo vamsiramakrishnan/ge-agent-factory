@@ -55,13 +55,26 @@ export function formatReport(result) {
     lines.push("MIS-ATTRIBUTED KILLS (mutant died, but not by its intended guard — that guard is still unproven):");
     for (const mutant of result.misattributed) lines.push(`  • ${mutant.id} — intended ${mutant.metric}, caught by ${mutant.caughtBy.join(", ") || "none"}`);
   }
-  if (result.gaps.length) {
+  const identityGaps = result.gaps.filter((gap) => gap.guard === "mustCiteIdentity");
+  const undeclaredGaps = result.gaps.filter((gap) => gap.guard !== "mustCiteIdentity");
+  if (undeclaredGaps.length) {
     lines.push("");
     lines.push("COVERAGE GAPS (no guard declared — the violation is invisible to the proof):");
-    for (const gap of result.gaps) lines.push(`  • ${gap.guard}/${gap.metric}: ${gap.note}`);
+    for (const gap of undeclaredGaps) lines.push(`  • ${gap.guard}/${gap.metric}: ${gap.note}`);
+  }
+  if (identityGaps.length) {
+    lines.push("");
+    lines.push("PARTIAL CITATION COVERAGE (presence is enforced; logical source identity is not yet observable):");
+    for (const gap of identityGaps) lines.push(`  • ${gap.guard}/${gap.metric}: ${gap.note}`);
   }
   lines.push("");
-  lines.push(result.ornamental ? "RESULT: ornamental evals found — the proof does not enforce every expectation it declares." : "RESULT: all declared expectations have teeth.");
+  lines.push(
+    result.ornamental
+      ? "RESULT: ornamental evals found — the proof does not enforce every expectation it declares."
+      : identityGaps.length
+        ? "RESULT: executable guards have teeth, but citation identity coverage is partial."
+        : "RESULT: all declared expectations have teeth.",
+  );
   return lines.join("\n");
 }
 
@@ -91,8 +104,19 @@ export function formatSweepReport(result) {
     lines.push("");
     lines.push(`COVERAGE GAP: no case declares a citation guard — an ungrounded answer passes the proof for every case.`);
   }
+  if (result.citationIdentityGaps?.length) {
+    lines.push("");
+    lines.push("PARTIAL CITATION COVERAGE (presence is enforced; logical source identity is not yet observable):");
+    for (const gap of result.citationIdentityGaps) lines.push(`  • ${gap.caseId}: ${gap.note}`);
+  }
   lines.push("");
-  lines.push(result.ornamental ? "RESULT: ornamental evals found — the proof does not enforce every expectation it declares." : "RESULT: all declared expectations have teeth.");
+  lines.push(
+    result.ornamental
+      ? "RESULT: ornamental evals found — the proof does not enforce every expectation it declares."
+      : result.partialCoverage
+        ? "RESULT: executable guards have teeth, but citation identity coverage is partial."
+        : "RESULT: all declared expectations have teeth.",
+  );
   return lines.join("\n");
 }
 
