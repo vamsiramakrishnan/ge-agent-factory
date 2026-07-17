@@ -1,0 +1,14 @@
+{
+  "name": "@ge/connector-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal live-system connector: dial a REST binding read-only. Structurally refuses write-class methods (the method allowlist is not a flag a caller can forget), resolves auth by env reference at call time (the token value never persists, never lands in an error or artifact), and exposes probe/call plus a probeRestBinding helper for `ge systems doctor --dial`. Deliberately small — the full connector SDK grows from this interface only as consumers appear (docs/plans/real-system-twins/parallel-and-deferred.md). Dependency-free; fetch is injectable for tests.",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  }
+}

@@ -124,6 +124,14 @@ export const GeCommandIdSchema = z.enum([
   "systems.list",
   "systems.synth",
   "systems.doctor",
+  "systems.dial",
+  "systems.dispatch",
+  "systems.profile",
+  "systems.record",
+  "systems.compare",
+  "systems.mutation.infer",
+  "systems.mutation.validate",
+  "systems.mutation.apply",
   // Console UI packaging (deploy + doctor):
   "console.deploy",
   "console.doctor",
@@ -140,6 +148,7 @@ export const RiskLevelSchema = z.enum([
   "starts-workloads",
   "starts-local-workloads",
   "writes-repo",
+  "calls-live-readonly",
   "read-only",
 ]);
 export type RiskLevel = z.infer<typeof RiskLevelSchema>;

@@ -37,6 +37,9 @@
         "forbidden": 0.01,
         "timeout": 0.01
       }
+    ,
+      "semantics": "create",
+      "compensation": "manual"
     },
     "submit_agreement_update": {
       "primitive": "state_machine_update",
@@ -116,6 +119,9 @@
         "forbidden": 0.01,
         "timeout": 0.01
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_obligation_update": {
       "primitive": "state_machine_update",
@@ -165,6 +171,9 @@
         "forbidden": 0.01,
         "timeout": 0.01
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_bulk_job_completion": {
       "primitive": "state_machine_update",
@@ -212,6 +221,11 @@
         "forbidden": 0.01,
         "timeout": 0.02
       }
+    ,
+      "semantics": "async_job",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

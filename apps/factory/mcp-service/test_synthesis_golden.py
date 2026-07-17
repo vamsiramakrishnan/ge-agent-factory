@@ -160,8 +160,8 @@ def _case_generate_seed_direct() -> dict[str, Any]:
 
 
 def _case_build_contract_states_only() -> dict[str, Any]:
-    """Pins _state_machine's linear-chain default (states, no transitions), _default_fields
-    (collection without fields), allowedRoles passthrough, and the approvals-driven gate."""
+    """Pins states-without-edges as review candidates, _default_fields (collection
+    without fields), allowedRoles passthrough, and the approvals-driven gate."""
     sketch = {
         "id": "byo_states",
         "displayName": "States Only",

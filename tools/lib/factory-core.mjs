@@ -328,6 +328,13 @@ export async function systemsBindings() {
   return readBindings({ dir: defaultBindingsDir(REPO_ROOT) });
 }
 
+// `systems.mutation.validate` console route: same core as
+// `ge systems mutation validate` / factory_systems_mutation_validate.
+export async function systemsMutationValidate({ system } = {}) {
+  const { validateCorpusMutations } = await import("@ge/byo-systems/mutation-model");
+  return validateCorpusMutations({ repoRoot: REPO_ROOT, system: system || undefined });
+}
+
 const factoryPlane = createFactoryPlane({
   repoRoot: REPO_ROOT,
   terraformDir: TF_DIR,

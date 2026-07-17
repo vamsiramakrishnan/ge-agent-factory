@@ -1,0 +1,43 @@
+{
+  "request": {
+    "url": "https://crm.internal.example.com/customers?email=jane.doe@example.com",
+    "method": "GET",
+    "headers": {
+      "Authorization": "Bearer sk-live-VERY-SECRET-TOKEN-12345",
+      "Cookie": "session=abc123; theme=dark",
+      "Accept": "application/json",
+      "X-Api-Key": "key-9999",
+      "X-Request-Id": "req-42"
+    },
+    "body": {
+      "query": "jane",
+      "requested_by": "ops@corp.example.com"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Set-Cookie": "session=def456"
+    },
+    "body": {
+      "customers": [
+        {
+          "customer_id": "C-1001",
+          "name": "Jane Doe",
+          "email": "jane.doe@example.com",
+          "phone": "call +1 (415) 555-0142 now",
+          "ssn": "123-45-6789",
+          "card_on_file": "4111 1111 1111 1111",
+          "order_ref": "1234 5678 9012 34",
+          "notes": "prefers email contact",
+          "balance": 1250.5
+        }
+      ],
+      "internal": {
+        "shard": "us-west-2",
+        "api_key": "inline-secret"
+      }
+    }
+  }
+}

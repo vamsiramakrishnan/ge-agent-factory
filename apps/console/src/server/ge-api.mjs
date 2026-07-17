@@ -379,6 +379,7 @@ export const ROUTES = [
       const command = commandForRoute("GET", parts);
       const GET_HANDLERS = {
         "systems.bindings": () => core.systemsBindings(),
+        "systems.mutation.validate": (q) => core.systemsMutationValidate(q),
         "byo.doctor": (q) => core.byoDoctor(q),
         "evals.coverage": (q) => core.evalsCoverage(q),
         "daemon.cloud": () => core.cloudDaemonStatus(cfg),

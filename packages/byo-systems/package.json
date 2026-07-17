@@ -7,12 +7,15 @@
   "main": "./src/index.mjs",
   "exports": {
     ".": "./src/index.mjs",
-    "./bindings": "./src/bindings.mjs"
+    "./bindings": "./src/bindings.mjs",
+    "./dispatch": "./src/dispatch.mjs",
+    "./mutation-model": "./src/mutation-model.mjs"
   },
   "scripts": {
     "test": "bun test src"
   },
   "dependencies": {
+    "@ge/connector-core": "workspace:*",
     "@ge/std": "workspace:*"
   }
 }

@@ -1122,7 +1122,7 @@ Regenerate okf/library/index.json from OKF bundles
 
 ### `ge systems`
 
-Bring-Your-Own-System: list built-in simulators (list) · synthesize a new one (synth) · bind a system to a live target (bind/bindings/unbind) · check the toolchain (doctor)
+Bring-Your-Own-System: list built-in simulators (list) · synthesize a new one (synth) · profile a real system read-only (profile) · record a replay corpus (record) · compare a twin to live (compare) · bind a system to a live target (bind/bindings/unbind) · compile the tool-plane dispatch directive (dispatch) · write-semantics contract (mutation infer/validate/apply) · check the toolchain (doctor, --dial to probe live bindings read-only)
 
 ### `ge systems list`
 
@@ -1138,9 +1138,52 @@ Synthesize a brand-new live simulator system from an NL description, samples, or
 | `--description` | string | Natural-language description (mode: nl, the default) |
 | `--from-openapi` | string | Path to an OpenAPI/Swagger JSON spec (mode: openapi) |
 | `--from-samples` | string | Path to a JSON file of {collection: [rows]} (mode: samples) |
+| `--from-traces` | string | Path to a ge.replay-corpus.v1 (from ge systems record) — projects observed fields into the twin schema (mode: samples) |
+| `--from-profile` | string | Path to a ge.system-profile.v1 — pairs with --from-traces for the display name and system id |
 | `--promote` | boolean | Also persist the result into the curated corpus (registry.json + per-section files) |
 | `--local` | boolean | Override: synthesize with the in-process (session-only) overlay (default) |
 | `--remote` | boolean | Override: synthesize as if run remotely — auto-sets a durable overlay backend (firestore) unless one is already configured |
+
+### `ge systems profile`
+
+Capture a redacted ge.system-profile.v1 from a real system's OpenAPI spec (read allowlist / write denylist / auth by reference); with --probe, one read-only reachability dial (risk: calls-live-readonly)
+
+| Flag | Type | Description |
+|---|---|---|
+| `<system>` | positional (required) | System id the profile is for |
+| `--kind` | string | Target kind (rest only in this phase) |
+| `--base-url` | string | Live base URL (required for --probe; recorded for record/compare) |
+| `--openapi` | string | Path to the system's OpenAPI/Swagger JSON spec |
+| `--auth` | string | Auth reference: env:VARIABLE_NAME or none (never a token value) |
+| `--redact` | string | Path to a ge.redaction-policy.v1 (required when the spec carries PII-shaped fields) |
+| `--probe` | boolean | Dial the base URL once, read-only, to record reachability (risk: calls-live-readonly) |
+| `--out` | string | Profile output path (default .ge/systems/profiles/<system>.profile.json) |
+
+### `ge systems record`
+
+Record bounded, allowlisted, READ-ONLY traffic from a profiled system into a redacted ge.replay-corpus.v1 (risk: calls-live-readonly), or import an existing NDJSON/HAR capture through the same redaction path
+
+| Flag | Type | Description |
+|---|---|---|
+| `<system>` | positional (required) | System id (must match the profile) |
+| `--profile` | string | Path to the ge.system-profile.v1 (from ge systems profile) |
+| `--script` | string | Path to a read-only probe script (JSON: {calls: [{name, path, query?}]}) |
+| `--max-calls` | string | Hard cap on live calls (required for live recording; 1..500) |
+| `--import-har` | string | Import a HAR file instead of dialing (write traffic dropped, all redacted) |
+| `--import-ndjson` | string | Import an NDJSON capture instead of dialing (re-redacted) |
+| `--redact` | string | Path to a ge.redaction-policy.v1 applied to every exchange |
+| `--out` | string | Corpus output path (default .ge/replay/system-<system>.ndjson) |
+
+### `ge systems compare`
+
+Measure a twin against its real system using only allowlisted read probes (risk: calls-live-readonly): endpoint/field coverage (mechanical), latency/error realism (advisory) — never dials a write endpoint
+
+| Flag | Type | Description |
+|---|---|---|
+| `<system>` | positional (required) | System id (twin pack + profile must match) |
+| `--profile` | string | Path to the ge.system-profile.v1 (must carry base-url) |
+| `--max-calls` | string | Cap on live sample calls (default 25) |
+| `--out` | string | Realism report output path (default .ge/systems/profiles/<system>.realism-report.json) |
 
 ### `ge systems bind`
 
@@ -1167,9 +1210,51 @@ Remove a system's live binding
 |---|---|---|
 | `<system>` | positional (required) | Contract system id to unbind |
 
+### `ge systems dispatch`
+
+Compile stored bindings into the dispatch directive the tool plane consumes (GE_SIMULATOR_DISPATCH) — resolved decisions only, twin by default, live entries for dialable live_first bindings
+
+### `ge systems mutation`
+
+Write-semantics contract (ge.mutation-model.v1): infer a proposal from OpenAPI/samples (infer) · validate the corpus (validate) · apply a proposal (apply, dry-run default)
+
+### `ge systems mutation infer`
+
+Infer ge.mutation-model.v1 write semantics from an OpenAPI spec or samples (deterministic heuristic tier) and emit a reviewable proposal — never edits a pack
+
+| Flag | Type | Description |
+|---|---|---|
+| `<system>` | positional (required) | Target system id the proposal is for |
+| `--from-openapi` | string | Path to an OpenAPI/Swagger JSON spec |
+| `--from-samples` | string | Path to a JSON file of {collection: [rows]} |
+| `--out` | string | Proposal output path (default .ge/systems/mutations/<system>.proposal.json) |
+
+### `ge systems mutation validate`
+
+Statically validate write semantics across the simulator corpus (or one system) against ge.mutation-model.v1 — read-only, fast
+
+| Flag | Type | Description |
+|---|---|---|
+| `--system` | string | Validate one system instead of the whole corpus |
+
+### `ge systems mutation apply`
+
+Apply a mutation proposal to its pack's workflows.json — dry-run by default; hand-authored handler values are never overwritten
+
+| Flag | Type | Description |
+|---|---|---|
+| `--proposal` | string | Path to a ge.mutation-proposal.v1 file (from mutation infer) |
+| `--write` | boolean | Persist the merge (default: dry-run report only) |
+| `--force` | boolean | Skip the base-hash guard (the pack changed since infer) |
+| `--pack-dir` | string | Target pack directory (default: the corpus dir for the proposal's system) |
+
 ### `ge systems doctor`
 
 Check the BYO-systems toolchain: python, synthesize_cli.py, registry.json, live bindings, overlay backend
+
+| Flag | Type | Description |
+|---|---|---|
+| `--dial` | boolean | Also dial each stored rest binding read-only (one reachability probe) and report its dispatch decision — the only doctor path that opens a network connection (risk: calls-live-readonly) |
 
 ### `ge byo`
 

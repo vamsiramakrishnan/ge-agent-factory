@@ -1,6 +1,6 @@
 ---
 name: building-simulators
-description: Builds, plans, materializes, and validates GE mock data and enterprise source-system simulators. Use when Antigravity or another harness must generate scenario data, run Snowfakery, seed simulator overlays, validate simulator conformance, or reason about systems/schemas/tools/workflows for generated agents.
+description: Builds, plans, materializes, calibrates, and validates GE mock data and enterprise source-system simulators. Use when a harness must generate scenario data, run Snowfakery, seed simulator overlays, profile and compare a real system read-only, model safe twin mutations, validate simulator conformance, or reason about systems/schemas/tools/workflows for generated agents.
 ---
 
 # Building Simulators
@@ -21,21 +21,23 @@ In plain language: this skill prepares realistic source systems for agents to us
 
 - **First step:** create a mission plan for the scenario, then choose the source-system archetype if the graph needs simulator data.
 - **Plays a role in:** source-system/data-plane preparation before and during `generate_data`, `package_data`, `load_data`, and MCP tool wiring.
-- **Input:** system name, domain archetype, objects, workflows, realism level, and scale.
-- **Output:** simulator pack schema/tools/workflows/materialization that generated agents can call through MCP.
-- **Next step:** validate simulator conformance through the mission graph, then let workspace gates verify tools and behavior.
+- **Input:** system name, domain archetype, objects, workflows, realism level, and scale; optionally an OpenAPI spec, redaction policy, approved read-only probes, and samples from the real system.
+- **Output:** simulator pack schema/tools/workflows/materialization, plus an optional redacted profile, replay corpus, realism report, and validated mutation model.
+- **Next step:** validate simulator conformance through the mission graph. If the twin may route reads to a live target, hand the reviewed artifacts to `bringing-your-own` for binding and dispatch approval.
 
 Use this skill when the question is “what does this enterprise system look like to an agent?” The result should be a simulator pack that gives the factory realistic data and tool behavior, not just static fixtures.
 
 ## Workflow
 
-1. Confirm the spec scope: source systems, entities, documents, tools, and eval evidence refs.
-2. Plan the scenario through `ge pipeline plan`.
-3. Confirm the data nodes: `mock.generate`, `snowfakery.generate`, `simulator.seed`, `simulator.validate`.
-4. Ask only the next missing question.
-5. Invoke deterministic CLI commands for the current node.
-6. Validate artifacts before moving to the next node.
-7. Report remaining gaps and next commands.
+1. Confirm the spec scope: source systems, entities, documents, tools, eval evidence refs, and whether the job is a synthetic-only build or a real-system twin calibration.
+2. Plan the scenario through `ge pipeline plan`; confirm the `mock.generate`, `snowfakery.generate`, `simulator.seed`, and `simulator.validate` nodes.
+3. Scaffold and validate the deterministic twin before involving a real target.
+4. For calibration, profile the OpenAPI spec offline and attach a redaction policy when PII-shaped fields are present. Review the read allowlist, write denylist, auth environment-variable reference, and policy hash before adding `--probe` or making any other network call.
+5. Obtain explicit operator approval before live reads. Then use a small explicit `--max-calls` for `systems record` and `systems compare`, or import a prior HAR/NDJSON capture to stay offline. These commands never exercise write endpoints.
+6. Infer write semantics from the reviewed OpenAPI spec or samples. Validate the current pack, review `systems mutation apply` in its default dry-run mode, persist only with `--write` after acceptance, and validate again. Investigate a base-hash mismatch instead of reaching first for `--force`.
+7. Validate the updated simulator artifacts and realism gaps. Close only the gaps supported by evidence; latency and error-shape findings are advisory.
+8. Hand off binding and dispatch to `bringing-your-own`. Binding writes local configuration and dispatch compiles a directive; neither calls the target, starts the tool plane, nor deploys it. Require a separate explicit approval before dialing or injecting live routing.
+9. Report the evidence produced, remaining gaps, and exact next command.
 
 For Antigravity-driven mock data and simulator seeding, read `references/mock-data-and-simulators.md` before acting.
 
@@ -119,8 +121,32 @@ bun tools/ge.mjs data synth --system <system_id> --json
 bun tools/ge.mjs data synth --system <system_id> --seed 42 --profile realistic --edge-case-rate 0.06
 ```
 
+Calibrate a twin from real-system evidence. The profile command below is offline because it omits `--probe`; recording and comparison cross the network only after explicit approval:
+
+```bash
+bun tools/ge.mjs systems profile <system_id> --openapi <spec.json> --base-url <https://api.example> --auth env:<TOKEN_ENV> --redact <policy.json>
+bun tools/ge.mjs systems record <system_id> --profile <profile.json> --script <probes.json> --max-calls 25 --redact <policy.json>
+bun tools/ge.mjs systems compare <system_id> --profile <profile.json> --max-calls 25
+```
+
+Model and validate writes in the twin. The first apply is a dry-run; `--write` is a separate, reviewed repository mutation:
+
+```bash
+bun tools/ge.mjs systems mutation infer <system_id> --from-openapi <spec.json>
+bun tools/ge.mjs systems mutation validate --system <system_id>
+bun tools/ge.mjs systems mutation apply --proposal <proposal.json>
+bun tools/ge.mjs systems mutation apply --proposal <proposal.json> --write
+bun tools/ge.mjs systems mutation validate --system <system_id>
+```
+
+After validation, `bringing-your-own` owns the local binding and dispatch review. Do not interpret either artifact as permission to dial the target or deploy a service.
+
 ## Failure Handling
 
+- `profile requires a redaction policy`: attach a `ge.redaction-policy.v1`; do not suppress the PII guard.
+- live record/compare refused or exceeded budget: confirm approval and use a smaller explicit `--max-calls`; never widen the profile's read allowlist just to make a probe pass.
+- mutation proposal base hash changed: re-run inference against the current pack and review the new diff; avoid `--force` unless the divergence was independently reconciled.
+- dispatch still routes to twin: this is the safe default, not a conformance failure; live routing is a separate BYO decision and approval.
 - `projection collection missing from schema`: patch `projection.json` or `schema.json`.
 - `materialization collection missing from schema`: patch `materialization.json` or `schema.json`.
 - `workflow handler missing from tools.json`: add the matching tool or remove the workflow binding.

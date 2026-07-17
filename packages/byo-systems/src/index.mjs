@@ -37,6 +37,8 @@ import { writeJson } from "@ge/std/json-io";
 import { defaultBindingsDir, readBindings, validateBinding } from "./bindings.mjs";
 
 export * from "./bindings.mjs";
+export * from "./dispatch.mjs";
+export * from "./mutation-model.mjs";
 
 /** Cap the free-text description so we never feed an unbounded prompt to the CLI. */
 export const MAX_DESCRIPTION_BYTES = 8000;

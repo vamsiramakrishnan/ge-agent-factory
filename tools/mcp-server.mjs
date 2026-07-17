@@ -29,6 +29,7 @@ import { compileEvals } from "./lib/evals/compile-command.mjs";
 import { importEvalset } from "./lib/evals/import-command.mjs";
 import { evalsCoverage } from "./lib/evals/coverage-command.mjs";
 import { DxError } from "./lib/errors/dx-error.mjs";
+import { writePrivateArtifacts } from "./lib/private-artifacts.mjs";
 
 // tools/mcp-server.mjs -> tools -> repo root (for handlers that take injected paths).
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -248,6 +249,123 @@ const HANDLERS = {
     const byoSystems = await import("@ge/byo-systems");
     const removed = await byoSystems.removeBinding({ dir: byoSystems.defaultBindingsDir(REPO_ROOT), system: a.system });
     return { ok: true, system: a.system, removed };
+  },
+  // The one dialing tool (risk: calls-live-readonly) — same core as
+  // `ge systems doctor --dial` (tools/lib/systems-dial.mjs): toolchain checks
+  // plus a read-only reachability probe + dispatch decision per rest binding.
+  "systems.dial": async () => {
+    const { doctorWithDial } = await import("./lib/systems-dial.mjs");
+    return doctorWithDial({ repoRoot: REPO_ROOT });
+  },
+  // Same core as `ge systems dispatch`: bindings -> the tool plane's
+  // dispatch directive (decisions only; auth by env-var reference).
+  "systems.dispatch": async () => {
+    const byoSystems = await import("@ge/byo-systems");
+    const directive = await byoSystems.buildDispatchDirective({ dir: byoSystems.defaultBindingsDir(REPO_ROOT) });
+    return { env: byoSystems.DISPATCH_ENV, fileEnv: byoSystems.DISPATCH_FILE_ENV, directive };
+  },
+  // Real-system profiling / recording / realism compare (Phase 2) — same
+  // cores as `ge systems profile/record/compare` (tools/lib/system-*.mjs).
+  "systems.profile": async (a) => {
+    const { buildSystemProfile } = await import("./lib/system-profile.mjs");
+    const byoSystems = await import("@ge/byo-systems");
+    const { join, resolve } = await import("node:path");
+    const openapiText = await readFile(a.openapi, "utf8");
+    const redactionPolicyText = a.redact ? await readFile(a.redact, "utf8") : null;
+    const profile = await buildSystemProfile({
+      system: a.system,
+      baseUrl: a.baseUrl,
+      openapiText,
+      authRef: a.auth,
+      redactionPolicyText,
+      probe: Boolean(a.probe),
+    });
+    const outPath = resolve(a.out || join(byoSystems.defaultBindingsDir(REPO_ROOT), "profiles", `${a.system}.profile.json`));
+    await writePrivateArtifacts([{ path: outPath, text: `${JSON.stringify(profile, null, 2)}\n` }]);
+    return { ok: true, profile: outPath, allowedProbes: profile.allowedProbes.length, forbiddenOperations: profile.forbiddenOperations.length, probe: profile.probe };
+  },
+  "systems.record": async (a) => {
+    const record = await import("./lib/system-record.mjs");
+    const { join, resolve } = await import("node:path");
+    const policy = a.redact ? JSON.parse(await readFile(a.redact, "utf8")) : null;
+    let result;
+    if (a.importHar) {
+      result = record.importTraces({ format: "har", text: await readFile(a.importHar, "utf8"), system: a.system, policy });
+    } else if (a.importNdjson) {
+      result = record.importTraces({ format: "ndjson", text: await readFile(a.importNdjson, "utf8"), system: a.system, policy });
+    } else {
+      const profile = JSON.parse(await readFile(a.profile, "utf8"));
+      const script = JSON.parse(await readFile(a.script, "utf8"));
+      result = await record.recordSystemTraces({ profile, system: a.system, script, policy, maxCalls: Number(a.maxCalls) });
+    }
+    const outPath = resolve(a.out || join(REPO_ROOT, ".ge", "replay", `system-${a.system}.ndjson`));
+    const reportPath = `${outPath.replace(/\.ndjson$/, "")}.redaction-report.json`;
+    await writePrivateArtifacts([
+      { path: reportPath, text: `${JSON.stringify(result.redactionReport, null, 2)}\n` },
+      { path: outPath, text: record.corpusToNdjson(result.lines) },
+    ]);
+    return { ok: true, corpus: outPath, redactionReport: reportPath, calls: result.calls, redactions: result.redactionReport.totalRedactions };
+  },
+  "systems.compare": async (a) => {
+    const byoSystems = await import("@ge/byo-systems");
+    const { compareSystemTwin } = await import("./lib/system-compare.mjs");
+    const { join, resolve } = await import("node:path");
+    const profile = JSON.parse(await readFile(a.profile, "utf8"));
+    const report = await compareSystemTwin({
+      profile,
+      system: a.system,
+      repoRoot: REPO_ROOT,
+      maxCalls: a.maxCalls === undefined ? 25 : Number(a.maxCalls),
+    });
+    const outPath = resolve(a.out || join(byoSystems.defaultBindingsDir(REPO_ROOT), "profiles", `${a.system}.realism-report.json`));
+    await writePrivateArtifacts([{ path: outPath, text: `${JSON.stringify(report, null, 2)}\n` }]);
+    return { ok: true, report: outPath, dimensions: report.dimensions, next: report.next };
+  },
+  // Write-semantics contract (ge.mutation-model.v1) — same core as
+  // `ge systems mutation infer/validate/apply` (@ge/byo-systems/mutation-model).
+  "systems.mutation.infer": async (a) => {
+    const byoSystems = await import("@ge/byo-systems");
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const { dirname, join, resolve } = await import("node:path");
+    const system = byoSystems.assertMutationSystemId(a.system);
+    const body = { displayName: system, useLlm: false };
+    if (a.fromOpenapi) {
+      body.mode = "openapi";
+      body.openapi = JSON.parse(await readFile(a.fromOpenapi, "utf8"));
+    } else if (a.fromSamples) {
+      body.mode = "samples";
+      body.samples = JSON.parse(await readFile(a.fromSamples, "utf8"));
+    } else {
+      throw new DxError("mutation infer needs a source", {
+        where: "factory_systems_mutation_infer",
+        why: "write semantics are inferred from an OpenAPI spec or samples, never invented",
+        fix: "pass fromOpenapi or fromSamples",
+      });
+    }
+    const spec = byoSystems.buildSynthesisSpec(body);
+    const synthesized = await byoSystems.runSynthesis(spec, { repoRoot: REPO_ROOT });
+    const packDir = join(REPO_ROOT, "apps", "factory", "simulator-systems", system);
+    const baseWorkflowsText = await readFile(join(packDir, "workflows.json"), "utf8").catch(() => null); // best-effort: missing pack = no base-hash guard; apply re-reads authoritatively and fails loudly there
+
+    const proposal = byoSystems.buildMutationProposal({
+      contract: synthesized.contract || synthesized,
+      system,
+      source: { mode: body.mode, path: a.fromOpenapi || a.fromSamples },
+      baseWorkflowsText,
+    });
+    const outPath = resolve(a.out || join(byoSystems.defaultBindingsDir(REPO_ROOT), "mutations", `${system}.proposal.json`));
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, `${JSON.stringify(proposal, null, 2)}\n`, "utf8");
+    return { ok: true, proposal: outPath, handlers: Object.keys(proposal.workflows.toolHandlers || {}).length, writeBindings: proposal.writeBindings };
+  },
+  "systems.mutation.validate": async (a) => {
+    const byoSystems = await import("@ge/byo-systems");
+    return byoSystems.validateCorpusMutations({ repoRoot: REPO_ROOT, system: a.system || undefined });
+  },
+  "systems.mutation.apply": async (a) => {
+    const byoSystems = await import("@ge/byo-systems");
+    const proposal = JSON.parse(await readFile(a.proposal, "utf8"));
+    return byoSystems.applyMutationProposal({ proposal, repoRoot: REPO_ROOT, write: Boolean(a.write), force: Boolean(a.force) });
   },
   // BYO manifest — same core as ge byo doctor/apply (tools/lib/byo-manifest.mjs).
   "byo.doctor": async (a) => {

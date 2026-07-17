@@ -6,6 +6,9 @@
 // optionality — fails here first. Widening the MCP surface is a deliberate
 // act: update this fixture in the same commit, and say so in the subject.
 import { test, expect } from "bun:test";
+import { mkdtemp, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { GE_COMMANDS } from "@ge/capability-registry";
 
 const EXPECTED_TOOLS = {
@@ -79,6 +82,24 @@ const EXPECTED_TOOLS = {
   factory_systems_list: [],
   factory_systems_synth: ["name?", "description?", "fromOpenapi?", "fromSamples?", "promote?"],
   factory_systems_doctor: [],
+  // Real-system twins Phase 0 (2026-07-06): the one dialing tool — doctor
+  // plus a read-only reachability probe + dispatch decision per rest binding
+  // (risk: calls-live-readonly) — and the directive compiler the tool plane
+  // consumes via GE_SIMULATOR_DISPATCH (see docs/plans/real-system-twins/).
+  factory_systems_dial: [],
+  factory_systems_dispatch: [],
+  // Real-system twins Phase 2 (2026-07-06): profile a real system read-only,
+  // record a redacted replay corpus, compare a twin to live — all
+  // calls-live-readonly (see docs/plans/real-system-twins/).
+  factory_systems_profile: ["system", "openapi", "baseUrl?", "auth?", "redact?", "probe?", "out?"],
+  factory_systems_record: ["system", "profile?", "script?", "maxCalls?", "importHar?", "importNdjson?", "redact?", "out?"],
+  factory_systems_compare: ["system", "profile", "maxCalls?", "out?"],
+  // Real-system twins Phase 1 (2026-07-06): the write-semantics contract
+  // (ge.mutation-model.v1) — infer a hash-guarded proposal from
+  // OpenAPI/samples, validate the corpus, apply with dry-run default.
+  factory_systems_mutation_infer: ["system", "fromOpenapi?", "fromSamples?", "out?"],
+  factory_systems_mutation_validate: ["system?"],
+  factory_systems_mutation_apply: ["proposal", "write?", "force?"],
   // BYO completion wave (bindings + manifest + models + quality trio, 2026-07-05):
   factory_systems_bind: ["system", "to", "kind", "mode", "connector?", "config?"],
   factory_systems_bindings: [],
@@ -110,7 +131,7 @@ const EXPECTED_TOOLS = {
   factory_console_doctor: [],
 };
 
-const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];
+const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "calls-live-readonly", "read-only"];
 
 const PARAM_TYPES = ["string", "boolean", "number"];
 
@@ -160,4 +181,51 @@ test("every declared mcp tool has an in-process handler in mcp-server.mjs", asyn
   const declared = Object.values(GE_COMMANDS).filter((c) => c.mcp).map((c) => c.id).sort();
   const handled = Object.keys(HANDLERS).sort();
   expect(handled).toEqual(declared);
+});
+
+test("system capture MCP handlers enforce identity and private atomic artifacts", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "ge-mcp-capture-"));
+  try {
+    const { HANDLERS } = await import("./mcp-server.mjs");
+    const openapi = join(dir, "openapi.json");
+    const profilePath = join(dir, "crm.profile.json");
+    await writeFile(
+      openapi,
+      JSON.stringify({
+        openapi: "3.0.0",
+        info: { title: "CRM" },
+        paths: { "/cases": { get: { operationId: "listCases" } } },
+      }),
+    );
+    await HANDLERS["systems.profile"]({
+      system: "crm",
+      openapi,
+      baseUrl: "https://crm.example.com",
+      out: profilePath,
+    });
+    expect((await stat(profilePath)).mode & 0o777).toBe(0o600);
+
+    const importPath = join(dir, "input.ndjson");
+    const corpusPath = join(dir, "output.ndjson");
+    await writeFile(
+      importPath,
+      `${JSON.stringify({ schemaVersion: "ge.replay-corpus.v1", kind: "system_trace", system: "crm", profileHash: null, policyHash: null })}\n` +
+        `${JSON.stringify({ request: { method: "GET", path: "/cases?token=path-secret" }, response: { status: 200 } })}\n`,
+    );
+    await HANDLERS["systems.record"]({ system: "crm", importNdjson: importPath, out: corpusPath });
+    const reportPath = join(dir, "output.redaction-report.json");
+    expect((await stat(corpusPath)).mode & 0o777).toBe(0o600);
+    expect((await stat(reportPath)).mode & 0o777).toBe(0o600);
+    expect(await Bun.file(corpusPath).text()).not.toContain("path-secret");
+    expect((await readdir(dir)).some((name) => name.endsWith(".tmp"))).toBe(false);
+
+    await expect(
+      HANDLERS["systems.record"]({ system: "billing", importNdjson: importPath, out: join(dir, "wrong.ndjson") }),
+    ).rejects.toThrow("identity mismatch");
+    await expect(
+      HANDLERS["systems.compare"]({ system: "billing", profile: profilePath, maxCalls: 1, out: join(dir, "wrong.json") }),
+    ).rejects.toThrow("identity mismatch");
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

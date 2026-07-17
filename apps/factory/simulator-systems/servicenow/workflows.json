@@ -32,6 +32,9 @@
         "conflict": 0.04,
         "timeout": 0.02
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_problem_update": {
       "primitive": "state_machine",
@@ -54,6 +57,9 @@
         "conflict": 0.05,
         "validation_error": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_change_request_update": {
       "primitive": "state_machine",
@@ -87,6 +93,9 @@
         "conflict": 0.05,
         "timeout": 0.02
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_service_request_update": {
       "primitive": "state_machine",
@@ -118,6 +127,11 @@
         "conflict": 0.04,
         "validation_error": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

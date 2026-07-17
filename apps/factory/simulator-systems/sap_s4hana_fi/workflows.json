@@ -42,6 +42,9 @@
         "forbidden": 0.025,
         "conflict": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_journal_entry_update": {
       "primitive": "state_machine_update",
@@ -71,6 +74,9 @@
         "conflict": 0.06,
         "validation_error": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_payment_run_update": {
       "primitive": "state_machine_update",
@@ -100,6 +106,11 @@
         "forbidden": 0.05,
         "rate_limited": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

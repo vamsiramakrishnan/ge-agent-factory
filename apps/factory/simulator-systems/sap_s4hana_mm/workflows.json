@@ -79,6 +79,9 @@
         "forbidden": 0.01,
         "timeout": 0.01
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_purchase_order_update": {
       "primitive": "state_machine_update",
@@ -172,6 +175,11 @@
         "forbidden": 0.01,
         "timeout": 0.01
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

@@ -47,9 +47,38 @@ def sketch_from_samples(samples: dict[str, list[dict[str, Any]]], *, system_id: 
     return {"id": system_id, "displayName": display_name, "source": "samples", "collections": collections}
 
 
+# Property names that mark a schema's lifecycle field, in pick order.
+_STATE_PROP_NAMES = ("status", "state", "stage", "phase")
+
+
+def _openapi_write_segments(spec: dict[str, Any]) -> set[str]:
+    """Path segments that carry a write verb — the evidence a collection is mutable."""
+    segments: set[str] = set()
+    for path, ops in (spec.get("paths") or {}).items():
+        if not isinstance(ops, dict):
+            continue
+        if any(verb in ops for verb in ("post", "put", "patch", "delete")):
+            for seg in re.split(r"/+", str(path)):
+                seg = seg.strip()
+                if seg and not seg.startswith("{"):
+                    segments.add(re.sub(r"[^a-z0-9]+", "_", seg.lower()).strip("_"))
+    return segments
+
+
 def sketch_from_openapi(spec: dict[str, Any], *, system_id: str, display_name: str | None = None) -> dict[str, Any]:
-    """Infer a sketch from an OpenAPI document's component schemas."""
+    """Infer a sketch from an OpenAPI document's component schemas.
+
+    Deterministic, evidence-based write semantics (ge.mutation-model.v1,
+    Phase 1 of docs/plans/real-system-twins/): a string enum is preserved as
+    an ``enum:`` field type instead of being flattened to ``string``, and a
+    status-like enum property becomes the collection's ``stateField`` plus
+    ``transitionCandidates`` ONLY when the spec also declares a write verb
+    (post/put/patch/delete) on a path segment matching the collection — an
+    enum the API never mutates is data, not a state machine. The enum order
+    is never converted into transition edges; those require review.
+    """
     schemas = (spec.get("components") or {}).get("schemas") or spec.get("definitions") or {}
+    write_segments = _openapi_write_segments(spec)
     collections = []
     for schema_name, schema in list(schemas.items())[:12]:
         props = (schema or {}).get("properties") or {}
@@ -57,9 +86,14 @@ def sketch_from_openapi(spec: dict[str, Any], *, system_id: str, display_name: s
             continue
         name = _pluralize(re.sub(r"[^a-z0-9]+", "_", schema_name.lower()).strip("_"))
         fields = {}
+        enum_values: dict[str, list[str]] = {}
         for prop, prop_schema in props.items():
             ptype = (prop_schema or {}).get("type")
-            if ptype in ("integer", "number"):
+            enum = (prop_schema or {}).get("enum")
+            if isinstance(enum, list) and enum and all(isinstance(v, str) for v in enum):
+                fields[prop] = "enum:" + "|".join(enum)
+                enum_values[prop] = list(enum)
+            elif ptype in ("integer", "number"):
                 fields[prop] = "number"
             elif ptype == "boolean":
                 fields[prop] = "boolean"
@@ -67,7 +101,13 @@ def sketch_from_openapi(spec: dict[str, Any], *, system_id: str, display_name: s
                 fields[prop] = "string"
         primary_key = next((p for p in fields if p in ("id", f"{_singular(name)}_id")), None) or f"{_singular(name)}_id"
         fields.setdefault(primary_key, "string")
-        collections.append({"name": name, "primaryKey": primary_key, "fields": fields})
+        col: dict[str, Any] = {"name": name, "primaryKey": primary_key, "fields": fields}
+        if name in write_segments or _singular(name) in write_segments:
+            state_prop = next((p for p in _STATE_PROP_NAMES if p in enum_values), None)
+            if state_prop:
+                col["stateField"] = state_prop
+                col["transitionCandidates"] = enum_values[state_prop]
+        collections.append(col)
     return {
         "id": system_id,
         "displayName": display_name or spec.get("info", {}).get("title"),

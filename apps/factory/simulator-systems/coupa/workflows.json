@@ -40,6 +40,9 @@
         "conflict": 0.04,
         "rate_limited": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_purchase_order_update": {
       "primitive": "state_machine",
@@ -64,6 +67,9 @@
         "timeout": 0.03,
         "rate_limited": 0.03
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_invoice_update": {
       "primitive": "state_machine",
@@ -95,6 +101,9 @@
         "conflict": 0.05,
         "rate_limited": 0.02
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_contract_update": {
       "primitive": "state_machine",
@@ -126,6 +135,9 @@
         "validation_error": 0.04,
         "conflict": 0.04
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     },
     "submit_supplier_update": {
       "primitive": "state_machine",
@@ -148,6 +160,11 @@
         "forbidden": 0.03,
         "validation_error": 0.04
       }
+    ,
+      "semantics": "state_transition",
+      "compensation": "manual"
     }
   }
+,
+  "mutationModel": "ge.mutation-model.v1"
 }

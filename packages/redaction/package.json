@@ -1,0 +1,14 @@
+{
+  "name": "@ge/redaction",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The redaction module every live-system capture passes through BEFORE any byte reaches disk (Phase 2 of docs/plans/real-system-twins/): policy-driven masking/dropping/hashing of headers and body fields (headers default-deny for credentials), built-in PII detectors, and a reviewable redaction report that says what was removed and by which rule. Safety-critical: behavior changes must show up as golden-fixture diffs (src/fixtures/). Pure and dependency-free; no IO.",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  }
+}
