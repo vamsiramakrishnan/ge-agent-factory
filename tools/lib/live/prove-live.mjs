@@ -44,12 +44,31 @@ export function tokenF1(reference, candidate) {
   return (2 * precision * recall) / (precision + recall);
 }
 
+// Some mustCite values are concrete stream addresses (resource names/URIs),
+// while compiler-generated values can be logical claim ids. Concrete values
+// can be checked exactly; logical ids still fall back to presence until the
+// transcript carries a claim-to-source mapping.
+export function isAddressableCitationExpectation(value) {
+  return typeof value === "string" && /^(?:projects\/|(?:gs|s3|https?):\/\/|urn:)/i.test(value);
+}
+
+export function citationMatchesExpectation(citation, expected) {
+  return [citation?.source, citation?.uri].filter(Boolean).includes(expected);
+}
+
 // Evaluate the GE-owned metrics for one case. `expected` comes from the
 // compiled case metadata (geMetadata.expected) when present.
-export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 } = {}) {
+export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35, replay } = {}) {
   const metrics = [];
   const expected = kase.raw?.geMetadata?.expected || kase.raw?.expected || {};
   const blockCodes = (transcript.verdict?.blockers || []).map((blocker) => blocker.code);
+  // A cassette replay is deterministic and authoritative — absent tool
+  // metadata or an absent expected citation is a real observation, not a
+  // gap in what the transport surfaced. A live stream is genuinely ambiguous
+  // (it may omit tool metadata even when tools ran), so it keeps the softer
+  // verdicts. Falls back to the transcript's own source flag when the caller
+  // does not pass one.
+  const isReplay = replay ?? transcript.source?.replay ?? false;
 
   metrics.push({
     metric: "transport",
@@ -95,7 +114,7 @@ export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 
   }
 
   if (expected.mustCall?.length || expected.mustNotCall?.length) {
-    if (!transcript.invocationTools.length && expected.mustCall?.length) {
+    if (!transcript.invocationTools.length && expected.mustCall?.length && !isReplay) {
       metrics.push({ metric: "tool_trajectory", runner: "ge", status: "unavailable", detail: "live stream exposed no tool metadata — trajectory is checkable locally only" });
     } else {
       const missing = (expected.mustCall || []).filter((tool) => !transcript.invocationTools.includes(tool));
@@ -113,11 +132,19 @@ export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 
 
   if (expected.mustCite?.length) {
     const cited = transcript.turns.flatMap((turn) => turn.citations || []);
+    const addressable = expected.mustCite.filter(isAddressableCitationExpectation);
+    const symbolic = expected.mustCite.filter((value) => !isAddressableCitationExpectation(value));
+    const missing = addressable.filter((required) => !cited.some((citation) => citationMatchesExpectation(citation, required)));
+    const failed = !cited.length || missing.length > 0;
     metrics.push({
       metric: "grounding_citations",
       runner: "ge",
-      status: cited.length ? "pass" : "fail",
-      detail: cited.length ? `${cited.length} citation(s) in the stream` : "case requires citations but the stream carried none",
+      status: failed ? "fail" : "pass",
+      detail: !cited.length
+        ? "case requires citations but the stream carried none"
+        : missing.length
+          ? `missing required citation source(s): ${missing.join(", ")}`
+          : `${cited.length} citation(s) in the stream${addressable.length ? `; matched ${addressable.length} concrete source(s)` : ""}${symbolic.length ? `; ${symbolic.length} logical id(s) checked for presence only` : ""}`,
     });
   } else {
     metrics.push({ metric: "grounding_citations", runner: "ge", status: "not_applicable", detail: "case declares no citation expectations" });
@@ -206,7 +233,7 @@ export async function proveLive(cfg, {
       const transcriptPath = saveTranscript(transcript, transcriptsDir ? { dir: transcriptsDir } : {});
       transcriptPaths.push(transcriptPath);
 
-      const metrics = evaluateCaseMetrics(kase, transcript, { minResponseMatch });
+      const metrics = evaluateCaseMetrics(kase, transcript, { minResponseMatch, replay: !!cassette });
       const failedMetrics = metrics.filter((metric) => metric.status === "fail");
       const blockers = transcript.verdict.blockers;
 

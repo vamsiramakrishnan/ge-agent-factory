@@ -6,7 +6,16 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { proveLive, tokenF1, timingClass, evaluateCaseMetrics, baselineSummaryOf, diffBaseline, baselineDirFor } from "./prove-live.mjs";
+import {
+  proveLive,
+  tokenF1,
+  timingClass,
+  evaluateCaseMetrics,
+  isAddressableCitationExpectation,
+  baselineSummaryOf,
+  diffBaseline,
+  baselineDirFor,
+} from "./prove-live.mjs";
 import { evaluateLiveGate, DEFAULT_LIVE_GATE_POLICY } from "../gates/live-gate.mjs";
 
 const STATE_ROOT = mkdtempSync(join(tmpdir(), "ge-prove-live-state-"));
@@ -149,6 +158,51 @@ test("evaluateCaseMetrics: tool trajectory unavailable without live tool metadat
   };
   const metrics = evaluateCaseMetrics(kase, transcript);
   expect(metrics.find((metric) => metric.metric === "tool_trajectory").status).toBe("unavailable");
+});
+
+test("evaluateCaseMetrics: under replay a zero-tool transcript FAILS a mustCall (authoritative)", () => {
+  const kase = { id: "c", turns: [{ user: "q", reference: null }], raw: { geMetadata: { expected: { mustCall: ["some_tool"] } } } };
+  const transcript = {
+    invocationTools: [],
+    session: { continued: false },
+    responder: { assertion: "not_applicable", observedAgentId: null },
+    turns: [{ assistant: { text: "hi" }, citations: [] }],
+    verdict: { blockers: [] },
+  };
+  const trajectory = evaluateCaseMetrics(kase, transcript, { replay: true }).find((metric) => metric.metric === "tool_trajectory");
+  expect(trajectory.status).toBe("fail");
+  expect(trajectory.detail).toContain("some_tool");
+});
+
+test("evaluateCaseMetrics: concrete citation sources are exact, logical ids remain presence-only", () => {
+  const first = "projects/demo/locations/global/dataStores/benefits/documents/qle-policy";
+  const second = "gs://benefits/policies/enrollment.pdf";
+  const baseTranscript = {
+    invocationTools: [],
+    session: { continued: false },
+    responder: { assertion: "not_applicable", observedAgentId: null },
+    verdict: { blockers: [] },
+  };
+  const metricFor = (mustCite, citations) =>
+    evaluateCaseMetrics(
+      { id: "c", turns: [{ user: "q", reference: null }], raw: { geMetadata: { expected: { mustCite } } } },
+      { ...baseTranscript, turns: [{ assistant: { text: "hi" }, citations }] },
+      { replay: true },
+    ).find((metric) => metric.metric === "grounding_citations");
+  expect(metricFor([first], [{ source: first }]).status).toBe("pass");
+  expect(metricFor([second], [{ source: "document-name", uri: second }]).status).toBe("pass");
+  expect(metricFor([first, second], [{ source: first }]).status).toBe("fail");
+  expect(metricFor([first], [{ source: "projects/demo/documents/unrelated" }]).detail).toContain(first);
+  expect(metricFor(["auth-qle-policy"], [{ source: "any-grounded-document" }]).detail).toContain("presence only");
+});
+
+test("citation expectation classifier only treats explicit resource names and URIs as concrete", () => {
+  expect(isAddressableCitationExpectation("projects/demo/documents/policy")).toBe(true);
+  expect(isAddressableCitationExpectation("gs://bucket/policy.pdf")).toBe(true);
+  expect(isAddressableCitationExpectation("https://docs.example/policy")).toBe(true);
+  expect(isAddressableCitationExpectation("urn:policy:benefits:qle")).toBe(true);
+  expect(isAddressableCitationExpectation("auth-qle-policy")).toBe(false);
+  expect(isAddressableCitationExpectation("policy/eligibility-window")).toBe(false);
 });
 
 test("gate policy: pass-rate floor, strict responder, and missing-result handling", () => {
