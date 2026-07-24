@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Sparkles, Cpu, ArrowRight, Play } from "lucide-react";
+import { Sparkles, Cpu, ArrowRight, Play, Grid3x3 } from "lucide-react";
 import { DEPARTMENTS } from "../../../departments";
 import { AGENTS } from "../../../constants/agents";
 import { useSlideNavigation } from "../../../context/SlideContext";
 
 export const LandingSlide = () => {
-  const { nextSlide } = useSlideNavigation();
+  const { nextSlide, goToSlide } = useSlideNavigation();
   const totalAgents = AGENTS.length;
   const totalDomains = DEPARTMENTS.reduce((sum, d) => sum + (d.domainRange[1] - d.domainRange[0] + 1), 0);
   const deptNames = DEPARTMENTS.map(d => d.shortLabel).join(" & ");
@@ -95,18 +95,29 @@ export const LandingSlide = () => {
         </div>
       </motion.div>
 
-      {/* Start Button */}
-      <motion.button
+      {/* Actions — the map is the star; the story is the guided path */}
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        onClick={nextSlide}
-        className="group flex items-center gap-3 px-8 py-3.5 mb-12 rounded hero-gradient text-white font-headline font-bold text-sm uppercase tracking-[0.1em] shadow-ambient-lg hover:shadow-glow transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+        className="flex flex-col sm:flex-row items-center gap-3 mb-12"
       >
-        <Play className="w-4 h-4 fill-white" />
-        Begin Presentation
-        <ArrowRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-      </motion.button>
+        <button
+          onClick={() => goToSlide("domain-map")}
+          className="group flex items-center gap-3 px-8 py-3.5 rounded hero-gradient text-white font-headline font-bold text-sm uppercase tracking-[0.1em] shadow-ambient-lg hover:shadow-glow transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+        >
+          <Grid3x3 className="w-4 h-4" />
+          Explore the Capability Map
+          <ArrowRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="group flex items-center gap-2.5 px-6 py-3.5 rounded border border-outline-variant/50 text-on-surface font-headline font-bold text-sm uppercase tracking-[0.1em] hover:border-primary/50 hover:bg-surface-container transition-all duration-300 active:scale-[0.98]"
+        >
+          <Play className="w-4 h-4 fill-current" />
+          Begin Presentation
+        </button>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0 }}

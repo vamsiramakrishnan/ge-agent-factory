@@ -9,6 +9,7 @@ import { SlideWrapper, SlideTransition } from "./components/shell/SlideWrapper";
 import { SLIDES } from "./config/slides";
 import { SlideContext, BreadcrumbItem } from "./context/SlideContext";
 import { DepartmentProvider } from "./context/DepartmentContext";
+import { VerticalProvider } from "./context/VerticalContext";
 import { UsecaseIdProvider } from "./context/UsecaseIdContext";
 import { AuthGate } from "./auth/AuthGate";
 
@@ -264,6 +265,7 @@ export default function App() {
   return (
     <AuthGate>
     <DepartmentProvider>
+    <VerticalProvider>
     <SlideContext.Provider value={{
       currentSlide, goToSlide, nextSlide, prevSlide,
       zoomOut, goBack, history,
@@ -416,6 +418,7 @@ export default function App() {
         <ProgressBar current={levelPosition.current} total={levelPosition.total} />
       </div>
     </SlideContext.Provider>
+    </VerticalProvider>
     </DepartmentProvider>
     </AuthGate>
   );

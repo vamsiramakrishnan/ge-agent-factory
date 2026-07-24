@@ -31,42 +31,36 @@ const ElementCell = ({
 
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.85 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.006, duration: 0.2 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.005, duration: 0.2 }}
       onClick={onClick}
       onMouseEnter={() => onHover(agent)}
       onMouseLeave={() => onHover(null)}
-      className="group editorial-micro-card relative flex flex-col items-center justify-center rounded-md hover:z-10 hover:scale-[1.12] transition-all duration-200 cursor-pointer"
+      className="group editorial-micro-card relative flex flex-col items-start justify-between gap-1.5 min-h-[72px] p-2.5 rounded-xl text-left hover:z-10 hover:-translate-y-0.5 hover:shadow-ambient transition-all duration-200 cursor-pointer"
       style={{
         borderTopColor: domainColor,
         borderTopWidth: 3,
-        borderTopLeftRadius: 6,
-        borderTopRightRadius: 6,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
       }}
     >
-      {/* Number */}
-      <span className="text-[7px] font-mono text-secondary/40 leading-none mt-1">{num}</span>
+      {/* Top row: number + trigger */}
+      <div className="flex items-center justify-between w-full">
+        <span className="text-[8px] font-mono font-semibold text-secondary/45 leading-none">{num}</span>
+        <TriggerIcon className={`w-2.5 h-2.5 ${TRIGGER_STYLES[agent.triggerType].color} opacity-55 group-hover:opacity-100 transition-opacity`} />
+      </div>
 
       {/* Name */}
-      <span className="text-[6.5px] font-headline font-bold text-center leading-[1.15] px-0.5 group-hover:text-primary transition-colors line-clamp-2 flex-1 flex items-center">
+      <span className="text-[10.5px] font-headline font-bold leading-[1.2] group-hover:text-primary transition-colors line-clamp-2">
         {agent.shortName}
       </span>
 
-      {/* Layer dot */}
-      <div className={`w-1.5 h-1.5 rounded-full ${layerInfo.dot} mb-1 opacity-80`} />
-
-      {/* Trigger icon — top right */}
-      <div className="absolute top-[3px] right-[3px]">
-        <TriggerIcon className={`w-[7px] h-[7px] ${TRIGGER_STYLES[agent.triggerType].color} opacity-60 group-hover:opacity-100`} />
+      {/* Bottom row: layer + HITL */}
+      <div className="flex items-center gap-1.5 w-full">
+        <div className={`w-1.5 h-1.5 rounded-full ${layerInfo.dot} opacity-80`} />
+        {agent.hitl && <ShieldCheck className="w-2.5 h-2.5 text-rose-400 opacity-70 group-hover:opacity-100 ml-auto" />}
       </div>
-
-      {/* HITL marker — top left */}
-      {agent.hitl && (
-        <div className="absolute top-[3px] left-[3px]">
-          <ShieldCheck className="w-[7px] h-[7px] text-rose-400 opacity-60 group-hover:opacity-100" />
-        </div>
-      )}
     </motion.button>
   );
 };
@@ -174,10 +168,6 @@ export const PeriodicTableSlide = () => {
     scheduled: filteredAgents.filter((a) => a.triggerType === "scheduled").length,
   };
 
-  // Find max agents per domain for consistent grid sizing
-  const maxAgentsInDomain = Math.max(...agentsByDomain.map(d => d.agents.length));
-  const gridCols = maxAgentsInDomain <= 8 ? 8 : maxAgentsInDomain <= 10 ? 10 : maxAgentsInDomain <= 12 ? 12 : 13;
-
   let globalIndex = 0;
 
   return (
@@ -274,8 +264,8 @@ export const PeriodicTableSlide = () => {
                   onClick={() => goToSlide(domain.id)}
                 />
                 <div
-                  className="grid gap-[3px] mb-2"
-                  style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+                  className="grid gap-1.5 mb-2"
+                  style={{ gridTemplateColumns: `repeat(${agents.length}, minmax(0, 1fr))` }}
                 >
                   {agents.map((agent) => {
                     const idx = globalIndex++;
@@ -297,9 +287,9 @@ export const PeriodicTableSlide = () => {
         </AnimatePresence>
 
         {/* Hover Detail Sidebar */}
-        <div className="w-full lg:w-48 shrink-0 flex flex-col gap-2">
+        <div className="w-full lg:w-56 shrink-0 flex flex-col gap-2">
           {/* Hover info */}
-          <div className="flex-1 flex items-start pt-2">
+          <div className="flex-1 flex flex-col min-h-0">
             <AnimatePresence mode="wait">
               {hoveredAgent ? (
                 <HoverDetail key={hoveredAgent.id} agent={hoveredAgent} />
@@ -307,9 +297,13 @@ export const PeriodicTableSlide = () => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="editorial-card editorial-card-muted p-3 rounded-lg border-dashed text-center w-full"
+                  className="w-full h-full flex flex-col items-center justify-center gap-3 editorial-card editorial-card-muted rounded-lg border-dashed text-center p-5"
                 >
-                  <span className="text-[9px] text-secondary/30 font-headline">Hover an element to see details</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-primary/40" />
+                  </div>
+                  <span className="text-[10px] text-secondary/45 font-headline leading-relaxed">Hover an element to preview its blueprint.</span>
+                  <span className="text-[8px] text-secondary/30 font-headline uppercase tracking-widest">Click to drill in</span>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -1,7 +1,7 @@
 import React from "react";
 import { ChallengeSlide } from "../components/slides/story/ChallengeSlide";
 import { SolutionSlide } from "../components/slides/story/SolutionSlide";
-import { PeriodicTableSlide } from "../components/slides/story/PeriodicTableSlide";
+import { CapabilityMapSlide } from "../components/slides/story/CapabilityMapSlide";
 import { DepartmentLandingSlide } from "../components/slides/story/DepartmentLandingSlide";
 
 import { LandingSlide } from "../components/slides/story/LandingSlide";
@@ -13,6 +13,8 @@ import { HRTechLandscapeSlide } from "../components/slides/story/HRTechLandscape
 import { SectionDividerSlide } from "../components/slides/story/SectionDividerSlide";
 import { ClosingCTASlide } from "../components/slides/story/ClosingCTASlide";
 import { DeployYourOwnSlide } from "../components/onboarding/DeployYourOwnSlide";
+import { VerticalAgentSlide } from "../components/agent/VerticalAgentSlide";
+import { VERTICALS } from "../verticals";
 
 // Architecture & Evolution
 import { AgentEvolutionSlide } from "../components/slides/story/AgentEvolutionSlide";
@@ -27,7 +29,7 @@ import { RoadmapSlide } from "../components/slides/story/RoadmapSlide";
 import { ClosingSlide } from "../components/slides/story/ClosingSlide";
 
 // Icons for section dividers
-import { Users, AlertTriangle, Lightbulb, Wrench, Map, BarChart3, Rocket, Briefcase, Calculator, Monitor, Megaphone } from "lucide-react";
+import { Users, AlertTriangle, Lightbulb, Wrench, Map, BarChart3, Rocket, Briefcase, Calculator, Monitor, Megaphone, Building2 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════
 // LAZY-LOADED COMPONENTS (code-split)
@@ -463,7 +465,9 @@ export interface SlideConfig {
 // is fully built by then), so adding a department/domain/agent can never leave
 // this headline stale again.
 function MapDividerSlide() {
-  const agents = SLIDES.filter((s) => s.level === 4).length;
+  // Horizontal agents only — vertical agents live on their own axis (synthetic
+  // domain ≥ 1000) and are counted under the vertical divider, not here.
+  const agents = SLIDES.filter((s) => s.level === 4 && (s.domain ?? 0) < 1000).length;
   const domains = SLIDES.filter((s) => s.level === 3).length;
   const departments = SLIDES.filter((s) => s.level === 2).map((s) => s.title);
   return (
@@ -477,6 +481,42 @@ function MapDividerSlide() {
     />
   );
 }
+
+// Leaf detail slides for every industry-vertical agent, generated from the
+// vertical seed registry so drilling into a vertical agent works exactly like a
+// horizontal use case (goToSlide → full-screen detail). Each is a level-4 child
+// of the vertical map. A synthetic per-value-stream domain number (offset well
+// past the horizontal 1–46 range) keeps within-level arrow navigation scoped to
+// a single value stream without colliding with horizontal domains.
+const VERTICAL_AGENT_SLIDES: SlideConfig[] = (() => {
+  const slides: SlideConfig[] = [];
+  let streamOrdinal = 0;
+  for (const vertical of VERTICALS) {
+    for (const stream of vertical.valueStreams) {
+      streamOrdinal += 1;
+      const syntheticDomain = 1000 + streamOrdinal;
+      for (const agent of stream.agents) {
+        slides.push({
+          id: agent.id,
+          title: agent.title,
+          content: (
+            <VerticalAgentSlide
+              agent={agent}
+              icon={vertical.icon}
+              verticalLabel={vertical.label}
+              streamName={stream.name}
+              streamColor={stream.color}
+            />
+          ),
+          level: 4,
+          parent: "vertical-map",
+          domain: syntheticDomain,
+        });
+      }
+    }
+  }
+  return slides;
+})();
 
 export const SLIDES: SlideConfig[] = [
 
@@ -524,8 +564,8 @@ export const SLIDES: SlideConfig[] = [
 
   { id: "act-5", title: "The Map", content: <MapDividerSlide />, level: 0 },
 
-  // L1: Capability Map
-  { id: "domain-map", title: "Enterprise Capability Map", content: <PeriodicTableSlide />, level: 1 },
+  // L1: Capability Map — the unified hub (Horizontal ⇄ Vertical axis toggle).
+  { id: "domain-map", title: "Enterprise Capability Map", content: <CapabilityMapSlide defaultAxis="horizontal" />, level: 1 },
 
   // L2: Department Landing Pages
   { id: "dept-hr", title: "HR & People Operations", content: <DepartmentLandingSlide title="HR & People Operations" subtitle="10 Domains • 82 Agents • 12 Personas" description="The complete HR transformation — from workforce planning through talent acquisition, performance management, and people analytics. Every agent grounded in real personas, real systems, and real workflows." icon={Users} accentColor="#3b82f6" domainRange={[1, 10]} />, level: 2, parent: "domain-map", department: "hr" },
@@ -1054,6 +1094,20 @@ export const SLIDES: SlideConfig[] = [
   { id: "uc-3705", title: "Competitive Battle Card Generator", content: <React.Suspense fallback={<LazyFallback />}><CompetitiveBattleCards /></React.Suspense>, level: 4, parent: "domain-37", domain: 37, department: "marketing" },
   { id: "uc-3706", title: "Sales Enablement Content Agent", content: <React.Suspense fallback={<LazyFallback />}><SalesEnablementContentAgent /></React.Suspense>, level: 4, parent: "domain-37", domain: 37, department: "marketing" },
   { id: "uc-3707", title: "Market Trend & Signal Detector", content: <React.Suspense fallback={<LazyFallback />}><MarketTrendDetector /></React.Suspense>, level: 4, parent: "domain-37", domain: 37, department: "marketing" },
+
+  // ═══════════════════════════════════════════════════════
+  // ACT V.5 — THE VERTICAL AXIS
+  // Horizontal shared-services agents map the enterprise's functions;
+  // vertical agents map what makes each industry itself. Both systems,
+  // one capability map. Data is sourced verbatim from the factory
+  // vertical-seeds catalog (src/verticals).
+  // ═══════════════════════════════════════════════════════
+
+  { id: "act-verticals", title: "Industry Verticals", content: <SectionDividerSlide sectionNumber="IV·B" title="The Vertical Axis" subtitle="Horizontal agents run the functions every enterprise shares — HR, Finance, IT, Marketing, Procurement. Vertical agents run what makes an industry itself: a bank's deposits, an insurer's claims, a telco's network, a retailer's shelves, a factory's line." quote="Horizontal gives you leverage. Vertical gives you the moat." icon={Building2} accentColor="#0f766e" />, level: 0 },
+  { id: "vertical-map", title: "Industry Vertical Agents", content: <CapabilityMapSlide defaultAxis="vertical" />, level: 1 },
+
+  // L4: one detail slide per vertical agent (generated above from the seed registry).
+  ...VERTICAL_AGENT_SLIDES,
 
   // ═══════════════════════════════════════════════════════
   // ACT VI — THE PROOF

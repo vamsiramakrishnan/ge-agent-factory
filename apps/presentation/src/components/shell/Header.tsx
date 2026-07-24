@@ -75,17 +75,21 @@ export const Header = ({ onOpenPicker, onJumpToLevel }: HeaderProps) => {
           {LEVEL_LABELS.map((label, level) => {
             const isActive = currentLevel === level;
             const isAccessible = level <= 1 || (level === 2 && currentLevel >= 1) || (level === 3 && currentLevel >= 2) || (level === 4 && currentLevel >= 3);
+            // The Map is the deck's centerpiece — give it a standing accent when
+            // it isn't the current level so it always reads as the destination.
+            const isMap = level === 1;
+            const restStyle = isMap
+              ? "text-primary bg-primary/10 hover:bg-primary/15"
+              : isAccessible
+                ? "text-secondary/50 hover:text-primary hover:bg-surface-container-high"
+                : "text-secondary/30 cursor-not-allowed";
             return (
               <button
                 key={level}
                 onClick={() => onJumpToLevel(level)}
                 disabled={!isAccessible}
                 className={`px-2.5 py-1 rounded text-[9px] font-headline font-bold uppercase tracking-widest transition-all ${
-                  isActive
-                    ? "hero-gradient text-white shadow-ambient"
-                    : isAccessible
-                      ? "text-secondary/50 hover:text-primary hover:bg-surface-container-high"
-                      : "text-secondary/30 cursor-not-allowed"
+                  isActive ? "hero-gradient text-white shadow-ambient" : restStyle
                 }`}
                 title={`Level ${level + 1}: ${label} (${level + 1})`}
               >
