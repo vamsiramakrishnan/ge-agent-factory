@@ -1,395 +1,247 @@
 # GE Agent Factory
 
-**An agent is a contract with the external world.** It reads your systems,
-acts on your data, and speaks to your users — so it should be built from a
-contract, proven with evidence, and admitted to production by policy through
-a repeatable engineering process.
+GE Agent Factory turns an agent requirement into a versioned contract, generated implementation artifacts, evaluation evidence, and a handoff package for Google agents-cli / ADK / Gemini Enterprise.
 
-GE Agent Factory builds agents exactly that way. A user interview, a BRD,
-or a PRD becomes a canonical spec — an Enterprise Agent Contract, captured
-in [OKF](docs/reference/okf.md), Google Cloud's Open Knowledge Format:
-plain Markdown, portable, vendor-agnostic. The spec generates the agent's
-code, evals, synthetic data, and simulated source systems; the evidence is
-sealed into a signed Agent Passport; and an admission gate verifies that
-passport before the agent ships to
-[agents-cli](https://google.github.io/agents-cli/), ADK Agent Engine, and
-Gemini Enterprise. The factory does not replace those tools — it produces
-the contract and proof they need.
+The contract is stored in [OKF](docs/reference/okf.md), a Markdown-based format with structured metadata. The factory uses that contract to generate code, evals, synthetic source systems, and release evidence.
 
-## Start with one local proof
+The factory does not replace agents-cli or ADK. It prepares and verifies the material handed to them.
 
-Install directly from this GitHub repository — no npm package or registry
-lookup is involved:
+## Quickstart
+
+From a clone:
+
+```bash
+git clone https://github.com/vamsiramakrishnan/ge-agent-factory.git
+cd ge-agent-factory
+mise run setup
+ge prove
+mise run console
+```
+
+The first proof runs locally. Cloud credentials are needed when you hand a proven workspace to Google Cloud.
+
+Install the factory skills from GitHub without cloning manually:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
   | bun - -- --yes --skills agents
 ```
 
-The installer clones or reuses the repository, sets up the toolchain, exposes
-the agent skills, and runs the first local proof. From an existing checkout,
-use the shorter path:
+## Core workflow
+
+The main path is three commands:
 
 ```bash
-mise run setup
+ge capture
 ge prove
+ge handoff agents-cli
+```
+
+`ge capture` creates or registers an Enterprise Agent Contract.
+
+`ge prove` builds the workspace and runs the checks needed for the proof pack.
+
+`ge handoff agents-cli` passes a proven workspace into the deployment path managed by agents-cli / ADK.
+
+At any point:
+
+```bash
+ge status
+```
+
+reports the current stage and the first required next action.
+
+## Contract to runtime
+
+```text
+user interview / BRD / PRD
+          │
+          ▼
+Enterprise Agent Contract (OKF)
+          │
+          ├── generated ADK code
+          ├── tool declarations
+          ├── evaluation cases
+          ├── synthetic source systems
+          └── trace / proof inputs
+          │
+          ▼
+       ge prove
+          │
+          ├── eval results
+          ├── spec-to-code checks
+          ├── simulation results
+          └── promotion checks
+          │
+          ▼
+      proof pack
+          │
+          ▼
+  agents-cli / ADK
+          │
+          ▼
+   Agent Engine
+          │
+          ▼
+ Gemini Enterprise
+```
+
+The contract is the input to generation and evaluation. Passing generation does not by itself prove the implementation satisfies the business requirement; the proof path exists to compare generated behavior with the contract's declared criteria.
+
+## Enterprise Agent Contract
+
+The contract records the material the factory needs to build and test an agent, including behavior, tool intent, source systems, evaluation criteria, and generation metadata.
+
+It is intended to be readable as a document and compilable as structured input.
+
+See [OKF reference](docs/reference/okf.md) for the schema and examples.
+
+## Capture
+
+Interactive capture opens the browser-based interview flow:
+
+```bash
+ge capture
+```
+
+Register an existing contract:
+
+```bash
+ge capture --from agent-spec.json
+```
+
+A fully terminal-native interview flow is not the default capture path in the current release.
+
+## Prove
+
+```bash
+ge prove
+```
+
+The proof path builds the agent workspace and evaluates the artifacts generated from the contract.
+
+Depending on the workspace, that includes:
+
+- ADK source generation;
+- tool generation;
+- synthetic source-system fixtures;
+- eval generation and execution;
+- spec-to-code trace checks;
+- promotion-gate checks;
+- proof-pack generation.
+
+Use watch mode while editing a contract:
+
+```bash
+ge prove --watch
+```
+
+## Handoff
+
+```bash
+ge handoff agents-cli
+```
+
+The handoff step is where the local proof path crosses into cloud deployment.
+
+The generated workspace is passed to agents-cli / ADK for the deployment and publication stages. Gemini Enterprise remains the end-user surface.
+
+Nothing before handoff needs to mutate a Google Cloud deployment target.
+
+## Coding-agent support
+
+The repository packages common factory operations as skills so coding agents can install, inspect, build, and prove workspaces using the same CLI and project files as a human operator.
+
+Supported installation paths include Claude Code, Gemini CLI, Codex-style sessions, Antigravity, and generic MCP clients. Product names here identify harness integrations; they are not required for the underlying CLI workflow.
+
+For a checkout:
+
+```bash
+mise run skills-install
+```
+
+For MCP clients:
+
+```bash
+bun tools/mcp-server.mjs
+```
+
+The MCP server exposes factory operations over the same underlying functions used by the CLI.
+
+## Catalog
+
+The repository contains generated agent specifications for horizontal business functions and industry-specific examples.
+
+- [Horizontal catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/)
+- [Vertical catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog-verticals/)
+- [Catalog explorer](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/explorer/)
+
+The catalog is generated from the repository registry rather than maintained as a separate hand-edited inventory.
+
+Generated catalog output still depends on the registry generation and drift checks running successfully. A generated page is evidence of the current checked registry state, not a general guarantee that unrelated source files cannot diverge.
+
+## Console
+
+Run the local console with:
+
+```bash
 mise run console
 ```
 
-Cloud credentials are only needed when you run `ge handoff agents-cli`.
+The console exposes the same workspace state used by the CLI: contract status, proof stages, repair work, and handoff readiness.
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
+It is an operator surface over the factory state, not a second implementation of the pipeline.
 
-<p align="center">
-  <img src="docs/assets/diagrams/signature-pipeline.svg" alt="Flow diagram: capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
-</p>
+## Local and cloud boundary
 
-## Why generate agents from a spec
+The factory is local-first for contract capture, generation, simulation, and proof.
 
-Hand-writing an agent from a business requirements document works for one
-demo, because one person can hold the whole intent in their head while
-wiring up prompts and tool calls. It stops working at the second agent:
-the promises end up scattered across prompts, tool definitions, mocks, and
-test notebooks, and the evidence that any of it holds lives nowhere — it
-might behave, but nothing can prove it will. Skipping the document and
-writing straight from judgment calls is worse, not better: there's no
-requirement left to check the agent against, so nothing catches it
-drifting from what the business asked for until a user does.
+Cloud work begins when the user invokes a handoff or other command that explicitly targets cloud resources.
 
-Spec-driven development is not a new idea. What is new is the spec itself:
-one canonical Enterprise Agent Contract, captured in
-[OKF](docs/reference/okf.md) — the Open Knowledge Format from Google Cloud.
-OKF is plain Markdown with structured frontmatter: portable,
-vendor-agnostic, readable by a business owner, and compilable by the
-factory. That one spec drives every artifact downstream — machine-verifiable
-business logic, evals, synthetic data, and simulated third-party SaaS
-systems — and every stage after capture is checked against that same
-contract, not just generated from it once and left to drift:
-
-1. **Capture** — start from a user interview or an existing BRD; the
-   factory compiles it into a contract.
-2. **Generate** — the contract generates the agent's ADK code and tools; a
-   spec-to-code trace checks the result against the contract's tool intents.
-3. **Evaluate** — the contract and the generated code produce the eval
-   suite, in agents-cli's own eval format, scored against the contract's
-   success criteria.
-4. **Simulate** — the contract's declared source systems become simulated
-   third-party SaaS backends, seeded with synthetic data, so every tool
-   call is exercised against them before any production integration exists.
-5. **Admit** — the evidence from every checked stage is sealed into a
-   signed Agent Passport, and an admission gate — a required prerequisite,
-   not a suggestion — verifies it before the agent ships through agents-cli
-   to ADK Agent Engine.
-6. **Run** — the deployed agent is published to Gemini Enterprise, where
-   your business users talk to it.
-
-The passport carries standard in-toto attestations, so admission
-controllers you may already run — sigstore policy-controller, Kyverno,
-Binary Authorization — can verify the same evidence downstream.
-
-On the command line, that path is three verbs:
-
-```bash
-ge capture               # interview or BRD → Enterprise Agent Contract
-ge prove                 # contract → code, evals, data, simulations → a validated workspace
-ge handoff agents-cli    # proven workspace → Agent Engine → Gemini Enterprise
-```
-
-`ge capture` opens the conversational Interview in your browser;
-`ge capture --from <agent-spec.json>` registers a contract you already
-have. At any point, bare `ge` (or `ge status`) reports where you are on the
-path, what blocks you, and the exact next command. A capture flow that
-lives entirely in the terminal is on the
-[roadmap](#roadmap-the-golden-path).
-
-Deciding whether you need this layer at all? Read
-[GE Agent Factory vs agents-cli](https://vamsiramakrishnan.github.io/ge-agent-factory/start/vs-agents-cli/).
-
-## Works with your coding agent
-
-<p align="center">
-  <img src="docs/assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
-  <img src="docs/assets/icons/antigravity.svg" alt="Antigravity" height="44">&nbsp;
-  <img src="docs/assets/icons/codex.svg" alt="Codex" height="44">&nbsp;
-  <img src="docs/assets/icons/gemini-cli.svg" alt="Gemini CLI" height="44">&nbsp;
-  <img src="docs/assets/icons/mcp.svg" alt="MCP" height="44">
-</p>
-
-Every factory job ships as an agent skill — including the install itself
-([`installing-the-factory`](skills/installing-the-factory/SKILL.md)) — so a
-coding agent can set up a bare machine, verify each step, and operate the
-factory end to end:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \
-  | bun - -- --yes --skills agents  # GitHub-backed clone + guided, verified install
-```
-
-| Agent | Install |
-| --- | --- |
-| **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
-| **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| **Antigravity · Codex · agents-cli-style sessions** | `curl -fsSL https://raw.githubusercontent.com/vamsiramakrishnan/ge-agent-factory/main/packages/create-ge-agent-factory/bin/create-ge-agent-factory.mjs \| bun - -- --yes --skills agents` (in a checkout: `mise run skills-install`) |
-| **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |
-
-Generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills automate the setup and operations layer above that handoff.
-
-## See it
-
-<table>
-<tr>
-<td width="50%">
-<img src="docs/assets/screenshots/overview.png" alt="Console Overview screen showing where every agent sits between capture and handoff — stage counts (spec, build 362, ship, deploy 1) and health across all agents (0 deployed, 1 submitted, 1 failed)">
-<br>
-<strong>Overview.</strong> Where every agent sits between capture and handoff, and what to do next.
-</td>
-<td width="50%">
-<details open>
-<summary><strong>Pipeline.</strong> The build &amp; deploy flow for one spec or a batch — same stages the CLI runs.</summary>
-<img src="docs/assets/screenshots/pipeline.png" alt="Console Pipeline screen: choose a route (deploy from registered specs, or interview to a registered spec) across 364 factory-grade specs, then a stage-by-stage status list">
-</details>
-</td>
-</tr>
-<tr>
-<td width="50%">
-<img src="docs/assets/screenshots/agent-detail.png" alt="Agent detail view for the ASC 606 Contract Analyzer: 7 of 8 build-and-release stages complete, deploy pending, next action Ship with the exact ge handoff command to run">
-<br>
-<strong>Agent detail.</strong> Every stage's evidence in one place, down to the exact command to ship it.
-</td>
-<td width="50%">
-<img src="docs/assets/screenshots/repair-queue.png" alt="Repair Queue screen showing 250 agents selected for repair, 249 needing a build, one repair run in progress">
-<br>
-<strong>Repair Queue.</strong> Triage what's blocked across every agent at once instead of re-running everything.
-</td>
-</tr>
-</table>
-
-<p align="center">
-  <img src="docs/assets/screenshots/periodic-table.png" alt="The Periodic Table of HR Agents: 82 AI agents across 10 HR domains, laid out as a periodic-table grid with department tabs for HR, Procurement, Finance, IT, and Marketing">
-  <br>
-  <em>The full catalog — 363 agents across five departments — laid out as a periodic table. One tile per agent, click to explore.</em>
-</p>
-
-The CLI, recorded from real runs:
-
-<table>
-<tr>
-<td width="33%">
-<img src="docs/assets/tapes/ge-status.gif" alt="Terminal recording of the bare ge command, printing the status board: where you stand between capture and handoff, the project, platform health, and the suggested next command">
-<br>
-<code>ge</code> — status board with the next step.
-</td>
-<td width="33%">
-<img src="docs/assets/tapes/ge-init.gif" alt="Terminal recording of ge init writing .ge.json with project, region, and service names">
-<br>
-<code>ge init</code> — discovers config, writes <code>.ge.json</code>.
-</td>
-<td width="33%">
-<img src="docs/assets/tapes/ge-doctor.gif" alt="Terminal recording of ge doctor checking the toolchain, data stores, and tool services, ending in All hard checks passed">
-<br>
-<code>ge doctor</code> — every layer of the platform checked, one command.
-</td>
-</tr>
-</table>
-
-## Do this at scale
-
-The same contract, generated code, checked evals, and simulated systems
-exist today for 363 horizontal agents across HR, Finance, IT, Marketing,
-and Procurement, plus 150 industry-vertical agents across retail, banking,
-insurance, telco, and manufacturing. Browse the canonical spec and
-generated source for any of them, laid out as a periodic table — one tile
-per agent, click through to its Enterprise Agent Contract and code:
-
-| | |
-|---|---|
-| **[Horizontal catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/)** | 363 shared-services agents across five departments |
-| **[Vertical catalog](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog-verticals/)** | 150 industry agents across five verticals |
-| **[Catalog explorer](https://vamsiramakrishnan.github.io/ge-agent-factory/catalog/explorer/)** | both halves together, filterable by industry, function, and value stream |
-
-None of it is hand-maintained: the catalog is generated from the same
-drift-gated registry the factory itself builds from
-(`apps/factory/src/agent-spec-registry.generated.json`), so it can never
-drift from the specs it's showing.
-
-## Quickstart
-
-No cloud credentials required until the handoff step; ~10 minutes end to
-end:
-
-```bash
-curl https://mise.run | sh   # once, if you don't have mise — see SETUP.md
-mise run setup               # toolchain + the `ge` CLI on PATH (~5-10 min, one time)
-ge init                      # discover config, write .ge.json (~30 s)
-ge capture                   # capture a contract in the console Interview — or skip: prove starts from a built-in starter contract
-ge prove                     # build + evals → one validated agent workspace (~5 min, all local)
-ge handoff agents-cli        # when ready: deploy proven agents to your own Google Cloud project
-```
-
-The result on disk after `ge prove` is the whole layer in miniature: the
-contract (`usecase-spec.json` with its `behaviorContract`), generated ADK
-code and tools, synthetic fixture data, smoke tests, an eval suite in
-`agents-cli`'s own format, and the artifacts the promotion gate reads.
-Everything before handoff is pure local computation, so it is safe to
-repeat; `ge prove --watch` re-proves automatically whenever a contract
-changes.
-
-<details>
-<summary>Under the hood: what each verb runs</summary>
-
-| Golden-path verb | What it runs today |
-|---|---|
-| `ge capture` | opens the console **Interview** at `http://localhost:18260/#/interview` (starting the console if needed) — conversational capture, document grounding, contract editing. `ge capture --from <agent-spec.json>` registers an already-captured contract with the catalog. |
-| `ge prove` | fresh machine → health check + one validated canary workspace; workspaces already built → `ge agents build` rebuilds their proof (evals + spec-to-code trace + harness verdicts + promotion gate). `--watch` re-proves on contract change. |
-| `ge handoff agents-cli` | hands locally proven workspaces to the cloud — `load_data` → deploy via `agents-cli deploy` → Agent Engine → register tools → publish to Gemini Enterprise. |
-
-The machinery each verb drives is first-class and directly operable too —
-see [Operate](#operate).
-</details>
-
-**→ Full setup path: [`SETUP.md`](SETUP.md). Ten-minute tutorial:
-[contract to handoff](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/).**
-
-## How it fits
-
-<p align="center">
-  <img src="docs/assets/diagrams/factory-vs-agents-cli-layers.svg" alt="GE Agent Factory turns enterprise intent into a contract (behaviorContract + generationSpec), then simulation, evals, and proof; the proof flows into agents-cli / ADK, which scaffolds the agent project and deploys it to Agent Runtime; Agent Runtime publishes into Gemini Enterprise for end users" width="900">
-</p>
-
-| Layer | Owned by |
-|---|---|
-| Intent → contract → simulations → evals → proof | **GE Agent Factory** (this repo) |
-| Agent project scaffold, build, deploy | **agents-cli / ADK** (generated and driven by the factory) |
-| Runtime | **ADK Agent Engine** |
-| End-user surface | **Gemini Enterprise** |
-
-Everything up to *proof* is pure computation on your machine; everything
-after touches your Google Cloud project. Building on this machine is the
-default — billable cloud work is opt-in — and `ge handoff` bridges the two
-sides by handing a locally proven workspace to the cloud for the release
-stages only. (The switch that selects the side, and the rest of the
-machinery, live under [Operate](#operate).)
-
-<p align="center">
-  <img src="docs/assets/diagrams/factory-line.svg" alt="Author and Build, Validate and Refine, Release, with the build boundary between them" width="620">
-</p>
+That boundary is deliberate because it lets contract and eval iteration happen without turning every proof run into a deployment.
 
 ## Documentation
 
-Published docs site (search, sidebar, light and dark themes):
-**→ https://vamsiramakrishnan.github.io/ge-agent-factory/**
+Published docs: <https://vamsiramakrishnan.github.io/ge-agent-factory/>
 
-| | |
-|---|---|
-| **[Start Here](https://vamsiramakrishnan.github.io/ge-agent-factory/start/what-is-the-factory/)** | What the factory is, the mental model, the ten-minute tutorial, vs agents-cli. |
-| **[Core Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** | The Enterprise Agent Contract, the Authority Graph, source-system twins, evals as proof, the passport & proof pack, handoff targets. |
-| **[Guides](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** | Capture → compile → simulate → prove → hand off, task by task. |
-| **[Console](https://vamsiramakrishnan.github.io/ge-agent-factory/console/)** | The operator UI, view by view. |
-| **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/operations/)** | Provision, run, observe, troubleshoot. |
-| **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** | CLI (generated from the command tree), contract schema (generated from the zod source), console APIs, config, architecture. |
-| **[Contributor Docs](https://vamsiramakrishnan.github.io/ge-agent-factory/contributing/)** | Developer guide, extending the CLI/console, docs rules. |
+Useful starting points:
 
-The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index.md)).
-Unfamiliar term? The [Glossary](docs/GLOSSARY.md) translates every internal
-term into plain language — the operator vocabulary included.
+- [What is the factory?](https://vamsiramakrishnan.github.io/ge-agent-factory/start/what-is-the-factory/)
+- [Quickstart](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/)
+- [GE Agent Factory vs agents-cli](https://vamsiramakrishnan.github.io/ge-agent-factory/start/vs-agents-cli/)
+- [Core concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)
+- [Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)
+- [Console](https://vamsiramakrishnan.github.io/ge-agent-factory/console/)
 
-## Roadmap: the golden path
+## Repository map
 
-All three verbs are working commands today. Two pieces remain ahead:
-
-- **CLI-native capture** — a conversational capture flow in the terminal
-  itself; today `ge capture` opens the console Interview.
-- **Additional handoff targets** — `agents-cli` (→ Agent Engine → Gemini
-  Enterprise) is the one supported target today.
-
-## Operate
-
-Everything below this line is the machinery behind the three verbs, in the
-operator register — planes, modes, canary, harness, and fleet, each defined
-in the [Glossary](docs/GLOSSARY.md).
-
-The golden path, one lever at a time:
-
-```bash
-ge prove                     # compile + prove one canary agent workspace (~5 min): health check → build → validate
-ge mode local
-ge agents build --canary     # compile one contract → validated workspace (build boundary)
-mise run console             # watch runs live in the operator console → http://localhost:18260
-ge handoff agents-cli        # hand off: cloud runs load_data → deploy → register → publish
+```text
+packages/         CLI, factory packages and generators
+skills/           coding-agent skills
+apps/             console and generated registry consumers
+docs/             source documentation and references
+tools/            MCP and development tooling
 ```
 
-The mode switch (`ge mode local|remote`, default **local** — billable work
-is opt-in) selects which side of the build boundary does the work;
-`ge handoff agents-cli` bridges them by handing a locally proven workspace
-to the cloud for the release stages only.
+## Boundaries
 
-## Deploy the platform to your own GCP project
+- A generated implementation still needs evaluation against the contract.
+- A passing proof establishes the checks implemented by that proof path; it is not a universal claim about production behavior.
+- Synthetic source systems exercise integration logic but do not reproduce every production dependency.
+- Local proof does not deploy the agent.
+- `ge handoff agents-cli` is the explicit bridge into the cloud deployment path.
 
-Single-tenant, ~15 min: click **Open in Cloud Shell** above for the guided
-installer ([`installer/TUTORIAL.md`](installer/TUTORIAL.md)), or from an
-authenticated checkout:
-
-```bash
-export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-CANARY=1 mise run bootstrap-cloud   # toolchain → ge init → ge up (all three planes) → prove one agent
-```
-
-## Monorepo layout
-
-A Bun workspace monorepo driven by one operator core
-(`tools/lib/factory-core.mjs`) behind three surfaces — the `ge` CLI, the web
-console, and an MCP server — that share a single command registry and can
-never disagree. Full layout, conventions, and how to run one app locally:
-[`CONTRIBUTING.md`](CONTRIBUTING.md).
-
-| Path | What it is |
-|------|------------|
-| [`apps/console`](apps/console) | The operator UI: Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness, plus Agent detail. |
-| [`apps/factory`](apps/factory) | The generator: compiles contracts into workspaces, the simulator runtime, the multi-tenant FastMCP service. |
-| [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog — including the periodic table above. |
-| [`apps/docs`](apps/docs) | The Astro/Starlight docs site (content sourced from `docs/`). |
-| [`tools/`](tools) | The `ge` CLI, the MCP server, the shared operator core + local runtime daemon. |
-| [`packages/`](packages) | Shared contracts and engines: the agent-spec schema, the run ledger, OKF, design tokens, plus the extracted `@ge/synthkit` (deterministic synthetic data) and `@ge/evalkit` (behavioral eval compiler + metrics) engines — see [`packages/README.md`](packages/README.md). |
-
-The map from station skill → capability → `ge` commands → engine package →
-reference docs is the
-[factory-line matrix](skills/README.md#the-factory-line-matrix) in
-`skills/README.md` — generated from source and drift-gated in CI, like the
-CLI reference.
-
-## The `ge` CLI
-
-Bare `ge` prints a status board with the next step; `ge --help` groups the
-golden path first. Every command supports `--json` and is also an HTTP route
-(console) and an MCP tool — one registry, three surfaces.
+## Development
 
 ```bash
-ge                     # status board: mode · planes ✓/○ · next step
-ge capture             # golden path: capture a contract (console Interview; --from registers a file)
-ge prove               # golden path: prove contracts → validated workspaces (--watch to loop)
-ge handoff agents-cli  # golden path: ship proven agents to Agent Engine / Gemini Enterprise
-ge init                # discover config → .ge.json
-ge devex check         # fast read-only gate: doctor + docs + workspace contracts
-ge agents build --canary
-ge handoff agents-cli --ids <workspace-id>
-ge agents status --watch
-ge pipeline run --scenario <id>   # orchestrate the end-to-end pipeline
-ge fleet status        # fleet convergence; ge fleet repair --ids <a,b> fixes blockers in bulk
-ge runs list           # every recorded run; ge runs events <id> --follow streams one live
-ge doctor              # health with runnable fixes (console: Readiness)
+git clone https://github.com/vamsiramakrishnan/ge-agent-factory.git
+cd ge-agent-factory
+mise run setup
+mise run test
 ```
 
-Full reference (generated from the command tree, drift-gated in CI):
-[CLI reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/cli/).
+Use `ge status` or the repository task list when you need the next supported operation rather than guessing from internal file layout.
 
-## Contributing
+## License
 
-```bash
-bun install                # workspace deps
-mise run devex-check       # fast local gate
-mise run ci                # the CI gate: hygiene + lint + typecheck + docs gate + tests
-```
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md), the
-[Contributor Docs](https://vamsiramakrishnan.github.io/ge-agent-factory/contributing/),
-and [`docs/OPERATIONS.md`](docs/OPERATIONS.md) for the operator runbook.
+See [LICENSE](LICENSE).
