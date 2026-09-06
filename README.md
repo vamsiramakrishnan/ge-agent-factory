@@ -1,10 +1,26 @@
 # GE Agent Factory
 
+**Turn an agent requirement into an implementation you can inspect, evaluate, and hand off for deployment.**
+
 GE Agent Factory turns an agent requirement into a versioned contract, generated implementation artifacts, evaluation evidence, and a handoff package for Google agents-cli / ADK / Gemini Enterprise.
 
 The contract is stored in [OKF](docs/reference/okf.md), a Markdown-based format with structured metadata. The factory uses that contract to generate code, evals, synthetic source systems, and release evidence.
 
 The factory does not replace agents-cli or ADK. It prepares and verifies the material handed to them.
+
+## Start with the artifact you need next
+
+| Goal | Command | Result to inspect |
+|---|---|---|
+| Capture the requirement | `ge capture` | A versioned Enterprise Agent Contract |
+| Check the generated implementation | `ge prove` | The workspace and its proof pack |
+| Find unfinished work | `ge status` | Current stage and next required action |
+| Enter the deployment path | `ge handoff agents-cli` | Handoff material for the configured runtime |
+
+Run the local proof before configuring cloud deployment. A generated workspace
+and a passing local proof are separate from a live tenant result. The
+[quickstart](#quickstart) gets you to the first inspectable proof.
+
 
 ## Quickstart
 
